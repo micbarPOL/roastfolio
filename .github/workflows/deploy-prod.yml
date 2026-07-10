@@ -1,4 +1,5 @@
 name: Deploy Prod
+run-name: Deploy to Prod from ${{ github.ref_name }}
 
 on:
   push:
