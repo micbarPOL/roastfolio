@@ -1,0 +1,38 @@
+Roastfolio — High-Level Functionalities Overview
+
+Roastfolio is a personal investment tracking application with a twist: it tracks your financial portfolio while periodically roasting your investment decisions. Designed to sit at the intersection of premium fintech and internet humor, the app helps you visualize your wealth, plan for early retirement (FIRE), and rewards your positive financial habits with badges—all while delivering sarcastic commentary on your market moves.
+
+This document outlines the core capabilities of the Roastfolio application and how users can interact with them.
+
+1. Dashboard & Control Room
+A centralized overview of your investments. Provides the aggregated portfolio total value, daily market returns, and a quick breakdown of individual wallets (Control Room). Clicking on any wallet instantly opens its specific history. It also highlights the "Daily Movers" (best and worst performing assets of the day).
+
+2. Wallet Management
+Create and track different brokerage accounts or types of investments independently (e.g., IKE, IKZE, XTB, Crypto). Users can view individual wallet balances, asset allocations, and wallet-specific transaction histories.
+
+3. Holdings & Live Prices
+Track asset allocations with live price data fetched for stocks, ETFs, and cryptocurrencies (powered by Yahoo Finance) as well as Polish TFI mutual funds (via bankier.pl). See real-time profit/loss, daily PLN change, and percentage changes for every asset.
+
+4. Transaction Tracking & Live Editing
+Record Buy, Sell, Deposit, and Withdrawal transactions. Transactions can be easily edited later, and all historical prices, wallet totals, and portfolio snapshots are instantly and automatically recalculated. The transaction history screen supports filtering by wallet and quick date ranges (Today, This week, This month, etc.). 
+
+5. Portfolio History & Performance Charts
+Visualize portfolio growth over time with interactive charts covering Total Value, Daily PLN Change, and Daily % Change. The charts dynamically format the X-axis for readability over long periods. Users can view the aggregated summary of all wallets or filter down to a single wallet.
+
+6. Market Benchmarks
+Compare personal portfolio returns against major global market indices. Users can toggle between S&P 500, MSCI World, and WIG20 on the History screen to see if their investments are beating the broader market over time.
+
+7. Asset Analysis
+Deep-dive research tools for individual assets. Users can search for any ticker to view historical price charts with their personal buy/sell transaction markers overlaid on the graph. The tool also displays fundamental properties, 5-year Cash Flow Statements, and Income Statements.
+
+8. Retirement & FIRE Planner
+Set target Financial Independence (FIRE) numbers. Users can create, save, and manage multiple retirement plans (e.g., conservative vs. aggressive scenarios) to see progress toward their goals. The primary plan drives the retirement milestone badges.
+
+9. Achievements & Gamification
+A fully automated system that rewards positive investing habits without requiring manual entry. Earn badges, track streaks (e.g., Deposit Streak, Withdrawal-Free Streak, Goal Streak), and level up your investor profile. Progress is calculated deterministically from real historical transaction data.
+
+10. ATH Management
+Automatically tracks the All-Time High (ATH) value of the portfolio and individual wallets. A visual gauge on the dashboard shows how close the portfolio is to its peak. Users can choose to let the system calculate ATH automatically from history, or set a manual override.
+
+11. Privacy & Security
+Built on a secure serverless AWS architecture. User data is strictly isolated using AWS Cognito authentication. All API interactions require a validated JWT token. The application does not store passwords, and database access is locked down via IAM roles.

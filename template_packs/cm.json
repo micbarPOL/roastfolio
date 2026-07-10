@@ -1,0 +1,1973 @@
+[
+  {
+    "templateId": "drawdown_significant_v2_gentle_DRAWDOWN_STATUS_001",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "The Valley Below",
+    "messageTemplate": "You are currently {{currentDrawdownFromATH}} below the peak. Markets spend most of their time in drawdowns. Stay patient.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_ABSOLUTE_RETURN_002",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "A Temporary Dip",
+    "messageTemplate": "The portfolio is {{currentDrawdownFromATH}} off its highs. Today's {{portfolioReturnPercent}} return is just one step on the long road back.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_GENERAL_MARKET_CHAOS_003",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Navigating The Chop",
+    "messageTemplate": "Market chaos has pushed the balance down by {{currentDrawdownFromATH}}. Choppy waters don't last forever.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_BENCHMARK_COMPARISON_004",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "A Shared Experience",
+    "messageTemplate": "Being {{currentDrawdownFromATH}} down from the peak is tough, but note that {{benchmarkName}} is also at {{benchmarkReturnPercent}}. You aren't alone.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_DRAWDOWN_STATUS_005",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Distance To Goal",
+    "messageTemplate": "The ATH is {{athDistancePercent}} away. It seems far, but consistent compounding will bridge the gap.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_ABSOLUTE_RETURN_006",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Keeping Perspective",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} below your best day. A {{portfolioReturnPercent}} daily move shouldn't distract from the big picture.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_GENERAL_MARKET_CHAOS_007",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Market Ebb",
+    "messageTemplate": "The tide is out, leaving you {{currentDrawdownFromATH}} from the high water mark. Keep your strategy intact.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_BENCHMARK_COMPARISON_008",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Relative Drawdown",
+    "messageTemplate": "A {{currentDrawdownFromATH}} drawdown is noticeable. Compare that to {{benchmarkName}}'s {{benchmarkReturnPercent}} to maintain perspective.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_DRAWDOWN_STATUS_009",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "The Historical Peak",
+    "messageTemplate": "Your portfolio is taking a {{currentDrawdownFromATH}} breather from its historical peak. It happens to the best of them.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_ABSOLUTE_RETURN_010",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Focus On The Process",
+    "messageTemplate": "A {{currentDrawdownFromATH}} drawdown is a good time to focus on the process, rather than the daily {{portfolioReturnPercent}} noise.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_GENERAL_MARKET_CHAOS_011",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Weathering Volatility",
+    "messageTemplate": "Volatility has brought you {{currentDrawdownFromATH}} down. Weathering these periods is how long-term wealth is built.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_BENCHMARK_COMPARISON_012",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Contextual Decline",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} down from the top. For context, {{benchmarkName}} is dealing with a {{benchmarkReturnPercent}} return today.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_DRAWDOWN_STATUS_013",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "The Next Ascent",
+    "messageTemplate": "We need a {{athDistancePercent}} climb to reach the summit again. Pack your patience.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_ABSOLUTE_RETURN_014",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Steady Nerves",
+    "messageTemplate": "It takes steady nerves to sit through a {{currentDrawdownFromATH}} drawdown. Ignore today's {{portfolioReturnPercent}} print and hold the line.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_GENERAL_MARKET_CHAOS_015",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "A Broader View",
+    "messageTemplate": "Market conditions have caused a {{currentDrawdownFromATH}} pullback. A broader view is necessary right now.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_BENCHMARK_COMPARISON_016",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Parallel Struggles",
+    "messageTemplate": "Your {{currentDrawdownFromATH}} distance from the top is mirrored by others. {{benchmarkName}}'s {{benchmarkReturnPercent}} is proof.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_DRAWDOWN_STATUS_017",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "The Summit Remains",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} below the summit. The mountain hasn't changed, only your position on it.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_ABSOLUTE_RETURN_018",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Temporary Valuation V2",
+    "messageTemplate": "The {{currentDrawdownFromATH}} pullback is temporary. Focus on the underlying assets, not the {{portfolioReturnPercent}} fluctuation.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_GENERAL_MARKET_CHAOS_019",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Navigating Turbulence V2",
+    "messageTemplate": "Turbulence has led to a {{currentDrawdownFromATH}} drop from your ATH. Keep your focus on the horizon.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_BENCHMARK_COMPARISON_020",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "A Gentle Context",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} off the high. Remember {{benchmarkName}} and its {{benchmarkReturnPercent}} return. It's a challenging environment.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_DRAWDOWN_STATUS_021",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "The Long View V2",
+    "messageTemplate": "Taking the long view is helpful when you are {{currentDrawdownFromATH}} below your peak.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_ABSOLUTE_RETURN_022",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Managing Expectations V2",
+    "messageTemplate": "A {{currentDrawdownFromATH}} drawdown requires managing expectations and ignoring the daily {{portfolioReturnPercent}}.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_GENERAL_MARKET_CHAOS_023",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Staying Grounded V2",
+    "messageTemplate": "The market is volatile, leaving you {{currentDrawdownFromATH}} off the high. Staying grounded is key.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_BENCHMARK_COMPARISON_024",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Shared Volatility V2",
+    "messageTemplate": "Volatility is everywhere. You are {{currentDrawdownFromATH}} down, while {{benchmarkName}} returned {{benchmarkReturnPercent}}.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_gentle_DRAWDOWN_STATUS_025",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "A Measured Approach V2",
+    "messageTemplate": "A measured approach is required to close the {{athDistancePercent}} gap back to the top.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Focus on the long-term fundamentals.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_001",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Museum Exhibit",
+    "messageTemplate": "Your all-time high belongs in a museum. You are currently {{currentDrawdownFromATH}} below it, living in the present reality.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_002",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Good Old Days",
+    "messageTemplate": "Remember the peak? You are now {{currentDrawdownFromATH}} poorer. The {{portfolioReturnPercent}} today is a nice, albeit useless, distraction.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_003",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Scenic Dive",
+    "messageTemplate": "The market took a dive and you gracefully followed it to a {{currentDrawdownFromATH}} deficit. A perfect 10 for execution.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_BENCHMARK_COMPARISON_004",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Gravity Verified",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} off your high. Gravity works. {{benchmarkName}}'s {{benchmarkReturnPercent}} confirms the physics.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_005",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Judging Dashboard",
+    "messageTemplate": "The dashboard is silently judging your {{currentDrawdownFromATH}} drawdown. It remembers when you were successful.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_006",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Distant Dream",
+    "messageTemplate": "The peak is {{athDistancePercent}} away. A distant dream. Today's {{portfolioReturnPercent}} return won't bridge that chasm.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "athDistancePercent",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_007",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Scenic Route Down V2",
+    "messageTemplate": "The market decided to take the scenic route down, and you followed perfectly to a {{currentDrawdownFromATH}} loss.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_BENCHMARK_COMPARISON_008",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Cold Comfort",
+    "messageTemplate": "You are down {{currentDrawdownFromATH}} from the peak. We hope comparing it to {{benchmarkName}}'s {{benchmarkReturnPercent}} brings some cold comfort.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_009",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Very Visible Dent",
+    "messageTemplate": "That {{currentDrawdownFromATH}} drawdown is a very visible dent. You can't just buff that out.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_010",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Tuition Fee",
+    "messageTemplate": "Your {{currentDrawdownFromATH}} drop from the peak is the market's tuition fee. The {{portfolioReturnPercent}} today is just the receipt.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_011",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Choppy Waters V2",
+    "messageTemplate": "The market has been choppy, meaning your net worth has sunk {{currentDrawdownFromATH}} from its highest point. Bring a towel.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_BENCHMARK_COMPARISON_012",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Index Envy V2",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} off your highs. Look at {{benchmarkName}}'s {{benchmarkReturnPercent}} and wonder what went wrong.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_013",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Uncomfortable Math",
+    "messageTemplate": "The uncomfortable math dictates a {{athDistancePercent}} climb just to break even with your former self.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_014",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Temporary Re-pricing V2",
+    "messageTemplate": "We are calling this {{currentDrawdownFromATH}} drawdown a 're-pricing' to protect your ego. The {{portfolioReturnPercent}} today is irrelevant.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_015",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Participation Trophy",
+    "messageTemplate": "You participated in the market chaos and earned a {{currentDrawdownFromATH}} drawdown. Please collect your trophy.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_BENCHMARK_COMPARISON_016",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Benchmark's Shadow V2",
+    "messageTemplate": "Sitting {{currentDrawdownFromATH}} below your peak while {{benchmarkName}} does {{benchmarkReturnPercent}}. The shadow is long.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_017",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Diet Portfolio",
+    "messageTemplate": "Your portfolio is {{currentDrawdownFromATH}} smaller. It's on a strict diet of your bad decisions.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_018",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Modest Decline V2",
+    "messageTemplate": "We'll call it a 'modest decline' of {{currentDrawdownFromATH}}. Today's {{portfolioReturnPercent}} is largely decorative at this point.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_019",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Turbulence Detected V2",
+    "messageTemplate": "Severe turbulence has resulted in a {{currentDrawdownFromATH}} drop. Please return your tray table to the upright position.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_BENCHMARK_COMPARISON_020",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Fair Comparison V2",
+    "messageTemplate": "You are down {{currentDrawdownFromATH}}. {{benchmarkName}} is at {{benchmarkReturnPercent}}. It's a fair, if unpleasant, comparison.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_021",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Distant Summit V2",
+    "messageTemplate": "The summit is {{athDistancePercent}} away. You might want to stretch before you start climbing again.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_022",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Lesson In Patience V2",
+    "messageTemplate": "A {{currentDrawdownFromATH}} drawdown is a masterclass in patience. Your daily {{portfolioReturnPercent}} is the homework.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_023",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Physics At Work",
+    "messageTemplate": "The market remembered gravity, pulling you {{currentDrawdownFromATH}} from your peak. Fascinating.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_BENCHMARK_COMPARISON_024",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Comparative Suffering V2",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} down. Let's see how {{benchmarkName}}'s {{benchmarkReturnPercent}} compares to your misery.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_025",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The New Normal V2",
+    "messageTemplate": "Is {{currentDrawdownFromATH}} below the peak the new normal? Time will tell.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_026",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Substantial Haircut V2",
+    "messageTemplate": "That {{currentDrawdownFromATH}} drop is a substantial haircut. The {{portfolioReturnPercent}} today won't grow it back.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_027",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Market Induced Nausea V2",
+    "messageTemplate": "The market chaos has induced a {{currentDrawdownFromATH}} drawdown. Have a mint.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_BENCHMARK_COMPARISON_028",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Underachiever's Guide V2",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} off the high. {{benchmarkName}} returned {{benchmarkReturnPercent}}. Read the manual again.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_029",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Long Climb Back V2",
+    "messageTemplate": "A {{athDistancePercent}} climb awaits you. We suggest wearing comfortable shoes.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_030",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Mathematical Correction V2",
+    "messageTemplate": "The universe is applying a {{currentDrawdownFromATH}} mathematical correction to your net worth. Today's {{portfolioReturnPercent}} is a rounding error.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_031",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "Riding The Down Draft V2",
+    "messageTemplate": "You successfully rode the down draft to a {{currentDrawdownFromATH}} deficit. Flawless.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_BENCHMARK_COMPARISON_032",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Passive Mockery V2",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} down. The passive {{benchmarkName}} with its {{benchmarkReturnPercent}} is quietly mocking you.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_DRAWDOWN_STATUS_033",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Deflated Ego V2",
+    "messageTemplate": "Your portfolio and ego are both {{currentDrawdownFromATH}} off their highs. A perfect match.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_ABSOLUTE_RETURN_034",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Reality Check V2",
+    "messageTemplate": "This {{currentDrawdownFromATH}} drawdown is a reality check. The daily {{portfolioReturnPercent}} is background noise.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_sarcastic_GENERAL_MARKET_CHAOS_035",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "A Victim Of Circumstance V2",
+    "messageTemplate": "You are a victim of circumstance, to the tune of {{currentDrawdownFromATH}} below your peak. Tragic.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_DRAWDOWN_STATUS_001",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "A Shrine To Failure",
+    "messageTemplate": "Your all-time high is a shrine to a past you squandered. You are {{currentDrawdownFromATH}} down and the climb looks mathematically impossible for you.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_ABSOLUTE_RETURN_002",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Wealth Erasure",
+    "messageTemplate": "A {{currentDrawdownFromATH}} drawdown is wealth erasure. Whatever {{portfolioReturnPercent}} you made today is a rounding error on your long-term failure.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_GENERAL_MARKET_CHAOS_003",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Delusion Is Over",
+    "messageTemplate": "The market shattered your delusion of competence, dragging you {{currentDrawdownFromATH}} from the peak. Reality remains undefeated.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_BENCHMARK_COMPARISON_004",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Humbling V2",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} off your high. {{benchmarkName}} did {{benchmarkReturnPercent}}. You are paying the market to humiliate you.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_DRAWDOWN_STATUS_005",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Abyss",
+    "messageTemplate": "That's not a pullback, that's a {{currentDrawdownFromATH}} abyss. Do not look down.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_ABSOLUTE_RETURN_006",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Ugly Truth",
+    "messageTemplate": "The ugly truth is you are {{currentDrawdownFromATH}} poorer than your peak. Today's {{portfolioReturnPercent}} doesn't hide the disaster.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_GENERAL_MARKET_CHAOS_007",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Washed Away",
+    "messageTemplate": "The market chaos washed away your gains, leaving you {{currentDrawdownFromATH}} down. Your portfolio was a sandcastle.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_BENCHMARK_COMPARISON_008",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Mathematically Inferior",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} off your high. The {{benchmarkReturnPercent}} from {{benchmarkName}} proves your active management is a liability.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_DRAWDOWN_STATUS_009",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Sisyphus Portfolio",
+    "messageTemplate": "You need a {{athDistancePercent}} return just to break even. Sisyphus had an easier time with his boulder.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_ABSOLUTE_RETURN_010",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Hemorrhaging Capital",
+    "messageTemplate": "Your portfolio has hemorrhaged {{currentDrawdownFromATH}} from the top. Today's {{portfolioReturnPercent}} is a placebo.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_GENERAL_MARKET_CHAOS_011",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Exposed By The Tide V2",
+    "messageTemplate": "The tide went out, and you were caught swimming naked, {{currentDrawdownFromATH}} below your peak.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_BENCHMARK_COMPARISON_012",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Cost Of Arrogance",
+    "messageTemplate": "Being {{currentDrawdownFromATH}} down is the cost of arrogance. {{benchmarkName}}'s {{benchmarkReturnPercent}} is the alternative you rejected.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_DRAWDOWN_STATUS_013",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Graveyard Of Gains",
+    "messageTemplate": "Your portfolio is the graveyard of its all-time high, currently buried {{currentDrawdownFromATH}} deep.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_ABSOLUTE_RETURN_014",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Vaporized Wealth",
+    "messageTemplate": "{{currentDrawdownFromATH}} of your peak wealth has vaporized. Today's {{portfolioReturnPercent}} won't condense it back.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_GENERAL_MARKET_CHAOS_015",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Crushed By Reality",
+    "messageTemplate": "You thought you had an edge, but you were crushed by reality, resulting in a {{currentDrawdownFromATH}} drawdown.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_BENCHMARK_COMPARISON_016",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Stupidity Tax",
+    "messageTemplate": "The {{currentDrawdownFromATH}} you lost from the peak is a stupidity tax. {{benchmarkName}} at {{benchmarkReturnPercent}} is tax-free.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_DRAWDOWN_STATUS_017",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "A Black Hole",
+    "messageTemplate": "Your portfolio is a {{currentDrawdownFromATH}} black hole. Light and capital cannot escape it.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_ABSOLUTE_RETURN_018",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "A Bitter Pill V2",
+    "messageTemplate": "Swallow the pill: you are {{currentDrawdownFromATH}} below your peak. Your {{portfolioReturnPercent}} return today is meaningless.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_GENERAL_MARKET_CHAOS_019",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Market Enforced Reality",
+    "messageTemplate": "The market has enforced a brutal reality check, dropping you {{currentDrawdownFromATH}} from your delusions.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_BENCHMARK_COMPARISON_020",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Comparative Disaster",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} down. Compare that disaster to {{benchmarkName}}'s {{benchmarkReturnPercent}}.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_DRAWDOWN_STATUS_021",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Distant Mirage V2",
+    "messageTemplate": "Your all-time high is a {{athDistancePercent}} mirage. You are stranded in the desert.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_ABSOLUTE_RETURN_022",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "A Harsh Correction V2",
+    "messageTemplate": "This {{currentDrawdownFromATH}} drop is a harsh correction of your inflated ego. Today's {{portfolioReturnPercent}} is irrelevant.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_GENERAL_MARKET_CHAOS_023",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Casino Wins",
+    "messageTemplate": "The market casino always wins, taking back {{currentDrawdownFromATH}} of your chips permanently.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_BENCHMARK_COMPARISON_024",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "The Index's Revenge V2",
+    "messageTemplate": "{{benchmarkName}} is getting revenge. You are {{currentDrawdownFromATH}} off your high, while it does {{benchmarkReturnPercent}}.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_brutal_DRAWDOWN_STATUS_025",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "A Masterclass In Wealth Destruction",
+    "messageTemplate": "You have masterfully lost {{currentDrawdownFromATH}} from your peak. A breathtaking display of incompetence.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Accept the reality of your current balance.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_DRAWDOWN_STATUS_001",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Holding The Heavy Bags",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} off the ATH. These bags are lead, anon. Lift with your knees.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_ABSOLUTE_RETURN_002",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Rekt By The Chop V2",
+    "messageTemplate": "Down {{currentDrawdownFromATH}} from the top. The chop is liquidating your soul. Today's {{portfolioReturnPercent}} is a trap.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_GENERAL_MARKET_CHAOS_003",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Orbital Nuke",
+    "messageTemplate": "The market dropped an orbital nuke on your portfolio. {{currentDrawdownFromATH}} down. NGMI.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_BENCHMARK_COMPARISON_004",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Boomers Laughing",
+    "messageTemplate": "You are {{currentDrawdownFromATH}} down while the boomer {{benchmarkName}} does {{benchmarkReturnPercent}}. The timeline is laughing at you.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_DRAWDOWN_STATUS_005",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The {{athDistancePercent}} Squeeze V2",
+    "messageTemplate": "You need a {{athDistancePercent}} god candle to survive. The copium tank is empty.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_ABSOLUTE_RETURN_006",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Liquidated Dreams V2",
+    "messageTemplate": "{{currentDrawdownFromATH}} of your peak net worth vanished. Staring at today's {{portfolioReturnPercent}} won't un-rekt you.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_GENERAL_MARKET_CHAOS_007",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "PvP Market Survior V2",
+    "messageTemplate": "The PvP market took {{currentDrawdownFromATH}} of your HP. Use a medkit before you get fully rugged.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_BENCHMARK_COMPARISON_008",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Chad Index Survives V2",
+    "messageTemplate": "The Chad {{benchmarkName}} printed {{benchmarkReturnPercent}} while your bags are {{currentDrawdownFromATH}} off the ATH. Brutal.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_DRAWDOWN_STATUS_009",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Down Horrendously",
+    "messageTemplate": "You are down horrendously. {{currentDrawdownFromATH}} off the high. Log off and go outside.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_ABSOLUTE_RETURN_010",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Fading The Top V2",
+    "messageTemplate": "You faded your own ATH by {{currentDrawdownFromATH}}. Today's {{portfolioReturnPercent}} is a fakeout.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_GENERAL_MARKET_CHAOS_011",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Ape Tears V2",
+    "messageTemplate": "The timeline is drowning in ape tears. You are {{currentDrawdownFromATH}} down from the absolute top.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_BENCHMARK_COMPARISON_012",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Tradfi Mockery V2",
+    "messageTemplate": "The tradfi {{benchmarkName}} is mocking your {{currentDrawdownFromATH}} drawdown with its {{benchmarkReturnPercent}}. Uninstall.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "benchmarkName",
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_DRAWDOWN_STATUS_013",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Copium Climb V2",
+    "messageTemplate": "Huffing raw copium hoping for a {{athDistancePercent}} pump to save you. Godspeed.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "athDistancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_ABSOLUTE_RETURN_014",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Wealth Deleted",
+    "messageTemplate": "You deleted {{currentDrawdownFromATH}} of wealth. At least you have a {{portfolioReturnPercent}} green candle today to look at.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_v2_degen_GENERAL_MARKET_CHAOS_015",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Bear Market Vibes V2",
+    "messageTemplate": "The vibes are terrible. You are {{currentDrawdownFromATH}} off the peak. Shut the laptop.",
+    "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
+    "suggestedFocusTemplate": "Touch grass and wait for the pump.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  }
+]

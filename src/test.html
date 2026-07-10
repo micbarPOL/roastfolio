@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chart Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Chart Test</h1>
+    <canvas id="investmentChart"></canvas>
+    <div id="debug"></div>
+    
+    <script>
+        async function testChart() {
+            const debug = document.getElementById('debug');
+            
+            try {
+                debug.innerHTML += '<p>Fetching CSV...</p>';
+                
+                const response = await fetch('./data/myfund.pl_Emerytura_wkladIWartosc.csv');
+                debug.innerHTML += '<p>Response status: ' + response.status + '</p>';
+                
+                const text = await response.text();
+                debug.innerHTML += '<p>Text length: ' + text.length + '</p>';
+                
+                const lines = text.trim().split('\n');
+                debug.innerHTML += '<p>Lines: ' + lines.length + '</p>';
+                
+                const data = [];
+                for (let i = 1; i < Math.min(lines.length, 100); i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = line.split(';');
+                    if (values.length >= 3) {
+                        const date = values[0].trim();
+                        const valueStr = values[1].trim();
+                        const investmentStr = values[2].trim();
+                        
+                        const value = parseFloat(valueStr.replace(',', '.'));
+                        const investment = parseFloat(investmentStr.replace(',', '.'));
+                        
+                        if (!isNaN(value) && !isNaN(investment)) {
+                            data.push({ date, value, investment });
+                        }
+                    }
+                }
+                
+                debug.innerHTML += '<p>Parsed: ' + data.length + ' records</p>';
+                debug.innerHTML += '<p>First record: ' + JSON.stringify(data[0]) + '</p>';
+                
+                if (data.length === 0) {
+                    debug.innerHTML += '<p style="color:red;">No data parsed!</p>';
+                    return;
+                }
+                
+                // Create chart
+                const ctx = document.getElementById('investmentChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => d.date),
+                        datasets: [{
+                            label: 'Value',
+                            data: data.map(d => d.value),
+                            borderColor: 'blue'
+                        }]
+                    }
+                });
+                
+                debug.innerHTML += '<p style="color:green;">Chart created!</p>';
+                
+            } catch (error) {
+                debug.innerHTML += '<p style="color:red;">Error: ' + error.message + '</p>';
+                console.error(error);
+            }
+        }
+        
+        testChart();
+    </script>
+</body>
+</html>

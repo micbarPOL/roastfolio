@@ -1,0 +1,36 @@
+version = 0.1
+
+# ── Production environment ────────────────────────────────────────
+# S3 bucket + CloudFront distribution are managed outside SAM.
+# DynamoDB tables and Lambda functions use unprefixed names.
+[default.deploy.parameters]
+stack_name = "micbarfund-backend"
+s3_bucket = "micbarfund-website"
+s3_prefix = "sam-artifacts"
+region = "us-west-2"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+parameter_overrides = "BucketName=\"micbarfund-website\" Environment=\"prod\""
+image_repositories = []
+
+[default.global.parameters]
+region = "us-west-2"
+
+# ── Development environment ───────────────────────────────────────
+# All resources are prefixed with "dev-". A private S3 bucket and
+# CloudFront distribution are created by the stack itself.
+# SAM build artifacts still go to the prod bucket (different prefix).
+[dev.deploy.parameters]
+stack_name = "micbarfund-backend-dev"
+s3_bucket = "micbarfund-website"
+s3_prefix = "sam-artifacts-dev"
+region = "us-west-2"
+confirm_changeset = false
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+parameter_overrides = "BucketName=\"micbarfund-website\" Environment=\"dev\""
+image_repositories = []
+
+[dev.global.parameters]
+region = "us-west-2"

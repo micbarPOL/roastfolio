@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Achievements — Roastfolio</title>
+    <meta name="theme-color" content="#080f18">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script>
+        (function() {
+            const theme = localStorage.getItem('roastfolio-theme') === 'light' ? 'light' : 'dark';
+            document.documentElement.dataset.theme = theme;
+            document.documentElement.style.colorScheme = theme;
+            const meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', theme === 'light' ? '#eef8ff' : '#080f18');
+        })();
+    </script>
+    <link rel="stylesheet" href="styles/main.css?v=20260625b">
+    <!-- Data pipeline (needed by xp-engine.js for real XP/badge calculation) -->
+    <script src="scripts/config.js" onerror="window.__CONFIG__={}"></script>
+    <script src="scripts/auth-guard.js"></script>
+    <script src="scripts/portfolios.js"></script>
+    <script src="scripts/ledger-transactions.js?v=20260514b"></script>
+    <script src="scripts/live-data.js?v=20260514b"></script>
+</head>
+<body class="ach-root">
+
+    <div class="ach-page">
+
+        <!-- ── Sticky header ──────────────────────────────── -->
+        <header class="ach-header">
+            <a href="index.html" class="ach-back-btn" aria-label="Back to portfolio">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"/>
+                    <polyline points="12 19 5 12 12 5"/>
+                </svg>
+            </a>
+            <span class="ach-header-title">Achievements</span>
+            <span class="ach-level-pill" id="ach-level-pill">—</span>
+        </header>
+
+        <!-- ── XP level card ──────────────────────────────── -->
+        <div class="ach-xp-card" id="ach-xp-card">
+            <div class="ach-xp-top">
+                <div class="ach-xp-left">
+                    <div class="ach-xp-level-name" id="ach-xp-level">—</div>
+                    <div class="ach-xp-sub" id="ach-xp-sub">Loading…</div>
+                </div>
+                <div class="ach-xp-right">
+                    <span class="ach-xp-number" id="ach-xp-number">0</span>
+                    <span class="ach-xp-unit">XP</span>
+                </div>
+            </div>
+            <div class="ach-xp-track"
+                 role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                <div class="ach-xp-fill" id="ach-xp-fill"></div>
+            </div>
+            <div class="ach-xp-levels" id="ach-xp-levels"></div>
+            <div class="ach-xp-breakdown-hint" id="ach-xp-breakdown-hint" style="display:none">Tap to see full XP breakdown</div>
+        </div>
+
+        <!-- ── Scrollable content ─────────────────────────── -->
+        <main class="ach-main">
+
+            <!-- Streaks ────────────────────────────────────── -->
+            <section class="ach-section">
+                <div class="ach-section-label">STREAKS</div>
+                <div class="ach-streaks-scroll" id="ach-streaks-scroll"
+                     aria-label="Active streaks"></div>
+            </section>
+
+            <!-- Portfolio milestones ────────────────────────── -->
+            <section class="ach-section">
+                <div class="ach-section-hdr">
+                    <div class="ach-section-label">PORTFOLIO MILESTONES</div>
+                    <div class="ach-mh-summary" id="ach-mh-summary"></div>
+                </div>
+                <div id="ach-milestone-timeline"></div>
+            </section>
+
+            <!-- Investor journey ───────────────────────────── -->
+            <section class="ach-section">
+                <div class="ach-section-hdr">
+                    <div class="ach-section-label">INVESTOR JOURNEY</div>
+                    <div class="ach-mh-summary" id="ach-journey-summary"></div>
+                </div>
+                <div id="ach-journey-timeline"></div>
+            </section>
+
+            <!-- Monthly deposit personal best ──────────────── -->
+            <section class="ach-section">
+                <div class="ach-section-hdr">
+                    <div class="ach-section-label">BEST MONTH</div>
+                    <div class="ach-mh-summary" id="ach-monthly-best-summary"></div>
+                </div>
+                <div id="ach-monthly-best-timeline"></div>
+            </section>
+
+            <!-- FIRE progress (only rendered if a plan is configured) ─── -->
+            <section class="ach-section" id="ach-fire-section" style="display:none">
+                <div class="ach-section-hdr">
+                    <div class="ach-section-label">FIRE PROGRESS</div>
+                    <div class="ach-mh-summary" id="ach-fire-summary"></div>
+                </div>
+                <div id="ach-fire-timeline"></div>
+            </section>
+
+            <!-- Achievements ───────────────────────────────── -->
+            <section class="ach-section">
+                <div class="ach-section-hdr">
+                    <div class="ach-section-label">ACHIEVEMENTS</div>
+                    <div class="ach-filter-row" role="tablist" aria-label="Filter achievements">
+                        <button class="ach-filter-btn is-active" data-filter="all"
+                                role="tab" aria-selected="true">All</button>
+                        <button class="ach-filter-btn" data-filter="unlocked"
+                                role="tab" aria-selected="false">Unlocked</button>
+                        <button class="ach-filter-btn" data-filter="locked"
+                                role="tab" aria-selected="false">Locked</button>
+                    </div>
+                </div>
+                <div class="ach-badges-grid" id="ach-badges-grid"
+                     aria-live="polite"></div>
+            </section>
+
+            <!-- Monthly recap ──────────────────────────────── -->
+            <section class="ach-section">
+                <div class="ach-section-label" id="ach-monthly-label">MONTH IN REVIEW</div>
+                <div id="ach-monthly-card"></div>
+            </section>
+
+        </main>
+    </div><!-- /.ach-page -->
+
+    <!-- ── Badge detail bottom sheet ─────────────────────── -->
+    <div class="ach-detail-overlay" id="ach-detail-overlay" aria-hidden="true">
+        <div class="ach-detail-backdrop" id="ach-detail-backdrop"></div>
+        <div class="ach-detail-sheet" id="ach-detail-sheet"
+             role="dialog" aria-modal="true" aria-labelledby="ach-detail-name">
+            <div class="ach-detail-handle"></div>
+            <div class="ach-detail-body" id="ach-detail-body"></div>
+        </div>
+    </div>
+
+    <!-- ── Celebration canvas (premium particles) ────────── -->
+    <canvas id="ach-celebrate-canvas" class="ach-celebrate-canvas" aria-hidden="true"></canvas>
+
+    <script src="scripts/roast-engine.js"></script>
+    <script src="scripts/xp-engine.js"></script>
+    <script src="scripts/achievements.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,438 @@
+[
+  {
+    "templateId": "user_negative_benchmark_positive_gentle_ABSOLUTE_RETURN_009",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "A Modest Red Line",
+    "messageTemplate": "{{portfolioDailyReturnAmount}} {{currency}} down while the benchmark rose is a little awkward, but not a personality flaw. Just a number asking to be understood.",
+    "mainReasonTemplate": "The portfolio lost money on a day when the benchmark was positive.",
+    "suggestedFocusTemplate": "Separate one-day movement from longer-term pattern before reacting emotionally.",
+    "requiredData": [
+      "currency",
+      "portfolioDailyReturnAmount"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Possible double negative with placeholders"
+    ]
+  },
+  {
+    "templateId": "user_negative_benchmark_positive_sarcastic_ABSOLUTE_RETURN_029",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Green Market, Red Output",
+    "messageTemplate": "Expected behavior: portfolio notices positive backdrop. Actual behavior: {{portfolioReturnPercent}}. Severity: aesthetically irritating.",
+    "mainReasonTemplate": "Portfolio performance was negative while the benchmark was positive.",
+    "suggestedFocusTemplate": "Debug which holding or wallet failed the day\u2019s positive test.",
+    "requiredData": [
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Message sounds procedurally generated"
+    ]
+  },
+  {
+    "templateId": "user_negative_benchmark_positive_sarcastic_BENCHMARK_COMPARISON_033",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "ANALYST_NOTE",
+    "metaphorCategory": "SPREADSHEET",
+    "titleTemplate": "Cells Disagree Politely",
+    "messageTemplate": "Cell one says {{benchmarkName}}: {{benchmarkReturnPercent}}. Cell two says portfolio: {{portfolioReturnPercent}}. The spreadsheet remains neutral, which is more than the result deserves.",
+    "mainReasonTemplate": "The benchmark and portfolio moved in opposite directions.",
+    "suggestedFocusTemplate": "Look beyond headline return and inspect position-level impact.",
+    "requiredData": [
+      "benchmarkName",
+      "benchmarkReturnPercent",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Message too long for dashboard card (> 180 chars)"
+    ]
+  },
+  {
+    "templateId": "user_negative_benchmark_positive_sarcastic_ABSOLUTE_RETURN_035",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "The Statement Blinks Twice",
+    "messageTemplate": "{{portfolioDailyReturnAmount}} {{currency}} down while the index smiles is a tasteful little reprimand from arithmetic.",
+    "mainReasonTemplate": "The daily amount was negative while the benchmark produced a gain.",
+    "suggestedFocusTemplate": "Review whether one wallet or asset drove most of the loss.",
+    "requiredData": [
+      "currency",
+      "portfolioDailyReturnAmount"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Possible double negative with placeholders"
+    ]
+  },
+  {
+    "templateId": "user_negative_benchmark_positive_sarcastic_ABSOLUTE_RETURN_047",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Green Day, Red Memo",
+    "messageTemplate": "Incident logged: portfolio at {{portfolioReturnPercent}} during positive benchmark conditions. Root cause still prefers not to answer emails.",
+    "mainReasonTemplate": "The portfolio return was negative while market context was positive.",
+    "suggestedFocusTemplate": "Identify whether the loss came from one position, one wallet, or broad drift.",
+    "requiredData": [
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Message sounds procedurally generated"
+    ]
+  },
+  {
+    "templateId": "user_negative_benchmark_positive_degen_ABSOLUTE_RETURN_094",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "degen",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "TRANSPORT",
+    "titleTemplate": "Portfolio Took The Wrong Elevator",
+    "messageTemplate": "{{portfolioDailyReturnAmount}} {{currency}} down while the benchmark went up. Same building, wrong button, very loud silence.",
+    "mainReasonTemplate": "The portfolio lost value despite positive benchmark movement.",
+    "suggestedFocusTemplate": "Review which position pressed the wrong floor.",
+    "requiredData": [
+      "currency",
+      "portfolioDailyReturnAmount"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Possible double negative with placeholders"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_ABSOLUTE_RETURN_6",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "STATUS_UPDATE",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "A Stellar Quarter",
+    "messageTemplate": "Today's {{portfolioReturnPercent}}% gain was enough to put you at a brand new all-time high.",
+    "mainReasonTemplate": "Consistent progress pays off.",
+    "suggestedFocusTemplate": "Keep up the good work.",
+    "requiredData": [
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_GENERAL_MARKET_CHAOS_8",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Defying the Elements",
+    "messageTemplate": "While the market had mixed reactions today, your portfolio quietly reached a new all-time high.",
+    "mainReasonTemplate": "You navigated the environment successfully.",
+    "suggestedFocusTemplate": "A solid achievement.",
+    "requiredData": [],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_ATH_STATUS_9",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "A Wonderful Milestone",
+    "messageTemplate": "I am pleased to inform you that your balance of {{currency}}{{totalPortfolioValue}} is a new all-time high.",
+    "mainReasonTemplate": "A very rewarding milestone.",
+    "suggestedFocusTemplate": "We are thrilled with this progress.",
+    "requiredData": [
+      "totalPortfolioValue",
+      "currency"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_BEST_ASSET_15",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "BEST_ASSET",
+    "structureFamily": "COURTROOM_VERDICT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "A Favorable Ruling",
+    "messageTemplate": "Thanks to strong testimony from {{dailyBestAsset}}, the court recognizes your new all-time high.",
+    "mainReasonTemplate": "The evidence of your success is indisputable.",
+    "suggestedFocusTemplate": "Case closed with a win.",
+    "requiredData": [
+      "dailyBestAsset"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_GENERAL_MARKET_CHAOS_16",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "DIRECT_COMPARISON",
+    "metaphorCategory": "REALITY_TV",
+    "titleTemplate": "Rising Above the Drama",
+    "messageTemplate": "The market had its drama today, but you rose above it to claim a new all-time high.",
+    "mainReasonTemplate": "You stayed focused on the prize.",
+    "suggestedFocusTemplate": "A graceful victory.",
+    "requiredData": [],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_BEST_ASSET_19",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "BEST_ASSET",
+    "structureFamily": "SPORTS_COMMENTARY",
+    "metaphorCategory": "SPORTS",
+    "titleTemplate": "The Winning Goal",
+    "messageTemplate": "{{dailyBestAsset}} scored the winning goal today to secure your new all-time high.",
+    "mainReasonTemplate": "An excellent play when it counted most.",
+    "suggestedFocusTemplate": "Cheer for the team.",
+    "requiredData": [
+      "dailyBestAsset"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_GENERAL_MARKET_CHAOS_20",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "System Upgrade",
+    "messageTemplate": "Despite some minor market bugs, your portfolio successfully upgraded to a new all-time high.",
+    "mainReasonTemplate": "The new version is running perfectly.",
+    "suggestedFocusTemplate": "Enjoy the new features.",
+    "requiredData": [],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_ABSOLUTE_RETURN_22",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Portfolio Growth",
+    "messageTemplate": "A solid {{portfolioReturnPercent}}% daily gain has successfully carried you to a new all-time high.",
+    "mainReasonTemplate": "Your strategy is yielding excellent results.",
+    "suggestedFocusTemplate": "A very good day.",
+    "requiredData": [
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_gentle_GENERAL_MARKET_CHAOS_24",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "EMERGENCY_BROADCAST",
+    "metaphorCategory": "TRANSPORT",
+    "titleTemplate": "A Smooth Landing",
+    "messageTemplate": "We navigated through the market noise and landed smoothly at a brand new all-time high.",
+    "mainReasonTemplate": "An excellent flight today.",
+    "suggestedFocusTemplate": "Welcome to the peak.",
+    "requiredData": [],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_sarcastic_ATH_STATUS_31",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Brief Competence",
+    "messageTemplate": "You hit a new all-time high of {{currency}}{{totalPortfolioValue}}. My spreadsheet has lit a tiny, reluctant ceremonial candle.",
+    "mainReasonTemplate": "You finally did something right.",
+    "suggestedFocusTemplate": "Don't get used to it.",
+    "requiredData": [
+      "totalPortfolioValue",
+      "currency"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_sarcastic_GENERAL_MARKET_CHAOS_34",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "WEATHER_REPORT",
+    "metaphorCategory": "WEATHER",
+    "titleTemplate": "Accidental Success",
+    "messageTemplate": "The market was chaotic, yet you stumbled blindly into a new all-time high.",
+    "mainReasonTemplate": "Even a blind squirrel finds a nut.",
+    "suggestedFocusTemplate": "Pretend you planned it.",
+    "requiredData": [],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_sarcastic_GENERAL_MARKET_CHAOS_38",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "GENERAL_MARKET_CHAOS",
+    "structureFamily": "EMERGENCY_BROADCAST",
+    "metaphorCategory": "TRANSPORT",
+    "titleTemplate": "Failed to Crash",
+    "messageTemplate": "Despite market turbulence, you failed to crash today and instead hit a new all-time high.",
+    "mainReasonTemplate": "A very disappointing day for the bears.",
+    "suggestedFocusTemplate": "Cancel the emergency landing.",
+    "requiredData": [],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_sarcastic_ABSOLUTE_RETURN_44",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "ANALYST_NOTE",
+    "metaphorCategory": "SPREADSHEET",
+    "titleTemplate": "Reluctant Validation",
+    "messageTemplate": "A {{portfolioReturnPercent}}% return. My spreadsheet is reluctantly validating your new all-time high.",
+    "mainReasonTemplate": "The math checks out, unfortunately.",
+    "suggestedFocusTemplate": "I'll update the charts.",
+    "requiredData": [
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase",
+      "Highly repeated punchline structure"
+    ]
+  },
+  {
+    "templateId": "new_ath_day_sarcastic_BEST_ASSET_45",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "BEST_ASSET",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Unwarranted Success",
+    "messageTemplate": "You hit a new all-time high solely because {{dailyBestAsset}} bailed you out again.",
+    "mainReasonTemplate": "This success feels highly unwarranted.",
+    "suggestedFocusTemplate": "File it under 'luck'.",
+    "requiredData": [
+      "dailyBestAsset"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase"
+    ]
+  }
+]

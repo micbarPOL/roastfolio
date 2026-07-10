@@ -1,0 +1,1020 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: "Emerytura investment dashboard \u2014 Lambda + API Gateway + Cognito"
+Globals:
+  Function:
+    Timeout: 60
+    MemorySize: 512
+    Runtime: python3.12
+Parameters:
+  BucketName:
+    Type: String
+    Default: micbarfund-website
+    Description: Existing S3 bucket for SAM artifacts and prod static files
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+    - prod
+    - dev
+    Description: "Deployment environment \u2014 prod uses existing bucket/CF, dev\
+      \ creates isolated stack"
+Conditions:
+  IsDev:
+    Fn::Equals:
+    - Ref: Environment
+    - dev
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-users
+        - roastfolio-users
+      UsernameAttributes:
+      - email
+      AutoVerifiedAttributes:
+      - email
+      Schema:
+      - Name: email
+        AttributeDataType: String
+        Required: true
+        Mutable: false
+      - Name: nickname
+        AttributeDataType: String
+        Required: true
+        Mutable: true
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 6
+          RequireUppercase: false
+          RequireLowercase: false
+          RequireNumbers: false
+          RequireSymbols: false
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+        - Name: verified_email
+          Priority: 1
+      UserPoolAddOns:
+        AdvancedSecurityMode: 'OFF'
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      VerificationMessageTemplate:
+        DefaultEmailOption: CONFIRM_WITH_CODE
+        EmailSubject: "Roastfolio \u2014 verify your email"
+        EmailMessage: 'Welcome to Roastfolio!
+
+
+          Your verification code is: {####}
+
+
+          If you didn''t create this account, you can safely ignore this email.
+
+          '
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: false
+      LambdaConfig:
+        PostConfirmation:
+          Fn::GetAtt:
+          - TriggerFunction
+          - Arn
+    Metadata:
+      SamResourceId: UserPool
+  TriggerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-cognito-trigger
+        - roastfolio-cognito-trigger
+      CodeUri: s3://micbarfund-website/sam-artifacts-dev/be8f1b5474b85983d199d4ab7676b804
+      Handler: trigger.handler
+      Description: "Cognito PostConfirmation trigger \u2014 creates DynamoDB user\
+        \ profile"
+      Timeout: 10
+      MemorySize: 128
+      Environment:
+        Variables:
+          USERS_TABLE:
+            Ref: UsersTable
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:PutItem
+          Resource:
+            Fn::GetAtt:
+            - UsersTable
+            - Arn
+    Metadata:
+      SamResourceId: TriggerFunction
+  TriggerFunctionCognitoPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::GetAtt:
+        - TriggerFunction
+        - Arn
+      Action: lambda:InvokeFunction
+      Principal: cognito-idp.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - UserPool
+        - Arn
+    Metadata:
+      SamResourceId: TriggerFunctionCognitoPermission
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: roastfolio-web-client
+      UserPoolId:
+        Ref: UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+      - ALLOW_USER_SRP_AUTH
+      - ALLOW_REFRESH_TOKEN_AUTH
+      PreventUserExistenceErrors: ENABLED
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+      AccessTokenValidity: 24
+      IdTokenValidity: 24
+      RefreshTokenValidity: 30
+      SupportedIdentityProviders:
+      - COGNITO
+    Metadata:
+      SamResourceId: UserPoolClient
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-users
+        - roastfolio-users
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+      - AttributeName: userId
+        AttributeType: S
+      - AttributeName: email
+        AttributeType: S
+      KeySchema:
+      - AttributeName: userId
+        KeyType: HASH
+      GlobalSecondaryIndexes:
+      - IndexName: email-index
+        KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+        Projection:
+          ProjectionType: INCLUDE
+          NonKeyAttributes:
+          - userId
+          - nickname
+    Metadata:
+      SamResourceId: UsersTable
+  DataTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-data
+        - roastfolio-data
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+      - AttributeName: userId
+        AttributeType: S
+      - AttributeName: sk
+        AttributeType: S
+      KeySchema:
+      - AttributeName: userId
+        KeyType: HASH
+      - AttributeName: sk
+        KeyType: RANGE
+    Metadata:
+      SamResourceId: DataTable
+  TransactionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-transactions
+        - roastfolio-transactions
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+      - AttributeName: userId
+        AttributeType: S
+      - AttributeName: sk
+        AttributeType: S
+      KeySchema:
+      - AttributeName: userId
+        KeyType: HASH
+      - AttributeName: sk
+        KeyType: RANGE
+    Metadata:
+      SamResourceId: TransactionsTable
+  SnapshotsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-snapshots
+        - roastfolio-snapshots
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+      - AttributeName: userId
+        AttributeType: S
+      - AttributeName: sk
+        AttributeType: S
+      KeySchema:
+      - AttributeName: userId
+        KeyType: HASH
+      - AttributeName: sk
+        KeyType: RANGE
+    Metadata:
+      SamResourceId: SnapshotsTable
+  RetirementPlansTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-retirement-plans
+        - roastfolio-retirement-plans
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+      - AttributeName: userId
+        AttributeType: S
+      - AttributeName: sk
+        AttributeType: S
+      KeySchema:
+      - AttributeName: userId
+        KeyType: HASH
+      - AttributeName: sk
+        KeyType: RANGE
+    Metadata:
+      SamResourceId: RetirementPlansTable
+  PricesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::If:
+        - IsDev
+        - dev-emerytura-live-prices
+        - emerytura-live-prices
+      CodeUri: s3://micbarfund-website/sam-artifacts-dev/be8f1b5474b85983d199d4ab7676b804
+      Handler: handler.handler
+      Description: Live prices, user portfolios, holdings CRUD
+      Environment:
+        Variables:
+          CACHE_BUCKET:
+            Fn::If:
+            - IsDev
+            - Ref: DevStaticBucket
+            - Ref: BucketName
+          USERS_TABLE:
+            Ref: UsersTable
+          DATA_TABLE:
+            Ref: DataTable
+          TRANSACTIONS_TABLE:
+            Ref: TransactionsTable
+          SNAPSHOTS_TABLE:
+            Ref: SnapshotsTable
+          RETIREMENT_TABLE:
+            Ref: RetirementPlansTable
+          ADVANCED_USER_EMAILS: michal.bardadyn@gmail.com,michal.bardadyn@syncron.com
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+          - s3:GetObject
+          - s3:PutObject
+          - s3:DeleteObject
+          - s3:ListBucket
+          Resource:
+          - Fn::If:
+            - IsDev
+            - Fn::GetAtt:
+              - DevStaticBucket
+              - Arn
+            - Fn::Sub: arn:aws:s3:::${BucketName}
+          - Fn::If:
+            - IsDev
+            - Fn::Sub: ${DevStaticBucket.Arn}/*
+            - Fn::Sub: arn:aws:s3:::${BucketName}/*
+        - Effect: Allow
+          Action:
+          - dynamodb:BatchWriteItem
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+          - dynamodb:Scan
+          Resource:
+          - Fn::GetAtt:
+            - UsersTable
+            - Arn
+          - Fn::Sub: ${UsersTable.Arn}/index/email-index
+        - Effect: Allow
+          Action:
+          - dynamodb:BatchWriteItem
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+          - dynamodb:TransactWriteItems
+          Resource:
+          - Fn::GetAtt:
+            - DataTable
+            - Arn
+        - Effect: Allow
+          Action:
+          - dynamodb:BatchWriteItem
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+          - dynamodb:TransactWriteItems
+          Resource:
+          - Fn::GetAtt:
+            - TransactionsTable
+            - Arn
+        - Effect: Allow
+          Action:
+          - dynamodb:BatchWriteItem
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+          Resource:
+          - Fn::GetAtt:
+            - SnapshotsTable
+            - Arn
+        - Effect: Allow
+          Action:
+          - dynamodb:BatchWriteItem
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+          Resource:
+          - Fn::GetAtt:
+            - RetirementPlansTable
+            - Arn
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Path: /prices
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        ApiOptions:
+          Type: Api
+          Properties:
+            Path: /prices
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        WidgetGet:
+          Type: Api
+          Properties:
+            Path: /widget
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        WidgetOptions:
+          Type: Api
+          Properties:
+            Path: /widget
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        ProfileGet:
+          Type: Api
+          Properties:
+            Path: /profile
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        ProfilePut:
+          Type: Api
+          Properties:
+            Path: /profile
+            Method: PUT
+            RestApiId:
+              Ref: PricesApi
+        ProfileDelete:
+          Type: Api
+          Properties:
+            Path: /profile
+            Method: DELETE
+            RestApiId:
+              Ref: PricesApi
+        ProfileOptions:
+          Type: Api
+          Properties:
+            Path: /profile
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        PortfoliosGet:
+          Type: Api
+          Properties:
+            Path: /portfolios
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        PortfoliosPut:
+          Type: Api
+          Properties:
+            Path: /portfolios
+            Method: PUT
+            RestApiId:
+              Ref: PricesApi
+        PortfoliosOptions:
+          Type: Api
+          Properties:
+            Path: /portfolios
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        PortfolioGet:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        PortfolioDelete:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}
+            Method: DELETE
+            RestApiId:
+              Ref: PricesApi
+        PortfolioItemOptions:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        HoldingsGet:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/holdings
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        HoldingsPut:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/holdings
+            Method: PUT
+            RestApiId:
+              Ref: PricesApi
+        HoldingsOptions:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/holdings
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        TransactionsGet:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/transactions
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        TransactionsPost:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/transactions
+            Method: POST
+            RestApiId:
+              Ref: PricesApi
+        TransactionsOptions:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/transactions
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        SnapshotsGet:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/snapshots
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        SnapshotsOptions:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/snapshots
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        PortfolioAthGet:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/ath
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        PortfolioAthPut:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/ath
+            Method: PUT
+            RestApiId:
+              Ref: PricesApi
+        PortfolioAthOptions:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/ath
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        HoldingDelete:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/holdings/{holdingId}
+            Method: DELETE
+            RestApiId:
+              Ref: PricesApi
+        HoldingItemOptions:
+          Type: Api
+          Properties:
+            Path: /portfolios/{portfolioId}/holdings/{holdingId}
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        MigratePost:
+          Type: Api
+          Properties:
+            Path: /migrate
+            Method: POST
+            RestApiId:
+              Ref: PricesApi
+        MigrateOptions:
+          Type: Api
+          Properties:
+            Path: /migrate
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        SearchGet:
+          Type: Api
+          Properties:
+            Path: /search
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        SearchOptions:
+          Type: Api
+          Properties:
+            Path: /search
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        BenchmarkReturnsGet:
+          Type: Api
+          Properties:
+            Path: /benchmark-returns
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        BenchmarkReturnsOptions:
+          Type: Api
+          Properties:
+            Path: /benchmark-returns
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        BenchmarksGet:
+          Type: Api
+          Properties:
+            Path: /benchmarks
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        BenchmarksOptions:
+          Type: Api
+          Properties:
+            Path: /benchmarks
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        RetirementPlansGet:
+          Type: Api
+          Properties:
+            Path: /retirement-plans
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        RetirementPlansPut:
+          Type: Api
+          Properties:
+            Path: /retirement-plans
+            Method: PUT
+            RestApiId:
+              Ref: PricesApi
+        RetirementPlansOptions:
+          Type: Api
+          Properties:
+            Path: /retirement-plans
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        RetirementPlanGet:
+          Type: Api
+          Properties:
+            Path: /retirement-plans/{planId}
+            Method: GET
+            RestApiId:
+              Ref: PricesApi
+        RetirementPlanDelete:
+          Type: Api
+          Properties:
+            Path: /retirement-plans/{planId}
+            Method: DELETE
+            RestApiId:
+              Ref: PricesApi
+        RetirementPlanOptions:
+          Type: Api
+          Properties:
+            Path: /retirement-plans/{planId}
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+        RetirementPlanSimulate:
+          Type: Api
+          Properties:
+            Path: /retirement-plans/{planId}/simulate
+            Method: POST
+            RestApiId:
+              Ref: PricesApi
+        RetirementPlanSimulateOptions:
+          Type: Api
+          Properties:
+            Path: /retirement-plans/{planId}/simulate
+            Method: OPTIONS
+            RestApiId:
+              Ref: PricesApi
+    Metadata:
+      SamResourceId: PricesFunction
+  BenchmarkFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-benchmark-monthly
+        - roastfolio-benchmark-monthly
+      CodeUri: s3://micbarfund-website/sam-artifacts-dev/be8f1b5474b85983d199d4ab7676b804
+      Handler: benchmark_returns.handler
+      Description: "Monthly benchmark return calculator \u2014 saves end-of-month\
+        \ returns to DynamoDB"
+      Timeout: 300
+      MemorySize: 512
+      Environment:
+        Variables:
+          SNAPSHOTS_TABLE:
+            Ref: SnapshotsTable
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:Query
+          Resource:
+          - Fn::GetAtt:
+            - SnapshotsTable
+            - Arn
+    Metadata:
+      SamResourceId: BenchmarkFunction
+  BenchmarkScheduleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: scheduler.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: InvokeBenchmarkFunction
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: lambda:InvokeFunction
+            Resource:
+              Fn::GetAtt:
+              - BenchmarkFunction
+              - Arn
+    Metadata:
+      SamResourceId: BenchmarkScheduleRole
+  BenchmarkSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-benchmark-monthly-update
+        - roastfolio-benchmark-monthly-update
+      Description: "Monthly benchmark return update \u2014 runs on day 2 of each month\
+        \ at 01:00 Warsaw"
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      ScheduleExpression: cron(0 1 2 * ? *)
+      ScheduleExpressionTimezone: Europe/Warsaw
+      Target:
+        Arn:
+          Fn::GetAtt:
+          - BenchmarkFunction
+          - Arn
+        RoleArn:
+          Fn::GetAtt:
+          - BenchmarkScheduleRole
+          - Arn
+        Input: '{"action": "update"}'
+    Metadata:
+      SamResourceId: BenchmarkSchedule
+  SnapshotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-daily-snapshots
+        - roastfolio-daily-snapshots
+      CodeUri: s3://micbarfund-website/sam-artifacts-dev/be8f1b5474b85983d199d4ab7676b804
+      Handler: snapshots.handler
+      Description: Nightly portfolio snapshots and ATH updater
+      Environment:
+        Variables:
+          USERS_TABLE:
+            Ref: UsersTable
+          DATA_TABLE:
+            Ref: DataTable
+          TRANSACTIONS_TABLE:
+            Ref: TransactionsTable
+          SNAPSHOTS_TABLE:
+            Ref: SnapshotsTable
+      Policies:
+      - Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+          - dynamodb:Scan
+          Resource:
+          - Fn::GetAtt:
+            - UsersTable
+            - Arn
+          - Fn::Sub: ${UsersTable.Arn}/index/email-index
+          - Fn::GetAtt:
+            - DataTable
+            - Arn
+          - Fn::GetAtt:
+            - TransactionsTable
+            - Arn
+          - Fn::GetAtt:
+            - SnapshotsTable
+            - Arn
+    Metadata:
+      SamResourceId: SnapshotFunction
+  SnapshotScheduleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: scheduler.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: InvokeSnapshotFunction
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action: lambda:InvokeFunction
+            Resource:
+              Fn::GetAtt:
+              - SnapshotFunction
+              - Arn
+    Metadata:
+      SamResourceId: SnapshotScheduleRole
+  SnapshotSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name:
+        Fn::If:
+        - IsDev
+        - dev-roastfolio-daily-snapshots-midnight-warsaw
+        - roastfolio-daily-snapshots-midnight-warsaw
+      Description: Daily portfolio close snapshots and ATH update
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      ScheduleExpression: cron(0 0 * * ? *)
+      ScheduleExpressionTimezone: Europe/Warsaw
+      Target:
+        Arn:
+          Fn::GetAtt:
+          - SnapshotFunction
+          - Arn
+        RoleArn:
+          Fn::GetAtt:
+          - SnapshotScheduleRole
+          - Arn
+        Input: '{"overwrite": false}'
+    Metadata:
+      SamResourceId: SnapshotSchedule
+  DevStaticBucket:
+    Type: AWS::S3::Bucket
+    Condition: IsDev
+    Properties:
+      BucketName:
+        Fn::Sub: micbarfund-website-dev-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    Metadata:
+      SamResourceId: DevStaticBucket
+  DevCloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Condition: IsDev
+    Properties:
+      OriginAccessControlConfig:
+        Name: roastfolio-dev-oac
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+    Metadata:
+      SamResourceId: DevCloudFrontOAC
+  DevCloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Condition: IsDev
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        HttpVersion: http2
+        Origins:
+        - Id: DevS3Origin
+          DomainName:
+            Fn::GetAtt:
+            - DevStaticBucket
+            - RegionalDomainName
+          S3OriginConfig:
+            OriginAccessIdentity: ''
+          OriginAccessControlId:
+            Fn::GetAtt:
+            - DevCloudFrontOAC
+            - Id
+        DefaultCacheBehavior:
+          TargetOriginId: DevS3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          AllowedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+          CachedMethods:
+          - GET
+          - HEAD
+          Compress: true
+        CustomErrorResponses:
+        - ErrorCode: 403
+          ResponseCode: 200
+          ResponsePagePath: /index.html
+          ErrorCachingMinTTL: 0
+        - ErrorCode: 404
+          ResponseCode: 200
+          ResponsePagePath: /index.html
+          ErrorCachingMinTTL: 0
+    Metadata:
+      SamResourceId: DevCloudFrontDistribution
+  DevStaticBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: IsDev
+    Properties:
+      Bucket:
+        Ref: DevStaticBucket
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Action: s3:GetObject
+          Resource:
+            Fn::Sub: ${DevStaticBucket.Arn}/*
+          Condition:
+            StringEquals:
+              AWS:SourceArn:
+                Fn::Sub: arn:aws:cloudfront::${AWS::AccountId}:distribution/${DevCloudFrontDistribution}
+    Metadata:
+      SamResourceId: DevStaticBucketPolicy
+  PricesApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name:
+        Fn::If:
+        - IsDev
+        - dev-emerytura-prices-api
+        - emerytura-prices-api
+      StageName: prod
+      Cors:
+        AllowMethods: '''GET,PUT,POST,DELETE,OPTIONS'''
+        AllowHeaders: '''Content-Type,Authorization'''
+        AllowOrigin: '''*'''
+    Metadata:
+      SamResourceId: PricesApi
+Outputs:
+  ApiEndpoint:
+    Description: Live prices API URL
+    Value:
+      Fn::Sub: https://${PricesApi}.execute-api.${AWS::Region}.amazonaws.com/prod/prices
+  WidgetEndpoint:
+    Description: Lightweight widget API URL
+    Value:
+      Fn::Sub: https://${PricesApi}.execute-api.${AWS::Region}.amazonaws.com/prod/widget
+  ProfileEndpoint:
+    Description: User profile CRUD endpoint
+    Value:
+      Fn::Sub: https://${PricesApi}.execute-api.${AWS::Region}.amazonaws.com/prod/profile
+  PortfoliosEndpoint:
+    Description: Portfolios + holdings CRUD endpoint
+    Value:
+      Fn::Sub: https://${PricesApi}.execute-api.${AWS::Region}.amazonaws.com/prod/portfolios
+  UsersTableName:
+    Description: DynamoDB users table name
+    Value:
+      Ref: UsersTable
+  DataTableName:
+    Description: DynamoDB portfolios + holdings table name
+    Value:
+      Ref: DataTable
+  TransactionsTableName:
+    Description: DynamoDB portfolio transactions table name
+    Value:
+      Ref: TransactionsTable
+  SnapshotsTableName:
+    Description: DynamoDB portfolio snapshots table name
+    Value:
+      Ref: SnapshotsTable
+  UserPoolId:
+    Description: "Cognito User Pool ID \u2014 written to config.js by deploy.sh"
+    Value:
+      Ref: UserPool
+  UserPoolClientId:
+    Description: "Cognito App Client ID (public, no secret) \u2014 written to config.js\
+      \ by deploy.sh"
+    Value:
+      Ref: UserPoolClient
+  DevCloudFrontDomain:
+    Condition: IsDev
+    Description: "Dev CloudFront domain \u2014 use as the app URL for the dev environment"
+    Value:
+      Fn::GetAtt:
+      - DevCloudFrontDistribution
+      - DomainName
+  DevStaticBucketName:
+    Condition: IsDev
+    Description: "Dev S3 bucket name \u2014 upload static files here via deploy.sh"
+    Value:
+      Ref: DevStaticBucket

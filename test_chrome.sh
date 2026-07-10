@@ -1,0 +1,15 @@
+curl -v 'https://f49clnr1qf.execute-api.us-west-2.amazonaws.com/prod/portfolios/xtb/transactions?limit=1000' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-encoding: gzip, deflate, br, zstd' \
+  -H 'accept-language: en-US,en;q=0.9,pl;q=0.8' \
+  -H 'authorization: Bearer eyJhbGciOiJub25lIn0.eyJzdWIiOiJlODIxNTNiMC0xMGQxLTcwYzctZGFiOS04MjRkNjAxNmJlODIifQ.' \
+  -H 'origin: https://roastfolio.app' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://roastfolio.app/' \
+  -H 'sec-ch-ua: "Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: cross-site' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'

@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <title>Roastfolio — Sign In</title>
+
+    <meta name="theme-color" content="#080f1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Roastfolio">
+
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png">
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Design tokens ─────────────────────────────────────── */
+        :root {
+            --c-bg:           #080f1a;
+            --c-surface:      #0e1f35;
+            --c-surface-2:    #132843;
+            --c-border:       rgba(82, 165, 220, 0.14);
+            --c-border-focus: rgba(82, 165, 220, 0.55);
+            --c-accent:       #3a9fd4;
+            --c-accent-hover: #5ab8ea;
+            --c-accent-glow:  rgba(58, 159, 212, 0.22);
+            --c-text:         #e2f0fb;
+            --c-text-soft:    #7fb2d3;
+            --c-text-muted:   rgba(127, 178, 211, 0.5);
+            --c-input-bg:     rgba(255, 255, 255, 0.04);
+            --c-danger:       #e05555;
+            --c-danger-bg:    rgba(224, 85, 85, 0.1);
+            --c-danger-border:rgba(224, 85, 85, 0.3);
+            --c-ok:           #3dd68c;
+            --c-ok-bg:        rgba(61, 214, 140, 0.1);
+            --c-ok-border:    rgba(61, 214, 140, 0.3);
+            --radius-card:    22px;
+            --radius-input:   12px;
+            --radius-btn:     12px;
+            --font:           -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+            --font-mono:      "SF Mono", "Fira Code", Consolas, monospace;
+            --shadow-card:    0 32px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--c-border);
+            --transition:     0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ── Base ──────────────────────────────────────────────── */
+        html { height: 100%; }
+
+        body {
+            font-family: var(--font);
+            background: var(--c-bg);
+            color: var(--c-text);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: max(env(safe-area-inset-top), 24px) 16px
+                     max(env(safe-area-inset-bottom), 24px);
+            overflow-x: hidden;
+        }
+
+        /* ── Animated mesh background ──────────────────────────── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 10%,  rgba(58,159,212,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%,  rgba(22, 90,160,0.10) 0%, transparent 55%),
+                radial-gradient(ellipse 40% 40% at 50% 40%,  rgba(10,30,60,0.8)    0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Subtle animated orb */
+        body::after {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(58,159,212,0.06) 0%, transparent 70%);
+            top: -200px;
+            left: -200px;
+            pointer-events: none;
+            z-index: 0;
+            animation: orbFloat 12s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33%       { transform: translate(120px, 80px); }
+            66%       { transform: translate(-60px, 140px); }
+        }
+
+        /* ── Shell: brand + card ───────────────────────────────── */
+        .auth-shell {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+        }
+
+        /* ── Brand ─────────────────────────────────────────────── */
+        .auth-brand {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .auth-logo-wrap {
+            position: relative;
+            width: 72px;
+            height: 72px;
+        }
+
+        .auth-logo-wrap::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 28px;
+            background: var(--c-accent-glow);
+            filter: blur(12px);
+            opacity: 0;
+            transition: opacity 0.6s;
+        }
+
+        .auth-logo-wrap:hover::before { opacity: 1; }
+
+        .auth-logo {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            display: block;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(82,165,220,0.15);
+        }
+
+        .auth-brand-name {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--c-text);
+        }
+
+        .auth-brand-tagline {
+            font-size: 13px;
+            color: var(--c-text-muted);
+            letter-spacing: 0.01em;
+        }
+
+        /* ── Card ──────────────────────────────────────────────── */
+        .auth-card {
+            width: 100%;
+            background: var(--c-surface);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Top accent line */
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(82,165,220,0.4) 30%,
+                rgba(82,165,220,0.7) 50%,
+                rgba(82,165,220,0.4) 70%,
+                transparent 100%);
+        }
+
+        /* ── View container (overflow clip for slide animation) ─ */
+        .auth-views {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Individual view ───────────────────────────────────── */
+        .auth-view {
+            display: none;
+            padding: 32px 28px 28px;
+            opacity: 0;
+            transform: translateX(18px);
+            transition: opacity var(--transition), transform var(--transition);
+            will-change: opacity, transform;
+        }
+
+        .auth-view.active {
+            display: block;
+            opacity: 1;
+            transform: translateX(0);
+            animation: viewIn var(--transition) forwards;
+        }
+
+        .auth-view.exit-left {
+            animation: viewOutLeft var(--transition) forwards;
+        }
+
+        .auth-view.enter-right {
+            animation: viewInRight var(--transition) forwards;
+        }
+
+        @keyframes viewIn {
+            from { opacity: 0; transform: translateX(18px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes viewInRight {
+            from { opacity: 0; transform: translateX(-18px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes viewOutLeft {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(-18px); }
+        }
+
+        /* ── View header ───────────────────────────────────────── */
+        .auth-view-header {
+            margin-bottom: 24px;
+        }
+
+        .auth-view-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .auth-title {
+            font-size: 21px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: var(--c-text);
+            margin-bottom: 4px;
+        }
+
+        .auth-subtitle {
+            font-size: 13.5px;
+            color: var(--c-text-soft);
+            line-height: 1.55;
+        }
+
+        /* ── Alert messages ────────────────────────────────────── */
+        .auth-message {
+            display: none;
+            padding: 11px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+            animation: msgIn 0.22s ease;
+        }
+
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-message.error {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            background: var(--c-danger-bg);
+            border: 1px solid var(--c-danger-border);
+            color: #f9a8a8;
+        }
+
+        .auth-message.error::before { content: '⚠'; flex-shrink: 0; margin-top: 1px; }
+
+        .auth-message.success {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            background: var(--c-ok-bg);
+            border: 1px solid var(--c-ok-border);
+            color: #86efac;
+        }
+
+        .auth-message.success::before { content: '✓'; flex-shrink: 0; font-weight: 700; }
+
+        /* ── Form fields ───────────────────────────────────────── */
+        .auth-field {
+            margin-bottom: 14px;
+        }
+
+        .auth-label {
+            display: block;
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--c-text-soft);
+            margin-bottom: 6px;
+        }
+
+        .auth-input {
+            display: block;
+            width: 100%;
+            padding: 13px 14px;
+            background: var(--c-input-bg);
+            border: 1px solid var(--c-border);
+            border-radius: var(--radius-input);
+            color: var(--c-text);
+            font-size: 15px;
+            font-family: var(--font);
+            outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+            -webkit-appearance: none;
+        }
+
+        .auth-input::placeholder { color: var(--c-text-muted); }
+
+        .auth-input:hover:not(:focus) {
+            border-color: rgba(82, 165, 220, 0.28);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .auth-input:focus {
+            border-color: var(--c-border-focus);
+            background: rgba(255,255,255,0.06);
+            box-shadow: 0 0 0 3px var(--c-accent-glow);
+        }
+
+        .auth-input.error-field {
+            border-color: var(--c-danger-border);
+            box-shadow: 0 0 0 3px rgba(224,85,85,0.12);
+        }
+
+        /* ── Password wrapper ──────────────────────────────────── */
+        .auth-pw-wrap {
+            position: relative;
+        }
+
+        .auth-pw-wrap .auth-input {
+            padding-right: 46px;
+        }
+
+        .auth-pw-toggle {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 46px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--c-text-muted);
+            font-size: 16px;
+            transition: color var(--transition);
+            border-radius: 0 var(--radius-input) var(--radius-input) 0;
+        }
+
+        .auth-pw-toggle:hover { color: var(--c-text-soft); }
+
+        /* ── Password strength ─────────────────────────────────── */
+        .pw-strength-wrap {
+            margin-top: 7px;
+            display: none;
+        }
+
+        .pw-strength-wrap.visible { display: block; }
+
+        .pw-strength-track {
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .pw-strength-bar {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.35s cubic-bezier(0.4,0,0.2,1), background 0.35s;
+            width: 0%;
+        }
+
+        .pw-strength-label {
+            font-size: 11px;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+        }
+
+        .pw-strength-reqs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 12px;
+            margin-top: 8px;
+        }
+
+        .pw-req {
+            font-size: 11px;
+            color: var(--c-text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: color 0.2s;
+        }
+
+        .pw-req.met { color: var(--c-ok); }
+
+        .pw-req::before {
+            content: '○';
+            font-size: 9px;
+        }
+
+        .pw-req.met::before { content: '●'; }
+
+        /* ── Code input ────────────────────────────────────────── */
+        .auth-code-input {
+            letter-spacing: 0.35em;
+            font-size: 22px;
+            font-weight: 600;
+            text-align: center;
+            font-family: var(--font-mono);
+        }
+
+        /* ── Primary button ────────────────────────────────────── */
+        .auth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            background: var(--c-accent);
+            border: none;
+            border-radius: var(--radius-btn);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+            transition: background var(--transition), transform 0.1s, opacity var(--transition), box-shadow var(--transition);
+            -webkit-appearance: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Shimmer on hover */
+        .auth-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%);
+            transform: translateX(-100%);
+            transition: transform 0.5s;
+        }
+
+        .auth-btn:hover:not(:disabled)::after { transform: translateX(100%); }
+
+        .auth-btn:hover:not(:disabled) {
+            background: var(--c-accent-hover);
+            box-shadow: 0 4px 20px var(--c-accent-glow);
+        }
+
+        .auth-btn:active:not(:disabled) { transform: scale(0.98); }
+
+        .auth-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Spinner inside button */
+        .btn-spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            flex-shrink: 0;
+            animation: spin 0.65s linear infinite;
+        }
+
+        .auth-btn.loading .btn-spinner { display: block; }
+        .auth-btn.loading .btn-label   { opacity: 0.7; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Footer links ──────────────────────────────────────── */
+        .auth-footer-links {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
+            color: var(--c-text-soft);
+        }
+
+        .auth-link {
+            color: var(--c-accent);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: inherit;
+            font-family: var(--font);
+            padding: 2px 0;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: color var(--transition), border-color var(--transition);
+        }
+
+        .auth-link:hover {
+            color: var(--c-accent-hover);
+            border-bottom-color: var(--c-accent-hover);
+        }
+
+        /* ── Divider ───────────────────────────────────────────── */
+        .auth-divider {
+            height: 1px;
+            background: var(--c-border);
+            margin: 4px 0 20px;
+        }
+
+        /* ── Tab switcher (sign in / sign up) ──────────────────── */
+        .auth-tabs {
+            display: flex;
+            background: rgba(255,255,255,0.04);
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 28px;
+            border: 1px solid var(--c-border);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 9px;
+            text-align: center;
+            font-size: 13.5px;
+            font-weight: 600;
+            font-family: var(--font);
+            border: none;
+            background: none;
+            border-radius: 11px;
+            cursor: pointer;
+            color: var(--c-text-soft);
+            transition: color var(--transition), background var(--transition), box-shadow var(--transition);
+        }
+
+        .auth-tab.active {
+            background: var(--c-surface-2);
+            color: var(--c-text);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 0 0 1px rgba(82,165,220,0.18);
+        }
+
+        /* ── Sub-card area (verify, forgot, reset) ─────────────── */
+        .auth-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            color: var(--c-text-soft);
+            font-size: 13px;
+            font-family: var(--font);
+            cursor: pointer;
+            padding: 0;
+            margin-bottom: 20px;
+            transition: color var(--transition);
+        }
+
+        .auth-back-btn:hover { color: var(--c-text); }
+        .auth-back-btn::before { content: '←'; }
+
+        /* ── Resend row ────────────────────────────────────────── */
+        .auth-resend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 12px;
+            font-size: 13px;
+            color: var(--c-text-soft);
+        }
+
+        /* ── Bottom page note ──────────────────────────────────── */
+        .auth-page-note {
+            font-size: 11.5px;
+            color: rgba(127,178,211,0.35);
+            text-align: center;
+            margin-top: 4px;
+            letter-spacing: 0.01em;
+        }
+
+        /* ── Responsive ────────────────────────────────────────── */
+        @media (max-width: 480px) {
+            .auth-view { padding: 24px 18px 22px; }
+            .auth-card { border-radius: 18px; }
+            .auth-brand-name { font-size: 23px; }
+            .auth-logo { width: 62px; height: 62px; border-radius: 17px; }
+        }
+
+        /* ── Reduce motion ─────────────────────────────────────── */
+        @media (prefers-reduced-motion: reduce) {
+            *, ::before, ::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="auth-shell">
+
+    <!-- Brand -->
+    <div class="auth-brand">
+        <div class="auth-logo-wrap">
+            <img src="data/logos/icon-512.png" alt="Roastfolio" class="auth-logo">
+        </div>
+        <div class="auth-brand-name">Roastfolio</div>
+        <div class="auth-brand-tagline">Your investments, roasted daily.</div>
+    </div>
+
+    <!-- Card -->
+    <div class="auth-card" role="main">
+        <div class="auth-views">
+
+            <!-- ══════════════════════════════════════════════════
+                 VIEW: Login + Signup (tab-switched)
+                 ══════════════════════════════════════════════════ -->
+            <div id="view-login" class="auth-view active">
+
+                <!-- Tab bar -->
+                <div class="auth-tabs" role="tablist">
+                    <button class="auth-tab active" role="tab" aria-selected="true"
+                            onclick="switchTab('login')">Sign in</button>
+                    <button class="auth-tab" role="tab" aria-selected="false"
+                            onclick="switchTab('signup')">Create account</button>
+                </div>
+
+                <!-- ── Sign-in pane ── -->
+                <div id="pane-signin" class="pane active-pane">
+                    <div id="login-msg" class="auth-message" role="alert"></div>
+
+                    <form id="login-form" novalidate autocomplete="on">
+                        <div class="auth-field">
+                            <label class="auth-label" for="login-email">Email</label>
+                            <input id="login-email" class="auth-input" type="email"
+                                   autocomplete="email" inputmode="email"
+                                   placeholder="you@example.com" required>
+                        </div>
+                        <div class="auth-field">
+                            <label class="auth-label" for="login-password">Password</label>
+                            <div class="auth-pw-wrap">
+                                <input id="login-password" class="auth-input" type="password"
+                                       autocomplete="current-password"
+                                       placeholder="Your password" required>
+                                <button type="button" class="auth-pw-toggle"
+                                        aria-label="Toggle password"
+                                        onclick="togglePw('login-password',this)">👁</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="auth-btn" id="login-btn">
+                            <span class="btn-spinner"></span>
+                            <span class="btn-label">Sign in</span>
+                        </button>
+                    </form>
+
+                    <div class="auth-footer-links">
+                        <span>
+                            <button class="auth-link" onclick="showView('forgot')">
+                                Forgot password?
+                            </button>
+                        </span>
+                        <span>
+                            <a href="guide.html" class="auth-link">
+                                📖 User Guide
+                            </a>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- ── Sign-up pane (hidden until tab click) ── -->
+                <div id="pane-signup" class="pane" style="display:none;">
+                    <div id="signup-msg" class="auth-message" role="alert"></div>
+
+                    <form id="signup-form" novalidate autocomplete="on">
+                        <div class="auth-field">
+                            <label class="auth-label" for="signup-email">Email</label>
+                            <input id="signup-email" class="auth-input" type="email"
+                                   autocomplete="email" inputmode="email"
+                                   placeholder="you@example.com" required>
+                        </div>
+                        <div class="auth-field">
+                            <label class="auth-label" for="signup-nickname">Nickname</label>
+                            <input id="signup-nickname" class="auth-input" type="text"
+                                   autocomplete="nickname"
+                                   placeholder="e.g. WarrenFromWarsaw"
+                                   maxlength="40" required>
+                        </div>
+                        <div class="auth-field">
+                            <label class="auth-label" for="signup-password">Password</label>
+                            <div class="auth-pw-wrap">
+                                <input id="signup-password" class="auth-input" type="password"
+                                       autocomplete="new-password"
+                                       placeholder="Choose a password" required
+                                       oninput="checkPwStrength(this)">
+                                <button type="button" class="auth-pw-toggle"
+                                        aria-label="Toggle password"
+                                        onclick="togglePw('signup-password',this)">👁</button>
+                            </div>
+                            <!-- Strength meter -->
+                            <div class="pw-strength-wrap" id="pw-strength-wrap">
+                                <div class="pw-strength-track">
+                                    <div class="pw-strength-bar" id="pw-strength-bar"></div>
+                                </div>
+                                <div class="pw-strength-label" id="pw-hint"></div>
+                                <div class="pw-strength-reqs">
+                                    <span class="pw-req" id="req-len">6+ characters</span>
+                                    <span class="pw-req" id="req-letter">Letter</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="auth-field">
+                            <label class="auth-label" for="signup-confirm">Confirm password</label>
+                            <div class="auth-pw-wrap">
+                                <input id="signup-confirm" class="auth-input" type="password"
+                                       autocomplete="new-password"
+                                       placeholder="Same password again" required>
+                                <button type="button" class="auth-pw-toggle"
+                                        aria-label="Toggle password"
+                                        onclick="togglePw('signup-confirm',this)">👁</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="auth-btn" id="signup-btn">
+                            <span class="btn-spinner"></span>
+                            <span class="btn-label">Create account</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════
+                 VIEW: Verify email
+                 ══════════════════════════════════════════════════ -->
+            <div id="view-verify" class="auth-view">
+                <button class="auth-back-btn" onclick="showView('login')">
+                    &nbsp;Back to sign in
+                </button>
+                <div class="auth-view-header">
+                    <span class="auth-view-icon">📬</span>
+                    <h1 class="auth-title">Check your inbox</h1>
+                    <p class="auth-subtitle" id="verify-subtitle">
+                        We sent a 6-digit code to your email. Enter it below to verify your account.
+                    </p>
+                </div>
+
+                <div id="verify-msg" class="auth-message" role="alert"></div>
+
+                <form id="verify-form" novalidate>
+                    <div class="auth-field">
+                        <label class="auth-label" for="verify-code">Verification code</label>
+                        <input id="verify-code" class="auth-input auth-code-input"
+                               type="text" inputmode="numeric" pattern="[0-9]*"
+                               autocomplete="one-time-code"
+                               placeholder="• • • • • •" maxlength="6" required>
+                    </div>
+                    <button type="submit" class="auth-btn" id="verify-btn">
+                        <span class="btn-spinner"></span>
+                        <span class="btn-label">Verify email</span>
+                    </button>
+                </form>
+
+                <div class="auth-resend-row">
+                    <span>Didn't get the code?</span>
+                    <button class="auth-link" id="resend-btn" onclick="Auth.resendCode()">
+                        Resend
+                    </button>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════
+                 VIEW: Forgot password
+                 ══════════════════════════════════════════════════ -->
+            <div id="view-forgot" class="auth-view">
+                <button class="auth-back-btn" onclick="showView('login')">
+                    &nbsp;Back to sign in
+                </button>
+                <div class="auth-view-header">
+                    <span class="auth-view-icon">🔑</span>
+                    <h1 class="auth-title">Reset password</h1>
+                    <p class="auth-subtitle">
+                        Enter your email and we'll send you a reset code.
+                    </p>
+                </div>
+
+                <div id="forgot-msg" class="auth-message" role="alert"></div>
+
+                <form id="forgot-form" novalidate>
+                    <div class="auth-field">
+                        <label class="auth-label" for="forgot-email">Email</label>
+                        <input id="forgot-email" class="auth-input" type="email"
+                               autocomplete="email" inputmode="email"
+                               placeholder="you@example.com" required>
+                    </div>
+                    <button type="submit" class="auth-btn" id="forgot-btn">
+                        <span class="btn-spinner"></span>
+                        <span class="btn-label">Send reset code</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- ══════════════════════════════════════════════════
+                 VIEW: Reset password (confirm)
+                 ══════════════════════════════════════════════════ -->
+            <div id="view-reset" class="auth-view">
+                <button class="auth-back-btn" onclick="showView('forgot')">
+                    &nbsp;Back
+                </button>
+                <div class="auth-view-header">
+                    <span class="auth-view-icon">🔐</span>
+                    <h1 class="auth-title">Set new password</h1>
+                    <p class="auth-subtitle">
+                        Enter the code from your email and choose a new password.
+                    </p>
+                </div>
+
+                <div id="reset-msg" class="auth-message" role="alert"></div>
+
+                <form id="reset-form" novalidate>
+                    <div class="auth-field">
+                        <label class="auth-label" for="reset-code">Reset code</label>
+                        <input id="reset-code" class="auth-input auth-code-input"
+                               type="text" inputmode="numeric" pattern="[0-9]*"
+                               autocomplete="one-time-code"
+                               placeholder="• • • • • •" maxlength="6" required>
+                    </div>
+                    <div class="auth-field">
+                        <label class="auth-label" for="reset-password">New password</label>
+                        <div class="auth-pw-wrap">
+                            <input id="reset-password" class="auth-input" type="password"
+                                   autocomplete="new-password"
+                                   placeholder="Choose a password" required
+                                   oninput="checkPwStrength(this)">
+                            <button type="button" class="auth-pw-toggle"
+                                    aria-label="Toggle password"
+                                    onclick="togglePw('reset-password',this)">👁</button>
+                        </div>
+                        <div class="pw-strength-wrap" id="reset-pw-strength-bar-wrap">
+                            <div class="pw-strength-track">
+                                <div class="pw-strength-bar" id="reset-pw-strength-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="auth-field">
+                        <label class="auth-label" for="reset-confirm">Confirm password</label>
+                        <div class="auth-pw-wrap">
+                            <input id="reset-confirm" class="auth-input" type="password"
+                                   autocomplete="new-password"
+                                   placeholder="Same password again" required>
+                            <button type="button" class="auth-pw-toggle"
+                                    aria-label="Toggle password"
+                                    onclick="togglePw('reset-confirm',this)">👁</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-btn" id="reset-btn">
+                        <span class="btn-spinner"></span>
+                        <span class="btn-label">Set new password</span>
+                    </button>
+                </form>
+            </div>
+
+        </div><!-- /.auth-views -->
+    </div><!-- /.auth-card -->
+
+    <div class="auth-page-note">
+        Roastfolio is a personal finance tracker — not financial advice.
+    </div>
+
+</div><!-- /.auth-shell -->
+
+<!-- Tab switcher helper — in page so it runs before auth.js -->
+<script>
+function switchTab(tab) {
+    var isLogin  = tab === 'login';
+    var tabs     = document.querySelectorAll('.auth-tab');
+    var signinPane  = document.getElementById('pane-signin');
+    var signupPane  = document.getElementById('pane-signup');
+
+    tabs[0].classList.toggle('active', isLogin);
+    tabs[0].setAttribute('aria-selected', isLogin);
+    tabs[1].classList.toggle('active', !isLogin);
+    tabs[1].setAttribute('aria-selected', !isLogin);
+
+    signinPane.style.display = isLogin  ? 'block' : 'none';
+    signupPane.style.display = !isLogin ? 'block' : 'none';
+
+    // Focus first input
+    setTimeout(function () {
+        var pane  = isLogin ? signinPane : signupPane;
+        var first = pane.querySelector('input');
+        if (first) first.focus();
+    }, 30);
+}
+</script>
+
+<!-- Cognito SDK -->
+<script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6/dist/amazon-cognito-identity.min.js"></script>
+<!-- Runtime config -->
+<script src="scripts/config.js" onerror="window.__CONFIG__={}"></script>
+<!-- Auth logic (all IDs match the markup above) -->
+<script src="scripts/auth.js"></script>
+</body>
+</html>

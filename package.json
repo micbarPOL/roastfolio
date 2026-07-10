@@ -1,0 +1,17 @@
+{
+  "name": "investment-history",
+  "version": "1.0.0",
+  "description": "A web application to display the history of investments and their values over time.",
+  "main": "src/scripts/main.js",
+  "scripts": {
+    "start": "live-server src"
+  },
+  "dependencies": {
+    "xlsx": "^0.17.0"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.1"
+  },
+  "author": "",
+  "license": "ISC"
+}

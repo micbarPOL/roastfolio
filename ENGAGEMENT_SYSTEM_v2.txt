@@ -1,0 +1,1109 @@
+════════════════════════════════════════════════════════════════════
+ROASTFOLIO — ENGAGEMENT SYSTEM DESIGN  (v2 — revised)
+════════════════════════════════════════════════════════════════════
+Target: small retail investors (hobbyists, DCA loyalists, passive ETF holders)
+Personality: premium fintech × witty financial advisor who has seen things
+Tone rule: roast the behavior, never the person
+────────────────────────────────────────────────────────────────────
+Revision notes:
+  - Contribution streak narrowed to DEPOSIT-only (buy ≠ new capital)
+  - No-panic-sell streak removed (selling is a valid decision, not a failure)
+  - Rebalancing streak removed (too opaque to explain)
+  - Four new streaks added: Withdrawal-Free, Goal, Green Month, Benchmark
+  - Check-in streak counts GPW trading days only (no weekends, no Polish holidays)
+  - Check-in milestone 365 days → 252 trading days (one full trading year)
+  - Contribution streak milestones capped at 60 months (10yr/20yr removed as unrealistic)
+  - Added 2M + 5M PLN portfolio value milestones
+  - Time-based milestones anchored to first investment date (not signup)
+  - Total contributed milestones removed (deposit + buy double-counts capital)
+  - Monthly turnover milestones added (section 3.6)
+────────────────────────────────────────────────────────────────────
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. UX ARCHITECTURE — ENGAGEMENT LAYER OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The engagement system sits OVER the existing app as a light layer.
+It never blocks core functionality. It rewards presence and consistency.
+
+Four surfaces where it lives:
+  A) Dashboard card  — persistent summary of streak + XP + active badge
+  B) Achievement drawer — full badge collection, unlocked + locked (grayed)
+  C) Monthly Recap screen — auto-generated on first open of a new month
+  D) Inline toast/commentary — contextual roast triggered by user actions
+
+Data inputs the system reads:
+  - Transaction log (deposit/withdrawal/buy/sell dates, amounts, types)
+  - Portfolio snapshots (value over time, allocation breakdown)
+  - Monthly goal setting (user-defined deposit target)
+  - Retirement plan target (if configured)
+  - Session events (login dates, panel opens)
+
+No external servers required initially — all computed client-side from
+existing data the app already holds. Backend can persist badge unlocks
+and streak counters to DynamoDB as a phase 2.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. STREAK SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────
+2.1  Streak types
+──────────────────────────────────────────────────
+
+CONTRIBUTION STREAK  (primary — most meaningful)
+  Definition:  consecutive calendar months with at least one DEPOSIT transaction.
+               Buy transactions do not count — buying with existing cash is not
+               new capital entering the portfolio.
+  Grace period: 3 days into the new month (a deposit on Jan 2 still saves a Dec streak)
+  Unit: months
+  Milestones: 3 / 6 / 12 / 24 / 36 / 60
+
+  Copy examples:
+    3 months  → "Month 3. You're officially no longer in the experimental phase."
+    6 months  → "Half a year of consistency. You've outlasted most New Year's resolutions."
+    12 months → "One full year of monthly deposits. The market crashed at least once. You kept going."
+    24 months → "Two years. This is no longer a phase."
+    36 months → "Three years of monthly deposits. The habit is the investment at this point."
+    60 months → "Five years. Statistically, you're fine."
+
+
+CHECK-IN STREAK  (secondary — habit signal)
+  Definition:  consecutive GPW trading days the user opens the app and views the dashboard.
+               Only days when the Warsaw Stock Exchange (GPW) holds a session count —
+               weekends and Polish public holidays are skipped entirely.
+               A Saturday open doesn't advance the streak. A Friday miss breaks it.
+               This keeps the streak meaningful: it tracks presence on days when
+               the market is actually moving and decisions matter.
+  Grace period: 24h buffer from last session open (not midnight-strict)
+  Unit: trading days
+  Milestones: 7 / 30 / 90 / 180 / 252
+              (252 ≈ one full trading year on GPW — replaces the raw 365-day milestone)
+
+  GPW non-trading days excluded:
+    Weekends (Saturday + Sunday)
+    New Year's Day (Jan 1)
+    Epiphany (Jan 6)
+    Easter Monday (moveable)
+    Labour Day (May 1)
+    Constitution Day (May 3)
+    Corpus Christi (moveable)
+    Assumption (Aug 15)
+    All Saints' Day (Nov 1)
+    Independence Day (Nov 11)
+    Christmas Eve (Dec 24, half-day — treated as non-trading)
+    Christmas Day (Dec 25)
+    Boxing Day (Dec 26)
+    New Year's Eve (Dec 31, half-day — treated as non-trading)
+
+  Copy examples:
+    7 days   → "Seven trading days in a row. Every day the market opened, so did you."
+    30 days  → "Thirty trading days. That's six full weeks of showing up."
+    90 days  → "A quarter of the trading year. The portfolio has been supervised."
+    252 days → "A full trading year, every single session. The market opened 252 times. You were there."
+
+
+WITHDRAWAL-FREE STREAK  (capital preservation signal)
+  Definition:  consecutive calendar months without any WITHDRAWAL transaction.
+               The goal is simple: money in, nothing out.
+               Sells are not counted — reinvesting proceeds is a valid decision.
+  Grace period: none (a withdrawal is a withdrawal)
+  Unit: months
+  Milestones: 3 / 6 / 12 / 24 / 36 / 60
+
+  Copy examples:
+    3 months  → "Three months without touching it. The compounding thanks you."
+    6 months  → "Six months of leaving it alone. This is the discipline people talk about but rarely practice."
+    12 months → "A full year without withdrawals. The portfolio is growing undisturbed."
+    24 months → "Two years untouched. Whatever the reason, the number is bigger for it."
+    36 months → "Three years. At this point the money has forgotten what a withdrawal even looks like."
+    60 months → "Five years without a withdrawal. This is either impressive discipline or impressive forgetting."
+
+
+GOAL STREAK  (commitment streak — most personal)
+  Definition:  consecutive calendar months where the user deposits at least as much
+               as their self-set monthly goal (configurable in settings).
+               If the goal is updated, the streak continues — changing your ambition
+               doesn't erase your track record.
+  Unit: months
+  Milestones: 3 / 6 / 12 / 24
+
+  Notes:
+    - Goal must be set to activate this streak
+    - Goal can be as low as 1 PLN (no minimum enforced)
+    - Suggested goal prompt appears after first deposit
+
+  Copy examples:
+    3 months  → "Goal hit three months in a row. The plan is becoming a practice."
+    6 months  → "Six months of hitting your own target. You set the bar. You cleared it."
+    12 months → "A full year of meeting your monthly goal. One of the more underrated things a person can do."
+    24 months → "Two years of goal-consistent deposits. At this point the goal is too conservative. Raise it."
+
+
+GREEN MONTH STREAK  (performance streak — partly luck, still meaningful)
+  Definition:  consecutive calendar months where the portfolio value at month-end
+               is higher than at month-start (before any new deposits, to isolate
+               market performance from contribution effect).
+  Unit: months
+  Milestones: 3 / 6 / 12
+
+  Notes:
+    - Calculated on market performance only, not padded by deposits
+    - Harder to sustain than contribution streaks — don't show as primary metric
+    - Breaking this streak is never roasted — the market did it, not the user
+
+  Copy examples:
+    3 months → "Three green months in a row. The market cooperated."
+    6 months → "Six months of positive performance. This is rare enough to notice."
+    12 months → "A full year in the green, market-wise. Either great allocation or great timing. Probably both."
+
+  Break copy:
+    "Green streak ended. That's markets. The contribution streak still stands."
+
+
+BEAT THE BENCHMARK STREAK  (quality streak — for engaged users)
+  Definition:  consecutive calendar months where the user's portfolio total return
+               exceeds the benchmark (user selects: WIG20, MSCI World, S&P 500).
+               If no benchmark is selected, this streak is not available.
+  Unit: months
+  Milestones: 3 / 6 / 12
+
+  Notes:
+    - Only shown if user has benchmark comparison enabled
+    - Genuinely hard to sustain — celebrated accordingly
+    - Benchmark data pulled from the existing WIG/market data layer
+
+  Copy examples:
+    3 months → "Outperformed the benchmark three months running. Don't tell your index fund friends."
+    6 months → "Six months beating the benchmark. Fund managers charge 2% for worse results."
+    12 months → "A full year ahead of the benchmark. Statistically improbable. Practically impressive."
+
+  Break copy:
+    "The benchmark won this month. It happens. The important question is whether you still have a contribution streak."
+
+
+──────────────────────────────────────────────────
+2.2  Streak break UX
+──────────────────────────────────────────────────
+
+When a streak breaks, a toast appears — NOT a blocking modal.
+Tone: wry acknowledgement, not shame.
+One action offered: "Pick it back up" (opens deposit or relevant panel).
+
+Example breaks:
+  Contribution streak broken →
+    "Contribution streak ended at {N} months. Life happens. The market continued without comment."
+
+  Check-in streak broken →
+    "You missed a trading session. The market opened without you. This time."
+
+  Withdrawal-free streak broken →
+    "Withdrawal streak ended at {N} months. The money had somewhere to be."
+
+  Goal streak broken →
+    "Missed the monthly goal. Happens. The streak counter is ready when you are."
+
+The broken streak record is preserved as a personal best, displayed in the
+achievement drawer as a "former streak" gray badge. You can beat your own record.
+
+──────────────────────────────────────────────────
+2.3  Streak freeze  (phase 2)
+──────────────────────────────────────────────────
+
+One "freeze token" earned every 6 months of unbroken contribution streak.
+Spent automatically if a month is nearly missed (within 3-day grace).
+Display: small ice crystal icon next to streak counter when a freeze is available.
+
+Copy: "Freeze available. Use it wisely. Or not. We're not your parents."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. MILESTONES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Milestones are one-time events. They trigger a full-screen moment (brief,
+skippable) and unlock a badge. Think: Duolingo achievement pop-up but darker.
+
+──────────────────────────────────────────────────
+3.1  Portfolio value milestones  (PLN, current market value)
+──────────────────────────────────────────────────
+
+  1 000 PLN    — "It begins. Technically you're an investor now."
+  5 000 PLN    — "Five thousand. You have more invested than most people have saved."
+  10 000 PLN   — "Five figures. A threshold that matters."
+  25 000 PLN   — "A quarter of a hundred thousand. The boring middle is underrated."
+  50 000 PLN   — "Halfway to six figures. The market will try to undo this. Don't let it."
+  100 000 PLN  — "Six figures. This is the number that changes behavior. Guard it."
+  250 000 PLN  — "A quarter million. At this point your money has a support group."
+  500 000 PLN  — "Half a million. The math is doing most of the work now."
+  1 000 000 PLN — "One million. You either DCA'd for 30 years or got very lucky. Respect either way."
+  2 000 000 PLN — "Two million. The returns alone are someone's annual salary. That's a strange thing to have become."
+  5 000 000 PLN — "Five million. At this scale, the portfolio manages you more than you manage it."
+
+  Note: these are current-value milestones. They may be crossed, lost, and
+  re-crossed as markets move. The badge unlocks on first crossing only.
+  The personal best (all-time high) is tracked separately in section 5.3.
+
+──────────────────────────────────────────────────
+3.2  First-time milestones  (one-time "origin" events)
+──────────────────────────────────────────────────
+
+  First transaction ever        → "The first one is the hardest. Now it's just numbers."
+  First ETF bought              → "You discovered passive investing. John Bogle nods solemnly."
+  First stock (non-ETF)         → "Picking stocks. Bold. Historically not great. But bold."
+  First international stock     → "Gone global. Your portfolio now technically spans continents."
+  First SELL                    → "First sale recorded. A moment of silence for your conviction."
+  First DEPOSIT (cash)          → "Cash in. The raw material of compounding."
+  First WITHDRAWAL              → "Took something out. Fine. That's what money is for."
+  First negative portfolio day  → "Red day. Now you know what it feels like. It gets easier. Slightly."
+  First +10% gain (one holding) → "A ten-bagger in progress. Don't check it too often."
+  First holding doubles         → "One of your holdings is 2x. Don't tell anyone or you'll be asked for tips."
+
+──────────────────────────────────────────────────
+3.3  Diversification milestones
+──────────────────────────────────────────────────
+
+  3 holdings       → "Diversified. Kind of."
+  5 holdings       → "Five assets. You're managing a portfolio now, not a bet."
+  10 holdings      → "Ten holdings. This is either discipline or indecision. Hard to tell."
+  20 holdings      → "Twenty holdings. At some point you're just buying an index with extra steps."
+  3 asset classes  → "Equities, bonds, and something else. A proper allocation."
+  3 geographies    → "Three countries. Global diversification, retail edition."
+
+──────────────────────────────────────────────────
+3.4  Time-based milestones  (from first investment date)
+──────────────────────────────────────────────────
+
+  Anchored to the date of the user's first ever recorded transaction —
+  not to account creation or app install. The journey starts when money moves.
+
+  3 months  → "Still here. Initial excitement survived."
+  6 months  → "Half a year since you started. One market wobble behind you, probably."
+  1 year    → "One full year as an investor. You've seen all four seasons of market behavior."
+  2 years   → "Two years. The 'long term' is no longer hypothetical."
+  5 years   → "Five years in. At this point you're a different investor than when you started."
+  10 years  → "A decade. Compounding has had time to become your co-pilot."
+  15 years  → "Fifteen years. The person who made that first transaction would not recognize this portfolio."
+  20 years  → "Twenty years as an investor. This is now a defining part of who you are financially."
+
+──────────────────────────────────────────────────
+3.5  Retirement milestones
+──────────────────────────────────────────────────
+  (Only shown if user has a retirement target configured)
+
+  10% to FIRE target  → "Ten percent of the way there. The journey is about to feel very long."
+  25% to FIRE target  → "A quarter of the way. The number is starting to feel real."
+  50% to FIRE target  → "Halfway. In the brutal math of compounding, this is actually most of the work done."
+  75% to FIRE target  → "Three quarters. You're in the endgame now."
+  90% to FIRE target  → "Ninety percent. The spreadsheet is no longer a fantasy."
+  100% to FIRE target → "You hit the number. What you do next is entirely your call."
+
+──────────────────────────────────────────────────
+3.6  Monthly turnover milestones  (largest deposit in a single month)
+──────────────────────────────────────────────────
+
+  Triggered by the single highest DEPOSIT month on record — i.e., the first time
+  the user deposits above a threshold in one calendar month. Not cumulative.
+  Rewards ambition in individual months, not just consistency.
+
+  1 000 PLN in one month   → "First four-figure month. The habit is becoming an operation."
+  2 500 PLN in one month   → "2,500 in a single month. Serious money, consistently deployed."
+  5 000 PLN in one month   → "Five thousand in one month. The contribution is doing real work now."
+  10 000 PLN in one month  → "Ten grand in a month. At this pace the portfolio notices."
+  25 000 PLN in one month  → "A 25k month. Either a bonus, a windfall, or a lifestyle. Respect."
+  50 000 PLN in one month  → "Fifty thousand in a single month. The math is changing."
+  100 000 PLN in one month → "Six figures deployed in one month. You are no longer a casual investor."
+
+  Note: this milestone tracks the personal best monthly deposit ever achieved.
+  It unlocks once per threshold, on the month it is first crossed.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. ACHIEVEMENT BADGE SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Visual design: small circular badges, dark backgrounds, single icon,
+thin colored border by tier. Locked badges shown as silhouettes with
+a hint of what they require. Collected in an "Achievements" drawer
+accessible from the dashboard.
+
+Badge tiers:
+  ◻ Seed      (gray)      — participation / first steps
+  🟤 Bronze    (amber)     — early consistency
+  ⚪ Silver    (steel)     — sustained effort
+  🟡 Gold      (yellow)    — genuine milestones
+  💎 Diamond   (cyan/blue) — rare, long-term, legendary
+
+──────────────────────────────────────────────────
+4.1  CONSISTENCY BADGES  (streak-based)
+──────────────────────────────────────────────────
+
+  Contribution streak:
+  "Showing Up"         [Seed]    — 1-month contribution (first deposit made)
+  "Reliable"           [Bronze]  — 3-month contribution streak
+  "The Long Game"      [Silver]  — 12-month contribution streak
+  "Two Year Club"      [Gold]    — 24-month contribution streak
+  "Institutionalized"  [Gold]    — 36-month contribution streak
+  "Immovable"          [Diamond] — 60-month contribution streak
+
+  Check-in streak:
+  "Eyes Open"          [Seed]    — 7 trading-day check-in streak
+  "Weekly Habit"       [Bronze]  — 30 trading-day check-in streak
+  "Quarter Present"    [Silver]  — 90 trading-day check-in streak
+  "Every Session"      [Diamond] — 252 trading-day check-in streak (full trading year)
+
+  Withdrawal-free streak:
+  "Hands Off"          [Bronze]  — 6-month withdrawal-free streak
+  "Untouched"          [Silver]  — 12-month withdrawal-free streak
+  "The Vault"          [Gold]    — 36-month withdrawal-free streak
+
+  Goal streak:
+  "Committed"          [Bronze]  — 3-month goal streak (hit self-set target)
+  "On Track"           [Silver]  — 12-month goal streak
+  "Goal-Oriented"      [Gold]    — 24-month goal streak
+                                    "Two years of hitting your own target. Raise the bar."
+
+  Green month streak:
+  "Green Run"          [Silver]  — 6 consecutive green months (market performance)
+  "Positive Year"      [Gold]    — 12 consecutive green months
+                                    "A full year in the green. The market cooperated and
+                                     you didn't get in its way."
+
+  Benchmark streak:
+  "Edge"               [Silver]  — 6 consecutive months beating the benchmark
+  "Alpha"              [Gold]    — 12 consecutive months beating the benchmark
+                                    "A full year ahead of the index. Fund managers
+                                     charge 2% for this. You did it for free."
+
+──────────────────────────────────────────────────
+4.2  PORTFOLIO VALUE BADGES
+──────────────────────────────────────────────────
+
+  "Four Digits"        [Seed]    — 1k PLN portfolio
+  "Getting Serious"    [Bronze]  — 10k PLN portfolio
+  "Mid-Tier Anxiety"   [Silver]  — 50k PLN portfolio  ← sarcastic name is intentional
+  "Six Figures"        [Gold]    — 100k PLN portfolio
+  "Quarter Mil"        [Gold]    — 250k PLN portfolio
+  "Comma Club"         [Diamond] — 1M PLN portfolio
+  "Two Commas"         [Diamond] — 2M PLN portfolio
+  "Five Mil"           [Diamond] — 5M PLN portfolio
+                                    "Five million PLN. At this scale, the app is
+                                     probably the least interesting thing about you."
+
+──────────────────────────────────────────────────
+4.3  DISCIPLINE BADGES
+──────────────────────────────────────────────────
+
+  Tax efficiency:
+  "IKE Believer"       [Bronze]  — IKE account with deposits for 2+ calendar years
+  "IKZE Optimizer"     [Silver]  — IKZE account with deposits near the annual limit
+  "Tax Efficient"      [Gold]    — Both IKE + IKZE actively used with contributions
+
+  High-turnover month:
+  "First Big Month"    [Seed]    — First month depositing 1 000+ PLN
+  "Five Figure Month"  [Silver]  — First month depositing 10 000+ PLN
+  "Monster Month"      [Gold]    — First month depositing 50 000+ PLN
+
+──────────────────────────────────────────────────
+4.4  DIVERSIFICATION BADGES
+──────────────────────────────────────────────────
+
+  "Not One Basket"       [Seed]    — 3 different holdings
+  "Actually Diversified" [Bronze]  — 5 holdings across 2 asset classes
+  "World Citizen"        [Silver]  — holdings in 3+ countries
+  "The Allocator"        [Gold]    — 10+ holdings across 3 asset classes
+  "Basically a Fund"     [Diamond] — 20+ holdings
+    Copy: "You have 20 holdings. At this point just buy VWCE and go outside."
+
+──────────────────────────────────────────────────
+4.5  SURVIVAL / MARKET BADGES  (event-triggered)
+──────────────────────────────────────────────────
+
+  These are secretly the most coveted — earned only by staying invested
+  through a real drawdown without withdrawing capital.
+
+  "Baptism by Fire"      [Bronze]  — portfolio down 10%+ at any point, no withdrawal made
+  "Held the Line"        [Silver]  — portfolio down 20%+ at any point, no withdrawal made
+  "Iron Stomach"         [Gold]    — portfolio down 30%+ at any point, no withdrawal made
+  "Bear Market Survivor" [Gold]    — account active during a 20%+ drawdown lasting 3+ months
+
+  Copy for "Held the Line":
+    "Down twenty percent. You checked the app anyway. You didn't pull out. Badge earned."
+
+──────────────────────────────────────────────────
+4.6  RETIREMENT BADGES
+──────────────────────────────────────────────────
+
+  "FIRE Curious"         [Seed]    — retirement plan configured
+  "On the Map"           [Bronze]  — 10% to retirement goal
+  "Halfway There"        [Silver]  — 50% to retirement goal
+  "Endgame"              [Gold]    — 90% to retirement goal
+  "The Number"           [Diamond] — retirement goal reached
+
+──────────────────────────────────────────────────
+4.7  IRONIC / ROAST BADGES  (secretly positive)
+──────────────────────────────────────────────────
+
+  These roast a behavior earnestly but award it anyway.
+  The irony signals self-awareness from the app. Users love them.
+
+  "Sold Something"       [Seed]    — first SELL transaction  ← everyone gets this
+    Copy: "You sold something. Don't worry. It's a rite of passage."
+
+  "Red Day Survivor"     [Seed]    — opened the app on a -3% portfolio day
+    Copy: "You looked at the numbers when they were bad. Respect."
+
+  "Stock Picker"         [Bronze]  — more than 5 individual stocks (not ETFs)
+    Copy: "You're picking stocks. The hedge funds are watching. Nervously."
+
+  "Crypto Curious"       [Bronze]  — first crypto/Binance holding recorded
+    Copy: "You went there. It's fine. Diversification means different things to different people."
+
+  "Overexposed"          [Silver]  — any single holding > 50% of portfolio
+    Copy: "One thing is half your portfolio. This is called conviction. Or concentration. Same word, different outcome."
+
+  "Monthly Refresher"    [Bronze]  — opened the app on the same day each month for 6 months
+    Copy: "Creature of habit. The market respects patterns. Until it doesn't."
+
+  "YOLO Recovered"       [Gold]    — portfolio recovered to all-time-high after a 25%+ drawdown
+    Copy: "You went down hard and came back. Not everyone does."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. PROGRESS TRACKING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────
+5.1  Investor Level  (XP system)
+──────────────────────────────────────────────────
+
+XP is earned by real actions — not artificial engagement loops:
+
+  Action                                 XP
+  ─────────────────────────────────────────
+  First login of the month               +10
+  Any transaction recorded               +20
+  Monthly deposit made (streak +1)       +50
+  Monthly goal hit                       +30
+  Milestone reached                     +100
+  Badge unlocked                         +75
+  Retirement plan updated                +30
+
+Levels (named, not numbered):
+  0 – 199      "Lurker"             — you opened the app. Good start.
+  200 – 499    "Participant"        — something is happening here
+  500 – 999    "Regular"           — showing up consistently
+  1 000–2 499  "Contributor"       — money is moving
+  2 500–4 999  "Operator"          — running a proper portfolio
+  5 000–9 999  "Compounding"       — the math is doing more work than you
+  10 000+      "Institutionalized" — you're in it now
+
+Level displayed on dashboard as a small pill badge next to portfolio title.
+
+──────────────────────────────────────────────────
+5.2  "Next milestone" progress bar
+──────────────────────────────────────────────────
+
+Dashboard shows a single progress bar to the nearest upcoming value milestone.
+Label: "Next: 100 000 PLN — 73% there"
+Sub-label: "At your average monthly deposit rate, ~14 months away"
+
+This is always visible, always honest, occasionally dispiriting.
+The dispiriting part is by design.
+
+──────────────────────────────────────────────────
+5.3  Personal bests
+──────────────────────────────────────────────────
+
+Tracked silently, displayed in achievement drawer:
+  - Longest contribution streak (even if broken — your record against yourself)
+  - Longest withdrawal-free streak
+  - Longest goal streak
+  - Largest portfolio value ever reached (all-time high marker)
+  - Best single-month return
+  - Best single holding gain %
+  - Largest single-month deposit
+  - Longest green month streak
+  - Longest benchmark-beating streak
+
+These never expire. They are your record against yourself.
+Former streak records are shown as gray "ghost badges" — visible proof
+that you climbed higher once, and can again.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. MONTHLY RECAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Triggered: first time the user opens the app after month rollover.
+Format: single scrollable in-app screen, skippable, shareable as image.
+
+──────────────────────────────────────────────────
+6.1  Sections of the Monthly Recap
+──────────────────────────────────────────────────
+
+  SECTION 1 — Portfolio headline
+    "{Month} in one line."
+    "Up 4.2%. You deposited 1 200 PLN. The market helped with the rest."
+    "Down 8.1%. You deposited anyway. That's the whole strategy."
+    "Flat month. Sometimes the market just shrugs."
+
+  SECTION 2 — Key numbers (3 cards)
+    - Portfolio change %  (+/– with color)
+    - Amount deposited this month
+    - Best performing holding (name + %)
+
+  SECTION 3 — Roast of the month  (one-liner, see section 8 for examples)
+    Triggered by behavior patterns. Only one roast per recap.
+    If nothing roastable: a neutral observation.
+
+  SECTION 4 — Active streaks summary
+    "Contribution streak: 7 months. Don't ruin it in {Next Month}."
+    "Goal streak: 4 months. Your target was {X} PLN. You hit it."
+    "Withdrawal-free: 14 months. The portfolio is undisturbed."
+    "Green run: 3 months. The market is cooperating."
+
+  SECTION 5 — Badge unlocked this month  (if any)
+    Large badge display. Single sentence of copy.
+
+  SECTION 6 — Month {N} of your investor journey
+    Running counter from first investment date.
+    "Month 19. You've been at this for over a year and a half."
+
+──────────────────────────────────────────────────
+6.2  Share card
+──────────────────────────────────────────────────
+
+Generates a dark, premium PNG image (no raw numbers by default — just
+percentages and streak counts). User can toggle to show values before sharing.
+Caption template: "Month {N} of the journey. @roastfolio #investing"
+
+Design: Roastfolio dark design system. No confetti, no balloons, no emojis.
+Clean. Premium. Slightly boastful.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. RETIREMENT PROGRESS MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Only active if the user has a retirement plan configured.
+Lives in the retirement section AND as a compact card on the dashboard.
+
+──────────────────────────────────────────────────
+7.1  Metrics displayed
+──────────────────────────────────────────────────
+
+  - % of FIRE number reached (the only number that matters long term)
+  - Projected completion date  (based on current pace + assumed return)
+  - Months since plan started
+  - Delta vs plan: "Ahead by 2 months" / "Behind by 4 months"
+  - IKE + IKZE utilization %  (how much of tax-advantaged space used this year)
+
+──────────────────────────────────────────────────
+7.2  Sarcastic framing
+──────────────────────────────────────────────────
+
+At 10%:  "You've covered one decade of retirement expenses. Eleven to go. Roughly."
+At 25%:  "A quarter of the way. You could retire for about 7 years right now.
+          Unfortunately you need more than that."
+At 50%:  "Halfway. This is actually further than most people ever get.
+          Don't say that out loud."
+At 75%:  "Three quarters done. The finish line is visible. Don't touch the portfolio."
+At 90%:  "Ninety percent. The spreadsheet says you're nearly there.
+          The market will try to have opinions about this."
+
+──────────────────────────────────────────────────
+7.3  Annual retirement nudge
+──────────────────────────────────────────────────
+
+Once per year, in November, show a prompt:
+  "IKE limit this year: used {X}% of {12 000} PLN allowance.
+   IKZE limit: used {X}% of {9 388} PLN allowance.
+   There are {N} weeks left in the year. Just saying."
+
+Tone: pragmatic. Not alarmist. Just a nudge.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. SARCASTIC PORTFOLIO COMMENTARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Commentary appears in three places:
+  A) Dashboard "Roastfolio Says" card — refreshes monthly, manually dismissable
+  B) Monthly recap roast section
+  C) Transaction confirmation — one-liner after a trade is recorded
+
+Rule: each commentary type fires AT MOST once per month.
+Rule: never fires on the same trigger twice in a row.
+Rule: never fires when portfolio is down more than 15% (not the time to roast).
+
+──────────────────────────────────────────────────
+8.1  Allocation commentary  (fires if allocation is lopsided)
+──────────────────────────────────────────────────
+
+  One holding > 50% of portfolio:
+    "Your portfolio is 54% {TICKER}. That's not a portfolio,
+     that's a concentrated position with supporting roles."
+
+  Single country > 80%:
+    "80% of your money is in one country. I hope you're optimistic
+     about its long-term governance."
+
+  No bonds or fixed income:
+    "100% equities. You sleep well or you don't sleep at all.
+     No judgment. (Some judgment.)"
+
+  Cash > 30% for 2+ months:
+    "You've been sitting on {X}% cash for two months.
+     Waiting for the dip? It might be waiting for you too."
+
+──────────────────────────────────────────────────
+8.2  Behavior commentary  (fires based on transaction patterns)
+──────────────────────────────────────────────────
+
+  Sold after a -10%+ month:
+    "Sold at a loss in {Month}. The market is aware. It's already recovering."
+
+  Bought after a +15%+ month:
+    "Bought more right after the portfolio hit an all-time high. Optimism is a strategy."
+
+  5+ transactions in one week:
+    "Five transactions in one week. You're either rebalancing or having a moment.
+     Could be both."
+
+  No deposits for 3 months (during down market):
+    "Three quiet months. Given what the market was doing, that might have been the play."
+
+  No deposits for 3 months (during up market):
+    "You haven't added to the portfolio in three months.
+     The market went up. Without you. It's fine."
+
+──────────────────────────────────────────────────
+8.3  Performance commentary  (fires on meaningful gains/losses)
+──────────────────────────────────────────────────
+
+  New all-time high:
+    "Portfolio hit a new all-time high. This is the part where you're supposed
+     to stay calm. How's that going?"
+
+  +20% year:
+    "Up 20% this year. That's genuinely great. Don't extrapolate."
+
+  -20% year:
+    "Down 20% this year. Everyone with an index fund went through this.
+     The ones who stayed are now fine. Or will be. Probably."
+
+  Largest holding is also worst performer:
+    "{TICKER} is 40% of your portfolio and also your worst performer this year.
+     It builds character. Apparently."
+
+──────────────────────────────────────────────────
+8.4  Transaction confirmation one-liners
+──────────────────────────────────────────────────
+
+  After BUY:
+    "Added. The portfolio is now {X}% in {TICKER}. Make of that what you will."
+    "Transaction recorded. Whether this ages well is between you and the market."
+    "Bought. The conviction is visible."
+    "In. No one knows what happens next. That includes the analysts."
+
+  After SELL:
+    "Sold. Transaction recorded."
+    "The tax man has noted this."
+    "Sold {TICKER}. It will now proceed to have its best quarter ever. Probably not. Maybe."
+    "Out. Capital is available. The market is watching."
+
+  After DEPOSIT:
+    "Cash in. Raw material added. Compounding appreciates the gesture."
+    "Deposited. The money is now waiting for instructions."
+    "Contribution recorded. Month {N} of the streak."
+
+  After WITHDRAWAL:
+    "Taken out. That's what the money was for."
+    "Withdrawn. The portfolio is {X}% smaller. It'll survive. Hopefully you will too."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. MOBILE UI CONCEPTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────
+9.1  Dashboard engagement strip
+──────────────────────────────────────────────────
+
+Between the portfolio summary header and the holdings table:
+a horizontal scrollable strip of active streak pills:
+
+  [🔥 7mo deposits]  [🎯 4mo goal]  [📈 3mo green]  [Lv. Contributor]
+
+Tapping any pill opens the achievement drawer bottom sheet.
+Strip is dismissable (X on right edge). Reappears next session.
+Only active streaks are shown — inactive ones don't clutter the strip.
+
+──────────────────────────────────────────────────
+9.2  Badge unlock animation
+──────────────────────────────────────────────────
+
+Triggered immediately after the qualifying action completes.
+Full-screen dark overlay, badge appears center-screen with:
+  - Slow radial glow pulse (no particle effects — premium, not gamified)
+  - Badge name + tier in large text
+  - One sentence of copy underneath
+  - "Nice." button to dismiss  (intentionally understated)
+
+The animation takes 2.5 seconds. Non-skippable for first 1 second.
+Skippable after that.
+
+──────────────────────────────────────────────────
+9.3  Achievement drawer  (bottom sheet)
+──────────────────────────────────────────────────
+
+Draggable bottom sheet, same drag-to-dismiss as the transaction panel.
+Three sections:
+  - Active streaks (with live day/month counters + personal bests)
+  - Unlocked badges (grid, 4-per-row, most recent first)
+  - Locked badges (silhouetted, with requirement hint on tap)
+
+Locked badge tap:
+  Tooltip: "Requires: 12-month contribution streak  (you're at month 7)"
+  No unlock bypass. No premium tiers. Just information.
+
+──────────────────────────────────────────────────
+9.4  Monthly recap screen
+──────────────────────────────────────────────────
+
+Full-screen takeover on first open of new month.
+Top: month name + year in large type.
+Below: scrollable sections (see 6.1).
+Bottom: "Share" | "Close".
+
+Design: same dark premium fintech tokens. No confetti.
+A Bloomberg terminal that has learned to be self-aware.
+
+──────────────────────────────────────────────────
+9.5  Retirement progress card (dashboard)
+──────────────────────────────────────────────────
+
+Compact card, collapsible, shows:
+  [━━━━━━━━━━━━━━━━━━━━━━━░░░░░░░░░]  67%
+  "FIRE target: 2 500 000 PLN"
+  "At this pace: March 2041. Ahead by 2 months."
+
+Bar: gradient from --fintech-accent to --fintech-success.
+Milestone markers on bar at 25 / 50 / 75 / 90%.
+When a marker is crossed, it flashes once and the corresponding badge unlocks.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. DASHBOARD INTEGRATION MAP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [Header: Portfolio name + total value]
+  [▼ INSERT: Engagement strip — active streaks + level pill row]
+  [Holdings table / cards]
+  [▼ INSERT: Roastfolio Says — dismissable commentary card]
+  [Statistics section]
+  [▼ INSERT: Next milestone progress bar (compact)]
+  [▼ INSERT: Monthly goal widget — target / this month / streak]
+  [Retirement section]
+  [▼ Retirement: FIRE progress bar + engagement framing]
+
+Nothing is mandatory-visible. All elements can be collapsed or dismissed.
+The engagement layer adds, it does not intrude.
+
+──────────────────────────────────────────────────
+10.1  Monthly Goal widget
+──────────────────────────────────────────────────
+
+A small persistent widget (compact card):
+  "Monthly goal: 1 000 PLN"
+  Progress bar: deposited so far this month / goal
+  "Streak: 4 months"
+  Edit icon to change the goal (changing doesn't reset the streak)
+
+If no goal is set: "Set a monthly deposit goal →" prompt (soft, dismissable).
+
+──────────────────────────────────────────────────
+10.2  Engagement state on first load
+──────────────────────────────────────────────────
+
+New user (0 transactions):
+  No engagement strip shown yet.
+  After first deposit: contribution streak begins, seed badge unlocks, strip appears.
+
+Returning user (existing data):
+  On first launch after shipping this feature, compute all retroactive badges
+  from transaction history. Unlock them silently (no animations for retroactive).
+  User discovers them by opening the achievement drawer, which shows a "New" marker.
+
+  One-time message in drawer:
+  "We went through your history. Turns out you've been building this longer
+   than you realized. Here's what you've earned."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. NOTIFICATION CONCEPTS  (push / in-app)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Rule: max 2 engagement notifications per month.
+Rule: never during a period when the portfolio is down >10%.
+Rule: always dismissable, never repeat the same one twice.
+
+  CONTRIBUTION STREAK AT RISK (day 28 of a month with no deposit yet):
+    "You're 3 days from breaking your {N}-month deposit streak. Worth mentioning."
+
+  GOAL AT RISK (5 days before month end, goal not yet hit):
+    "You're {X} PLN short of your monthly goal. {N} days left."
+
+  MONTHLY RECAP AVAILABLE:
+    "Your {Month} recap is ready. It's honest."
+
+  NEW ALL-TIME HIGH:
+    "Portfolio hit a new all-time high today. Noted."
+
+  RETIREMENT MILESTONE CROSSED:
+    "You just crossed {X}% toward your retirement goal. Go look. The number changed."
+
+  ANNUAL IKE/IKZE REMINDER (November only):
+    "IKE/IKZE: {X}% used this year. {N} weeks left. Just saying."
+
+  ONE-YEAR ANNIVERSARY (from first investment date):
+    "One year ago today you made your first investment. Here's where you are now."
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. DESIGN PRINCIPLES SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Every metric ties to real behavior, not artificial engagement.
+   XP is earned by depositing and hitting goals, not by opening the app
+   repeatedly or completing tutorials.
+
+2. Selling is a valid decision.
+   No streak penalizes selling. No badge mocks sells. Withdrawals are
+   tracked because they reduce compounding capital — not because they are wrong.
+
+3. Roasts roast the pattern, never the person.
+   "Sold at a loss" not "you made a bad decision."
+
+4. Bad market moments are never roasted.
+   Down 20%? The commentary system goes quiet. It returns when the portfolio does.
+
+5. The tone is consistent with the app's premium fintech identity.
+   No confetti. No level-up sounds. No cartoon characters.
+   A minimalist Bloomberg that has read too much finance Twitter.
+
+6. Retroactive fairness.
+   Existing users get their history recognized on first launch.
+   No one starts at zero because the feature shipped late.
+
+7. Minimal intrusion.
+   Every element can be dismissed, hidden, or collapsed.
+   The engagement layer assists — it does not boss.
+
+8. Honesty over dopamine.
+   The progress bar to retirement shows the honest projection.
+   If the math is bad, the app says so, gently, once. Then it moves on.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. MULTI-PROFILE CALCULATION RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+13.1  MONTHLY DEPOSIT GOAL — ONE GLOBAL SETTING
+──────────────────────────────────────────────────────────────────
+  There is exactly ONE monthly deposit goal per user — a single PLN
+  value set in Settings → Achievements → Monthly goal.
+
+  Calculation: total DEPOSIT transactions across ALL portfolios in a
+  calendar month is compared against that single goal.
+
+  Example: goal = 1 000 PLN. User deposits 400 PLN into IKE and
+  700 PLN into XTB → total = 1 100 PLN → goal met → streak advances.
+
+  Rationale: the goal tracks total capital deployment. Which portfolio
+  receives the money is a portfolio-level decision unrelated to the
+  monthly investment habit being rewarded.
+
+  Changing the goal mid-streak does NOT reset the streak. The system
+  records the habit (goal met Y/N), not the specific goal amount.
+
+
+13.2  MULTIPLE RETIREMENT PLANS — PRIMARY PLAN SELECTION
+──────────────────────────────────────────────────────────────────
+  Users can create multiple retirement plans (e.g., conservative /
+  aggressive scenarios). Exactly one plan drives achievement badges
+  and the FIRE progress bar at a time.
+
+  Selection rules (in priority order):
+    1. The plan explicitly marked "primary" by the user.
+    2. If none is marked: the most recently modified plan.
+    3. A soft prompt in the achievements screen suggests marking one
+       as primary when more than one plan exists.
+
+  Switching primary plan:
+    The FIRE progress percentage recalculates immediately against the
+    new plan's target. No badge is revoked; no badge is re-earned.
+    The retroactive history is simply viewed against a new target.
+
+
+13.3  FIRE PROGRESS CALCULATION
+──────────────────────────────────────────────────────────────────
+  Formula:
+
+    FIRE % = (sum of ALL portfolio current values) ÷ (primary plan
+              retirement target) × 100
+
+  All portfolios are included regardless of type (brokerage, IKE,
+  IKZE, crypto). Rationale: retirement uses all available assets —
+  arbitrarily excluding some portfolios would understate progress.
+
+  Milestone thresholds: 10 / 25 / 50 / 75 / 90 / 100 %.
+  Each threshold can only be crossed (badge awarded) once per plan.
+  If the user changes primary plan, threshold crossings for the new
+  plan are evaluated against their existing history independently.
+
+
+13.4  IKE / IKZE UTILIZATION — ALWAYS PER-ACCOUNT
+──────────────────────────────────────────────────────────────────
+  IKE and IKZE utilization badges and reminders are independent of
+  the retirement plan system entirely.
+
+  Calculation: sum of DEPOSIT transactions in the current calendar
+  year into portfolios tagged "IKE" (or "IKZE") vs. the statutory
+  annual limit (updated each year; hardcoded in the backend config).
+
+  This works regardless of whether a retirement plan exists or is
+  marked primary. It requires only that the user has a portfolio
+  named or tagged as IKE or IKZE.
+
+
+════════════════════════════════════════════════════════════════════
+END OF DOCUMENT  (v2.1 — multi-profile rules added)
+════════════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════════════
+SECTION 14 — SARCASTIC COMMENTARY ENGINE  (roast-engine.js)
+════════════════════════════════════════════════════════════════════
+
+  "I'm not being sarcastic. I'm making accurate observations in a
+   register that some people find socially uncomfortable.
+   That is a them problem."  — tone calibration note, roast-engine.js
+
+14.1  PURPOSE
+─────────────────────────────────────────────────────────────────────
+  A contextual, rotating sarcastic commentary layer that surfaces
+  one-line reactions to portfolio events. Tone: Sheldon Cooper —
+  precise, condescending, accidentally supportive.
+
+  Implemented in:  src/scripts/roast-engine.js
+  Exposed as:      window.RoastEngine
+
+14.2  CONTEXT OBJECT  (caller supplies these fields)
+─────────────────────────────────────────────────────────────────────
+  changePct         number        — today's portfolio Δ% (signed)
+  isATH             boolean       — portfolio at all-time high
+  benchmarkDiff     number        — portfolio minus benchmark Δ% today
+  depositGoalMet    boolean|null  — null = no goal set
+  streak            number        — longest active streak (months)
+  concentrationPct  number        — largest single-holding weight %
+  concentrationName string        — name of that holding
+  volatilityHigh    boolean       — elevated intraday swing detected
+  swingPct          number        — intraday high/low range %
+
+14.3  CATEGORIES  (14 total, 124 commentary entries)
+─────────────────────────────────────────────────────────────────────
+  Performance (auto-categorized from changePct):
+    positive_mild        +0.1 % →  +1 %     10 entries
+    positive_strong      +1 %  →  +3 %      10 entries
+    positive_exceptional  > +3 %            10 entries
+    negative_mild        −0.1 % → −1 %      10 entries
+    negative_strong      −1 %  → −3 %       10 entries
+    negative_severe       < −3 %            10 entries
+    flat                  ±0.1 %             8 entries
+
+  Context-triggered (override performance when condition is true):
+    ath                  isATH = true        8 entries
+    volatility_high      volatilityHigh      8 entries
+    concentration_risk   conc ≥ 40 %         8 entries
+    benchmark_beat       benchmarkDiff ≥ 1 %  8 entries
+    benchmark_lag        benchmarkDiff ≤ −1 % 8 entries
+
+  Lifecycle-triggered (call getForCategory() explicitly):
+    missed_goal          month-end, goal unmet   8 entries
+    strong_consistency   streak milestone events  8 entries
+
+14.4  CATEGORIZATION PRIORITY
+─────────────────────────────────────────────────────────────────────
+  1. isATH                → ath
+  2. volatilityHigh       → volatility_high
+  3. concentrationPct ≥ 40 → concentration_risk
+  4. benchmarkDiff ≥ 1    → benchmark_beat
+  5. benchmarkDiff ≤ −1   → benchmark_lag
+  6. changePct bands      → performance categories
+  7. (default)            → flat
+
+  missed_goal and strong_consistency bypass this chain entirely —
+  they are triggered explicitly by lifecycle events, not daily.
+
+14.5  ROTATION LOGIC
+─────────────────────────────────────────────────────────────────────
+  Each category maintains a seen-index buffer of the last 3 picks.
+  The engine draws from the pool excluding recently seen entries.
+  When all entries have been seen, the buffer resets and rotation
+  resumes from the full pool.
+
+  This ensures no exact repeat within ~3 appearances of the same
+  category, without requiring server-side state.
+
+14.6  FRONTEND INTEGRATION
+─────────────────────────────────────────────────────────────────────
+  Load roast-engine.js before any consumer script:
+
+    <script src="scripts/roast-engine.js"></script>
+
+  Daily dashboard commentary (example):
+
+    const ctx = {
+        changePct:         liveData.portfolioChangePct,
+        isATH:             liveData.isATH,
+        benchmarkDiff:     liveData.changePct - wigData.changePct,
+        concentrationPct:  analytics.topHoldingWeight,
+        concentrationName: analytics.topHoldingName,
+        volatilityHigh:    liveData.swingPct > 3,
+        swingPct:          liveData.swingPct,
+    };
+    const result = RoastEngine.getCommentary(ctx);
+    roastBanner.textContent = result.text;
+
+  Lifecycle events (month-end, streak milestone):
+
+    // Missed goal
+    const r = RoastEngine.getForCategory('missed_goal', { streak: 5 });
+
+    // Streak milestone at N months
+    const r = RoastEngine.getForCategory('strong_consistency', { streak: N });
+
+  Interpolation tokens available in templates:
+    {pct}     — formatted changePct with sign (e.g. "+2.3%")
+    {n}       — streak value
+    {holding} — concentrationName
+    {conc}    — concentrationPct (integer)
+    {diff}    — |benchmarkDiff| formatted (e.g. "1.4%")
+    {swing}   — swingPct formatted
+
+14.7  TONE RULES  (enforced by editorial review, not code)
+─────────────────────────────────────────────────────────────────────
+  ✓  Witty, precise, data-anchored
+  ✓  Condescending in register, not in intent
+  ✓  Accidentally supportive — the comfort is real even if reluctant
+  ✓  References physics, game theory, statistics as rhetorical device
+  ✗  Never cruel, never depressing, never childish
+  ✗  No exclamation marks except in positive_exceptional (one instance)
+  ✗  No "you got this", "amazing", "keep it up" — leave that to others
+
+════════════════════════════════════════════════════════════════════
+END OF DOCUMENT  (v2.2 — commentary engine added, Section 14)
+════════════════════════════════════════════════════════════════════

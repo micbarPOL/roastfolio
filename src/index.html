@@ -1,0 +1,2018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Roastfolio</title>
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Theme & status-bar colour (light + dark) -->
+    <meta name="theme-color" content="#cde8f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0d2136" media="(prefers-color-scheme: dark)">
+
+    <!-- iOS / Safari PWA support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Roastfolio">
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png">
+
+    <!-- Open Graph / sharing -->
+    <meta property="og:title" content="Roastfolio">
+    <meta property="og:description" content="Sarcastic investment portfolio tracker.">
+    <meta property="og:image" content="data/logos/icon-512.png">
+    <meta property="og:type" content="website">
+
+    <link rel="stylesheet" href="styles/main.css?v=20260702c">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            const THEME_KEY = 'roastfolio-theme';
+            function getStoredTheme() {
+                try { return localStorage.getItem(THEME_KEY); }
+                catch (e) { return null; }
+            }
+            function getPreferredTheme() {
+                const stored = getStoredTheme();
+                if (stored === 'light' || stored === 'dark') return stored;
+                return 'dark';
+            }
+            function syncThemeControls(theme) {
+                document.querySelectorAll('[data-theme-choice]').forEach(btn => {
+                    const active = btn.dataset.themeChoice === theme;
+                    btn.classList.toggle('active', active);
+                    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+                });
+            }
+            function applyTheme(theme) {
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.style.colorScheme = theme;
+                const meta = document.querySelector('meta[name="theme-color"]:not([media])') || document.querySelector('meta[name="theme-color"]');
+                if (meta) meta.setAttribute('content', theme === 'light' ? '#eef8ff' : '#0d2136');
+                if (window.Chart) {
+                    const textColor = theme === 'light' ? '#102033' : '#c8e3f5';
+                    Chart.defaults.color = textColor;
+                    if (Chart.defaults.plugins && Chart.defaults.plugins.legend && Chart.defaults.plugins.legend.labels) {
+                        Chart.defaults.plugins.legend.labels.color = textColor;
+                    }
+                    if (Chart.defaults.scale && Chart.defaults.scale.title) {
+                        Chart.defaults.scale.title.color = textColor;
+                    }
+                }
+                syncThemeControls(theme);
+                window.dispatchEvent(new CustomEvent('roastfolio:themechange', { detail: { theme } }));
+            }
+            window.setRoastfolioTheme = function(theme) {
+                const next = theme === 'light' ? 'light' : 'dark';
+                try { localStorage.setItem(THEME_KEY, next); }
+                catch (e) {}
+                applyTheme(next);
+            };
+            window.getRoastfolioTheme = function() {
+                return document.documentElement.dataset.theme || getPreferredTheme();
+            };
+            window.isRoastfolioDark = function() {
+                return window.getRoastfolioTheme() === 'dark';
+            };
+            function applyPreferredTheme() {
+                applyTheme(getPreferredTheme());
+            }
+            applyPreferredTheme();
+            window.addEventListener('roastfolio:themechange', function() {
+                if (!window.Chart) return;
+                document.querySelectorAll('canvas').forEach(canvas => {
+                    const chart = Chart.getChart(canvas);
+                    if (chart && typeof chart.update === 'function') chart.update();
+                });
+            });
+            window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', function() {
+                if (getStoredTheme()) return;
+                applyPreferredTheme();
+                Object.values(window._historyCharts || {}).forEach(chart => {
+                    if (chart && typeof chart.update === 'function') {
+                        chart.update();
+                    }
+                });
+            });
+        })();
+    </script>
+    <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+    <!-- Live data: portfolio prices, benchmark, wallet summaries all come from Lambda /prices API -->
+    <script src="scripts/config.js" onerror="window.__CONFIG__={}"></script>
+    <!-- Auth guard: must run synchronously right after config.js -->
+    <script src="scripts/auth-guard.js"></script>
+
+    <!-- User profile: fetch/cache profile from DynamoDB via /profile API -->
+    <script src="scripts/user-profile.js"></script>
+    <!-- Portfolio client: DynamoDB portfolios + holdings CRUD + migration trigger -->
+    <script src="scripts/portfolios.js?v=20260630a"></script>
+    <script src="scripts/ledger-transactions.js?v=20260630c"></script>
+    <script src="scripts/live-data.js?v=20260709b"></script>
+</head>
+    <body>
+    <!-- Splash screen — overlay, hidden after live prices are fetched -->
+    <div id="splash-screen" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(160deg,#1a4e82 0%,#0d2136 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);">
+        <img src="data/logos/icon-512.png" alt="" class="splash-logo">
+        <p class="splash-title">Roastfolio</p>
+        <p id="splash-tagline" class="splash-tagline">Loading your worst investments…</p>
+        <div class="splash-cl-loader cl-loader cl-loader--lg" style="margin-top:28px;animation:splashFadeUp 0.4s 0.35s ease both;" aria-hidden="true">
+            <div class="cl-candles">
+                <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+            </div>
+        </div>
+        <div class="splash-progress-track" aria-hidden="true">
+            <div id="splash-progress-bar" class="splash-progress-bar"></div>
+        </div>
+    </div>
+    <header>
+        <div class="brand-header">
+            <!-- Hamburger menu button -->
+            <button type="button" class="sidenav-toggle-btn" id="sidenav-toggle" onclick="openSidenav()" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidenav">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <button type="button" class="brand-logo-btn" onclick="toggleBrandModal(true)" aria-label="Open Roastfolio logo">
+                <img src="data/logos/icon-512.png" alt="Roastfolio logo" class="brand-logo">
+            </button>
+            <div class="brand-copy">
+                <h1 class="brand-title">Roastfolio</h1>
+                <div class="brand-sub-row">
+                    <div id="live-data-status" class="live-data-status" aria-live="polite"></div>
+                </div>
+            </div>
+        </div>
+        <div id="market-commentary" class="market-commentary" data-market-commentary></div>
+    </header>
+
+    <!-- ── Sidebar navigation ────────────────────────────────── -->
+    <div id="sidenav-backdrop" class="sidenav-backdrop" onclick="closeSidenav()" aria-hidden="true"></div>
+    <aside id="sidenav" class="sidenav" role="navigation" aria-label="Main navigation">
+        <div class="sidenav-header">
+            <img src="data/logos/icon-512.png" alt="" class="sidenav-logo">
+            <div>
+                <div class="sidenav-app-name">Roastfolio</div>
+                <div class="sidenav-app-sub" id="sidenav-user-name"></div>
+            </div>
+            <button type="button" class="sidenav-close-btn" onclick="closeSidenav()" aria-label="Close menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <nav class="sidenav-nav">
+            <button class="sidenav-item active" data-tab="dashboard" onclick="showTab('dashboard');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+                <span class="sidenav-item-label">Dashboard</span>
+            </button>
+            <button class="sidenav-item" data-tab="wallets" onclick="showTab('wallets');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></span>
+                <span class="sidenav-item-label">Wallets</span>
+            </button>
+            <button class="sidenav-item" data-tab="portfolio" onclick="showTab('portfolio');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span>
+                <span class="sidenav-item-label">Portfolio</span>
+            </button>
+            <div class="sidenav-divider" role="separator"></div>
+            <div class="sidenav-section-label">Analytics</div>
+            <button class="sidenav-item" data-tab="history" data-role="ADVANCED" onclick="showTab('history');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span>
+                <span class="sidenav-item-label">History</span>
+            </button>
+            <button class="sidenav-item" data-tab="statistics" data-role="ADVANCED" onclick="showTab('statistics');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+                <span class="sidenav-item-label">Statistics</span>
+            </button>
+            <button class="sidenav-item" data-tab="retirement" data-role="ADVANCED" onclick="showTab('retirement');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                <span class="sidenav-item-label">Retirement</span>
+            </button>
+            <button class="sidenav-item" data-tab="transactions" data-role="ADVANCED" onclick="showTab('transactions');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></span>
+                <span class="sidenav-item-label">Transactions</span>
+            </button>
+            <button class="sidenav-item" data-tab="analysis" data-role="ADVANCED" onclick="showTab('analysis');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><polyline points="11 8 11 12 14 15"/></svg></span>
+                <span class="sidenav-item-label">Analysis</span>
+            </button>
+            <div class="sidenav-divider" role="separator"></div>
+            <div class="sidenav-section-label">Account</div>
+            <a href="guide.html" class="sidenav-item" style="text-decoration:none; color:inherit; align-items:center;">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+                <span class="sidenav-item-label">User Guide</span>
+            </a>
+            <div class="sidenav-divider" role="separator"></div>
+            <div class="sidenav-section-label">Appearance</div>
+            <div class="theme-switch" role="group" aria-label="Color mode">
+                <button type="button" class="theme-switch-btn" data-theme-choice="dark" onclick="setRoastfolioTheme('dark')" aria-pressed="true">
+                    <span class="theme-switch-icon" aria-hidden="true">◐</span>
+                    <span>Dark</span>
+                </button>
+                <button type="button" class="theme-switch-btn" data-theme-choice="light" onclick="setRoastfolioTheme('light')" aria-pressed="false">
+                    <span class="theme-switch-icon" aria-hidden="true">○</span>
+                    <span>Light</span>
+                </button>
+            </div>
+        </nav>
+        <div class="sidenav-footer" onclick="openUserModal()" style="cursor: pointer;" title="User settings">
+            <div class="sidenav-footer-name" id="sidenav-footer-name"></div>
+            <div class="sidenav-footer-role" id="sidenav-footer-role">Premium</div>
+        </div>
+    </aside>
+
+
+    <div id="brand-logo-modal" class="brand-modal" aria-hidden="true" onclick="if (event.target === this) toggleBrandModal(false)">
+        <div class="brand-modal-dialog">
+            <button type="button" class="brand-modal-close" onclick="toggleBrandModal(false)" aria-label="Close logo preview">×</button>
+            <img src="data/logos/icon-512.png" alt="Roastfolio logo large preview" class="brand-modal-image">
+        </div>
+    </div>
+
+    <!-- Tab: Dashboard -->
+    <main id="tab-dashboard" class="tab-content active is-loading">
+        <section id="market-index-carousel-top-mobile" class="market-index-carousel market-index-carousel-top-mobile" data-market-carousel aria-label="Major indices banner" hidden>
+            <div class="market-index-carousel-shell">
+                <div class="market-index-carousel-track"></div>
+            </div>
+            <div class="market-index-carousel-dots"></div>
+        </section>
+        <!-- Engagement strip — streak + level + badge pills, links to achievements.html -->
+        <div id="engagement-strip" class="eng-strip-wrap" aria-label="Your progress"></div>
+        <div class="dashboard-grid">
+            <section class="dash-card dash-summary">
+                <div class="dash-label">Portfolio — Total Value</div>
+                <div class="skel-line skel-lg" aria-hidden="true"></div>
+                <div class="skel-line skel-md" aria-hidden="true"></div>
+                <div class="skel-line skel-sm" aria-hidden="true"></div>
+                <div id="dash-total-value" class="dash-total">—</div>
+                <div id="dash-daily-pln" class="dash-daily">—</div>
+                <div id="dash-drawdown" class="dash-drawdown">—</div>
+                <div id="dash-ath-celebration" class="gauge-ath-celebration dash-ath-celebration" hidden></div>
+                <!-- Sparkline chart for last 6 months returns -->
+                <div class="dash-sparkline-container" style="height: 65px; margin-top: 12px; margin-bottom: -10px; width: 100%;">
+                    <canvas id="dashSparklineChart"></canvas>
+                </div>
+            </section>
+            <section class="dash-card dash-gauge-card is-fetching-data" style="position:relative;">
+                <div class="dash-label">Portfolio — Daily Change</div>
+                <div class="skel-circle" aria-hidden="true"></div>
+                <div class="card-cl-overlay">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gauge-wrapper" style="position:relative;">
+                    <canvas id="gaugeChart"></canvas>
+                </div>
+                <div id="gauge-benchmark-tooltip"></div>
+                <section id="market-index-carousel" class="market-index-carousel" data-market-carousel aria-label="Major indices banner" hidden>
+                    <div class="market-index-carousel-shell">
+                        <div class="market-index-carousel-track"></div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Mobile swipeable gauge carousel — hidden on desktop, rebuilt dynamically after data loads -->
+            <section class="dash-card dash-gauge-carousel-card is-fetching-data">
+                <div class="gauge-carousel-track" id="gauge-carousel-track">
+                    <!-- Slot 0: Summary (always present) -->
+                    <div class="gauge-slide is-active" data-wallet="Summary">
+                        <div class="gauge-slide-inner">
+                            <div class="dash-label gauge-slide-title">Portfolio</div>
+                            <div class="skel-circle" aria-hidden="true"></div>
+                            <div class="card-cl-overlay">
+                                <div class="cl-loader">
+                                    <div class="cl-candles">
+                                        <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                                        <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                                        <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gauge-wrapper-mini" style="position:relative;">
+                                <canvas id="gaugeChart-mobile" style="width:100%;height:160px;"></canvas>
+                            </div>
+                            <div id="gauge-benchmark-tooltip-mobile"></div>
+                            <div id="gauge-mobile-meta-summary" class="gauge-mobile-meta"></div>
+                        </div>
+                    </div>
+                    <!-- Wallet slides injected dynamically by rebuildCarousel() after API response -->
+                </div>
+                <!-- Dot indicators — rebuilt dynamically -->
+                <div class="gauge-carousel-dots" id="gauge-carousel-dots">
+                    <span class="gauge-dot active" data-slide="0"></span>
+                </div>
+            </section>
+
+            <div id="dash-mini-wallets" class="dash-mini-wallets"></div>
+
+            <!-- Monthly Summary Card -->
+            <section class="dash-card dash-monthly-summary-card">
+                <div class="dash-label">Monthly Summary</div>
+                <div class="monthly-summary-grid">
+                    <!-- Column 1: Monthly Return -->
+                    <div class="monthly-metric-card">
+                        <span class="monthly-metric-title">Monthly Return</span>
+                        <div id="monthly-return-val" class="monthly-metric-value">—</div>
+                        <div id="monthly-return-pct" class="monthly-metric-sub">—</div>
+                    </div>
+                    <!-- Column 2: Benchmark Comparison -->
+                    <div class="monthly-metric-card clickable-card" id="monthly-benchmarks-btn" onclick="toggleMonthlyBenchmarksList()">
+                        <span class="monthly-metric-title">Benchmark Comparison</span>
+                        <div id="monthly-benchmarks-score" class="monthly-metric-value">—</div>
+                        <div class="monthly-metric-sub">Overtook vs Lost <span class="arrow-indicator">▼</span></div>
+                        <div id="monthly-benchmarks-dropdown" class="monthly-benchmarks-list" style="display: none;" onclick="event.stopPropagation()">
+                            <!-- list of benchmarks will be dynamically populated -->
+                        </div>
+                    </div>
+                    <!-- Column 3: Retirement Goals -->
+                    <div class="monthly-metric-card monthly-goals-card">
+                        <span class="monthly-metric-title">Retirement Goals</span>
+                        <div class="monthly-goal-row">
+                            <div class="monthly-goal-meta">
+                                <span class="goal-label">Monthly Deposit:</span>
+                                <span id="monthly-deposit-status" class="goal-value">—</span>
+                            </div>
+                            <div class="progress-container">
+                                <div id="monthly-deposit-bar" class="progress-bar" style="width: 0%;"></div>
+                                <span id="monthly-deposit-pct" class="progress-pct">0%</span>
+                            </div>
+                        </div>
+                        <div class="monthly-goal-row">
+                            <div class="monthly-goal-meta">
+                                <span class="goal-label">Monthly Return:</span>
+                                <span id="monthly-return-goal-status" class="goal-value">—</span>
+                            </div>
+                            <div class="progress-container">
+                                <div id="monthly-return-bar" class="progress-bar" style="width: 0%;"></div>
+                                <span id="monthly-return-pct-goal" class="progress-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Yearly Summary Card -->
+            <section class="dash-card dash-yearly-summary-card">
+                <div class="dash-label">Yearly Summary</div>
+                <div class="yearly-summary-grid">
+                    <!-- Column 1: Yearly Return -->
+                    <div class="yearly-metric-card">
+                        <span class="yearly-metric-title">Yearly Return</span>
+                        <div id="yearly-return-val" class="yearly-metric-value">—</div>
+                        <div id="yearly-return-pct" class="yearly-metric-sub">—</div>
+                    </div>
+                    <!-- Column 2: Benchmark Comparison -->
+                    <div class="yearly-metric-card clickable-card" id="yearly-benchmarks-btn" onclick="toggleYearlyBenchmarksList()">
+                        <span class="yearly-metric-title">Benchmark Comparison</span>
+                        <div id="yearly-benchmarks-score" class="yearly-metric-value">—</div>
+                        <div class="yearly-metric-sub">Overtook vs Lost <span class="arrow-indicator">▼</span></div>
+                        <div id="yearly-benchmarks-dropdown" class="yearly-benchmarks-list" style="display: none;" onclick="event.stopPropagation()">
+                            <!-- list of benchmarks will be dynamically populated -->
+                        </div>
+                    </div>
+                    <!-- Column 3: Retirement Goals -->
+                    <div class="yearly-metric-card yearly-goals-card">
+                        <span class="yearly-metric-title">Retirement Goals</span>
+                        <div class="yearly-goal-row">
+                            <div class="yearly-goal-meta">
+                                <span class="goal-label">Yearly Deposit:</span>
+                                <span id="yearly-deposit-status" class="goal-value">—</span>
+                            </div>
+                            <div class="progress-container">
+                                <div id="yearly-deposit-bar" class="progress-bar" style="width: 0%;"></div>
+                                <span id="yearly-deposit-pct" class="progress-pct">0%</span>
+                            </div>
+                        </div>
+                        <div class="yearly-goal-row">
+                            <div class="yearly-goal-meta">
+                                <span class="goal-label">Yearly Return:</span>
+                                <span id="yearly-return-goal-status" class="goal-value">—</span>
+                            </div>
+                            <div class="progress-container">
+                                <div id="yearly-return-bar" class="progress-bar" style="width: 0%;"></div>
+                                <span id="yearly-return-pct-goal" class="progress-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dash-card dash-breakdown-card">
+                <div class="dash-label">Today's Movers</div>
+                <div id="dash-breakdown"></div>
+            </section>
+        </div>
+
+        <!-- Benchmark Chart -->
+        <section class="dash-card wig-chart-card">
+            <div class="wig-chart-header">
+                <div class="wig-title-row">
+                    <span id="benchmark-chart-title" class="wig-title">Benchmark</span>
+                    <span id="benchmark-change-badge" class="wig-change-badge"></span>
+                    <span id="benchmark-ohlc-legend" class="wig-ohlc-legend"></span>
+                </div>
+                <div class="wig-controls">
+                    <div class="benchmark-range-btns wig-range-btns">
+                        <button class="benchmark-range-btn wig-range-btn" data-range="1D"  onclick="setBenchmarkRange('1D')">1D</button>
+                        <button class="benchmark-range-btn wig-range-btn" data-range="YTD" onclick="setBenchmarkRange('YTD')">YTD</button>
+                        <button class="benchmark-range-btn wig-range-btn" data-range="1Y"  onclick="setBenchmarkRange('1Y')">1Y</button>
+                    </div>
+                    <div class="benchmark-type-btns wig-type-btns">
+                        <button class="benchmark-type-btn wig-type-btn active" data-type="line"   onclick="setBenchmarkChartType('line')">Line</button>
+                        <button class="benchmark-type-btn wig-type-btn"        data-type="candle" onclick="setBenchmarkChartType('candle')">Candle</button>
+                    </div>
+                </div>
+            </div>
+            <div id="benchmarkChartContainer" class="wig-chart-wrapper" style="position:relative;">
+                <div id="benchmark-cl-loader" class="card-cl-overlay" style="display:flex;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
+                <div id="benchmark-no-data" style="display:none;align-items:center;justify-content:center;height:100%;color:#888">
+                    Refresh prices to load benchmark chart data
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <main id="tab-wallets" class="tab-content">
+        <section class="wallet-screen">
+            <div class="wallet-screen-header">
+                <h2>Wallet Management</h2>
+            </div>
+
+            <!-- ── Sticky wallet selector ─────────────────────── -->
+            <div id="wallet-sticky-sentinel" class="wallet-sticky-sentinel" aria-hidden="true"></div>
+            <div class="wallet-sticky-top">
+                <div class="wallet-card wallet-selector-card">
+                    <!-- Mobile: compact header + overflow menu -->
+                    <div class="wallet-mobile-header">
+                        <h2 class="wallet-mobile-title">Wallets</h2>
+                        <button class="wallet-overflow-btn" type="button" aria-label="More options"
+                                onclick="window._mgmt.toggleWalletOverflow()">···</button>
+                    </div>
+                    <div id="mgmt-wallet-overflow-menu" class="wallet-overflow-menu" hidden aria-hidden="true">
+                        <button class="wallet-overflow-item" type="button"
+                                onclick="window._mgmt.toggleCreatePortfolioComposer()">+ Add wallet</button>
+                        <button class="wallet-overflow-item" type="button"
+                                onclick="window._mgmt.openTransactionsPanel('history')">Transaction history</button>
+                    </div>
+                    <!-- Mobile: horizontal wallet chip carousel -->
+                    <div class="wallet-chips-carousel">
+                        <div id="mgmt-wallet-chips-strip" class="wallet-chips-strip" role="listbox" aria-label="Select wallet"></div>
+                        <div id="mgmt-wallet-chips-dots" class="wallet-chips-dots" aria-hidden="true"></div>
+                    </div>
+                    <!-- Mobile: selected wallet value summary -->
+                    <div id="mgmt-mobile-wallet-summary" class="wallet-mobile-summary">
+                        <span id="mgmt-mobile-wallet-name" class="wallet-mobile-summary-name">Select wallet</span>
+                        <strong id="mgmt-mobile-wallet-total" class="wallet-mobile-summary-total">—</strong>
+                        <span id="mgmt-mobile-wallet-pct" class="wallet-mobile-summary-pct is-neutral">—</span>
+                    </div>
+                    <!-- Desktop: wallet list label + create button -->
+                    <div class="wallet-selector-head wallet-desktop-only">
+                        <div class="mgmt-section-title">Wallets</div>
+                        <button id="mgmt-toggle-create-btn" class="mgmt-btn mgmt-btn-secondary wallet-create-toggle"
+                                onclick="window._mgmt.toggleCreatePortfolioComposer()">+ Wallet</button>
+                    </div>
+                    <div id="mgmt-port-flash" class="mgmt-flash" style="display:none"></div>
+                    <!-- (Desktop dropdown selector removed in favor of universal chips strip) -->
+                    <div id="mgmt-create-row-wrap" class="wallet-create-shell" hidden aria-hidden="true">
+                        <div class="mgmt-create-row">
+                            <input id="mgmt-new-port-name" type="text" class="mgmt-input" placeholder="New wallet name…"
+                                   onkeydown="if(event.key==='Enter')window._mgmt.createPortfolio()">
+                            <button id="mgmt-create-port-btn" class="mgmt-btn mgmt-btn-primary"
+                                    onclick="window._mgmt.createPortfolio()">Create</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Compact overview bar ─────────────────────────
+                 Always visible. Replaces the old wallet-card-overview.
+                 Shows wallet name, rename/delete actions, benchmark
+                 (Summary only), and quick-action buttons on desktop.
+            ── -->
+            <div class="wallet-overview-bar wallet-card">
+                <div class="wob-head">
+                    <div class="wob-name-group">
+                        <span class="mgmt-section-title">Selected wallet</span>
+                        <h3 id="mgmt-holdings-title" class="wob-wallet-name">Select a wallet</h3>
+                    </div>
+                    <div id="mgmt-settings-actions" class="wallet-settings-actions wob-settings-actions"></div>
+                </div>
+                <div id="mgmt-settings-summary" class="wallet-settings-summary wob-summary">Summary stays pinned first. Select a wallet to manage it.</div>
+                <div id="mgmt-benchmark-setting" style="display:none"></div>
+                <!-- ── ATH management ────────────────────────────────── -->
+                <div id="mgmt-ath-setting" class="wallet-setting-item" style="display:none">
+                    <span class="wallet-setting-label">All-Time High (ATH)</span>
+                    <div id="mgmt-ath-content"></div>
+                    <div id="mgmt-ath-status" class="portfolio-ath-status" aria-live="polite"></div>
+                </div>
+                <div id="mgmt-annual-return-setting" class="wallet-setting-item">
+                    <span class="wallet-setting-label">Average Yearly Return</span>
+                    <div id="mgmt-annual-return-content" class="wob-value-bold">--</div>
+                </div>
+                <div class="wob-actions">
+                    <button id="mgmt-open-trade-btn" class="mgmt-btn mgmt-btn-primary wallet-quick-action"
+                            onclick="window._mgmt.openTransactionsPanel('trade')">New transaction</button>
+                    <span id="mgmt-inline-status" class="wallet-settings-pill wallet-settings-pill-muted">Stable holdings layout</span>
+                </div>
+            </div>
+
+            <!-- ── Quick Entry — always visible on wallet screen ── -->
+            <div id="wallet-quick-entry-card" class="wallet-card wallet-qe-card">
+                <div class="wallet-qe-header">
+                    <svg class="wallet-qe-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M3 6h14M3 10h10M3 14h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span class="wallet-qe-title">Quick Entry</span>
+                    <span class="wallet-qe-subtitle">Type a transaction in plain text, press Enter to confirm</span>
+                </div>
+                <div class="wallet-qe-body">
+                    <div class="wallet-qe-input-row">
+                        <textarea id="mgmt-quick-entry-input"
+                            class="wallet-qe-input"
+                            rows="1"
+                            placeholder="e.g. Buy 10 AAPL for 185.50"
+                            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            oninput="window._mgmt.onQuickEntryInput(event)"
+                            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._mgmt.parseQuickEntry();}"></textarea>
+                    </div>
+                    <div class="wallet-qe-action-row" style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                        <button type="button" id="mgmt-qe-parse-btn" class="wallet-qe-btn"
+                                onclick="window._mgmt.parseQuickEntry()">
+                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" style="width: 16px; height: 16px; margin-right: 6px;">
+                                <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Process
+                        </button>
+                    </div>
+                    <div class="wallet-qe-examples">
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('buy')">📈 Buy 10 AAPL for 185.50 to XTB on 2025-06-01</span>
+                        <span class="wallet-qe-sep">·</span>
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('sell')">📉 Sell 5 CDR.WA for 120 to IKE</span>
+                        <span class="wallet-qe-sep">·</span>
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('deposit')">💰 Deposit 5000 to IKZE</span>
+                    </div>
+                    <div id="mgmt-qe-status" class="wallet-qe-status"></div>
+                </div>
+            </div>
+
+            <!-- ── Inline Transaction Form ─────────────────── -->
+            <div id="wallet-transaction-card" class="wallet-card wallet-tx-card" style="display: none;">
+                    <!-- visually-hidden title for aria-labelledby -->
+                    <h2 id="mgmt-overlay-title" class="tflow-sr-only">Transaction</h2>
+
+                    <!-- ── Type selector ──────────────────────── -->
+                    <div class="tflow-chrome">
+                        <input id="mgmt-transaction-type" type="hidden" value="BUY">
+                        <div class="tflow-type-rail" role="tablist" aria-label="Transaction type">
+                            <button type="button" id="mgmt-type-buy" class="tflow-type-btn tflow-type-buy is-active"
+                                    onclick="window._mgmt.setTransactionType('BUY')">
+                                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 13V3M3 8l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                Buy
+                            </button>
+                            <button type="button" id="mgmt-type-sell" class="tflow-type-btn tflow-type-sell"
+                                    onclick="window._mgmt.setTransactionType('SELL')">
+                                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                Sell
+                            </button>
+                            <button type="button" id="mgmt-type-deposit" class="tflow-type-btn tflow-type-cash"
+                                    onclick="window._mgmt.setTransactionType('DEPOSIT')">Deposit</button>
+                            <button type="button" id="mgmt-type-withdrawal" class="tflow-type-btn tflow-type-cash"
+                                    onclick="window._mgmt.setTransactionType('WITHDRAWAL')">Withdrawal</button>
+                            <button type="button" id="mgmt-type-dividend" class="tflow-type-btn tflow-type-cash"
+                                    onclick="window._mgmt.setTransactionType('DIVIDEND')">Dividend</button>
+                        </div>
+                    </div>
+
+                    <!-- ── Scrollable body ────────────────────────────── -->
+                    <div class="tflow-body">
+
+
+                        <!-- TRADE VIEW -->
+                        <div id="mgmt-overlay-trade" class="wallet-overlay-view tflow-view">
+
+                            <!-- Meta: hint + date + sync -->
+                            <div class="tflow-meta-row">
+                                <div id="mgmt-transaction-hint" class="tflow-hint">Buying adds to an existing holding or creates a new one.</div>
+                                <div class="tflow-meta-right">
+                                    <input id="mgmt-transaction-date" type="date" class="tflow-date-input"
+                                           onchange="window._mgmt.handleTransactionDraftChange()">
+                                    <div id="mgmt-trade-sync" class="wallet-settings-pill wallet-settings-pill-muted">Ready</div>
+                                </div>
+                            </div>
+
+                            <!-- Asset search -->
+                            <div id="mgmt-search-wrap" class="tflow-search-section">
+                                <div class="tflow-source-toggle" role="tablist" aria-label="Holding source">
+                                    <button type="button" id="mgmt-source-yf" class="mgmt-source-btn tflow-source-btn is-active"
+                                            onclick="window._mgmt.setSearchSource('yf')">Yahoo Finance</button>
+                                    <button type="button" id="mgmt-source-tfi" class="mgmt-source-btn tflow-source-btn"
+                                            onclick="window._mgmt.setSearchSource('tfi')">Polish TFI</button>
+                                </div>
+                                <div class="tflow-search-box">
+                                    <svg class="tflow-search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                        <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"/>
+                                        <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                                    </svg>
+                                    <input id="mgmt-search-input" type="text" class="tflow-search-input"
+                                           placeholder="Search company or ticker…"
+                                           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                           oninput="window._mgmt.onSearchInput(event)"
+                                           onfocus="window._mgmt.onSearchInput(event)"
+                                           onkeydown="window._mgmt.onSearchKeyDown(event)"
+                                           onblur="window._mgmt.onSearchBlur()">
+                                    <input type="hidden" id="mgmt-ticker-hidden">
+                                    <input type="hidden" id="mgmt-holding-name-hidden">
+                                </div>
+                                <div id="mgmt-ticker-dropdown" class="tflow-dropdown mgmt-dropdown" style="display:none"></div>
+                                <div id="mgmt-search-status" class="tflow-hint-small">Type to search Yahoo Finance · use arrows and Enter to select</div>
+                                <div id="mgmt-tfi-wrap" style="display:none">
+                                    <div class="tflow-tfi-row">
+                                        <input id="mgmt-tfi-code-input" type="text" class="tflow-input"
+                                               placeholder="bankier.pl code, e.g. PCS21"
+                                               autocomplete="off" maxlength="20" style="text-transform:uppercase"
+                                               oninput="window._mgmt.onTfiCodeInput(event)"
+                                               onkeydown="window._mgmt.onTfiCodeKeyDown(event)">
+                                        <button type="button" id="mgmt-tfi-lookup-btn" class="tflow-btn-secondary"
+                                                onclick="window._mgmt.lookupTfi()">Lookup</button>
+                                    </div>
+                                    <div id="mgmt-tfi-status" class="tflow-hint-small">Enter the bankier.pl fund code and press Lookup. <a href="https://www.bankier.pl/fundusze" target="_blank" rel="noopener noreferrer">Browse funds →</a></div>
+                                </div>
+                            </div>
+
+                            <!-- Selected holding + amount inputs -->
+                            <div id="mgmt-holding-confirm" class="tflow-confirm" style="display:none">
+
+                                <!-- Asset identity card -->
+                                <div class="tflow-asset-card">
+                                    <div class="tflow-asset-info">
+                                        <strong id="mgmt-confirm-symbol" class="tflow-asset-symbol"></strong>
+                                        <div class="tflow-asset-copy">
+                                            <span id="mgmt-confirm-name" class="tflow-asset-name"></span>
+                                            <span id="mgmt-confirm-exchange" class="tflow-asset-exchange"></span>
+                                        </div>
+                                    </div>
+                                    <p id="mgmt-confirm-meta" class="tflow-asset-meta">Choose quantity and optional cost details to save the transaction.</p>
+                                </div>
+
+                                <!-- Amount inputs -->
+                                <div class="tflow-amounts">
+                                    <div class="tflow-amount-field">
+                                        <label class="tflow-amount-label" id="mgmt-units-label" for="mgmt-units-input">Quantity</label>
+                                        <div class="tflow-amount-wrap">
+                                            <input id="mgmt-units-input" type="number" class="tflow-amount-input"
+                                                   placeholder="0" min="0" step="any"
+                                                   oninput="window._mgmt.handleTransactionDraftChange('units')">
+                                            <button type="button" id="mgmt-max-qty-btn" class="tflow-max-btn"
+                                                    onclick="window._mgmt.fillMaxQuantity()" style="display:none">Max</button>
+                                        </div>
+                                    </div>
+                                    <div id="mgmt-price-wrap" class="tflow-amount-field tflow-amounts-row2" style="display:none">
+                                        <label class="tflow-amount-label" for="mgmt-price-input">Price per share <span class="tflow-amount-label-sub">auto-calculates trade value</span></label>
+                                        <div class="tflow-amount-wrap">
+                                            <input id="mgmt-price-input" type="number" class="tflow-amount-input"
+                                                   placeholder="0.0000" min="0" step="any"
+                                                   oninput="window._mgmt.handleTransactionDraftChange('price')">
+                                            <span class="tflow-amount-unit">PLN</span>
+                                        </div>
+                                    </div>
+                                    <div id="mgmt-total-wrap" class="tflow-amount-field tflow-amounts-row2" style="display:none">
+                                        <label class="tflow-amount-label" id="mgmt-total-label" for="mgmt-total-input">Trade value <span class="tflow-amount-label-sub">auto-calculates price</span></label>
+                                        <div class="tflow-amount-wrap">
+                                            <input id="mgmt-total-input" type="number" class="tflow-amount-input"
+                                                   placeholder="0.00" min="0" step="any"
+                                                   oninput="window._mgmt.handleTransactionDraftChange('total')">
+                                            <span class="tflow-amount-unit">PLN</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Advanced (collapsible) -->
+                                <details class="tflow-advanced">
+                                    <summary class="tflow-advanced-toggle">Advanced options</summary>
+                                    <div class="tflow-advanced-body">
+                                        <div id="mgmt-commission-wrap" class="tflow-field">
+                                            <label class="tflow-label" for="mgmt-commission-input">Commission / fee</label>
+                                            <input id="mgmt-commission-input" type="number" class="tflow-input"
+                                                   placeholder="0.00 (optional)" min="0" step="any"
+                                                   oninput="window._mgmt.handleTransactionDraftChange()">
+                                        </div>
+                                        <div class="tflow-field">
+                                            <label class="tflow-label" for="mgmt-comment-input">Comment</label>
+                                            <input id="mgmt-comment-input" type="text" class="tflow-input"
+                                                   placeholder="Note (optional)" maxlength="300"
+                                                   oninput="window._mgmt.handleTransactionDraftChange()">
+                                        </div>
+                                        <div id="mgmt-value-hint" class="tflow-hint-small">Trade value is the full cash impact. For buys and sells, include fees in that value.</div>
+                                    </div>
+                                </details>
+
+                                <!-- Auto-cash -->
+                                <label id="mgmt-auto-cash-wrap" class="tflow-auto-cash" style="display:none">
+                                    <input id="mgmt-auto-cash-checkbox" type="checkbox"
+                                           onchange="window._mgmt.handleTransactionDraftChange()">
+                                    <span class="tflow-auto-cash-text">Automatically add missing cash before a buy</span>
+                                </label>
+
+                                <!-- Validation errors -->
+                                <div id="mgmt-form-errors" class="tflow-errors" style="display:none"></div>
+
+                                <!-- Review summary -->
+                                <div id="mgmt-transaction-summary" class="tflow-summary" aria-live="polite">
+                                    <div class="tflow-summary-header">
+                                        <span class="tflow-summary-label">Review</span>
+                                        <span id="mgmt-summary-type" class="tflow-summary-type-val">Choose a transaction</span>
+                                    </div>
+                                    <div class="tflow-summary-grid">
+                                        <div class="tflow-summary-cell">
+                                            <span class="tflow-summary-label">Asset</span>
+                                            <strong id="mgmt-summary-ticker" class="tflow-summary-value">—</strong>
+                                        </div>
+                                        <div class="tflow-summary-cell">
+                                            <span class="tflow-summary-label">Quantity</span>
+                                            <strong id="mgmt-summary-units" class="tflow-summary-value">—</strong>
+                                        </div>
+                                        <div class="tflow-summary-cell">
+                                            <span class="tflow-summary-label">Value</span>
+                                            <strong id="mgmt-summary-value" class="tflow-summary-value">—</strong>
+                                        </div>
+                                        <div class="tflow-summary-cell">
+                                            <span class="tflow-summary-label">Cash effect</span>
+                                            <strong id="mgmt-summary-cash-effect" class="tflow-summary-value">—</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Flash / success message -->
+                            <div id="mgmt-holding-flash" class="tflow-flash" style="display:none"></div>
+
+                        </div><!-- /.tflow-view#mgmt-overlay-trade -->
+
+                    </div><!-- /.tflow-body -->
+
+                    <!-- ── Sticky footer: status + cancel + submit ─────── -->
+                    <div class="tflow-footer">
+                        <div id="mgmt-submit-status" class="tflow-submit-status wallet-trade-submit-status" aria-live="polite">Ready to review</div>
+                        <div class="tflow-footer-btns">
+                            <button type="button" class="tflow-cancel-btn"
+                                    onclick="window._mgmt.closeTransactionsPanel()">Cancel</button>
+                            <button id="mgmt-add-holding-btn" type="button" class="tflow-submit-btn"
+                                    onclick="window._mgmt.addHolding()">Save Buy</button>
+                        </div>
+                    </div>
+
+            </div><!-- /#wallet-transaction-card -->
+
+            <!-- ── Holdings — always visible ───────────────────
+                 No display:none. Skeleton shows while loading.
+                 Transactions open in overlay without touching this.
+            ── -->
+            <div id="mgmt-holdings-panel" class="wallet-screen-content wallet-holdings-shell">
+                    <div class="wallet-card wallet-card-holdings">
+                        <div class="wallet-table-header">
+                            <div>
+                                <div class="mgmt-section-title">Holdings</div>
+                                <div id="mgmt-holdings-subtitle" class="wallet-table-subtitle">Live value, allocation, and quick trade actions.</div>
+                            </div>
+                            <div id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading holdings…</div>
+                        </div>
+                        <div class="wallet-table-wrap wallet-table-wrap-stable wallet-desktop-only">
+                                <table class="wallet-holdings-table">
+                                    <colgroup>
+                                        <col class="wht-col-company">
+                                        <col class="wht-col-shares">
+                                        <col class="wht-col-value">
+                                        <col class="wht-col-today">
+                                        <col class="wht-col-alloc">
+                                        <col class="wht-col-actions">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th class="wht-th">Company</th>
+                                            <th class="wht-th wht-th-r">Shares</th>
+                                            <th class="wht-th wht-th-r">Value</th>
+                                            <th class="wht-th wht-th-r">Today</th>
+                                            <th class="wht-th wht-th-r">Alloc</th>
+                                            <th class="wht-th"></th>
+                                        </tr>
+                                    </thead>
+                                <tbody id="mgmt-holdings-body"></tbody>
+                            </table>
+                        </div>
+                        <!-- Mobile: holdings as stacked cards -->
+                        <div id="mgmt-holdings-cards" class="wallet-holdings-cards"></div>
+                    </div>
+                </div>
+
+            <!-- Mobile FAB: quick new transaction -->
+            <button class="wallet-fab" id="mgmt-wallet-fab" type="button" aria-label="New transaction"
+                    onclick="window._mgmt.openTransactionsPanel('trade')">
+                <span class="wallet-fab-icon" aria-hidden="true">+</span>
+                <span class="wallet-fab-label">Transaction</span>
+            </button>
+
+        </section>
+    </main>
+    <main id="tab-portfolio" class="tab-content">
+        <!-- Portfolio Swipe Carousel -->
+        <div class="mini-charts-grid" id="portfolio-wallet-mini-charts">
+            <section class="chart-container mini-chart-section" id="portfolio-composition-container" data-dom-id="Portfolio">
+                <h3 style="font-size: 14px; margin-top: 0;">Total Portfolio <span id="portfolio-updated" style="font-size:11px;font-weight:normal;color:#888;"></span></h3>
+                <div class="pie-with-legend">
+                    <div class="pie-wrapper-mini"><canvas id="portfolioChart"></canvas></div>
+                    <div class="pie-legend pie-legend-mini" id="legendPortfolio"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Holdings tables -->
+        <section class="table-container">
+            <h2 class="tx-section-title" style="margin-top:0;">Holdings</h2>
+            <div class="holdings-tabs">
+                <button class="holdings-tab-btn active" data-dom-id="Portfolio" onclick="showHoldingsTab('holdings-Portfolio', this)">Portfolio</button>
+                <div id="holdings-wallet-tabs" class="holdings-wallet-tabs"></div>
+            </div>
+            <div id="holdings-Portfolio" class="holdings-content active">
+                <table id="portfolio-table" class="holdings-table">
+                    <thead><tr><th>Company</th><th class="hide-on-mobile">Price (PLN)</th><th class="hide-on-mobile">Today</th><th class="hide-on-mobile">YTD</th><th>Current Value (PLN)</th><th class="hide-on-mobile">Purchase Value (PLN)</th><th>Profit / Loss (PLN)</th><th class="hide-on-mobile">Total Return</th><th class="hide-on-mobile">Portfolio %</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="holdings-wallet-sections"></div>
+        </section>
+    </main>
+
+    <!-- Tab: History -->
+    <main id="tab-history" class="tab-content">
+        <section class="chart-container history-header-section">
+            <div class="history-top-row">
+                <h2 class="history-main-title">Portfolio History</h2>
+                <div class="benchmark-range-btns wig-range-btns" id="history-range-btns">
+                    <button class="benchmark-range-btn wig-range-btn active" data-history-range="ALL" onclick="setHistoryRange('ALL')">All</button>
+                    <button class="benchmark-range-btn wig-range-btn" data-history-range="5Y" onclick="setHistoryRange('5Y')">5Y</button>
+                    <button class="benchmark-range-btn wig-range-btn" data-history-range="3Y" onclick="setHistoryRange('3Y')">3Y</button>
+                    <button class="benchmark-range-btn wig-range-btn" data-history-range="1Y" onclick="setHistoryRange('1Y')">1Y</button>
+                    <button class="benchmark-range-btn wig-range-btn" data-history-range="YTD" onclick="setHistoryRange('YTD')">YTD</button>
+                    <button class="benchmark-range-btn wig-range-btn" data-history-range="1M" onclick="setHistoryRange('1M')">1M</button>
+                    <button class="benchmark-range-btn wig-range-btn" data-history-range="1W" onclick="setHistoryRange('1W')">1W</button>
+                </div>
+            </div>
+            <!-- Wallet selector buttons — populated by JS -->
+            <div class="history-wallet-btns" id="history-wallet-btns" role="tablist" aria-label="Select portfolio"></div>
+        </section>
+
+        <section class="chart-container">
+            <div class="chart-wrapper" style="height:360px;"><canvas id="investmentChart"></canvas></div>
+        </section>
+
+        <section class="chart-container">
+            <h2 class="tx-section-title">Monthly Net Gains</h2>
+            <div class="chart-wrapper" style="height:280px;">
+                <canvas id="monthlyReturnsChart"></canvas>
+            </div>
+        </section>
+        <section class="chart-container">
+            <div class="history-sub-row">
+                <h2 class="tx-section-title" style="margin:0;">Cumulative Return</h2>
+                <div class="wig-type-btns" id="history-return-mode-btns">
+                    <button class="wig-type-btn active" data-history-return-mode="pct" onclick="setHistoryReturnMode('pct')">% Return</button>
+                    <button class="wig-type-btn" data-history-return-mode="pln" onclick="setHistoryReturnMode('pln')">PLN Return</button>
+                </div>
+            </div>
+            <div class="chart-wrapper" style="height:360px;">
+                <canvas id="returnsChart"></canvas>
+            </div>
+        </section>
+        <section class="chart-container">
+            <h2 class="tx-section-title">Daily % Change</h2>
+            <div class="chart-wrapper" style="height:560px;">
+                <canvas id="dailyChangeChart"></canvas>
+            </div>
+        </section>
+        <section class="chart-container">
+            <h2 class="tx-section-title">Daily PLN Change</h2>
+            <div class="chart-wrapper" style="height:560px;">
+                <canvas id="dailyPLNChart"></canvas>
+            </div>
+        </section>
+    </main>
+
+
+    <!-- Tab: Statistics -->
+    <main id="tab-statistics" class="tab-content">
+        <section class="stats-section">
+            <h2 class="tx-section-title" style="margin-top:0;">All-Time Values</h2>
+            <div class="stats-grid" id="stats-alltime"></div>
+        </section>
+        <section class="stats-section">
+            <h2 class="tx-section-title" style="margin-top:0;">Monthly Statistics</h2>
+            <div class="stats-grid" id="stats-monthly"></div>
+        </section>
+        <section class="stats-section">
+            <h2 class="tx-section-title" style="margin-top:0;">Daily Statistics</h2>
+            <div class="stats-grid" id="stats-daily"></div>
+        </section>
+        <section class="stats-section stats-acc-section">
+            <button class="stats-acc-btn" onclick="toggleStatsAccordion('bm-cmp')">
+                <span style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;">
+                    <span>Benchmark Comparison</span>
+                    <span id="bm-cmp-header-preview" class="stats-acc-preview"></span>
+                </span>
+                <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <div id="acc-bm-cmp" class="stats-acc-body">
+                <div id="bm-cmp-wrap"><div class="stats-loading">Loading benchmark data…</div></div>
+            </div>
+        </section>
+        <section class="stats-section stats-acc-section">
+            <button class="stats-acc-btn" onclick="toggleStatsAccordion('monthly-snap')">
+                <span>Monthly Snapshot Summary</span>
+                <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <div id="acc-monthly-snap" class="stats-acc-body">
+                <div id="returns-table-wrap"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Tab: Retirement -->
+    <main id="tab-retirement" class="tab-content">
+        <section id="retirement-screen" class="retirement-screen">
+            <section class="retirement-card retirement-hero-card">
+                <div class="retirement-hero-copy">
+                    <div class="mgmt-section-title">Retirement Forecast</div>
+                    <h2 id="retirement-plan-title" class="wallet-panel-title">See if your money lasts</h2>
+                    <p class="retirement-hero-subtitle">Compare your real portfolio history with a theoretical saving path from your investing start date, then see two futures from today: one from the real balance and one from the projected balance.</p>
+                </div>
+                <div class="retirement-hero-meta">
+                    <div id="retirement-plan-status" class="wallet-settings-pill wallet-settings-pill-muted">Ready</div>
+                    <div id="retirement-years-left" class="retirement-insight-pill">Retirement timing: —</div>
+                </div>
+                <div class="retirement-action-bar">
+                    <button id="retirement-create-btn" type="button" class="mgmt-btn mgmt-btn-secondary">+ New plan</button>
+                    <button id="retirement-rerun-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Preview</button>
+                    <button id="retirement-save-btn" type="button" class="mgmt-btn mgmt-btn-primary">Save plan</button>
+                    <button id="retirement-delete-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Delete</button>
+                </div>
+                <div class="retirement-plan-strip-wrap">
+                    <div class="retirement-plan-strip-label">Saved plans</div>
+                    <div id="retirement-plan-list" class="retirement-plan-list"></div>
+                </div>
+            </section>
+
+            <div id="retirement-warning-banner" class="retirement-warning-banner" hidden>
+                <strong id="retirement-warning-title">Heads up</strong>
+                <span id="retirement-warning-copy">Your current settings need attention.</span>
+            </div>
+
+            <section class="retirement-card retirement-chart-panel retirement-chart-panel-wide">
+                <div class="retirement-card-head">
+                    <div>
+                        <div class="mgmt-section-title">Projection chart</div>
+                        <h2 class="wallet-panel-title">Past + future in one view</h2>
+                    </div>
+                    <div id="retirement-chart-badge" class="retirement-insight-pill">Live preview</div>
+                </div>
+                <div id="retirement-range-btns" class="retirement-range-btns">
+                    <button class="retirement-range-btn is-active" data-retirement-range="ALL" onclick="setRetirementChartRange('ALL')">All</button>
+                    <button class="retirement-range-btn" data-retirement-range="10Y" onclick="setRetirementChartRange('10Y')">10Y history</button>
+                    <button class="retirement-range-btn" data-retirement-range="5Y" onclick="setRetirementChartRange('5Y')">5Y history</button>
+                    <button class="retirement-range-btn" data-retirement-range="3Y" onclick="setRetirementChartRange('3Y')">3Y history</button>
+                    <button class="retirement-range-btn" data-retirement-range="1Y" onclick="setRetirementChartRange('1Y')">1Y history</button>
+                </div>
+                <div class="retirement-chart-controls">
+                    <div class="retirement-chart-control retirement-chart-control-select">
+                        <label class="retirement-chart-control-label" for="retirement-chart-scale-mode">Y scale</label>
+                        <select id="retirement-chart-scale-mode" class="mgmt-input">
+                            <option value="linear">Linear</option>
+                            <option value="log">Log</option>
+                        </select>
+                    </div>
+                    <div class="retirement-chart-control">
+                        <div class="retirement-chart-control-head">
+                            <label class="retirement-chart-control-label" for="retirement-chart-y-zoom">Y zoom</label>
+                            <span id="retirement-chart-y-zoom-value" class="retirement-chart-control-value">100% of full height</span>
+                        </div>
+                        <input id="retirement-chart-y-zoom" type="range" min="10" max="100" step="1" value="100">
+                    </div>
+                    <div id="retirement-chart-y-pan-row" class="retirement-chart-control">
+                        <div class="retirement-chart-control-head">
+                            <label class="retirement-chart-control-label" for="retirement-chart-y-pan">Y scroll</label>
+                            <span id="retirement-chart-y-pan-value" class="retirement-chart-control-value">Not needed at full height</span>
+                        </div>
+                        <input id="retirement-chart-y-pan" type="range" min="0" max="100" step="1" value="0">
+                    </div>
+                    <div class="retirement-chart-control retirement-chart-shortcuts">
+                        <span class="retirement-chart-control-label">Quick focus</span>
+                        <div class="retirement-chart-shortcut-buttons">
+                            <button id="retirement-chart-fit-all-btn" type="button" class="retirement-range-btn">Fit all</button>
+                            <button id="retirement-chart-focus-lower-btn" type="button" class="retirement-range-btn">Focus actuals</button>
+                            <button id="retirement-chart-log-btn" type="button" class="retirement-range-btn">Use log scale</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="retirement-chart-scale-helper" class="retirement-chart-scale-helper">Use Y zoom + Y scroll to inspect the lower part of the chart when the forecast shoots much higher than today.</div>
+                <div class="retirement-chart-meta">
+                    <div class="retirement-mini-stat">
+                        <span class="retirement-mini-stat-label">Retirement begins</span>
+                        <strong id="retirement-transition-date">—</strong>
+                    </div>
+                    <div class="retirement-mini-stat">
+                        <span class="retirement-mini-stat-label">Actual path outlook</span>
+                        <strong id="retirement-duration-hero">—</strong>
+                    </div>
+                    <div class="retirement-mini-stat">
+                        <span class="retirement-mini-stat-label">Monthly spending</span>
+                        <strong id="retirement-spending-hero">—</strong>
+                    </div>
+                </div>
+                <div id="retirement-chart-scroll-surface" class="chart-wrapper retirement-chart-wrapper">
+                    <canvas id="retirement-forecast-chart"></canvas>
+                    <div class="retirement-axis-note" tabindex="0" aria-label="Life expectancy note">
+                        <span class="retirement-axis-note-icon" aria-hidden="true">i</span>
+                        <span class="retirement-axis-note-tooltip">Average life expectancy in Poland is 78,6. I gave you 10 extra years because apparently your retirement plan also wants plot armor.</span>
+                    </div>
+                </div>
+                <div class="retirement-chart-footnote">
+                    Blue shows your real history. Dashed blue is a monthly-compounded theoretical path from your investing start date using your pre-retirement yearly return. Green projects forward from the real balance today, and purple projects forward from the theoretical balance today.
+                    <span class="retirement-band-help" tabindex="0" aria-label="How the simulation bands are calculated">
+                        <span class="retirement-band-help-icon" aria-hidden="true">i</span>
+                        <span class="retirement-band-help-label">Simulation bands</span>
+                        <span class="retirement-band-help-tooltip">Current method: the baseline path compounds monthly, adjusts retirement spending for inflation, and now deducts annual portfolio fees. The bands use a deterministic seeded Monte Carlo with mild / weak / stress monthly regimes, so the same assumptions always produce the same P10 / P50 / P90 result. It is still a simplified single-portfolio model, but it is closer to institutional planning than a plain bell-curve path.</span>
+                    </span>
+                </div>
+            </section>
+
+            <div class="retirement-layout">
+                <section class="retirement-card retirement-summary-panel">
+                    <div class="retirement-card-head">
+                        <div>
+                            <div class="mgmt-section-title">Quick summary</div>
+                            <h2 class="wallet-panel-title">What this plan says</h2>
+                        </div>
+                    </div>
+
+                    <div class="retirement-summary-grid">
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Actual value today</div>
+                            <div id="retirement-summary-current" class="stat-value">—</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Actual path at retirement</div>
+                            <div id="retirement-summary-transition" class="stat-value">—</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Actual path at age 88.6</div>
+                            <div id="retirement-summary-final" class="stat-value">—</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Retirement runway</div>
+                            <div id="retirement-summary-duration" class="stat-value stat-value-sm">—</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Spending support</div>
+                            <div id="retirement-summary-spending" class="stat-value stat-value-sm">—</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Confidence view</div>
+                            <div id="retirement-summary-monte-carlo" class="stat-value stat-value-sm">—</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Age 88.6 check</div>
+                            <div id="retirement-summary-lasts" class="stat-value stat-value-sm">—</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Historical range</div>
+                            <div id="retirement-summary-history" class="stat-value stat-value-sm">—</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="retirement-card retirement-config-panel">
+                        <div class="retirement-card-head">
+                            <div>
+                                <div class="mgmt-section-title">Plan setup</div>
+                                <h2 class="wallet-panel-title">Keep it simple</h2>
+                            </div>
+                        </div>
+                        <p class="retirement-config-intro">Start with your birth date, when you began investing, the age you want to retire, monthly contribution, expected growth, and retirement spending. The app translates that retirement age into the date of your birthday automatically.</p>
+
+                        <div class="retirement-form-grid">
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-plan-name">Plan name</label>
+                                <input id="retirement-plan-name" type="text" class="mgmt-input" placeholder="My retirement plan">
+                                <div class="retirement-field-hint">Use any name that helps you compare scenarios.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-birth-date">Date of birth</label>
+                                <input id="retirement-birth-date" type="date" class="mgmt-input">
+                                <div class="retirement-field-hint">Used to calculate real ages and the age-88.6 target date.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-started-date">Started investing on</label>
+                                <input id="retirement-started-date" type="date" class="mgmt-input">
+                                <div class="retirement-field-hint">This sets the start of the projected historical path.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-retirement-age">Retirement age</label>
+                                <input id="retirement-retirement-age" type="number" min="1" step="0.1" class="mgmt-input" inputmode="decimal">
+                                <div class="retirement-field-hint">If you enter 50, the plan uses the date of your 50th birthday.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-monthly-investment">Monthly investment</label>
+                                <input id="retirement-monthly-investment" type="number" min="0" step="any" class="mgmt-input" inputmode="decimal">
+                                <div class="retirement-field-hint">How much you plan to add each month before retirement.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-working-return">Growth before retirement (%)</label>
+                                <input id="retirement-working-return" type="number" step="0.1" class="mgmt-input" inputmode="decimal">
+                                <div class="retirement-field-hint">Expected yearly growth while you are still investing.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-retired-return">Growth after retirement (%)</label>
+                                <input id="retirement-retired-return" type="number" step="0.1" class="mgmt-input" inputmode="decimal">
+                                <div class="retirement-field-hint">Expected yearly growth once withdrawals begin.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-monthly-spending">Monthly retirement spending</label>
+                                <input id="retirement-monthly-spending" type="number" min="0" step="any" class="mgmt-input" inputmode="decimal">
+                                <div class="retirement-field-hint">How much you want the portfolio to cover each month.</div>
+                            </div>
+                        </div>
+
+                        <details class="retirement-advanced-details">
+                            <summary>More controls</summary>
+                            <div class="retirement-advanced-copy">Optional inputs for a more detailed scenario. You can ignore these and still get a solid forecast.</div>
+                            <div class="retirement-advanced-grid">
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-target-age-display">Target age</label>
+                                    <input id="retirement-target-age-display" type="text" class="mgmt-input" value="88.6 years old" disabled>
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-initial-investment">Starting amount</label>
+                                    <input id="retirement-initial-investment" type="number" min="0" step="any" class="mgmt-input" inputmode="decimal">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-inflation-rate">Spending growth (%)</label>
+                                    <input id="retirement-inflation-rate" type="number" step="0.1" class="mgmt-input" inputmode="decimal">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-annual-fee-rate">Annual fee drag (%)</label>
+                                    <input id="retirement-annual-fee-rate" type="number" min="0" max="15" step="0.01" class="mgmt-input" inputmode="decimal">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-monte-carlo-runs">Confidence samples</label>
+                                    <input id="retirement-monte-carlo-runs" type="number" min="50" max="1000" step="50" class="mgmt-input" inputmode="numeric">
+                                </div>
+                                <label class="mgmt-search-hint retirement-checkbox-field retirement-input-card">
+                                    <input id="retirement-monte-carlo-enabled" type="checkbox">
+                                    Show confidence bands
+                                </label>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-working-volatility">Working volatility (%)</label>
+                                    <input id="retirement-working-volatility" type="number" step="0.1" class="mgmt-input" inputmode="decimal">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-retired-volatility">Retired volatility (%)</label>
+                                    <input id="retirement-retired-volatility" type="number" step="0.1" class="mgmt-input" inputmode="decimal">
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-income-streams">Income streams (JSON array)</label>
+                                    <textarea id="retirement-income-streams" class="mgmt-input retirement-json-input" placeholder='[{"label":"Pension","startAge":65,"endAge":100,"monthlyAmount":3500,"inflationLinked":true}]'></textarea>
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-one-time-events">One-time events (JSON array)</label>
+                                    <textarea id="retirement-one-time-events" class="mgmt-input retirement-json-input" placeholder='[{"label":"Home sale","age":67,"amount":150000}]'></textarea>
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-spending-phases">Spending phases (JSON array)</label>
+                                    <textarea id="retirement-spending-phases" class="mgmt-input retirement-json-input" placeholder='[{"label":"Early retirement","startAge":65,"endAge":75,"monthlySpending":7500,"inflationLinked":true}]'></textarea>
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-return-phases">Return phases (JSON array)</label>
+                                    <textarea id="retirement-return-phases" class="mgmt-input retirement-json-input" placeholder='[{"label":"De-risking","startAge":58,"endAge":65,"annualReturn":5.5,"annualVolatility":11}]'></textarea>
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-notes">Notes</label>
+                                    <textarea id="retirement-notes" class="mgmt-input retirement-notes-input" placeholder="Optional reminders for this scenario"></textarea>
+                                </div>
+                            </div>
+                        </details>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <!-- Tab: Transactions -->
+    <main id="tab-transactions" class="tab-content">
+
+        <!-- Summary cards -->
+        <section class="tx-summary-bar">
+            <div class="stat-card tx-stat-card" id="tx-month-card">
+                <div class="stat-label">This Month's Turnover</div>
+                <div class="stat-value" id="tx-month-value">—</div>
+                <div class="stat-sub" id="tx-month-sub"></div>
+            </div>
+            <div class="stat-card tx-stat-card" id="tx-ytd-card">
+                <div class="stat-label">YTD Turnover</div>
+                <div class="stat-value" id="tx-ytd-value">—</div>
+                <div class="stat-sub" id="tx-ytd-sub"></div>
+            </div>
+            <div class="stat-card tx-stat-card" id="tx-total-card">
+                <div class="stat-label">All-Time Turnover</div>
+                <div class="stat-value" id="tx-total-value">—</div>
+                <div class="stat-sub" id="tx-total-sub"></div>
+            </div>
+        </section>
+
+        <!-- Activity Calendar -->
+        <section class="tx-activity-card">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;">
+                <h2 class="tx-section-title">Transaction Activity</h2>
+                <div id="cal-year-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+                <div id="cal-legend" style="display:flex;align-items:center;gap:6px;margin-left:auto;font-size:11px;color:#888;flex-wrap:wrap;">
+                    <span>Less</span>
+                    <span class="cal-legend-swatch cal-i1"></span>
+                    <span class="cal-legend-swatch cal-i2"></span>
+                    <span class="cal-legend-swatch cal-i3"></span>
+                    <span class="cal-legend-swatch cal-i4"></span>
+                    <span class="cal-legend-swatch cal-i5"></span>
+                    <span>More turnover</span>
+                    <span style="margin-left:10px;display:inline-flex;align-items:center;gap:4px;">
+                        <span class="cal-legend-swatch" style="box-shadow:inset 0 0 0 2px #27ae60;"></span> Deposit
+                    </span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;">
+                        <span class="cal-legend-swatch" style="box-shadow:inset 0 0 0 2px #c0392b;"></span> Withdrawal
+                    </span>
+                </div>
+            </div>
+            <div id="tx-calendar"></div>
+        </section>
+
+        <!-- Monthly turnover chart -->
+        <section class="chart-container tx-chart-section">
+            <h2 class="tx-section-title">Monthly Turnover</h2>
+            <div class="chart-wrapper" style="height:260px;">
+                <canvas id="txTurnoverChart"></canvas>
+            </div>
+        </section>
+
+        <section class="tx-history-card">
+            <h2 class="tx-section-title">Transaction History</h2>
+            <div id="tx-summary" style="margin-bottom:14px;font-size:13px;color:#666;"></div>
+            <table id="tx-table" class="holdings-table" style="width:100%;font-size:13px;">
+                <thead>
+                    <tr>
+                        <th class="tx-th hide-on-mobile">
+                            <div>Date</div>
+                            <button class="filter-btn" id="btn-date">📅 Any date</button>
+                            <div class="filter-popup" id="pop-date">
+                                <div style="display:flex;gap:5px;margin-bottom:8px;">
+                                    <button class="filter-clear" id="date-quick-today" style="flex:1;background:rgba(255,255,255,0.05)">Today</button>
+                                    <button class="filter-clear" id="date-quick-week" style="flex:1;background:rgba(255,255,255,0.05)">This week</button>
+                                </div>
+                                <label>From <input type="date" id="f-date-from"></label>
+                                <label>To <input type="date" id="f-date-to"></label>
+                                <button class="filter-clear" id="clear-date">Clear</button>
+                            </div>
+                        </th>
+                        <th class="tx-th">
+                            <div>Operation</div>
+                            <button class="filter-btn" id="btn-op">≡ All</button>
+                            <div class="filter-popup" id="pop-op">
+                                <div id="op-checkboxes"></div>
+                                <button class="filter-clear" id="clear-op">Clear</button>
+                            </div>
+                        </th>
+                        <th class="tx-th">
+                            Asset
+                            <input class="col-filter" id="f-asset" placeholder="filter…">
+                        </th>
+                        <th class="tx-th hide-on-mobile">
+                            Wallet
+                            <input class="col-filter" id="f-wallet" placeholder="filter…">
+                        </th>
+                        <th class="hide-on-mobile">Units</th>
+                        <th class="hide-on-mobile">Price (PLN)</th>
+                        <th class="hide-on-mobile">Commission</th>
+                        <th class="tx-th">
+                            <div>Value (PLN)</div>
+                            <button class="filter-btn" id="btn-value">↔ Any value</button>
+                            <div class="filter-popup" id="pop-value">
+                                <div id="value-range-labels" style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;"></div>
+                                <div id="value-slider" class="range-slider">
+                                    <div class="range-track"></div>
+                                    <div class="range-fill" id="range-fill"></div>
+                                    <div class="range-thumb" id="thumb-min" data-thumb="min"></div>
+                                    <div class="range-thumb" id="thumb-max" data-thumb="max"></div>
+                                </div>
+                                <button class="filter-clear" id="clear-value">Clear</button>
+                            </div>
+                        </th>
+                        <th>Save</th>
+                    </tr>
+                </thead>
+                <tbody id="tx-body"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- Tab: Analysis -->
+    <main id="tab-analysis" class="tab-content">
+        <section class="analysis-screen-header">
+            <h2>Asset Analysis</h2>
+            <p class="analysis-subtitle">Search for a company to view its 1-year performance and fundamental properties.</p>
+        </section>
+
+        <!-- Search Bar -->
+        <section class="analysis-search-section dash-card" style="position: relative; z-index: 10;">
+            <div class="tflow-search-box">
+                <svg class="tflow-search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+                <input id="analysis-search-input" type="text" class="tflow-search-input"
+                       placeholder="Search company or ticker (e.g. AAPL, CDR.WA)…"
+                       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            </div>
+            <div id="analysis-ticker-dropdown" class="tflow-dropdown mgmt-dropdown" style="display:none"></div>
+        </section>
+
+        <!-- Favorites List -->
+        <section id="analysis-favorites-section" class="dash-card analysis-favorites-section" style="display:block;">
+            <div class="dash-label">
+                Favorites
+                <span class="analysis-favorites-count" id="analysis-favorites-count"></span>
+            </div>
+            <div id="analysis-favorites-empty" class="analysis-favorites-empty" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:48px;height:48px;opacity:0.3;margin-bottom:12px;">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+                <p style="color:#888;font-size:14px;">No favorites yet</p>
+                <p style="color:#666;font-size:13px;margin-top:4px;">Search for a company and click the star to add it</p>
+            </div>
+            <div id="analysis-favorites-list" class="analysis-favorites-list"></div>
+        </section>
+
+        <div id="analysis-content-area" style="display:none;">
+            <section class="dash-card analysis-chart-card">
+                <div class="wig-chart-header">
+                    <div class="wig-title-row">
+                        <button class="analysis-back-btn" onclick="window._analysis.showFavorites()" title="Back to Favorites">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 12H5M12 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <span id="analysis-chart-title" class="wig-title">Price History (1Y)</span>
+                        <button id="analysis-favorite-btn" class="analysis-favorite-btn" onclick="window._analysis.toggleFavorite()" style="display:none;" title="Add to favorites">
+                            <svg class="star-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="wig-controls">
+                        <div class="analysis-range-btns wig-range-btns">
+                            <button class="analysis-range-btn wig-range-btn" data-range="1d" onclick="window._analysis.setRange('1d')">1D</button>
+                            <button class="analysis-range-btn wig-range-btn" data-range="1w" onclick="window._analysis.setRange('1w')">1W</button>
+                            <button class="analysis-range-btn wig-range-btn" data-range="1m" onclick="window._analysis.setRange('1m')">1M</button>
+                            <button class="analysis-range-btn wig-range-btn" data-range="ytd" onclick="window._analysis.setRange('ytd')">YTD</button>
+                            <button class="analysis-range-btn wig-range-btn active" data-range="1y" onclick="window._analysis.setRange('1y')">1Y</button>
+                            <button class="analysis-range-btn wig-range-btn" data-range="5y" onclick="window._analysis.setRange('5y')">5Y</button>
+                            <button class="analysis-range-btn wig-range-btn" data-range="all" onclick="window._analysis.setRange('all')">ALL</button>
+                        </div>
+                        <div class="analysis-indicator-btns">
+                            <button id="analysis-volume-toggle" class="analysis-ind-btn active" onclick="window._analysis.toggleVolume()" title="Toggle volume bars">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="2" y="14" width="3" height="8" rx="1"/><rect x="7" y="10" width="3" height="12" rx="1"/><rect x="12" y="12" width="3" height="10" rx="1"/><rect x="17" y="7" width="3" height="15" rx="1"/></svg>
+                                VOL
+                            </button>
+                            <button id="analysis-ma10-toggle" class="analysis-ind-btn" style="--ind-color:#f59e0b" onclick="window._analysis.toggleMA('ma10')" title="10-week moving average">MA10</button>
+                            <button id="analysis-ma20-toggle" class="analysis-ind-btn" style="--ind-color:#a78bfa" onclick="window._analysis.toggleMA('ma20')" title="20-week moving average">MA20</button>
+                            <button id="analysis-ma50-toggle" class="analysis-ind-btn" style="--ind-color:#34d399" onclick="window._analysis.toggleMA('ma50')" title="50-week moving average">MA50</button>
+                            <button id="analysis-macd-toggle" class="analysis-ind-btn" onclick="window._analysis.toggleMACD()" title="MACD indicator">MACD</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="analysis-chart-wrapper" style="position:relative; height:300px;">
+                    <div id="analysis-loader" class="analysis-loader" style="display:none;">
+                        <div class="cl-loader">
+                            <div class="cl-candles">
+                                <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                                <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                                <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                                <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                                <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                                <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                            </div>
+                            <span class="cl-loader-text">Loading chart data…</span>
+                        </div>
+                    </div>
+                    <div id="analysisChartContainer" class="wig-chart-wrapper" style="height:100%;"></div>
+                </div>
+            </section>
+
+            <!-- Fundamentals Grid -->
+            <section class="dash-card analysis-fundamentals-card">
+                <div class="dash-label">Fundamental Properties</div>
+                <div class="analysis-fundamentals-grid">
+                    <div class="monthly-metric-card">
+                        <span class="monthly-metric-title metric-tooltip-container">
+                            Sector
+                            <div class="metric-tooltip">
+                                A sector is a broad area of the economy. Good diversification involves holding assets across multiple different sectors.
+                            </div>
+                        </span>
+                        <div id="analysis-fund-sector" class="monthly-metric-value">—</div>
+                        <div id="analysis-fund-industry" class="monthly-metric-sub">—</div>
+                    </div>
+                    <div class="monthly-metric-card">
+                        <span class="monthly-metric-title metric-tooltip-container">
+                            Market Cap
+                            <div class="metric-tooltip">
+                                Total market value of a company's outstanding shares.<br/><br/>
+                                <strong>Good:</strong> Large-cap ($10B+) usually means stability and steady dividends.<br/>
+                                <strong>Riskier:</strong> Small-cap ($250M-$2B) can offer high growth but higher volatility.
+                            </div>
+                        </span>
+                        <div id="analysis-fund-mcap" class="monthly-metric-value">—</div>
+                    </div>
+                    <div class="monthly-metric-card">
+                        <span class="monthly-metric-title metric-tooltip-container">
+                            P/E Ratio
+                            <div class="metric-tooltip">
+                                Price-to-Earnings Ratio. Measures current share price relative to its per-share earnings.<br/><br/>
+                                <strong class="metric-good">Good:</strong> A lower P/E (e.g. 10-15) often means the stock is undervalued or a solid value play.<br/>
+                                <strong class="metric-bad">Bad:</strong> A very high P/E can mean it's overvalued, though high-growth tech companies often naturally have high P/Es.
+                            </div>
+                        </span>
+                        <div id="analysis-fund-pe" class="monthly-metric-value">—</div>
+                        <div class="monthly-metric-sub">Fwd: <span id="analysis-fund-fwd-pe">—</span></div>
+                    </div>
+                    <div class="monthly-metric-card">
+                        <span class="monthly-metric-title metric-tooltip-container">
+                            Dividend Yield
+                            <div class="metric-tooltip">
+                                The ratio of a company's annual dividend compared to its share price.<br/><br/>
+                                <strong class="metric-good">Good:</strong> 2% to 6% is generally considered a solid, sustainable yield.<br/>
+                                <strong class="metric-bad">Bad:</strong> An exceptionally high yield (e.g. 10%+) can be a "dividend trap", signaling the market expects a dividend cut soon.
+                            </div>
+                        </span>
+                        <div id="analysis-fund-div" class="monthly-metric-value">—</div>
+                    </div>
+                    <div class="monthly-metric-card">
+                        <span class="monthly-metric-title metric-tooltip-container">
+                            52-Week High
+                            <div class="metric-tooltip">
+                                The highest price the stock has traded at in the last year. Stocks trading near their high often show strong market momentum.
+                            </div>
+                        </span>
+                        <div id="analysis-fund-high" class="monthly-metric-value">—</div>
+                    </div>
+                    <div class="monthly-metric-card">
+                        <span class="monthly-metric-title metric-tooltip-container">
+                            52-Week Low
+                            <div class="metric-tooltip">
+                                The lowest price the stock has traded at in the last year. Stocks trading near their low might be undervalued bargains, or they might be facing serious fundamental issues.
+                            </div>
+                        </span>
+                        <div id="analysis-fund-low" class="monthly-metric-value">—</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Financial Statements -->
+            <section class="dash-card analysis-financials-card" id="analysis-financials-section" style="display:none;">
+                <div class="dash-label">Financial Statements (Last 5 Years)</div>
+                
+                <!-- Statement Type Tabs (Primary) -->
+                <div class="analysis-statement-tabs">
+                    <button class="analysis-statement-tab active" data-type="income" onclick="window._analysis.switchStatementType('income')">Income Statement</button>
+                    <button class="analysis-statement-tab" data-type="cashflow" onclick="window._analysis.switchStatementType('cashflow')">Cash Flow Statement</button>
+                </div>
+                
+                <!-- Period Tabs (Secondary) -->
+                <div class="analysis-financials-tabs">
+                    <button class="analysis-fin-tab active" data-period="annual" onclick="window._analysis.switchFinPeriod('annual')">Annual</button>
+                    <button class="analysis-fin-tab" data-period="quarterly" onclick="window._analysis.switchFinPeriod('quarterly')">Quarterly</button>
+                </div>
+                
+                <div class="analysis-financials-table-wrapper">
+                    <table id="analysis-financials-table" class="holdings-table">
+                        <thead><tr><th>Metric</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="scripts/config.js"></script>
+    <script src="scripts/RoastTracker.js?v=20260709b"></script>
+    <script src="scripts/user-profile.js"></script>
+    <script src="scripts/roast-engine.js"></script>
+    <script src="scripts/xp-engine.js"></script>
+    <script src="scripts/engagement-strip.js"></script>
+    <script src="scripts/dashboard.js?v=20260709b"></script>
+    <script src="scripts/wig-chart.js?v=20260625a"></script>
+    <script src="scripts/statistics.js?v=20260702b"></script>
+    <script src="scripts/transactions.js?v=20260702a"></script>
+    <script src="scripts/chart.js?v=20260625b"></script>
+    <script src="scripts/analysis.js?v=20260625a"></script>
+    <script src="scripts/portfolio-chart.js"></script>
+    <script src="scripts/retirement-simulation.js?v=20260514f"></script>
+    <script src="scripts/retirement-chart.js?v=20260514g"></script>
+    <script src="scripts/retirement-plans.js?v=20260514e"></script>
+    <script>
+        function openSidenav() {
+            const nav = document.getElementById('sidenav');
+            const backdrop = document.getElementById('sidenav-backdrop');
+            const toggle = document.getElementById('sidenav-toggle');
+            if (!nav) return;
+            nav.classList.add('is-open');
+            backdrop.classList.add('is-visible');
+            document.body.classList.add('sidenav-open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'true');
+            // Populate user info
+            const nameEl = document.getElementById('sidenav-user-name');
+            const footerName = document.getElementById('sidenav-footer-name');
+            const footerRole = document.getElementById('sidenav-footer-role');
+            if (window.AuthGuard && AuthGuard.getDisplayName) {
+                const name = AuthGuard.getDisplayName();
+                if (nameEl) nameEl.textContent = name;
+                if (footerName) footerName.textContent = name;
+            }
+            if (window.AuthGuard && AuthGuard.getRole && footerRole) {
+                footerRole.textContent = AuthGuard.getRole() || 'Member';
+            }
+        }
+
+        function closeSidenav() {
+            const nav = document.getElementById('sidenav');
+            const backdrop = document.getElementById('sidenav-backdrop');
+            const toggle = document.getElementById('sidenav-toggle');
+            if (!nav) return;
+            nav.classList.remove('is-open');
+            backdrop.classList.remove('is-visible');
+            document.body.classList.remove('sidenav-open');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        }
+
+        function showTab(name) {
+            // Check role restriction
+            const sideItem = document.querySelector(`.sidenav-item[data-tab="${name}"]`);
+            if (sideItem && sideItem.dataset.role === 'ADVANCED') {
+                if (window.AuthGuard && AuthGuard.getRole && AuthGuard.getRole() === 'BASIC') {
+                    _showUpgradeMessage(name);
+                    return;
+                }
+            }
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            const tabEl = document.getElementById('tab-' + name);
+            if (tabEl) tabEl.classList.add('active');
+            // Update sidebar active state
+            document.querySelectorAll('.sidenav-item').forEach(el => el.classList.remove('active'));
+            if (sideItem) sideItem.classList.add('active');
+            // Also update current tab indicator in header
+            const indicator = document.getElementById('header-tab-indicator');
+            if (indicator && sideItem) indicator.textContent = sideItem.querySelector('.sidenav-item-label')?.textContent || '';
+            // Scroll back to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Lazy-init screens
+            if (name === 'portfolio' && typeof initPortfolioCharts === 'function')
+                requestAnimationFrame(() => initPortfolioCharts());
+            if (name === 'wallets' && typeof initWalletScreen === 'function')
+                requestAnimationFrame(() => initWalletScreen());
+            if (name === 'transactions' && typeof refreshTransactionsTabData === 'function')
+                requestAnimationFrame(() => refreshTransactionsTabData());
+            if (name === 'retirement' && typeof initRetirementTab === 'function')
+                requestAnimationFrame(() => initRetirementTab());
+        }
+
+
+        function _showUpgradeMessage(tabName) {
+            const tabEl = document.getElementById('tab-' + tabName);
+            if (!tabEl) return;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            tabEl.classList.add('active');
+            // Show upgrade prompt inside the tab if not already there
+            if (!tabEl.querySelector('.upgrade-screen')) {
+                tabEl.innerHTML = `<div class="upgrade-screen">
+                    <div class="upgrade-icon">🔒</div>
+                    <h2>ADVANCED plan required</h2>
+                    <p>This section is available for ADVANCED users. Contact the admin to upgrade your account.</p>
+                </div>`;
+            }
+        }
+
+        // Handle ?tab= shortcut URLs (used by PWA manifest shortcuts)
+        (function () {
+            const tab = new URLSearchParams(window.location.search).get('tab');
+            if (tab) showTab(tab);
+        })();
+        function showHoldingsTab(contentId, btn, fromObserver = false) {
+            document.querySelectorAll('.holdings-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.holdings-tab-btn').forEach(el => el.classList.remove('active'));
+            const content = document.getElementById(contentId);
+            if (content) content.classList.add('active');
+            if (btn) {
+                btn.classList.add('active');
+                if (!fromObserver) {
+                    const domId = btn.getAttribute('data-dom-id');
+                    if (domId === 'Portfolio') {
+                        const mainSection = document.getElementById('portfolio-composition-container');
+                        if (mainSection) mainSection.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'center' });
+                    } else if (domId) {
+                        const section = document.querySelector(`.mini-chart-section[data-dom-id="${domId}"]`);
+                        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    }
+                }
+            }
+        }
+
+        function toggleBrandModal(open) {
+            const modal = document.getElementById('brand-logo-modal');
+            if (!modal) return;
+            modal.classList.toggle('open', !!open);
+            modal.setAttribute('aria-hidden', open ? 'false' : 'true');
+            document.body.style.overflow = open ? 'hidden' : '';
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeSidenav();
+                toggleBrandModal(false);
+                closeUserModal();
+            }
+        });
+
+        // ── User settings modal ──────────────────────────────
+        async function openUserModal() {
+            const modal = document.getElementById('user-modal');
+            if (!modal) return;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            // Populate fields from profile
+            if (window.UserProfile) {
+                const profile = await UserProfile.get();
+                if (profile) {
+                    const nickEl = document.getElementById('user-nickname-input');
+                    const emailEl = document.getElementById('user-email-display');
+                    const roleEl  = document.getElementById('user-role-display');
+                    if (nickEl)  nickEl.value = profile.nickname || '';
+                    if (emailEl) emailEl.textContent = profile.email || '—';
+                    if (roleEl) {
+                        const role = profile.role || 'BASIC';
+                        roleEl.textContent = role;
+                        roleEl.className = 'user-role-badge user-role-' + role.toLowerCase();
+                        const designGuideLink = document.getElementById('design-guide-link');
+                        if (designGuideLink) designGuideLink.style.display = role === 'ADVANCED' ? '' : 'none';
+                    }
+                }
+            }
+        }
+
+        function closeUserModal() {
+            const modal = document.getElementById('user-modal');
+            if (!modal) return;
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        async function saveUserNickname() {
+            const input = document.getElementById('user-nickname-input');
+            const flash = document.getElementById('user-nickname-flash');
+            if (!input || !window.UserProfile) return;
+            const newName = input.value.trim();
+            if (!newName) return;
+            try {
+                await UserProfile.updateNickname(newName);
+                UserProfile.clearCache();
+                // Update header display
+                const headerEl = document.getElementById('header-username');
+                if (headerEl) headerEl.textContent = newName;
+                if (flash) {
+                    flash.textContent = '✓ Username saved';
+                    flash.style.display = 'block';
+                    flash.style.color = '#27ae60';
+                    setTimeout(() => { flash.style.display = 'none'; }, 2500);
+                }
+            } catch (e) {
+                if (flash) {
+                    flash.textContent = '⚠ Save failed — try again';
+                    flash.style.display = 'block';
+                    flash.style.color = '#c0392b';
+                    setTimeout(() => { flash.style.display = 'none'; }, 3000);
+                }
+            }
+        }
+
+        // ── Measure real header height for transaction popup positioning ──
+        // Sets --tflow-header-h so the overlay always starts below the header.
+        function _updateHeaderHeightVar() {
+            const header = document.querySelector('header');
+            if (!header) return;
+            const h = header.getBoundingClientRect().height;
+            document.documentElement.style.setProperty('--tflow-header-h', h + 'px');
+        }
+        // Run on load + after any layout shifts (e.g. market commentary appearing)
+        _updateHeaderHeightVar();
+        window.addEventListener('resize', _updateHeaderHeightVar);
+        // Also re-measure after scripts have fully initialised (market commentary etc.)
+        setTimeout(_updateHeaderHeightVar, 500);
+        setTimeout(_updateHeaderHeightVar, 2000);
+
+    </script>
+<!-- Day transactions modal -->
+<div id="cal-modal-overlay" class="cal-modal-overlay" style="display:none;">
+    <div class="cal-modal">
+        <div class="cal-modal-header">
+            <span id="cal-modal-title"></span>
+            <button class="cal-modal-close" id="cal-modal-close">✕</button>
+        </div>
+        <div id="cal-modal-body"></div>
+    </div>
+</div>
+
+    <!-- Splash screen hide — waits for live prices AND a minimum display time -->
+    <script>
+        (function () {
+            const splash = document.getElementById('splash-screen');
+            if (!splash) return;
+
+            // ── Sarcastic loader messages ────────────────────────────────────
+            const MESSAGES = [
+                "Loading your worst investments…",
+                "Consulting the oracle. It said 'sell everything.'",
+                "Calculating how much you've underperformed the index.",
+                "Summoning live prices. They are not your friends.",
+                "Fetching data. Bracing for disappointment.",
+                "Preparing your financial roast. Extra crispy.",
+                "Compiling evidence of your market timing.",
+                "Verifying your portfolio hasn't evaporated. Fingers crossed.",
+                "Loading. Unlike your returns, this won't take forever.",
+                "Applying 73 layers of sarcasm to your data.",
+                "Translating market noise into curated disappointment.",
+                "Fetching prices. You can't unsee them.",
+                "Reviewing your contributions to market inefficiency.",
+                "Cross-referencing your positions with the list of bad ideas.",
+                "Preparing dashboard. Coffee recommended.",
+                "Quantifying your genius. Results pending.",
+                "Assembling your portfolio. Some assembly required.",
+                "Live prices incoming. Emotional support not included.",
+                "Processing. Unlike a certain stock you bought at the top.",
+                "Loading data with the confidence of someone who bought high.",
+                "Connecting to reality. This may come as a shock.",
+                "Crunching numbers. The numbers are not amused.",
+                "Synchronising with markets. Markets are also confused.",
+                "Fetching the bad news. It's fresh today.",
+                "Calibrating sarcasm engine. Please hold.",
+            ];
+
+            // Pick a random message
+            const tagline = document.getElementById('splash-tagline');
+            if (tagline) tagline.textContent = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+
+            // ── Progress bar animation ────────────────────────────────────────
+            const bar = document.getElementById('splash-progress-bar');
+            // Ease to ~70% over 3 s (fake trickle), then snap to 100% on data ready
+            if (bar) {
+                bar.style.transition = 'width 3s cubic-bezier(0.1, 0.6, 0.4, 1)';
+                requestAnimationFrame(() => { bar.style.width = '70%'; });
+            }
+
+            // ── Two-gate hide logic ───────────────────────────────────────────
+            let timerDone = false;
+            let dataDone  = false;
+            let walletsDone = false;
+            let hidden    = false;
+
+            function revealDashboard() {
+                // Staggered skeleton-to-content reveal
+                const main = document.getElementById('tab-dashboard');
+                if (main) {
+                    main.classList.add('reveal-cards');
+                    // Remove is-loading shortly after so skeletons fully disappear
+                    setTimeout(() => main.classList.remove('is-loading'), 600);
+                }
+            }
+
+            function tryHide() {
+                if (hidden || !timerDone || !walletsDone || !dataDone) return;
+                hidden = true;
+                // Snap progress bar to 100% then fade splash
+                if (bar) {
+                    bar.style.transition = 'width 0.3s ease';
+                    bar.style.width = '100%';
+                }
+                setTimeout(() => {
+                    document.body.classList.add('splash-to-gauge');
+                    splash.classList.add('splash-hidden');
+                    revealDashboard();
+                    setTimeout(() => document.body.classList.remove('splash-to-gauge'), 1800);
+                }, 320);
+            }
+
+            // Gate 1: minimum visible time
+            setTimeout(() => { timerDone = true; tryHide(); }, 3000);
+
+            // Gate 2: live prices ready (dispatched by live-data.js)
+            document.addEventListener('liveDataReady', () => { dataDone = true; tryHide(); });
+
+            // Gate 3: wallet existence checked before revealing the dashboard
+            document.addEventListener('walletBootstrapReady', (event) => {
+                walletsDone = true;
+                if (event.detail && event.detail.state === 'empty') dataDone = true;
+                tryHide();
+            });
+
+            // Hard fallback: force-hide after 5 s regardless
+            setTimeout(() => { timerDone = true; walletsDone = true; dataDone = true; tryHide(); }, 5000);
+        })();
+    </script>
+
+    <!-- Service-worker registration (PWA install / offline caching) -->
+    <script>
+        if ('serviceWorker' in navigator && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js?v=20260702b')
+                    .then(reg => {
+                        reg.update().catch(() => {});
+                        reg.addEventListener('updatefound', () => {
+                            const sw = reg.installing;
+                            if (!sw) return;
+                            sw.addEventListener('statechange', () => {
+                                if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('[Roastfolio] New version cached — reloading…');
+                                    // Tell the new SW to take control immediately, then reload
+                                    sw.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
+                        });
+                    })
+                    .catch(err => console.warn('[Roastfolio] SW registration failed:', err));
+
+                // When a new SW takes control, reload once to pick up fresh assets
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    window.location.reload();
+                });
+            });
+        }
+    </script>
+    <!-- PWA install prompt (iPhone guide + Android native install) -->
+    <script src="scripts/pwa-install.js" defer></script>
+    <!-- Swipe-to-refresh (mobile pull-down gesture) -->
+    <script src="scripts/swipe-refresh.js" defer></script>
+    <!-- Portfolio management -->
+    <script src="scripts/manage.js"></script>
+
+    <!-- ── User Settings Modal ──────────────────────────────── -->
+    <div id="user-modal" class="user-modal-overlay" style="display:none" onclick="if(event.target===this)closeUserModal()">
+      <div class="user-modal-dialog">
+        <div class="user-modal-header">
+          <span class="user-modal-title">👤 User Settings</span>
+          <button class="user-modal-close" onclick="closeUserModal()" aria-label="Close">✕</button>
+        </div>
+        <div class="user-modal-body">
+
+          <!-- Account info -->
+          <div class="user-field-group">
+            <label class="user-field-label">Username</label>
+            <div class="user-field-row">
+              <input id="user-nickname-input" type="text" class="user-field-input"
+                     placeholder="Enter display name…" maxlength="40"
+                     onkeydown="if(event.key==='Enter')saveUserNickname()">
+              <button class="user-save-btn" onclick="saveUserNickname()">Save</button>
+            </div>
+            <div id="user-nickname-flash" class="user-flash" style="display:none"></div>
+          </div>
+
+          <div class="user-field-group">
+            <label class="user-field-label">Email</label>
+            <div id="user-email-display" class="user-email-display">—</div>
+          </div>
+
+          <div class="user-field-group">
+            <label class="user-field-label">Role</label>
+            <div id="user-role-display" class="user-role-badge">—</div>
+          </div>
+
+          <div class="user-field-group">
+            <label class="user-field-label">Dashboard Benchmark</label>
+            <div class="mgmt-benchmark-row">
+                <select id="mgmt-benchmark-select" class="mgmt-benchmark-select" style="width:100%"
+                        onchange="window._mgmt.saveBenchmark(this.value)">
+                    <option value="WIG">WIG (Warsaw Stock Exchange)</option>
+                    <option value="WIG20">WIG20 (Top 20 Polish companies)</option>
+                    <option value="MWIG40">mWIG40 (Medium Polish companies)</option>
+                    <option value="SWIG80">sWIG80 (Small Polish companies)</option>
+                    <option value="SP500">S&amp;P 500 (US large-cap)</option>
+                    <option value="MSCI_WORLD">MSCI World (Global equity)</option>
+                </select>
+                <span id="mgmt-benchmark-saved" class="mgmt-benchmark-saved" style="display:none">✓ Saved</span>
+            </div>
+          </div>
+
+          <div class="user-field-group">
+            <label class="user-field-label">Roast Personality</label>
+            <div class="mgmt-benchmark-row">
+                <select id="mgmt-roast-select" class="mgmt-benchmark-select" style="width:100%"
+                        onchange="window._mgmt.saveRoastIntensity(this.value)">
+                    <option value="gentle">Gentle (Supportive, light humor)</option>
+                    <option value="sarcastic">Sarcastic (Default, witty, dry humor)</option>
+                    <option value="brutal">Brutal (Sharper, more aggressive)</option>
+                    <option value="degen">Degen (WallStreetBets tone, chaotic)</option>
+                </select>
+                <span id="mgmt-roast-saved" class="mgmt-benchmark-saved" style="display:none">✓ Saved</span>
+            </div>
+          </div>
+
+        </div>
+        <div class="user-modal-footer">
+          <a href="guide.html" class="user-guide-link">
+            <span aria-hidden="true">📖</span> User Guide
+          </a>
+          <a href="guide.html#design-system" class="user-guide-link" id="design-guide-link" style="display:none">
+            <span aria-hidden="true">🎨</span> Design Guide
+          </a>
+          <button class="user-logout-btn" onclick="AuthGuard.logout()">
+            <span>⏻</span> Sign out
+          </button>
+        </div>
+      </div>
+    </div><!-- /#user-modal -->
+    <!-- ── Wallet Settings Modal ──────────────────────────────── -->
+    <div id="wallet-settings-modal" class="user-modal-overlay" style="display:none" onclick="if(event.target===this)window._mgmt.closeWalletSettingsModal()">
+      <div class="user-modal-dialog">
+        <div class="user-modal-header">
+          <span class="user-modal-title">⚙️ Wallet Settings</span>
+          <button class="user-modal-close" onclick="window._mgmt.closeWalletSettingsModal()" aria-label="Close">✕</button>
+        </div>
+        <div class="user-modal-body">
+          <div id="wallet-settings-flash" class="user-flash" style="display:none"></div>
+
+          <div class="user-field-group">
+            <label class="user-field-label">Wallet Name</label>
+            <div class="user-field-row">
+              <input id="wallet-settings-name" type="text" class="user-field-input" placeholder="Wallet name" maxlength="80">
+            </div>
+          </div>
+
+          <div class="user-field-group" id="wallet-settings-ath-group">
+            <label class="user-field-label">Manual All-Time High (ATH)</label>
+            <div class="user-field-row" style="margin-bottom: 8px;">
+              <input id="wallet-settings-ath-date" type="date" class="user-field-input" style="flex:1">
+            </div>
+            <div class="user-field-row">
+              <input id="wallet-settings-ath-value" type="number" class="user-field-input" placeholder="ATH value (PLN)" min="0" step="0.01">
+            </div>
+          </div>
+        </div>
+        <div class="user-modal-footer" style="justify-content: space-between;">
+            <button id="wallet-settings-delete-btn" class="user-logout-btn mgmt-danger" onclick="window._mgmt.deleteSelectedWallet()">
+              <span>🗑️</span> Delete Wallet
+            </button>
+            <div style="display:flex; gap: 8px;">
+                <button id="wallet-settings-reset-ath-btn" class="mgmt-btn" onclick="window._mgmt.resetSelectedWalletAth()">Auto ATH</button>
+                <button class="mgmt-btn mgmt-btn-primary" onclick="window._mgmt.saveWalletSettings()">Save</button>
+            </div>
+        </div>
+      </div>
+    </div><!-- /#wallet-settings-modal -->
+</body>
+</html>

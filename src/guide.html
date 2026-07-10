@@ -1,0 +1,2384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roastfolio — User Guide & Privacy</title>
+  <script>
+    (function() {
+      const theme = localStorage.getItem('roastfolio-theme') === 'light' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+    })();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3250;
+      --accent: #4a9fd4;
+      --accent2: #6e56cf;
+      --green: #34c97a;
+      --yellow: #f0b429;
+      --red: #f05656;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --radius: 10px;
+    }
+
+    :root[data-theme="light"] {
+      --bg: #eaf6ff;
+      --surface: rgba(255, 255, 255, 0.94);
+      --surface2: rgba(226, 246, 255, 0.92);
+      --border: rgba(0, 126, 160, 0.18);
+      --accent: #007fa3;
+      --accent2: #00a8c7;
+      --green: #12804c;
+      --yellow: #9a6b00;
+      --red: #bd2e35;
+      --text: #102033;
+      --muted: #52677d;
+    }
+
+    html {
+      width: 100%;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      width: 100%;
+      overflow-x: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    :root[data-theme="light"] body {
+      background:
+        radial-gradient(circle at 12% 0%, rgba(0, 203, 214, 0.14), transparent 28%),
+        linear-gradient(180deg, #f7fbff 0%, var(--bg) 46%, #dff1fa 100%);
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Layout ── */
+    .layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+      max-width: 1100px;
+      margin: 0 auto;
+      gap: 0;
+      width: 100%;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 32px 20px;
+      border-right: 1px solid var(--border);
+    }
+
+    .sidebar .logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar nav ul { list-style: none; }
+    .sidebar nav li { margin-bottom: 2px; }
+    .sidebar nav a {
+      display: block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: 13.5px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background: var(--surface2);
+      color: var(--text);
+      text-decoration: none;
+    }
+    .sidebar nav .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 16px 10px 4px;
+    }
+
+    /* ── Content ── */
+    .content {
+      padding: 48px 56px;
+      max-width: 800px;
+      min-width: 0;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    h1 .subtitle {
+      display: block;
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 48px 0 16px;
+      padding-top: 48px;
+      border-top: 1px solid var(--border);
+      scroll-margin-top: 24px;
+    }
+    h2:first-of-type { margin-top: 32px; border-top: none; padding-top: 0; }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 24px 0 10px;
+      color: var(--accent);
+      scroll-margin-top: 24px;
+    }
+
+    p { margin-bottom: 14px; color: var(--text); }
+    p, li, td, th, code { overflow-wrap: anywhere; }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; }
+    li { margin-bottom: 6px; }
+
+    /* ── Callouts ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 20px 0;
+      border-left: 3px solid;
+    }
+    .callout.info  { background: rgba(74,159,212,0.08); border-color: var(--accent); }
+    .callout.ok    { background: rgba(52,201,122,0.08); border-color: var(--green); }
+    .callout.warn  { background: rgba(240,180,41,0.08); border-color: var(--yellow); }
+
+    .callout strong { font-weight: 700; }
+    .callout p:last-child { margin-bottom: 0; }
+
+    /* ── Security grid ── */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+    .security-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+    }
+    .security-card .icon { font-size: 22px; margin-bottom: 8px; }
+    .security-card .title { font-weight: 600; font-size: 13.5px; margin-bottom: 4px; }
+    .security-card .desc  { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+    /* ── Comparison table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13.5px;
+    }
+    thead th {
+      background: var(--surface2);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    .badge-yes  { color: var(--green); font-weight: 600; }
+    .badge-no   { color: var(--red);   font-weight: 600; }
+    .badge-info { color: var(--yellow);font-weight: 600; }
+
+    /* ── Developer commitment box ── */
+    .commitment {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin: 24px 0;
+      position: relative;
+    }
+    .commitment::before {
+      content: '"';
+      font-size: 64px;
+      line-height: 1;
+      color: var(--accent2);
+      opacity: 0.4;
+      position: absolute;
+      top: 12px;
+      left: 20px;
+    }
+    .commitment p { padding-left: 28px; font-style: italic; }
+    .commitment .attribution {
+      padding-left: 28px;
+      font-size: 13px;
+      color: var(--muted);
+      font-style: normal;
+      margin-top: 8px;
+    }
+
+    /* ── Step list ── */
+    .steps { list-style: none; padding: 0; counter-reset: step; }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+    }
+    .steps li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--accent2);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    /* ── Back link ── */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 28px;
+    }
+    .back-link:hover { color: var(--text); }
+
+    /* ── Responsive ── */
+    .mobile-header, .mobile-backdrop, .mobile-close-btn, .mobile-drag-handle, .mobile-quick-nav { display: none; }
+    .scroll-to-top { display: none; }
+    .reading-progress { display: none; }
+
+    /* ── Active nav link ── */
+    .sidebar nav a.active {
+      background: var(--surface2);
+      color: var(--text);
+      text-decoration: none;
+      position: relative;
+    }
+    .sidebar nav a.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 16px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    /* ── Responsive table wrapper ── */
+    .table-scroll-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 16px 0;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .table-scroll-wrapper table {
+      margin: 0;
+      min-width: 480px;
+      border-radius: 0;
+    }
+    .table-scroll-wrapper thead th:first-child,
+    .table-scroll-wrapper tbody td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: var(--surface);
+    }
+    .table-scroll-wrapper thead th:first-child {
+      background: var(--surface2);
+    }
+
+    @media (max-width: 720px) {
+      .layout {
+        display: block;
+        max-width: none;
+      }
+
+      body.nav-open {
+        overflow: hidden;
+        touch-action: none;
+      }
+
+      /* ── Reading progress bar ── */
+      .reading-progress {
+        display: block;
+        position: fixed;
+        top: calc(56px + env(safe-area-inset-top, 0px));
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: transparent;
+        z-index: 9999;
+        pointer-events: none;
+      }
+      .reading-progress .reading-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        border-radius: 0 2px 2px 0;
+        transition: width 0.1s linear;
+      }
+
+      /* ── Mobile sidebar (bottom sheet) ── */
+      .sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        height: min(82dvh, calc(100vh - 24px));
+        max-height: calc(100dvh - env(safe-area-inset-top, 0px) - 16px);
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        border-right: none;
+        border-radius: 20px 20px 0 0;
+        z-index: 10000;
+        padding: 10px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        will-change: transform;
+        overscroll-behavior: contain;
+      }
+      .sidebar.open {
+        transform: translateY(0);
+      }
+      .sidebar.dragging {
+        transition: none;
+      }
+
+      /* ── Drag handle ── */
+      .mobile-drag-handle {
+        display: flex;
+        justify-content: center;
+        padding: 8px 0 12px;
+        cursor: grab;
+        touch-action: none;
+      }
+      .mobile-drag-handle .handle-bar {
+        width: 36px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--muted);
+        opacity: 0.5;
+      }
+
+      .mobile-backdrop {
+        display: block;
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+      }
+      .mobile-backdrop.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* ── Mobile header ── */
+      .mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(56px + env(safe-area-inset-top, 0px));
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        z-index: 10002;
+        padding: env(safe-area-inset-top, 0px) 14px 0;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      :root[data-theme="light"] .mobile-header {
+        background: rgba(255,255,255,0.88);
+      }
+      .mobile-header .logo {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        min-width: 0;
+      }
+      .mobile-header .mobile-section-label {
+        font-size: 12px;
+        color: var(--muted);
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .mobile-header .mobile-header-right {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .mobile-menu-button {
+        border: 1px solid var(--border) !important;
+        border-radius: 12px;
+        background: var(--surface2) !important;
+      }
+      .mobile-header button {
+        background: transparent;
+        border: none;
+        color: var(--text);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        min-width: 44px;
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+      .mobile-header button svg,
+      .mobile-header button svg * {
+        pointer-events: none;
+      }
+      .mobile-header button:active {
+        opacity: 0.6;
+      }
+
+      .sidebar .logo {
+        margin-bottom: 16px;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--surface);
+        padding-bottom: 10px;
+      }
+      .mobile-close-btn {
+        display: block;
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 24px;
+        cursor: pointer;
+        padding: 4px;
+        min-width: 44px;
+        min-height: 44px;
+        touch-action: manipulation;
+      }
+
+      /* ── Sidebar nav link touch targets ── */
+      .sidebar nav a {
+        padding: 10px 12px;
+        font-size: 14px;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        touch-action: manipulation;
+      }
+      .sidebar nav a:active {
+        background: var(--surface2);
+      }
+      .sidebar nav .section-label {
+        padding: 20px 12px 6px;
+        font-size: 11px;
+      }
+
+      .mobile-quick-nav {
+        display: flex;
+        gap: 8px;
+        position: fixed;
+        top: calc(59px + env(safe-area-inset-top, 0px));
+        left: 0;
+        right: 0;
+        z-index: 9997;
+        overflow-x: auto;
+        padding: 9px 14px 10px;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        border-bottom: 1px solid var(--border);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .mobile-quick-nav::-webkit-scrollbar { display: none; }
+      .mobile-quick-nav a {
+        flex: 0 0 auto;
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0 13px;
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 12.5px;
+        font-weight: 700;
+        white-space: nowrap;
+        text-decoration: none;
+      }
+      .mobile-quick-nav a.active {
+        border-color: var(--accent);
+        color: var(--text);
+        background: var(--surface2);
+        box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 22%, transparent);
+      }
+
+      /* ── Content area ── */
+      .content {
+        width: 100%;
+        max-width: none;
+        padding: calc(116px + env(safe-area-inset-top, 0px)) 16px calc(96px + env(safe-area-inset-bottom, 0px));
+      }
+
+      h1 { font-size: 24px; line-height: 1.18; }
+      h1 .subtitle { font-size: 14px; }
+      h2 { font-size: 18px; margin: 36px 0 14px; padding-top: 36px; scroll-margin-top: 126px; }
+      h2:first-of-type { margin-top: 24px; }
+      h3 { font-size: 14px; }
+      h3, h4 { scroll-margin-top: 126px; }
+      p, li { font-size: 14px; line-height: 1.62; }
+
+      /* ── Responsive tables on mobile ── */
+      table {
+        font-size: 12.5px;
+      }
+      thead th, tbody td {
+        padding: 8px 10px;
+      }
+      .table-scroll-wrapper {
+        overflow: visible;
+        border: none;
+        border-radius: 0;
+      }
+      .table-scroll-wrapper table {
+        min-width: 0;
+        width: 100%;
+      }
+      .table-scroll-wrapper table.two-col-mobile {
+        display: block;
+      }
+      .table-scroll-wrapper table.two-col-mobile thead {
+        display: none;
+      }
+      .table-scroll-wrapper table.two-col-mobile tbody,
+      .table-scroll-wrapper table.two-col-mobile tr,
+      .table-scroll-wrapper table.two-col-mobile td {
+        display: block;
+        width: 100%;
+      }
+      .table-scroll-wrapper table.two-col-mobile tr {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin: 10px 0;
+        overflow: hidden;
+      }
+      .table-scroll-wrapper table.two-col-mobile td {
+        border-bottom: none;
+        padding: 11px 13px;
+        white-space: normal;
+      }
+      .table-scroll-wrapper table.two-col-mobile td:first-child {
+        position: static;
+        background: var(--surface2);
+        color: var(--accent);
+        font-weight: 800;
+      }
+      .table-scroll-wrapper table.two-col-mobile td + td {
+        color: var(--text);
+        line-height: 1.55;
+      }
+
+      /* ── Security grid: 1 column on mobile ── */
+      .security-grid {
+        grid-template-columns: 1fr;
+      }
+
+      /* ── Callout tighter on mobile ── */
+      .callout {
+        padding: 14px 16px;
+        font-size: 13.5px;
+      }
+
+      /* ── Commitment box ── */
+      .commitment {
+        padding: 20px 16px;
+      }
+      .commitment p { padding-left: 20px; font-size: 14px; }
+
+      /* ── Steps ── */
+      .steps li {
+        gap: 12px;
+      }
+
+      /* ── Scroll-to-top FAB ── */
+      .scroll-to-top {
+        position: fixed;
+        bottom: 24px;
+        right: 16px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        z-index: 9997;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 0.25s, transform 0.25s;
+        pointer-events: none;
+        touch-action: manipulation;
+      }
+      .scroll-to-top.visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+      .scroll-to-top:active {
+        transform: scale(0.92);
+      }
+      .scroll-to-top svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ── Back link ── */
+      .back-link {
+        margin-bottom: 20px;
+        font-size: 14px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      /* ── Design system token grid ── */
+      .ds-token-grid {
+        grid-template-columns: 1fr;
+      }
+
+      /* ── Breakpoint/motion rows ── */
+      .ds-breakpoint-row {
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-start;
+      }
+      .ds-motion-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      /* ── Code blocks ── */
+      pre {
+        padding: 14px;
+        font-size: 11.5px;
+      }
+
+      /* ── Engagement config blocks ── */
+      .eng-config-block {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+
+    /* ── Design System section extras ── */
+    .ds-token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .ds-token-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .ds-token-card .ds-token-name {
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 12px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .ds-token-card .ds-token-value {
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .ds-token-card .ds-token-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .ds-color-swatch {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 6px;
+    }
+    .ds-color-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .ds-color-meta { min-width: 0; }
+    .ds-color-meta .name  { font-weight: 600; font-size: 13px; }
+    .ds-color-meta .value {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .ds-color-meta .role  { font-size: 11.5px; color: var(--muted); }
+
+    .ds-type-row {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .ds-type-row:last-child { border-bottom: none; }
+    .ds-type-sample {
+      color: var(--text);
+      flex: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .ds-type-meta {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      white-space: nowrap;
+    }
+
+    .ds-spacing-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    .ds-spacing-bar {
+      background: var(--accent2);
+      height: 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+    .ds-spacing-label {
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .ds-breakpoint-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13.5px;
+    }
+    .ds-breakpoint-row:last-child { border-bottom: none; }
+    .ds-bp-range {
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      color: var(--accent);
+      min-width: 130px;
+    }
+    .ds-bp-name { font-weight: 600; min-width: 120px; }
+    .ds-bp-desc { color: var(--muted); font-size: 13px; }
+
+    .ds-motion-row {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 12px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .ds-motion-row:last-child { border-bottom: none; }
+    .ds-motion-key {
+      font-family: ui-monospace, monospace;
+      font-size: 11.5px;
+      color: var(--accent);
+    }
+    .ds-motion-desc { font-size: 13px; color: var(--muted); }
+
+    code {
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--accent);
+    }
+    pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--text);
+      margin: 16px 0;
+    }
+    pre .cm { color: var(--muted); }
+    pre .kw { color: #9b72cf; }
+    pre .vr { color: #4a9fd4; }
+    pre .vl { color: #34c97a; }
+
+    /* ── Achievements section ── */
+    .eng-tier-chip {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .eng-seed     { background: rgba(106,139,168,0.18); color: #8aa8c8;  border: 1px solid rgba(106,139,168,0.5); }
+    .eng-bronze   { background: rgba(200,135,58,0.18);  color: #c8873a;  border: 1px solid rgba(200,135,58,0.5); }
+    .eng-silver   { background: rgba(138,168,200,0.18); color: #a8c8e8;  border: 1px solid rgba(138,168,200,0.5); }
+    .eng-gold     { background: rgba(212,172,42,0.18);  color: #d4ac2a;  border: 1px solid rgba(212,172,42,0.5); }
+    .eng-diamond  { background: rgba(43,207,207,0.15);  color: #2bcfcf;  border: 1px solid rgba(43,207,207,0.5); }
+
+    .eng-streak-label { font-weight: 700; }
+    .eng-streak-deposit    { color: #27ae60; }
+    .eng-streak-checkin    { color: #4a9fd4; }
+    .eng-streak-withdrawal { color: #9b72cf; }
+    .eng-streak-goal       { color: #d4ac2a; }
+    .eng-streak-green      { color: #4caf82; }
+    .eng-streak-benchmark  { color: #2bcfcf; }
+
+    .eng-config-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .eng-config-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .eng-config-body .title  { font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+    .eng-config-body .path   { font-size: 12.5px; color: var(--accent); font-family: ui-monospace, monospace; margin-bottom: 5px; }
+    .eng-config-body p       { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.55; }
+
+    .eng-decision-box {
+      background: rgba(240,180,41,0.06);
+      border: 1px solid rgba(240,180,41,0.28);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 16px 0;
+    }
+    .eng-decision-box .eng-decision-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      margin-bottom: 8px;
+    }
+    .eng-decision-box p  { font-size: 13.5px; color: var(--text); margin: 0 0 8px; line-height: 1.6; }
+    .eng-decision-box p:last-child { margin: 0; }
+
+    /* ADVANCED-only sections: hidden by default, shown after role check */
+    [data-guide-advanced] { display: none; }
+
+    :root[data-theme="light"] .sidebar,
+    :root[data-theme="light"] .mobile-header,
+    :root[data-theme="light"] .security-card,
+    :root[data-theme="light"] .commitment,
+    :root[data-theme="light"] .ds-token-card,
+    :root[data-theme="light"] .ds-color-swatch,
+    :root[data-theme="light"] .eng-config-block {
+      box-shadow: 0 14px 34px rgba(9, 68, 100, 0.08);
+    }
+
+    :root[data-theme="light"] thead th,
+    :root[data-theme="light"] .sidebar nav a:hover,
+    :root[data-theme="light"] .sidebar nav a.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Mobile navigation elements ── -->
+  <div class="mobile-backdrop" id="mobile-backdrop"></div>
+  <header class="mobile-header">
+    <div class="logo">
+      <span>📊 Roastfolio</span>
+      <span class="mobile-section-label" id="mobile-section-label"></span>
+    </div>
+    <div class="mobile-header-right">
+      <button class="mobile-menu-button" type="button" aria-label="Open Table of Contents" aria-controls="guide-sidebar" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+    </div>
+  </header>
+  <div class="reading-progress"><div class="reading-progress-bar" id="reading-progress-bar"></div></div>
+  <nav class="mobile-quick-nav" id="mobile-quick-nav" aria-label="Guide sections"></nav>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar" id="guide-sidebar">
+    <div class="mobile-drag-handle" id="sidebar-drag-handle">
+      <div class="handle-bar"></div>
+    </div>
+    <div class="logo">
+      <span>📊 Roastfolio</span>
+      <button class="mobile-close-btn" type="button" aria-label="Close menu">&times;</button>
+    </div>
+    <nav>
+      <div class="section-label">Getting Started</div>
+      <ul>
+        <li><a href="#registration">Registration</a></li>
+        <li><a href="#first-portfolio">First Wallet</a></li>
+        <li><a href="#dashboard-control-room">Dashboard &amp; Control Room</a></li>
+        <li><a href="#holdings">Holdings</a></li>
+        <li><a href="#transactions">Transactions</a></li>
+        <li><a href="#history-benchmarks">History &amp; Benchmarks</a></li>
+        <li><a href="#ath-management">ATH Management</a></li>
+        <li><a href="#analysis-screen">Asset Analysis</a></li>
+      </ul>
+
+      <div class="section-label">Privacy &amp; Security</div>
+      <ul>
+        <li><a href="#authentication">Authentication</a></li>
+        <li><a href="#data-isolation">Your Data</a></li>
+        <li><a href="#infrastructure">Infrastructure</a></li>
+        <li><a href="#developer-access">Developer Access</a></li>
+        <li><a href="#encryption">Encryption</a></li>
+        <li><a href="#audit">Audit Logging</a></li>
+      </ul>
+
+      <div class="section-label">FAQ</div>
+      <ul>
+        <li><a href="#faq-dev-see">Can developer see my data?</a></li>
+        <li><a href="#faq-backup">Data backup</a></li>
+        <li><a href="#faq-delete">Deleting my account</a></li>
+      </ul>
+
+      <div class="section-label">Achievements</div>
+      <ul>
+        <li><a href="#ach-overview">Overview</a></li>
+        <li><a href="#ach-where">Where to find it</a></li>
+        <li><a href="#ach-streaks">Streaks</a></li>
+        <li><a href="#ach-milestones">Milestones</a></li>
+        <li><a href="#ach-badges">Badges &amp; tiers</a></li>
+        <li><a href="#ach-xp-rules">XP &amp; Level calculation</a></li>
+        <li><a href="#ach-setup">Setup &amp; configuration</a></li>
+        <li><a href="#ach-multi-profile">Multiple retirement plans</a></li>
+      </ul>
+
+      <div data-guide-advanced>
+        <div class="section-label">Design System</div>
+        <ul>
+          <li><a href="#ds-philosophy">Design Philosophy</a></li>
+          <li><a href="#ds-colors">Color Palette</a></li>
+          <li><a href="#ds-typography">Typography</a></li>
+          <li><a href="#ds-spacing">Spacing &amp; Grid</a></li>
+          <li><a href="#ds-cards">Card System</a></li>
+          <li><a href="#ds-buttons">Button System</a></li>
+          <li><a href="#ds-sheets">Bottom Sheets</a></li>
+          <li><a href="#ds-breakpoints">Breakpoints</a></li>
+          <li><a href="#ds-tokens">CSS Tokens</a></li>
+          <li><a href="#ds-motion">Motion</a></li>
+          <li><a href="#ds-mobile-ux">Mobile UX Quality</a></li>
+          <li><a href="#ds-ux-audit">Gamification UX Audit</a></li>
+        </ul>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ── Main content ── -->
+  <main class="content">
+
+    <a href="index.html" class="back-link">← Back to app</a>
+
+    <h1>
+      User Guide &amp; Privacy
+      <span class="subtitle">Everything you need to know about using Roastfolio and how your data is protected.</span>
+    </h1>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2>Getting Started</h2>
+
+    <h3 id="registration">Creating an account</h3>
+    <ol class="steps">
+      <li>Click <strong>Sign Up</strong> on the login page and enter your e-mail address and a password (minimum 6 characters).</li>
+      <li>Check your inbox for a verification code from Roastfolio and enter it when prompted.</li>
+      <li>Choose a display name (nickname) — this is the only personal detail stored beyond your e-mail.</li>
+      <li>You are now logged in. Your account and all data are tied to your e-mail address.</li>
+    </ol>
+
+    <div class="callout info">
+      <p><strong>Password recovery:</strong> If you forget your password, click <em>Forgot password?</em> on the login page. A reset code will be sent to your verified e-mail address.</p>
+    </div>
+
+    <h3 id="first-portfolio">Creating your first wallet</h3>
+    <p>After logging in, open the <strong>Wallets</strong> tab. This is your main portfolio management screen. To add a wallet:</p>
+    <ul>
+      <li><strong>Desktop:</strong> click the <em>+ Wallet</em> button in the wallet selector panel, type a name, and press <em>Create</em>.</li>
+      <li><strong>Mobile:</strong> tap the <em>···</em> overflow button → <em>+ Add wallet</em>, type a name, and press <em>Create</em>.</li>
+    </ul>
+    <p>Name wallets after the brokerage or account they represent (e.g. <em>IKE</em>, <em>IKZE</em>, <em>XTB</em>, <em>Binance</em>). Each wallet tracks one account independently.</p>
+    <p><strong>Summary</strong> is always the first entry and is computed automatically as the aggregate of all your wallets. It is read-only — you cannot add transactions to it directly.</p>
+
+    <h3 id="dashboard-control-room">Dashboard &amp; Control Room</h3>
+    <p>The <strong>Dashboard</strong> provides a high-level overview of your entire portfolio. The top section features the <strong>Control Room</strong>, where you can see the aggregated value, daily returns, and performance of each individual wallet at a glance.</p>
+    <ul>
+      <li><strong>Wallet navigation:</strong> Clicking on any wallet in the Control Room will automatically take you to the History screen, pre-filtered for that specific wallet.</li>
+      <li><strong>Daily Movers:</strong> Below the Control Room, the dashboard highlights your best and worst performing assets for the day.</li>
+    </ul>
+
+    <h3 id="holdings">Holdings</h3>
+    <p>Holdings are created automatically when you record a <strong>BUY</strong> transaction. There is no separate "add holding" form. Each BUY transaction adds to (or creates) the matching position in your wallet.</p>
+    <p>The holdings table shows each position with live price data, current value, today's change in PLN and %, and allocation percentage. On mobile, holdings display as stacked cards. On desktop, they appear in a table with sortable columns.</p>
+    <p>To <strong>edit or delete</strong> a position, tap the ✏️ or 🗑️ icons on the holding row. To record a trade against an existing holding directly, use the <em>Buy</em> or <em>Sell</em> chip buttons on the holding card.</p>
+    <div class="callout info">
+      <p><strong>Cash holding:</strong> any holding without a ticker (named e.g. <em>Cash</em> or <em>Konto</em>) is treated as a cash position. Its value is used to calculate available cash for BUY transactions.</p>
+    </div>
+
+    <h3 id="transactions">Recording transactions</h3>
+    <p>Transactions are recorded in a <strong>slide-up panel</strong> (bottom sheet) that opens without leaving the holdings view. To open it:</p>
+    <ul>
+      <li><strong>Desktop:</strong> click <em>New transaction</em> in the wallet overview bar.</li>
+      <li><strong>Mobile:</strong> tap the <em>+ Transaction</em> floating button at the bottom of the screen.</li>
+      <li>From a holding card: tap <em>Buy</em> or <em>Sell</em> to open the panel with that holding pre-selected.</li>
+    </ul>
+
+    <p><strong>Inside the transaction panel</strong>, select the type using the buttons at the top:</p>
+    <table>
+      <thead><tr><th>Type</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Buy</strong></td><td>Adds units to an existing holding or creates a new one. Decreases cash balance.</td></tr>
+        <tr><td><strong>Sell</strong></td><td>Removes units from a holding. Increases cash balance.</td></tr>
+        <tr><td><strong>Deposit</strong></td><td>Adds cash to the wallet without buying anything. Increases cash balance. Counts toward the monthly contribution streak.</td></tr>
+        <tr><td><strong>Withdrawal</strong></td><td>Removes cash from the wallet. Decreases cash balance. Breaks the withdrawal-free streak.</td></tr>
+      </tbody>
+    </table>
+
+    <p>For <strong>Buy</strong> and <strong>Sell</strong>, start by searching for the asset. Two sources are supported:</p>
+    <ul>
+      <li><strong>Yahoo Finance</strong> — for stocks, ETFs, crypto, and international assets (e.g. <code>CDR.WA</code>, <code>AAPL</code>, <code>BTC-USD</code>). Use arrow keys and Enter to navigate results.</li>
+      <li><strong>Polish TFI</strong> — for Polish mutual funds (TFI). Enter the <a href="https://www.bankier.pl/fundusze" target="_blank" rel="noopener noreferrer">bankier.pl</a> fund code and press <em>Lookup</em>.</li>
+    </ul>
+
+    <p>Enter the <strong>quantity</strong> (number of units) and <strong>trade value</strong> (total cash impact in PLN). Commission and a free-text comment are optional under <em>Advanced options</em>. A live review summary appears before you submit.</p>
+
+    <p>The panel has two tabs — <strong>Trade</strong> (new transaction) and <strong>History</strong> (past transactions and daily value snapshots for the selected wallet). On mobile, swipe down from the handle at the top to dismiss the panel.</p>
+
+    <div class="callout info">
+      <p><strong>Auto-add cash:</strong> if a BUY transaction would exceed your available cash balance, you can enable <em>Automatically add missing cash before a buy</em>. This records a DEPOSIT for the shortfall automatically before applying the buy.</p>
+    </div>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Managing existing transactions</h4>
+    <ul>
+      <li><strong>Filtering:</strong> On the transactions screen, you can filter your history by specific <strong>wallet</strong> and use <strong>quick date filters</strong> (e.g., Today, This week, This month, This year, All time).</li>
+      <li><strong>Live editing:</strong> When you edit a transaction and change its price or quantity, the total value is instantly recalculated. This also automatically triggers a recalculation of your wallet balances and historical portfolio performance.</li>
+    </ul>
+
+    <h3 id="history-benchmarks">History &amp; Benchmarks</h3>
+    <p>The <strong>History</strong> screen visualizes your portfolio's performance over time. You can view the history for the combined <strong>Summary</strong> of all wallets, or filter down to a specific wallet using the selector.</p>
+    <ul>
+      <li><strong>Performance Charts:</strong> View your Total Value, Daily PLN Change, and Daily % Change over time. The charts automatically adjust their X-axis labels (e.g., displaying Month/Year) to maintain readability when viewing long histories.</li>
+      <li><strong>Benchmarks:</strong> Compare your portfolio's returns against major indices. You can toggle between <strong>S&amp;P 500</strong>, <strong>MSCI World</strong>, and <strong>WIG20</strong> to see how your investments measure up to the broader market.</li>
+    </ul>
+
+    <h3 id="ath-management">All-Time High (ATH) management</h3>
+    <p>Roastfolio tracks the <strong>All-Time High (ATH)</strong> portfolio value for each wallet and for the overall portfolio. ATH is used on the dashboard gauge to show how close you are to your peak. By default, ATH is computed automatically from your daily value snapshots.</p>
+    <p>To view or edit ATH for a wallet, open the <strong>Wallets</strong> tab and select the wallet from the list. In the wallet overview bar you will see an <strong>All-Time High (ATH)</strong> row showing the current peak value, its date, and whether it was set automatically or manually.</p>
+    <p>Tap the ✏️ icon to expand the ATH editor:</p>
+    <ul>
+      <li><strong>Manual ATH date</strong> — pick the date on which the peak occurred.</li>
+      <li><strong>Manual ATH value (PLN)</strong> — enter the peak value in PLN.</li>
+      <li>Click <em>Save manual ATH</em> to persist your override. The dashboard gauge will immediately reflect the new ATH.</li>
+    </ul>
+    <div class="callout info">
+      <p><strong>Auto mode:</strong> click <em>Auto (reset from history)</em> to discard any manual override and let the system recalculate ATH from your historical daily snapshots. Auto mode is the default for all new wallets.</p>
+    </div>
+    <p>Manual ATH does <em>not</em> permanently disable automatic updates — if a new daily snapshot exceeds the stored ATH, the system will still update it automatically. Manual ATH only sets the current floor.</p>
+    <p><strong>Summary wallet</strong> — selecting <em>Summary</em> in the wallet list shows and lets you edit the ATH for the aggregated total portfolio value.</p>
+
+
+    <h3 id="analysis-screen">Asset Analysis</h3>
+    <p>The <strong>Analysis</strong> screen provides deep-dive research tools for any stock, ETF, or crypto asset. Use it to explore detailed price history, financial statements, and earnings data before making investment decisions.</p>
+    
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Opening the Analysis screen</h4>
+    <p>There are multiple ways to access the Analysis screen:</p>
+    <ul>
+      <li><strong>From Dashboard movers:</strong> Click any holding in the "Daily Movers" section to open its analysis.</li>
+      <li><strong>From Portfolio tables:</strong> Click any row in the portfolio holdings table (desktop or mobile).</li>
+      <li><strong>From Chart legends:</strong> Click any company name in pie chart legends.</li>
+      <li><strong>From Wallets:</strong> Click the company name/logo in any wallet's holdings list.</li>
+      <li><strong>Direct search:</strong> Open the Analysis tab from the sidebar and search for any ticker symbol.</li>
+    </ul>
+    
+    <div class="callout info">
+      <p><strong>Quick tip:</strong> Cash holdings are <em>not</em> clickable as they have no market data.</p>
+    </div>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Search and selection</h4>
+    <p>At the top of the Analysis screen is a search bar where you can enter any ticker symbol or company name (e.g. <code>AAPL</code>, <code>CDR.WA</code>, <code>Meta</code>, <code>BTC-USD</code>). Results appear instantly from Yahoo Finance's global database. Holdings you already own are marked with a <strong>✓ Owned</strong> badge.</p>
+    <p>Use <strong>arrow keys</strong> to navigate the dropdown and press <strong>Enter</strong> to select an asset. The analysis loads automatically with a smooth animated loader.</p>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Price history chart</h4>
+    <p>The main chart shows the asset's price history with the following features:</p>
+    <ul>
+      <li><strong>Time range buttons:</strong> 1D, 1W, 1M, YTD, 1Y, 5Y, ALL — click to reload the chart with different historical depth.</li>
+      <li><strong>Transaction markers:</strong> If you own the asset, your BUY and SELL transactions appear as markers on the chart:
+        <ul>
+          <li>🟢 Green arrow up = BUY transaction</li>
+          <li>🔴 Red arrow down = SELL transaction</li>
+          <li>🟠 Orange circle = both BUY and SELL on the same date</li>
+        </ul>
+      </li>
+      <li><strong>Tooltip:</strong> Hover over a transaction marker to see details (type, quantity, price).</li>
+      <li><strong>Responsive zoom:</strong> The chart automatically adjusts to fit the selected time period.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Fundamental properties</h4>
+    <p>Below the chart, a grid displays key fundamental metrics fetched from Yahoo Finance:</p>
+    <table>
+      <thead><tr><th>Metric</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Sector &amp; Industry</strong></td><td>Business classification (e.g. Technology / Software)</td></tr>
+        <tr><td><strong>Market Cap</strong></td><td>Total market capitalization (formatted as B/M/T)</td></tr>
+        <tr><td><strong>P/E Ratio</strong></td><td>Trailing and forward price-to-earnings ratios</td></tr>
+        <tr><td><strong>Dividend Yield</strong></td><td>Annual dividend as percentage of current price</td></tr>
+        <tr><td><strong>52-Week High/Low</strong></td><td>Peak and bottom prices over the last year</td></tr>
+      </tbody>
+    </table>
+    <p>All metrics display "—" when data is unavailable (common for small-cap stocks, crypto, or newly listed assets).</p>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Cash Flow Statement</h4>
+    <p>For companies with available financial data, the Analysis screen shows a detailed <strong>Cash Flow Statement</strong> covering the last 5 years. This section includes:</p>
+    <ul>
+      <li><strong>Annual/Quarterly tabs:</strong> Switch between yearly summaries and quarterly breakdowns (last 8 quarters).</li>
+      <li><strong>Key metrics:</strong> Operating Cash Flow, Free Cash Flow, Capital Expenditures, Dividends Paid, and more.</li>
+      <li><strong>Scrollable table:</strong> Horizontal scroll on mobile; first column (metric names) stays fixed.</li>
+    </ul>
+    <p>Cash flow data is particularly useful for evaluating a company's ability to generate cash, fund operations, and pay dividends.</p>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Income Statement</h4>
+    <p>The <strong>Income Statement</strong> section displays profit-and-loss data for the same 5-year period:</p>
+    <ul>
+      <li><strong>Annual/Quarterly tabs:</strong> View yearly income statements or drill into quarterly results.</li>
+      <li><strong>Key metrics:</strong> Total Revenue, Operating Income, Net Income, EBITDA, Gross Profit, and more.</li>
+      <li><strong>Growth analysis:</strong> Compare year-over-year or quarter-over-quarter trends directly in the table.</li>
+    </ul>
+    <p>This data helps assess profitability, revenue growth, and operational efficiency over time.</p>
+
+    <div class="callout info">
+      <p><strong>Data availability:</strong> Financial statements are pulled from Yahoo Finance. Large-cap stocks typically have complete historical data. Small-cap stocks, ETFs, crypto, and international assets may have limited or missing financial data. If no data is available, the Cash Flow and Income Statement sections will be hidden automatically.</p>
+    </div>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Best practices for analysis</h4>
+    <ul>
+      <li><strong>Before buying:</strong> Check the P/E ratio, revenue trends, and cash flow to assess valuation and financial health.</li>
+      <li><strong>After earnings:</strong> Review the latest quarterly results to see if the company met expectations.</li>
+      <li><strong>For dividends:</strong> Look at dividend yield and check the cash flow statement to confirm sustainability.</li>
+      <li><strong>For growth stocks:</strong> Focus on revenue growth and operating cash flow trends rather than current profitability.</li>
+      <li><strong>Compare holdings:</strong> Open multiple assets (via dashboard or portfolio) to compare fundamentals side-by-side in separate browser tabs.</li>
+    </ul>
+
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2>Privacy &amp; Security</h2>
+
+    <h3 id="authentication">How authentication works</h3>
+    <p>Roastfolio uses <strong>AWS Cognito</strong> — Amazon's managed identity service — for all authentication. Your password is <em>never</em> stored or even seen by the application code. The login flow uses the industry-standard <strong>SRP (Secure Remote Password)</strong> protocol: only a cryptographic proof is exchanged, not the plaintext password.</p>
+    <p>After login, Cognito issues a signed <strong>JWT token</strong> (JSON Web Token). Every API call includes this token in the <code>Authorization</code> header. The backend Lambda function validates the token's signature against Cognito's public key before processing any request. If the token is invalid, expired, or missing, the request is rejected with HTTP 401.</p>
+
+    <div class="callout ok">
+      <p><strong>Token expiry:</strong> Access tokens expire after 24 hours. Refresh tokens expire after 30 days. When your session expires you will be redirected to the login page.</p>
+    </div>
+
+    <h3 id="data-isolation">Your data — strict per-user isolation</h3>
+    <p>Every item stored in the database (portfolios, holdings, transactions, snapshots) uses your <strong>Cognito user ID (sub)</strong> as the primary partition key. This is a unique, non-guessable UUID assigned at signup.</p>
+    <p>The backend code enforces that your token's user ID matches the requested data's partition key on <em>every read and write</em>. It is technically impossible for one logged-in user to access another user's data through the application's API — even if they know the other user's e-mail or ID.</p>
+
+    <h3 id="infrastructure">Infrastructure security</h3>
+
+    <div class="security-grid">
+      <div class="security-card">
+        <div class="icon">🔒</div>
+        <div class="title">HTTPS everywhere</div>
+        <div class="desc">All traffic between your browser and the app is encrypted with TLS 1.2+. CloudFront enforces HTTPS and redirects plain HTTP requests.</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">🌐</div>
+        <div class="title">CloudFront CDN</div>
+        <div class="desc">Static files are served through CloudFront. The underlying S3 bucket is private — it cannot be accessed directly, only via CloudFront.</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">🗄️</div>
+        <div class="title">Encrypted at rest</div>
+        <div class="desc">All DynamoDB tables are encrypted at rest using AWS-managed keys (AES-256). The S3 bucket uses server-side encryption.</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">♻️</div>
+        <div class="title">Point-in-time recovery</div>
+        <div class="desc">Every DynamoDB table has PITR enabled — data can be restored to any second in the last 35 days in case of accidental deletion or corruption.</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">🔑</div>
+        <div class="title">Least-privilege IAM</div>
+        <div class="desc">Each Lambda function has an IAM role granting only the exact DynamoDB actions it needs (e.g. the snapshot function cannot modify user profiles).</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">🚫</div>
+        <div class="title">No public S3 access</div>
+        <div class="desc">The S3 bucket has all public-access settings blocked. A bucket policy allows only the CloudFront distribution (via OAC) to read objects.</div>
+      </div>
+    </div>
+
+    <h3 id="developer-access">Developer access policy</h3>
+    <p>As the developer and sole operator of Roastfolio, I have administrative access to the AWS account that hosts your data. This is technically unavoidable for a solo-operated SaaS. Here is how I limit and account for that access:</p>
+
+    <table>
+      <thead>
+        <tr><th>What I have access to</th><th>How it is controlled</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>DynamoDB tables (read/write)</td>
+          <td class="badge-info">IAM — separate dev and prod accounts; no routine prod access</td>
+        </tr>
+        <tr>
+          <td>CloudWatch logs (Lambda logs)</td>
+          <td class="badge-info">Logs contain request metadata, not portfolio values</td>
+        </tr>
+        <tr>
+          <td>AWS CloudTrail</td>
+          <td class="badge-yes">All API calls to prod DynamoDB are audit-logged with timestamp and identity</td>
+        </tr>
+        <tr>
+          <td>Your password</td>
+          <td class="badge-yes">Never stored anywhere — handled entirely by AWS Cognito</td>
+        </tr>
+        <tr>
+          <td>Your JWT tokens</td>
+          <td class="badge-yes">Never logged or stored — they expire and are validated in-memory only</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="commitment">
+      <p>Your data is protected by AWS IAM access controls and all access to the production database is audit-logged via AWS CloudTrail. I do not have routine access to production data. Any access I make for support or maintenance purposes is recorded in the audit log and I commit to not reading, copying, or using your portfolio data for any purpose other than operating the service.</p>
+      <div class="attribution">— Michał Bardadyn, developer of Roastfolio</div>
+    </div>
+
+    <div class="callout warn">
+      <p><strong>Important transparency note:</strong> Roastfolio is <em>not</em> a zero-knowledge application. Because portfolio calculations (live prices, gain/loss, benchmarks) happen on the server, the Lambda function processes your holdings data in plaintext. If you require cryptographic guarantees that no one — including the operator — can ever read your data, a server-side architecture like this cannot provide that. The controls described above are operational and policy-based, not mathematical.</p>
+    </div>
+
+    <h3 id="encryption">Data encryption</h3>
+    <p>All data is encrypted <strong>at rest</strong> (DynamoDB server-side encryption, S3 SSE) and <strong>in transit</strong> (TLS via CloudFront and API Gateway). The encryption keys are AWS-managed (AES-256). As the account owner I have administrative access to these keys, which is consistent with the operational access model described above.</p>
+
+    <h3 id="audit">Audit logging</h3>
+    <p><strong>AWS CloudTrail</strong> is enabled on the AWS account and records every API call made to DynamoDB, Lambda, and S3, including the identity making the call, the timestamp, and the source IP. These logs are stored in S3 and cannot be altered retroactively without detection. In practice, this means that any access to your data — including by the developer — leaves an immutable record.</p>
+
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2>Frequently Asked Questions</h2>
+
+    <h3 id="faq-dev-see">Can the developer see my portfolio data?</h3>
+    <p>Technically yes — as the AWS account administrator I can query the DynamoDB tables directly. Practically: I do not do this in the normal course of operating the service, and any time I do (e.g. to investigate a bug you reported) it is recorded in CloudTrail. I have committed above not to read or use your data beyond what is necessary to run the service.</p>
+    <p>If this level of trust is not sufficient for you, I recommend not storing sensitive financial data in any cloud-hosted service without client-side encryption.</p>
+
+    <h3 id="faq-backup">How is my data backed up?</h3>
+    <p>All DynamoDB tables have <strong>Point-in-Time Recovery (PITR)</strong> enabled. This means AWS continuously backs up your data and it can be restored to any point within the last 35 days. In the event of accidental data loss I can restore a table backup to recover your portfolios and transactions.</p>
+
+    <h3 id="faq-delete">How do I delete my account?</h3>
+    <p>Go to <strong>Settings → Account → Delete account</strong>. This will permanently delete your Cognito account, all your portfolios, holdings, transactions, and snapshots from DynamoDB. The deletion is irreversible. Because DynamoDB PITR retains backups for up to 35 days after deletion, residual copies may exist in backups during that window and are then permanently purged.</p>
+
+
+    <!-- ══════════════════════════════════════════════════════════
+         MILESTONES & ACHIEVEMENTS
+         ══════════════════════════════════════════════════════════ -->
+    <h2>🏆 Milestones &amp; Achievements</h2>
+
+    <h3 id="ach-overview">What is this?</h3>
+    <p>Roastfolio tracks your investing habits over time and rewards consistency with <strong>streaks</strong>, <strong>milestones</strong>, and <strong>badges</strong>. The goal is to make the boring middle of long-term investing feel like it's going somewhere — because it is.</p>
+    <p>Everything is calculated automatically from your transaction history. There is nothing to opt into: the moment you make your first deposit, the system starts tracking. The only things that require manual setup are the <a href="#ach-setup">monthly deposit goal</a> and <a href="#ach-setup">retirement plan</a>, which unlock additional streak and milestone types.</p>
+
+    <div class="callout info">
+      <p><strong>Roastfolio's achievement philosophy:</strong> badges reward real financial behavior — depositing money, staying invested, avoiding withdrawals — not artificial engagement like logging in every day or watching animations. The tone is sarcastic but the mechanic is sound.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ach-where">Where to find it</h3>
+    <p>Achievements surface in three places:</p>
+    <ul>
+      <li><strong>Dashboard engagement strip</strong> — a row of scrollable streak pills just below the portfolio header (contribution streak, check-in streak, level, recent badges). Tap any pill to open the full achievements screen.</li>
+      <li><strong>Achievements page</strong> — accessible from the strip or directly via <a href="achievements.html">achievements.html</a>. Shows all streaks with animated ring progress, next milestone progress bar, the full badge collection (unlocked + locked), and a monthly recap.</li>
+      <li><strong>Transaction confirmations</strong> — after recording a buy, sell, deposit, or withdrawal, a one-liner appears. These are purely informational and slightly sarcastic.</li>
+    </ul>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ach-streaks">Streaks</h3>
+    <p>A streak is a consecutive run of a specific behavior, measured in months or trading days. Streaks reset if you miss a period — but your personal best is always saved and visible in the achievements screen as a "former streak" record.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Streak</th>
+          <th>What it measures</th>
+          <th>Unit</th>
+          <th>Resets when</th>
+          <th>Requires setup?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="eng-streak-label eng-streak-deposit">Deposit streak</span></td>
+          <td>Consecutive calendar months with at least one <strong>DEPOSIT</strong> transaction. Buy orders without a new cash deposit do not count.</td>
+          <td>Months</td>
+          <td>Any month passes with no deposit recorded (3-day grace into the next month)</td>
+          <td class="badge-no">No</td>
+        </tr>
+        <tr>
+          <td><span class="eng-streak-label eng-streak-checkin">Active days</span></td>
+          <td>Total count of distinct calendar days on which any transaction (Buy, Sell, Deposit, Dividend) was recorded. This is a proxy for portfolio engagement — more active portfolio management accumulates faster.</td>
+          <td>Days</td>
+          <td>Does not reset — it is a cumulative total, not a consecutive run</td>
+          <td class="badge-no">No</td>
+        </tr>
+        <tr>
+          <td><span class="eng-streak-label eng-streak-withdrawal">Withdrawal-free streak</span></td>
+          <td>Consecutive calendar months without any <strong>WITHDRAWAL</strong> transaction. Sell orders are not counted — reinvesting proceeds is a valid decision.</td>
+          <td>Months</td>
+          <td>Any WITHDRAWAL transaction is recorded</td>
+          <td class="badge-no">No</td>
+        </tr>
+        <tr>
+          <td><span class="eng-streak-label eng-streak-goal">Goal streak</span></td>
+          <td>Consecutive months where total deposits meet or exceed your self-set <strong>monthly deposit goal</strong>. Changing your goal mid-streak does not reset the counter.</td>
+          <td>Months</td>
+          <td>Any month where deposits fall below the goal</td>
+          <td class="badge-yes">Yes — set monthly goal</td>
+        </tr>
+        <tr>
+          <td><span class="eng-streak-label eng-streak-green">Green months</span></td>
+          <td>Consecutive calendar months where your portfolio's <strong>market performance</strong> is positive — calculated before any new deposits, so it isolates market return from your contributions.</td>
+          <td>Months</td>
+          <td>Any month ends with a negative market return</td>
+          <td class="badge-no">No</td>
+        </tr>
+        <tr>
+          <td><span class="eng-streak-label eng-streak-benchmark">Beat benchmark</span> <span class="badge-info" style="font-size:11px">[planned]</span></td>
+          <td>Consecutive months where your portfolio's total return exceeds your chosen benchmark (WIG20, MSCI World, S&amp;P 500). Requires benchmark data integration — not yet available in the current build.</td>
+          <td>Months</td>
+          <td>Any month your return trails the benchmark</td>
+          <td class="badge-yes">Yes — enable benchmark</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <p><strong>Why only DEPOSIT for the contribution streak, not BUY?</strong> Buying with cash that's already in your portfolio is not new capital entering the system. The streak is designed to reward the habit of adding fresh money each month. Moving existing cash from one holding to another doesn't count.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ach-milestones">Milestones</h3>
+    <p>Milestones are one-time achievements. When you cross one, a badge unlocks and a roast fires. They never expire and can only be earned once each. The Achievements screen shows four separate milestone timelines — Portfolio value, Investor journey, Monthly deposit best, and FIRE progress (if a retirement plan is configured). Each timeline shows past milestones with the date reached, the next target with a live progress bar, and future milestones muted below.</p>
+
+    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Portfolio value</h4>
+    <p>Triggered when your total portfolio value (all portfolios combined) crosses a threshold for the first time. The badge is awarded on first crossing only — if the market dips below and recovers, no second badge. XP from each threshold is awarded cumulatively: a 150 000 PLN portfolio earns XP for all thresholds below it.</p>
+    <table>
+      <thead><tr><th>Value (PLN)</th><th>Roastfolio says…</th></tr></thead>
+      <tbody>
+        <tr><td>1 000</td><td><em>"It begins. Technically you're an investor now."</em></td></tr>
+        <tr><td>10 000</td><td><em>"Five figures. A threshold that matters."</em></td></tr>
+        <tr><td>50 000</td><td><em>"Halfway to six figures. The market will try to undo this. Don't let it."</em></td></tr>
+        <tr><td>100 000</td><td><em>"Six figures. This is the number that changes behavior. Guard it."</em></td></tr>
+        <tr><td>250 000</td><td><em>"A quarter million. At this point your money has a support group."</em></td></tr>
+        <tr><td>500 000</td><td><em>"Half a million. The math is doing most of the work now."</em></td></tr>
+        <tr><td>1 000 000</td><td><em>"One million. You either DCA'd for 30 years or got very lucky."</em></td></tr>
+        <tr><td>2 000 000</td><td><em>"Two million. The returns alone are someone's annual salary."</em></td></tr>
+        <tr><td>5 000 000</td><td><em>"Five million. The portfolio manages you more than you manage it."</em></td></tr>
+      </tbody>
+    </table>
+
+    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Investor journey (from first investment date)</h4>
+    <p>Time-based milestones counted from the date of your <strong>first ever recorded transaction</strong> — not account creation. The clock starts when money moves.</p>
+    <table>
+      <thead><tr><th>Since first investment</th><th>Milestone</th></tr></thead>
+      <tbody>
+        <tr><td>3 months</td><td><em>"Still here. Initial excitement survived."</em></td></tr>
+        <tr><td>6 months</td><td><em>"Half a year. One market wobble behind you, probably."</em></td></tr>
+        <tr><td>1 year</td><td><em>"One full year as an investor. All four seasons of market behavior."</em></td></tr>
+        <tr><td>2 years</td><td><em>"The 'long term' is no longer hypothetical."</em></td></tr>
+        <tr><td>5 years</td><td><em>"You're a different investor than when you started."</em></td></tr>
+        <tr><td>10 years</td><td><em>"A decade. Compounding has had time to become your co-pilot."</em></td></tr>
+      </tbody>
+    </table>
+
+    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Monthly deposit personal best</h4>
+    <p>Unlocked the first time you deposit above a threshold in a single calendar month — rewards your biggest months, not just consistency.</p>
+    <p>Thresholds: 1 000 / 2 500 / 5 000 / 10 000 / 25 000 / 50 000 / 100 000 PLN in one month.</p>
+
+    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Retirement progress</h4>
+    <p>Triggered at 10 / 25 / 50 / 75 / 90 / 100% of your FIRE target. Only active if you have a retirement plan configured. See <a href="#ach-setup">Setup &amp; configuration</a> for details.</p>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ach-badges">Badges &amp; tiers</h3>
+    <p>Every milestone and streak achievement unlocks a badge. Badges come in five tiers — rarity reflects how long or how difficult the achievement is to earn, not whether it's valuable. A Seed badge for your first deposit matters.</p>
+
+    <table>
+      <thead><tr><th>Tier</th><th>What it represents</th><th>Visual</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="eng-tier-chip eng-seed">Seed</span></td>
+          <td>Participation and first steps. Nearly everyone earns these early.</td>
+          <td>Gray border, muted glow</td>
+        </tr>
+        <tr>
+          <td><span class="eng-tier-chip eng-bronze">Bronze</span></td>
+          <td>Early consistency — showing up for a few months, hitting initial thresholds.</td>
+          <td>Amber border</td>
+        </tr>
+        <tr>
+          <td><span class="eng-tier-chip eng-silver">Silver</span></td>
+          <td>Sustained effort — a full year of something, meaningful portfolio thresholds.</td>
+          <td>Steel blue border</td>
+        </tr>
+        <tr>
+          <td><span class="eng-tier-chip eng-gold">Gold</span></td>
+          <td>Genuine milestones — six-figure portfolio, multi-year streaks, survival through bad markets.</td>
+          <td>Yellow border, slow pulse glow</td>
+        </tr>
+        <tr>
+          <td><span class="eng-tier-chip eng-diamond">Diamond</span></td>
+          <td>Rare, long-term, legendary. Five-year streaks, seven-figure portfolio, full trading year of check-ins.</td>
+          <td>Cyan border, continuous shimmer pulse</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>In the achievements screen, locked badges appear as <strong>silhouettes</strong> at reduced opacity. Tapping a locked badge shows exactly what it requires and how close you are. Nothing is hidden — you always know what's next.</p>
+
+    <div class="callout ok">
+      <p><strong>Retroactive awards:</strong> When the achievements system launches for your account, all badges you've already earned through past transactions are awarded immediately and silently. You'll see a "New" indicator in the achievements drawer and a one-time message: <em>"We went through your history. Turns out you've been building this longer than you realized."</em></p>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ach-xp-rules">XP &amp; Level Calculation</h3>
+    <p>XP (experience points) are derived entirely from real transaction and portfolio snapshot data. There are no artificial engagement loops — you earn XP for financially meaningful actions only. The engine (<code>xp-engine.js</code>) recomputes automatically every time transaction history or portfolio prices are refreshed.</p>
+
+    <div class="callout info">
+      <p><strong>No manual entry.</strong> XP is never entered by hand. If a transaction is deleted, the XP it generated disappears on the next recalculation. The number is always consistent with your actual history.</p>
+    </div>
+
+    <div class="callout ok">
+      <p><strong>Storage decision — why XP is not stored in the database.</strong> XP, levels, badges, milestones, and streaks are <strong>computed client-side on every load</strong> from transaction history already fetched from the API. Storing computed values in DynamoDB would create a stale-data sync problem every time calculation rules change. Persisted between sessions: streak personal bests (<code>localStorage</code> — they only ever increase), monthly deposit goal (<code>localStorage</code> key <code>xpe_deposit_goal</code>), and FIRE target (<code>localStorage</code> key <code>xpe_fire_target</code>, refreshed from the retirement plans API). Because computation is deterministic and fast (&lt;10ms), no server-side caching is needed. Existing and new users get a full retroactive recalculation from their complete transaction history automatically on every load.</p>
+    </div>
+
+    <h4>XP rule table</h4>
+    <table>
+      <thead><tr><th>Category</th><th>Action</th><th>XP awarded</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="5"><strong>Deposits</strong></td><td>Per deposit event</td><td>+15</td></tr>
+        <tr><td>Amount ≥ 500 PLN</td><td>+5 bonus</td></tr>
+        <tr><td>Amount ≥ 1 000 PLN</td><td>+15 bonus</td></tr>
+        <tr><td>Amount ≥ 5 000 PLN</td><td>+30 bonus</td></tr>
+        <tr><td>Amount ≥ 10 000 PLN</td><td>+60 bonus</td></tr>
+        <tr><td><strong>Consistency</strong></td><td>Per calendar month with ≥1 deposit</td><td>+20</td></tr>
+        <tr><td><strong>Goal</strong></td><td>Per month with total deposits ≥ 1 000 PLN</td><td>+10 bonus</td></tr>
+        <tr><td><strong>Income</strong></td><td>Per dividend received</td><td>+15</td></tr>
+        <tr><td rowspan="2"><strong>Trading</strong></td><td>First sell transaction</td><td>+20</td></tr>
+        <tr><td>Each additional sell</td><td>+5</td></tr>
+        <tr><td rowspan="6"><strong>Portfolio milestones</strong></td><td>Portfolio ≥ 1 000 PLN</td><td>+50</td></tr>
+        <tr><td>Portfolio ≥ 10 000 PLN</td><td>+100</td></tr>
+        <tr><td>Portfolio ≥ 50 000 PLN</td><td>+200</td></tr>
+        <tr><td>Portfolio ≥ 100 000 PLN</td><td>+400</td></tr>
+        <tr><td>Portfolio ≥ 250 000 PLN</td><td>+600</td></tr>
+        <tr><td>Portfolio ≥ 500 000 PLN</td><td>+1 000</td></tr>
+        <tr><td rowspan="3"><strong>Diversification</strong></td><td>3+ unique holdings bought</td><td>+30</td></tr>
+        <tr><td>5+ unique holdings bought</td><td>+50</td></tr>
+        <tr><td>10+ unique holdings bought</td><td>+80</td></tr>
+        <tr><td><strong>Retirement</strong></td><td>Retirement plan configured</td><td>+50</td></tr>
+        <tr><td><strong>Badges</strong></td><td>Per badge unlocked</td><td>+50</td></tr>
+      </tbody>
+    </table>
+
+    <p>Deposit bonuses are tiered, not cumulative. A 1 200 PLN deposit earns base (+15) plus the ≥1 000 PLN tier (+15) — the +5 (≥500) tier is superseded. Diversification bonuses are cumulative: reaching 10 holdings awards all three tiers (+30 + +50 + +80 = +160 total). Portfolio milestone bonuses are also cumulative — a 150 000 PLN portfolio earns +50 + +100 + +200 + +400 = 750 XP for all four crossed thresholds.</p>
+
+    <h4>Level thresholds</h4>
+    <table>
+      <thead><tr><th>Level name</th><th>XP required (total)</th></tr></thead>
+      <tbody>
+        <tr><td>Seed</td><td>0</td></tr>
+        <tr><td>Observer</td><td>100</td></tr>
+        <tr><td>Participant</td><td>250</td></tr>
+        <tr><td>Saver</td><td>500</td></tr>
+        <tr><td>Contributor</td><td>1 000</td></tr>
+        <tr><td>Operator</td><td>2 500</td></tr>
+        <tr><td>Veteran</td><td>5 000</td></tr>
+        <tr><td>Institution</td><td>10 000</td></tr>
+      </tbody>
+    </table>
+
+    <h4>Streak calculation</h4>
+    <p>Streaks are computed from transaction history every time data refreshes. Each streak also persists its personal best in <code>localStorage</code> so the all-time high is never lost if a streak resets.</p>
+
+    <table>
+      <thead><tr><th>Streak</th><th>How it’s calculated</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Deposit streak</strong></td>
+          <td>Consecutive calendar months (YYYY-MM) ending at the most recent month that contain at least one deposit. A month with zero deposits breaks the streak.</td>
+        </tr>
+        <tr>
+          <td><strong>Active days</strong></td>
+          <td>Total count of distinct calendar days on which any transaction (buy, sell, deposit, dividend) occurred. Used as a proxy for engagement frequency.</td>
+        </tr>
+        <tr>
+          <td><strong>Withdrawal-free</strong></td>
+          <td>Number of calendar months between the date after the last withdrawal and today. If no withdrawal has ever been recorded, the streak counts from the first deposit date.</td>
+        </tr>
+        <tr>
+          <td><strong>Goal streak</strong></td>
+          <td>Consecutive calendar months (most recent first) where the sum of all deposits equals or exceeds the monthly goal (default: 1 000 PLN across all portfolios).</td>
+        </tr>
+        <tr>
+          <td><strong>Green months</strong></td>
+          <td>Consecutive calendar months where the net portfolio return — <em>(end value − start value) − (new capital deposited)</em> — is positive. Requires portfolio snapshot history.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h4>Badge derivation</h4>
+    <p>Each badge is evaluated against a specific condition derived from real data. Below is the full derivation logic for every badge in the system.</p>
+
+    <table>
+      <thead><tr><th>Badge</th><th>Unlocks when…</th></tr></thead>
+      <tbody>
+        <tr><td>Showing Up</td><td>At least one deposit exists in transaction history</td></tr>
+        <tr><td>Reliable</td><td>Deposit months total ≥ 3 (deposit streak or cumulative)</td></tr>
+        <tr><td>Eyes Open</td><td>Distinct transaction-active days ≥ 7</td></tr>
+        <tr><td>Hands Off</td><td>Withdrawal-free streak ≥ 6 months <em>and</em> no withdrawal ever recorded</td></tr>
+        <tr><td>Four Digits</td><td>Historical peak portfolio value ≥ 1 000 PLN</td></tr>
+        <tr><td>Getting Serious</td><td>Historical peak portfolio value ≥ 10 000 PLN</td></tr>
+        <tr><td>Not One Basket</td><td>Unique tickers bought ≥ 3</td></tr>
+        <tr><td>Actually Diversified</td><td>Unique tickers bought ≥ 5</td></tr>
+        <tr><td>Baptism by Fire</td><td>Portfolio saw a ≥10% drawdown from running peak <em>and</em> no withdrawal was ever recorded</td></tr>
+        <tr><td>FIRE Curious</td><td>At least one retirement plan saved (checked via <code>RetirementPlansClient</code>, cached in <code>localStorage</code>)</td></tr>
+        <tr><td>Red Day Survivor</td><td>Portfolio snapshot history shows a ≥10% drawdown, or snapshot history exists (proxy: you have seen red days)</td></tr>
+        <tr><td>Sold Something</td><td>At least one Sell transaction exists</td></tr>
+        <tr><td>Committed</td><td>Goal streak ≥ 3 consecutive months</td></tr>
+        <tr><td>The Long Game</td><td>Deposit months ≥ 12</td></tr>
+        <tr><td>Weekly Habit</td><td>Distinct active days ≥ 90</td></tr>
+        <tr><td>Untouched</td><td>Withdrawal-free streak ≥ 36 months</td></tr>
+        <tr><td>On Track</td><td>Goal streak ≥ 12 months</td></tr>
+        <tr><td>Six Figures</td><td>Historical peak portfolio value ≥ 100 000 PLN</td></tr>
+        <tr><td>Held the Line</td><td>Portfolio saw a ≥20% drawdown <em>and</em> no withdrawal ever recorded</td></tr>
+        <tr><td>World Citizen</td><td>Transactions span ≥3 country/asset-class proxies (Polish .WA tickers, foreign tickers, crypto)</td></tr>
+        <tr><td>Tax Efficient</td><td>Transactions exist in both an IKE and an IKZE wallet</td></tr>
+        <tr><td>Institutionalized</td><td>Deposit months ≥ 36</td></tr>
+        <tr><td>Comma Club</td><td>Historical peak portfolio value ≥ 1 000 000 PLN</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warn">
+      <p><strong>Data required:</strong> Most badges only need transaction history. Green months, drawdown badges (Baptism by Fire, Held the Line, Red Day Survivor), and portfolio milestone badges additionally require portfolio snapshot data — available once the app has loaded at least one price update.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <p>Most streaks and milestones require no setup — they're computed automatically. Two features need configuration to unlock their respective achievements:</p>
+
+    <div class="eng-config-block">
+      <div class="eng-config-icon">🎯</div>
+      <div class="eng-config-body">
+        <div class="title">Monthly deposit goal</div>
+        <div class="path">Call <code>XPEngine.setDepositGoal(amount)</code> in the browser console, or set <code>localStorage.xpe_deposit_goal</code></div>
+        <p>Set a target amount (in PLN) you want to deposit each month. This activates the <span class="eng-streak-label eng-streak-goal">Goal streak</span> counter and the monthly goal bonus XP. The goal applies to your <strong>total deposits across all portfolios</strong> in a calendar month — not per individual portfolio. Default is 1 000 PLN.<br><br>Changing your goal at any time does <strong>not</strong> reset your streak. The system records that you had a goal and hit it; what the goal was is secondary to whether you met it.</p>
+      </div>
+    </div>
+
+    <div class="eng-config-block">
+      <div class="eng-config-icon">🔥</div>
+      <div class="eng-config-body">
+        <div class="title">Retirement plan (FIRE target)</div>
+        <div class="path">Retirement → Configure plan</div>
+        <p>Set a target portfolio value you want to reach before retirement. This activates the retirement progress milestones (10% / 25% / 50% / 75% / 90% / 100%) and the corresponding badges. The FIRE progress is measured as: <strong>total current value of all portfolios</strong> divided by your retirement target.<br><br>IKE and IKZE utilization tracking is independent of your FIRE target — it looks at deposits into accounts tagged as IKE/IKZE and compares them to the annual statutory limits (updated each year).</p>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ach-multi-profile">Multiple retirement plans — how progress is calculated</h3>
+    <p>Roastfolio allows you to create more than one retirement plan (e.g., a conservative scenario and an aggressive scenario with different target values). Here is how the achievements system handles that:</p>
+
+    <div class="eng-decision-box">
+      <div class="eng-decision-label">Design decision</div>
+      <p><strong>One plan drives the achievement badges at a time.</strong> If you have multiple retirement plans, you designate one as your <em>primary plan for achievements</em>. Only this plan contributes to the FIRE progress milestones and retirement badges.</p>
+      <p>If no primary is designated, the system defaults to the <strong>most recently modified plan</strong>.</p>
+    </div>
+
+    <table>
+      <thead><tr><th>Scenario</th><th>How it's handled</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Single retirement plan</td>
+          <td>Used automatically. No action needed.</td>
+        </tr>
+        <tr>
+          <td>Multiple plans, one marked primary</td>
+          <td>The primary plan drives all retirement badges and the FIRE progress bar.</td>
+        </tr>
+        <tr>
+          <td>Multiple plans, none marked primary</td>
+          <td>The most recently modified plan is used. A soft prompt suggests marking one as primary.</td>
+        </tr>
+        <tr>
+          <td>IKE / IKZE utilization badges</td>
+          <td>Always calculated from actual deposits into IKE- and IKZE-tagged accounts — independent of which retirement plan is primary. The annual limit comparison is against the statutory maximum regardless of your personal FIRE target.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The FIRE progress percentage is always calculated as:</p>
+    <pre><span class="cm">/* Total value of ALL portfolios ÷ primary retirement plan target */</span>
+<span class="vr">FIRE %</span> = (<span class="vl">sum of all portfolio values</span>) / (<span class="vl">primary plan target</span>) × 100</pre>
+
+    <p>This means your full wealth counts toward the goal, not just the assets in "retirement-tagged" portfolios. Rationale: when you retire, all your money is relevant — artificially restricting the calculation to specific portfolios would understate your actual progress.</p>
+
+    <div class="callout warn">
+      <p><strong>Monthly deposit goal — similar rule applies:</strong> The goal streak measures <em>total deposits across all portfolios</em> in a calendar month. If you set a goal of 1 000 PLN/month and deposit 400 PLN into IKE and 700 PLN into XTB, the streak counts it as 1 100 PLN — goal met. The system doesn't care which portfolio received the money.</p>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         DESIGN SYSTEM
+         ══════════════════════════════════════════════════════════ -->
+    <div data-guide-advanced>
+    <h2>🎨 Design System</h2>
+    <p>This section documents the design decisions that define Roastfolio's visual identity. It is updated whenever a significant UI change is made so the reasoning behind each decision is never lost.</p>
+
+    <div class="callout info">
+      <p><strong>Audience:</strong> This section is for ADVANCED users and contributors who want to understand why the app looks and behaves the way it does — not just what it looks like.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-philosophy">Design Philosophy</h3>
+    <p>Roastfolio sits at the intersection of <strong>premium fintech</strong> and <strong>internet humor</strong>. Every design decision asks two questions: <em>does this feel like it belongs next to Revolut?</em> and <em>does this feel like it was made by someone who lost money on CDR and laughed about it?</em></p>
+    <p>The design language is <strong>dark-native</strong> (not dark-mode as an afterthought), <strong>card-first</strong>, and <strong>number-obsessed</strong> — financial data is the hero, personality is the seasoning.</p>
+
+    <div class="callout ok">
+      <p><strong>The tone lives in copy, not chrome.</strong> Roastfolio's sarcasm comes from error messages, milestone notifications, and empty states. The UI itself is as premium as Revolut. Users need to trust the app with financial data — humor and visual roughness don't mix well in fintech.</p>
+    </div>
+
+    <p>Design inspiration: Revolut · Robinhood · Coinbase · TradingView · Apple Fitness · Linear</p>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-colors">Color Palette</h3>
+
+    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Background depth layers</h4>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#090f18"></div><div class="ds-color-meta"><div class="name">bg-base</div><div class="value">#090f18</div><div class="role">Page background — deepest layer</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#0e1a2a"></div><div class="ds-color-meta"><div class="name">bg-surface</div><div class="value">#0e1a2a</div><div class="role">Cards, panels</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#132032"></div><div class="ds-color-meta"><div class="name">bg-surface-raised</div><div class="value">#132032</div><div class="role">Elevated cards, overlays</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#1a2c42"></div><div class="ds-color-meta"><div class="name">bg-surface-strong</div><div class="value">#1a2c42</div><div class="role">Interactive surfaces, hover states</div></div></div>
+
+    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Brand accent</h4>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#2b88cf"></div><div class="ds-color-meta"><div class="name">accent</div><div class="value">#2b88cf</div><div class="role">Primary brand blue — buttons, links, active states</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#36a3f0"></div><div class="ds-color-meta"><div class="name">accent-strong</div><div class="value">#36a3f0</div><div class="role">Hover, active, gradient end</div></div></div>
+
+    <p style="font-size:13px;color:var(--muted);margin-top:8px;">This specific blue — not Robinhood green, not Coinbase deep blue — lands in "trustworthy retail bank that's cooler than your actual bank." Saturated enough to feel premium, desaturated enough to not feel crypto-scammy. Green is avoided as a brand accent because it is semantically loaded in finance (it means <em>profit</em>).</p>
+
+    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Semantic colors</h4>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#27ae60"></div><div class="ds-color-meta"><div class="name">success</div><div class="value">#27ae60</div><div class="role">Profit, positive P/L, confirmations</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#c0392b"></div><div class="ds-color-meta"><div class="name">danger</div><div class="value">#c0392b</div><div class="role">Loss, negative P/L, destructive actions</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#e67e22"></div><div class="ds-color-meta"><div class="name">warning</div><div class="value">#e67e22</div><div class="role">Pending states, caution</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#7fa4c4"></div><div class="ds-color-meta"><div class="name">neutral</div><div class="value">#7fa4c4</div><div class="role">Flat / no-change states</div></div></div>
+
+    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Text hierarchy</h4>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#e8f0f8;border:1px solid rgba(255,255,255,0.2)"></div><div class="ds-color-meta"><div class="name">text-primary</div><div class="value">#e8f0f8</div><div class="role">Headlines, financial values — blue-tinted white (avoids harsh pure white on OLED)</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#a8c0d8"></div><div class="ds-color-meta"><div class="name">text-secondary</div><div class="value">#a8c0d8</div><div class="role">Labels, captions</div></div></div>
+    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#6a8ba8"></div><div class="ds-color-meta"><div class="name">text-muted</div><div class="value">#6a8ba8</div><div class="role">Metadata, hints, secondary info</div></div></div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-typography">Typography</h3>
+    <p>System font stack — <code>ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif</code>. On iPhone, this resolves to SF Pro; on macOS, SF Pro or Helvetica Neue; on Android, Roboto; on Windows, Segoe UI. Zero network cost, perfect rendering, device-tuned letter spacing.</p>
+    <p><code>-webkit-font-smoothing: antialiased</code> and <code>text-rendering: optimizeLegibility</code> are applied globally so text appears sharp on retina and ProMotion displays. <code>font-variant-numeric: tabular-nums</code> is applied to all financial figures — keeping column alignment stable and preventing number-jank during live value updates.</p>
+
+    <div class="ds-type-row">
+      <div class="ds-type-sample" style="font-size:clamp(2.2rem,8vw,3.2rem);font-weight:700;letter-spacing:-0.04em;line-height:1;">143,240.00</div>
+      <div class="ds-type-meta">display · 700 · −0.04em · portfolio total</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-sample" style="font-size:clamp(1.5rem,4vw,1.85rem);font-weight:700;letter-spacing:-0.02em;">Wallet Management</div>
+      <div class="ds-type-meta">h1 · 700 · screen titles</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-sample" style="font-size:1.2rem;font-weight:700;">Holdings</div>
+      <div class="ds-type-meta">h2 · 700 · card titles</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-sample" style="font-size:0.9375rem;">CD Projekt — 10 units</div>
+      <div class="ds-type-meta">body · 15px · primary content</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-sample" style="font-size:0.8125rem;color:var(--muted);">CDR.WA · Live holding</div>
+      <div class="ds-type-meta">label · 13px · metadata, captions</div>
+    </div>
+    <div class="ds-type-row">
+      <div class="ds-type-sample" style="font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Select wallet</div>
+      <div class="ds-type-meta">micro · 11px · all-caps labels</div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-spacing">Spacing &amp; Grid</h3>
+    <p>4px base unit — matches the iOS and Android native layout grid. Every spacing value is a multiple of 4, which means composed layouts snap to device pixels and feel native rather than web-ported. At 3× pixel density (iPhone 15 Pro), a 4px CSS unit is 12 physical pixels — sharper-than-retina rendering for borders and shadows.</p>
+
+    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:4px"></div><div class="ds-spacing-label">4px — space-1 · micro gap</div></div>
+    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:8px"></div><div class="ds-spacing-label">8px — space-2 · tight gap</div></div>
+    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:12px"></div><div class="ds-spacing-label">12px — space-3 · compact padding</div></div>
+    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:16px"></div><div class="ds-spacing-label">16px — space-4 · base card padding / screen gutter</div></div>
+    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:24px"></div><div class="ds-spacing-label">24px — space-6 · section gaps</div></div>
+    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:32px"></div><div class="ds-spacing-label">32px — space-8 · large section separation</div></div>
+    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:44px;background:var(--yellow)"></div><div class="ds-spacing-label">44px — tap-target · iOS minimum touch target (HIG)</div></div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-cards">Card System</h3>
+    <p>Cards are the primary content container. No raw tables on mobile, no naked lists. Each card uses <code>border-radius: 16px</code> (the Revolut/Apple standard for modern cards), a 1px semi-transparent blue-tinted border, and an inset top-shadow that simulates light catching the upper rim — borrowed from Apple's glass design language.</p>
+
+    <div class="security-grid">
+      <div class="security-card">
+        <div class="icon">🃏</div>
+        <div class="title">Base card</div>
+        <div class="desc"><code>#0e1a2a</code> background · 1px border at 12% opacity · <code>inset 0 1px 0 rgba(255,255,255,0.04)</code> top edge highlight</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">⬆️</div>
+        <div class="title">Elevated card</div>
+        <div class="desc">Raised surface <code>#132032</code> + drop shadow · used for overlays and action panels</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">👆</div>
+        <div class="title">Interactive card</div>
+        <div class="desc"><code>scale(0.992)</code> on tap — registers as "responded" without feeling like a button press. Same micro-interaction as Apple app icons.</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">📊</div>
+        <div class="title">Holding card</div>
+        <div class="desc">2-row grid: identity + value on top, units · allocation + Buy/Sell on footer. Footer separated by 1px border at 6% opacity.</div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-buttons">Button System</h3>
+
+    <table>
+      <thead>
+        <tr><th>Variant</th><th>Usage rule</th><th>Key traits</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Primary</strong></td>
+          <td>One per screen. High-value action (Sign in, Save, Confirm trade).</td>
+          <td>Gradient <code>accent → accent-strong</code> + colored box-shadow. 44px height. Scale 0.97 on press.</td>
+        </tr>
+        <tr>
+          <td><strong>Secondary</strong></td>
+          <td>Supporting action alongside primary.</td>
+          <td>Ghost with 1px border. 44px height.</td>
+        </tr>
+        <tr>
+          <td><strong>Ghost</strong></td>
+          <td>Tertiary or destructive context.</td>
+          <td>No border, no background. Danger variant turns red.</td>
+        </tr>
+        <tr>
+          <td><strong>FAB</strong></td>
+          <td>One per page. Always-visible primary mobile action (New Transaction).</td>
+          <td>Fixed position above tab bar. <code>bottom: calc(env(safe-area-inset-bottom) + 72px)</code>. Pill shape. Accent gradient + glow shadow.</td>
+        </tr>
+        <tr>
+          <td><strong>Buy / Sell chips</strong></td>
+          <td>Inline on holding cards.</td>
+          <td>32px height. Green/red tinted background + border. 12px bold text.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <p><strong>Why gradient on primary?</strong> A flat background on a primary button reads as a toggle. The gradient + shadow creates visual mass that communicates "this is the action" without relying on color alone.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-sheets">Bottom Sheets &amp; Modals</h3>
+    <p>Bottom sheets are the correct modal pattern for mobile. They emerge from the direction of the thumb, they don't block the full screen (the user still knows where they are), they match iOS/Android native sheet behavior exactly, and they're trivially dismissible (tap backdrop or swipe down).</p>
+
+    <div class="security-grid">
+      <div class="security-card">
+        <div class="icon">📐</div>
+        <div class="title">Max height: 92dvh</div>
+        <div class="desc"><code>dvh</code> (dynamic viewport height) instead of <code>vh</code> fixes the iOS Safari address-bar bug where <code>100vh</code> includes hidden browser chrome.</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">🌀</div>
+        <div class="title">Spring entry curve</div>
+        <div class="desc"><code>cubic-bezier(0.32, 0.72, 0, 1)</code> — Apple's spring-curve approximation for sheet presentations. Creates natural deceleration that reads as physical.</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">🫧</div>
+        <div class="title">Backdrop blur</div>
+        <div class="desc"><code>backdrop-filter: blur(4px)</code> on the overlay so the user retains spatial context. Semi-transparent dark overlay at 82% opacity.</div>
+      </div>
+      <div class="security-card">
+        <div class="icon">📱</div>
+        <div class="title">Safe area aware</div>
+        <div class="desc">Bottom padding uses <code>env(safe-area-inset-bottom)</code> so content isn't hidden under iPhone home indicator.</div>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-breakpoints">Responsive Breakpoints</h3>
+    <p>Mobile-first: no media query = mobile base. There is <strong>no classical 768px tablet breakpoint</strong>. The app jumps from phone (≤640px) to desktop (≥641px). Tablet-specific layouts add code for an audience that doesn't exist in personal finance apps — retail investors use iPhones and laptops, not iPads for portfolio tracking.</p>
+
+    <div class="ds-breakpoint-row">
+      <div class="ds-bp-range">≤374px</div>
+      <div class="ds-bp-name">Compact mobile</div>
+      <div class="ds-bp-desc">iPhone SE — reduce horizontal padding to 12px</div>
+    </div>
+    <div class="ds-breakpoint-row">
+      <div class="ds-bp-range">375–519px</div>
+      <div class="ds-bp-name">Standard mobile</div>
+      <div class="ds-bp-desc">Base layout — iPhone 14/15 Pro. All decisions start here.</div>
+    </div>
+    <div class="ds-breakpoint-row">
+      <div class="ds-bp-range">≥520px</div>
+      <div class="ds-bp-name">Large mobile</div>
+      <div class="ds-bp-desc">Live-data status labels expand from short form to full text</div>
+    </div>
+    <div class="ds-breakpoint-row">
+      <div class="ds-bp-range">≥641px</div>
+      <div class="ds-bp-name">Desktop</div>
+      <div class="ds-bp-desc">Wallet layout switches: chip strip → dropdown, FAB hidden, overview card shown, holdings table shown</div>
+    </div>
+    <div class="ds-breakpoint-row">
+      <div class="ds-bp-range">≥860px</div>
+      <div class="ds-bp-name">Wide desktop</div>
+      <div class="ds-bp-desc">Wallet selector stays compact; wider layout unlocks</div>
+    </div>
+    <div class="ds-breakpoint-row">
+      <div class="ds-bp-range">≥1024px</div>
+      <div class="ds-bp-name">Full desktop</div>
+      <div class="ds-bp-desc">Screen gutters expand to 24px; two-column layouts available</div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-tokens">CSS Design Tokens</h3>
+    <p>All design values live as CSS custom properties on <code>:root</code>. Component CSS never uses raw values — always tokens. This means a brand color change is a one-line edit, not a search-and-replace.</p>
+
+    <pre><span class="cm">/* ── Background depth ── */</span>
+<span class="vr">--fintech-bg</span>:             <span class="vl">#090f18</span>;
+<span class="vr">--fintech-surface</span>:        <span class="vl">#0e1a2a</span>;
+<span class="vr">--fintech-surface-raised</span>: <span class="vl">#132032</span>;
+<span class="vr">--fintech-surface-strong</span>: <span class="vl">#1a2c42</span>;
+
+<span class="cm">/* ── Brand ── */</span>
+<span class="vr">--fintech-accent</span>:         <span class="vl">#2b88cf</span>;
+<span class="vr">--fintech-accent-strong</span>:  <span class="vl">#36a3f0</span>;
+
+<span class="cm">/* ── Semantic ── */</span>
+<span class="vr">--fintech-success</span>:        <span class="vl">#27ae60</span>;
+<span class="vr">--fintech-danger</span>:         <span class="vl">#c0392b</span>;
+<span class="vr">--fintech-warning</span>:        <span class="vl">#e67e22</span>;
+
+<span class="cm">/* ── Typography ── */</span>
+<span class="vr">--fintech-text</span>:           <span class="vl">#e8f0f8</span>;
+<span class="vr">--fintech-text-muted</span>:     <span class="vl">#6a8ba8</span>;
+<span class="vr">--fintech-text-subtle</span>:    <span class="vl">#7fa4c4</span>;
+
+<span class="cm">/* ── Shape ── */</span>
+<span class="vr">--fintech-radius-sm</span>:      <span class="vl">8px</span>;
+<span class="vr">--fintech-radius-md</span>:      <span class="vl">12px</span>;
+<span class="vr">--fintech-radius-lg</span>:      <span class="vl">16px</span>;  <span class="cm">/* cards */</span>
+<span class="vr">--fintech-radius-xl</span>:      <span class="vl">20px</span>;  <span class="cm">/* bottom sheets */</span>
+
+<span class="cm">/* ── Shadow ── */</span>
+<span class="vr">--fintech-shadow-sm</span>:      <span class="vl">0 1px 4px rgba(0,0,0,0.3)</span>;
+<span class="vr">--fintech-shadow-md</span>:      <span class="vl">0 4px 16px rgba(0,0,0,0.35)</span>;
+<span class="vr">--fintech-shadow-accent</span>:  <span class="vl">0 8px 24px rgba(43,136,207,0.4)</span>;
+<span class="vr">--fintech-shadow-inset</span>:   <span class="vl">inset 0 1px 0 rgba(255,255,255,0.04)</span>;
+
+<span class="cm">/* ── Borders ── */</span>
+<span class="vr">--fintech-border</span>:         <span class="vl">rgba(74,159,212,0.12)</span>;
+<span class="vr">--fintech-border-strong</span>:  <span class="vl">rgba(74,159,212,0.22)</span>;
+
+<span class="cm">/* ── Spacing ── */</span>
+<span class="vr">--fintech-space-1</span>: <span class="vl">4px</span>;  <span class="vr">--fintech-space-2</span>: <span class="vl">8px</span>;
+<span class="vr">--fintech-space-3</span>: <span class="vl">12px</span>; <span class="vr">--fintech-space-4</span>: <span class="vl">16px</span>;
+<span class="vr">--fintech-space-6</span>: <span class="vl">24px</span>; <span class="vr">--fintech-space-8</span>: <span class="vl">32px</span>;</pre>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-motion">Motion &amp; Animation</h3>
+    <p>Motion communicates confidence. Physical-feeling animations tell the user the UI is responsive and stable. CSS default easing feels like something broke. iOS-native easing feels like money is being handled correctly.</p>
+
+    <div class="ds-motion-row">
+      <div class="ds-motion-key">spring<br><code>cubic-bezier(0.32,0.72,0,1)</code></div>
+      <div class="ds-motion-desc">Apple's sheet presentation curve. Used for bottom drawer entry. Decelerates sharply — reads as physical weight arriving.</div>
+    </div>
+    <div class="ds-motion-row">
+      <div class="ds-motion-key">snappy<br><code>cubic-bezier(0.2,0,0,1)</code></div>
+      <div class="ds-motion-desc">Fast but smooth. Used for chip transitions, card state changes. Responds instantly to touch.</div>
+    </div>
+    <div class="ds-motion-row">
+      <div class="ds-motion-key">duration-fast · <code>120ms</code></div>
+      <div class="ds-motion-desc">Button press, chip active state, micro-interactions. Anything under the threshold of "I notice a delay."</div>
+    </div>
+    <div class="ds-motion-row">
+      <div class="ds-motion-key">duration-base · <code>200ms</code></div>
+      <div class="ds-motion-desc">Card hover, overlay backdrop fade. Standard transition speed.</div>
+    </div>
+    <div class="ds-motion-row">
+      <div class="ds-motion-key">duration-slow · <code>300ms</code></div>
+      <div class="ds-motion-desc">Bottom sheet entry/exit. Long enough to feel intentional, short enough to not feel sluggish.</div>
+    </div>
+    <div class="ds-motion-row">
+      <div class="ds-motion-key">scale-press · <code>0.992</code></div>
+      <div class="ds-motion-desc">Applied to tappable cards on <code>:active</code>. Under 1% scale reduction — registers as "responded" without feeling like a button.</div>
+    </div>
+
+    <div class="callout warn">
+      <p><strong>Never animate layout properties</strong> (width, height, top, left, margin). Animate only <code>transform</code>, <code>opacity</code>, and <code>filter</code>. Layout animations trigger reflow and cause jank on mobile — especially visible during scroll on iPhones with ProMotion displays.</p>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-mobile-ux">Mobile UX Quality Checklist</h3>
+    <p>A reference of intentional decisions that separate native-feel PWAs from desktop-ports-on-mobile. Every item below is implemented in the current build.</p>
+
+    <table>
+      <thead><tr><th>Category</th><th>Decision</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Font rendering</strong></td><td><code>-webkit-font-smoothing: antialiased</code> + <code>text-rendering: optimizeLegibility</code> on <code>body</code></td><td>Text looks razor-sharp on retina and ProMotion screens. The difference is visible even to non-designers.</td></tr>
+        <tr><td><strong>Font stack</strong></td><td><code>ui-sans-serif, system-ui, -apple-system</code> — full system chain</td><td>SF Pro on iOS, Roboto on Android, Segoe UI on Windows. Zero loading cost, native letter-spacing and ligatures per device.</td></tr>
+        <tr><td><strong>Responsive title</strong></td><td><code>clamp(1.4rem, 5.5vw, 2rem)</code> on the brand title</td><td>Prevents the header from crowding on 320px iPhone SE and smaller Android devices.</td></tr>
+        <tr><td><strong>Tab navigation</strong></td><td>SVG icons instead of emoji in the bottom tab bar</td><td>Emoji renders inconsistently across Android, Windows, and older iOS. SVG icons are crisp at any DPI, visually consistent, and brand-controlled.</td></tr>
+        <tr><td><strong>Touch targets</strong></td><td>Bottom tab bar buttons fill the full width ÷ 7; FAB is 48×48px minimum</td><td>Apple HIG minimum: 44×44pt. Smaller targets cause mis-taps on moving transit.</td></tr>
+        <tr><td><strong>Viewport zoom</strong></td><td><code>viewport-fit=cover</code> without <code>maximum-scale=1.0</code></td><td>Removing <code>maximum-scale=1.0</code> restores accessibility zoom for users with low vision. Safari since iOS 10 handles input zoom prevention natively.</td></tr>
+        <tr><td><strong>Card radius</strong></td><td>Dashboard cards use <code>border-radius: 18px</code>, reducing to 14px on mobile</td><td>Matches iOS native card radius (introduced in iOS 14). Radiused corners read as modern, safe, and touchable.</td></tr>
+        <tr><td><strong>Card shadows</strong></td><td><code>0 4px 24px rgba(31,95,159,0.10), 0 1px 4px rgba(31,95,159,0.06)</code></td><td>Dual-layer shadow creates depth. The tight inner shadow catches ambient light; the wide outer shadow grounds the card. Matches Revolut and Apple Card UI.</td></tr>
+        <tr><td><strong>Safe-area insets</strong></td><td><code>env(safe-area-inset-*)</code> on header padding, FAB bottom, tab bar bottom</td><td>Prevents content from sliding under the Dynamic Island, notch, or home indicator on all iPhone generations from X onward.</td></tr>
+        <tr><td><strong>Overlay scroll</strong></td><td><code>overscroll-behavior: contain</code> on overlay panels</td><td>Prevents bottom-sheet scroll from rubber-banding the page behind it on iOS Safari. Eliminates one of the most jarring mobile web artefacts.</td></tr>
+        <tr><td><strong>Tap highlight</strong></td><td><code>-webkit-tap-highlight-color: transparent</code> on all interactive elements</td><td>Removes the blue flash on tap. iOS apps don't have it; web apps shouldn't either.</td></tr>
+        <tr><td><strong>Touch action</strong></td><td><code>touch-action: manipulation</code> on all buttons</td><td>Eliminates 300ms tap delay on touch devices without disabling scroll. Buttons respond the instant the finger lifts.</td></tr>
+        <tr><td><strong>Inline styles</strong></td><td>Transactions tab layout extracted to <code>.tx-summary-bar</code>, <code>.tx-activity-card</code>, <code>.tx-history-card</code></td><td>Inline styles skip the design-token system and dark-mode overrides. Semantic class names allow responsive and theme overrides.</td></tr>
+        <tr><td><strong>Tab icons</strong></td><td>Statistics headings use plain text, not emoji prefixes</td><td>Emoji in headings breaks screen readers, renders inconsistently between platforms, and undermines the premium brand tone.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <p><strong>Ongoing rule:</strong> Every new section of UI must pass the question: <em>does this feel like a native iOS finance app, or like a website that happens to be on a phone?</em> If the answer is the latter, the section is not finished.</p>
+    </div>
+
+    <h3 id="ds-ux-audit">Gamification UX Audit — Applied Fixes</h3>
+    <p>A senior UX audit was applied across the achievements, streaks, milestones, and engagement strip pages. The following issues were identified and fixed.</p>
+
+    <table>
+      <thead><tr><th>Finding</th><th>Fix applied</th><th>Rule</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Viewport zoom blocked on achievements page</strong></td><td>Removed <code>maximum-scale=1.0</code> from <code>achievements.html</code> viewport meta</td><td>Accessibility — users with low vision must be able to zoom. Apply to all pages, not just index.</td></tr>
+        <tr><td><strong>Back button was 36×36px</strong></td><td><code>.ach-back-btn</code> enlarged to 44×44px, added <code>touch-action: manipulation</code> + <code>:active</code> state</td><td>Apple HIG: minimum 44pt touch target on all interactive controls.</td></tr>
+        <tr><td><strong>Filter tabs height ~30px</strong></td><td><code>.ach-filter-btn</code> padding changed to <code>9px 14px</code>, <code>min-height: 40px</code> added, added inset box-shadow on active state</td><td>Segmented control buttons must be ≥40px tall on mobile. The active state should be visually distinct beyond background opacity alone.</td></tr>
+        <tr><td><strong>Badge press scale too aggressive (0.93)</strong></td><td>Changed <code>.ach-badge:active { transform: scale(0.97) }</code>. Hover only activates on <code>hover: hover</code> devices.</td><td>Industry standard for card press-feedback is 0.96–0.97. 0.93 feels like a crush, not a tap. Desktop-only hover effects must not fire on touch devices (<code>@media (hover: hover)</code>).</td></tr>
+        <tr><td><strong>Locked badges opacity 0.3 — nearly invisible</strong></td><td>Increased to <code>opacity: 0.45; filter: grayscale(0.6)</code></td><td>Users should be able to see and identify locked badges so they have something to aim for. Apple Health and Strava use 0.4–0.5 opacity for locked achievements.</td></tr>
+        <tr><td><strong>Badge names 10.5px, tier labels 9px</strong></td><td>Badge names → 11px, tier labels → 10px</td><td>11px is the minimum comfortable legibility on iPhone at arm's length. Font sizes should be on the 4px design grid (8, 10, 11, 12, 13, 14, 15, 16…).</td></tr>
+        <tr><td><strong>Badge progress bar border-radius: 0</strong></td><td>Changed track + fill to <code>border-radius: 3px</code>, height increased from 3px to 4px</td><td>Every other progress bar in the codebase has rounded ends. An angular progress bar is a visual inconsistency that breaks the premium feel. 4px height is the minimum thumb-visible size.</td></tr>
+        <tr><td><strong>Streak card hover causes layout shift on touch</strong></td><td>Removed <code>transform: translateY(-2px)</code> from hover. Moved hover rule inside <code>@media (hover: hover)</code>. Reduced <code>min-width</code> from 122px to 118px.</td><td>CSS hover states fire as ghost-hover on iOS Safari after a tap, causing the card to jump. Touch-safe hover requires the <code>hover: hover</code> media query guard.</td></tr>
+        <tr><td><strong>Streak scroll has no right-edge affordance</strong></td><td>Added <code>mask-image</code> fade on the right edge of <code>.ach-streaks-scroll</code>. Added <code>overscroll-behavior-x: contain</code>.</td><td>Horizontal scrollers must have a visual indicator that more content exists (partial card peek or gradient fade). Without it, users assume all cards are visible.</td></tr>
+        <tr><td><strong>Milestone roast hidden on small screens</strong></td><td>Changed from <code>display: none</code> to <code>-webkit-line-clamp: 2; text-align: left</code> at 520px</td><td>The sarcastic roast is Roastfolio's core personality differentiator. Hiding it entirely on the most common screen size (375px iPhone) removes the key engagement hook.</td></tr>
+        <tr><td><strong>achFadeUp translateY(18px) too dramatic for inline cards</strong></td><td>Reduced to <code>translateY(10px)</code></td><td>Full-page hero entrances use 16–24px. Inline card entrances should use 8–12px. Over-travel reads as heavy and slow on mobile.</td></tr>
+        <tr><td><strong>Infinite animations drain battery on mobile</strong></td><td>Added <code>@media (prefers-reduced-motion: reduce)</code> block disabling <code>achDiamondPulse</code>, <code>achGoldShimmer</code>, <code>achNodePulse</code> and all entrance transitions</td><td>Continuous animations prevent the GPU from entering low-power mode on OLED devices. System preference must always be respected per WCAG 2.3.</td></tr>
+        <tr><td><strong>aria-atomic=&quot;true&quot; on badge grid</strong></td><td>Removed <code>aria-atomic="true"</code> from <code>#ach-badges-grid</code></td><td>With atomic=true, every filter change would read the entire badge grid (22+ items) to screen reader users. Without it, only the changed nodes are announced.</td></tr>
+        <tr><td><strong>Engagement strip horizontal scroll bleeds into page scroll on iOS</strong></td><td>Added <code>overscroll-behavior-x: contain</code> to <code>.eng-strip</code>. Reduced animation from 0.28s to 0.22s.</td><td>Without overscroll containment, reaching the end of a horizontal strip on iOS triggers page rubber-band scroll, breaking the sense of two separate scroll axes.</td></tr>
+        <tr><td><strong>Milestone timeline connector barely visible</strong></td><td>Increased connector opacity from 0.18 → 0.25 (active) / 0.07 → 0.10 (faded)</td><td>The timeline metaphor depends on the connector line being clearly readable. 0.18 opacity on a dark surface is below perceptible threshold on many screens.</td></tr>
+      </tbody>
+    </table>
+
+    </div><!-- /[data-guide-advanced] Design System -->
+
+  </main>
+
+  <!-- ── Scroll-to-top FAB (mobile) ── -->
+  <button class="scroll-to-top" id="scroll-to-top" aria-label="Scroll to top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+  </button>
+
+</div>
+
+<!-- Auth guard + role-gated sections ─────────────────────────── -->
+<script src="scripts/config.js" onerror="window.__CONFIG__={}"></script>
+<script>
+  // Minimal token reader — no redirect. Provides AuthGuard.getIdToken() for
+  // user-profile.js so authenticated ADVANCED users can see extra sections.
+  // Unauthenticated visitors (e.g. pre-login) are served the basic guide.
+  (function () {
+    var cfg      = window.__CONFIG__ || {};
+    var clientId = cfg.cognitoClientId || '';
+    if (!clientId) return;
+    var PREFIX = 'CognitoIdentityServiceProvider.' + clientId;
+    function ls(key) { try { return localStorage.getItem(key); } catch (_) { return null; } }
+    function isExpired(token) {
+      try {
+        var b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+        return JSON.parse(atob(b64)).exp < Math.floor(Date.now() / 1000) + 30;
+      } catch (_) { return true; }
+    }
+    var user    = ls(PREFIX + '.LastAuthUser');
+    var idToken = user ? ls(PREFIX + '.' + user + '.idToken') : null;
+    if (idToken && isExpired(idToken)) idToken = null;
+    window.AuthGuard = {
+      getIdToken:  function () { return idToken; },
+      getUsername: function () { return user; },
+    };
+  }());
+</script>
+<script src="scripts/RoastTracker.js?v=20260709b"></script>
+<script src="scripts/user-profile.js"></script>
+<script>
+  (function () {
+    // Show ADVANCED-only sections after confirming the user's role.
+    // Default (no profile / BASIC / unauthenticated) keeps them hidden via CSS.
+    if (window.UserProfile) {
+      UserProfile.getRole().then(function (role) {
+        if (role === 'ADVANCED') {
+          document.querySelectorAll('[data-guide-advanced]').forEach(function (el) {
+            el.style.removeProperty('display');
+          });
+          buildMobileQuickNav();
+        }
+      }).catch(function () {});
+    }
+  }());
+
+  function buildMobileQuickNav() {
+    const quickNav = document.getElementById('mobile-quick-nav');
+    const sidebar = document.getElementById('guide-sidebar');
+    if (!quickNav || !sidebar) return;
+    const links = [];
+    sidebar.querySelectorAll('.section-label').forEach(function (label) {
+      if (label.closest('[data-guide-advanced]') && getComputedStyle(label.closest('[data-guide-advanced]')).display === 'none') return;
+      const list = label.nextElementSibling;
+      const firstLink = list ? list.querySelector('a[href^="#"]') : null;
+      if (!firstLink) return;
+      const ids = Array.from(list.querySelectorAll('a[href^="#"]'))
+        .map(function (link) { return link.getAttribute('href').slice(1); })
+        .join(' ');
+      links.push({
+        href: firstLink.getAttribute('href'),
+        ids: ids,
+        label: label.textContent.replace(/[^a-zA-Z0-9 &]/g, '').trim() || firstLink.textContent.trim(),
+      });
+    });
+    quickNav.innerHTML = links.map(function (item) {
+      return '<a href="' + item.href + '" data-section-ids="' + item.ids + '">' + item.label + '</a>';
+    }).join('');
+  }
+
+  buildMobileQuickNav();
+
+  // Mobile navigation toggle logic
+  function toggleMobileNav(show) {
+    const sidebar = document.getElementById('guide-sidebar');
+    const backdrop = document.getElementById('mobile-backdrop');
+    const menuButton = document.querySelector('.mobile-menu-button');
+    if (!sidebar || !backdrop) return;
+    if (show) {
+      sidebar.classList.add('open');
+      backdrop.classList.add('open');
+      document.body.classList.add('nav-open');
+      if (menuButton) menuButton.setAttribute('aria-expanded', 'true');
+    } else {
+      sidebar.classList.remove('open');
+      sidebar.classList.remove('dragging');
+      backdrop.classList.remove('open');
+      sidebar.style.transform = '';
+      document.body.classList.remove('nav-open');
+      if (menuButton) menuButton.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  (function bindMobileNavControls() {
+    const menuButton = document.querySelector('.mobile-menu-button');
+    const closeButton = document.querySelector('.mobile-close-btn');
+    const backdrop = document.getElementById('mobile-backdrop');
+    const bindTap = function (el, handler) {
+      if (!el) return;
+      el.addEventListener('click', handler);
+      el.addEventListener('touchstart', function (event) {
+        event.preventDefault();
+        handler(event);
+      }, { passive: false });
+    };
+    bindTap(menuButton, function () { toggleMobileNav(true); });
+    bindTap(closeButton, function () { toggleMobileNav(false); });
+    bindTap(backdrop, function () { toggleMobileNav(false); });
+
+    document.addEventListener('click', function (event) {
+      if (window.innerWidth > 720 || !menuButton) return;
+      if (event.target.closest && event.target.closest('.mobile-menu-button')) return;
+      const rect = menuButton.getBoundingClientRect();
+      const x = event.clientX;
+      const y = event.clientY;
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+        event.preventDefault();
+        toggleMobileNav(true);
+      }
+    }, true);
+  }());
+
+  // Close mobile nav when clicking a link
+  document.querySelectorAll('#guide-sidebar nav a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 720) {
+        toggleMobileNav(false);
+      }
+    });
+  });
+
+  document.getElementById('mobile-quick-nav')?.addEventListener('click', function (event) {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link) return;
+    event.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // ── Swipe-to-dismiss on sidebar drag handle ──
+  (function () {
+    const handle = document.getElementById('sidebar-drag-handle');
+    const sidebar = document.getElementById('guide-sidebar');
+    if (!handle || !sidebar) return;
+
+    let startY = 0;
+    let currentY = 0;
+    let isDragging = false;
+
+    handle.addEventListener('touchstart', function (e) {
+      startY = e.touches[0].clientY;
+      currentY = startY;
+      isDragging = true;
+      sidebar.classList.add('dragging');
+    }, { passive: true });
+
+    handle.addEventListener('touchmove', function (e) {
+      if (!isDragging) return;
+      currentY = e.touches[0].clientY;
+      const deltaY = currentY - startY;
+      if (deltaY > 0) {
+        sidebar.style.transform = 'translateY(' + deltaY + 'px)';
+      }
+    }, { passive: true });
+
+    handle.addEventListener('touchend', function () {
+      if (!isDragging) return;
+      isDragging = false;
+      sidebar.classList.remove('dragging');
+      const deltaY = currentY - startY;
+      if (deltaY > 80) {
+        toggleMobileNav(false);
+      } else {
+        sidebar.style.transform = '';
+      }
+    });
+  }());
+
+  // ── IntersectionObserver: active section tracking ──
+  (function () {
+    const navLinks = document.querySelectorAll('#guide-sidebar nav a[href^="#"]');
+    const sectionLabel = document.getElementById('mobile-section-label');
+    if (!navLinks.length) return;
+
+    // Build map: section-id -> { link, sectionTitle }
+    const sectionMap = new Map();
+    navLinks.forEach(link => {
+      const id = link.getAttribute('href').substring(1);
+      const target = document.getElementById(id);
+      if (target) {
+        sectionMap.set(id, { link, target, title: link.textContent.trim() });
+      }
+    });
+
+    let currentActive = null;
+
+    function setActive(id) {
+      if (currentActive === id) return;
+      currentActive = id;
+      navLinks.forEach(l => l.classList.remove('active'));
+      document.querySelectorAll('#mobile-quick-nav a').forEach(l => l.classList.remove('active'));
+      const entry = sectionMap.get(id);
+      if (entry) {
+        entry.link.classList.add('active');
+        if (sectionLabel) sectionLabel.textContent = entry.title;
+        const quickLink = document.querySelector('#mobile-quick-nav a[href="#' + id + '"]')
+          || Array.from(document.querySelectorAll('#mobile-quick-nav a[data-section-ids]')).find(function (link) {
+            return String(link.dataset.sectionIds || '').split(' ').includes(id);
+          });
+        if (quickLink) {
+          quickLink.classList.add('active');
+          quickLink.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+        }
+        // Scroll the active link into view in the sidebar (desktop)
+        if (window.innerWidth > 720) {
+          entry.link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      }
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      // Find the topmost visible section
+      let topEntry = null;
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          if (!topEntry || e.boundingClientRect.top < topEntry.boundingClientRect.top) {
+            topEntry = e;
+          }
+        }
+      });
+      if (topEntry) {
+        setActive(topEntry.target.id);
+      }
+    }, {
+      rootMargin: '-80px 0px -60% 0px',
+      threshold: 0
+    });
+
+    sectionMap.forEach(({ target }) => observer.observe(target));
+  }());
+
+  // ── Reading progress bar ──
+  (function () {
+    const bar = document.getElementById('reading-progress-bar');
+    if (!bar) return;
+    let ticking = false;
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        requestAnimationFrame(function () {
+          const scrollTop = window.scrollY;
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const pct = docHeight > 0 ? Math.min(100, (scrollTop / docHeight) * 100) : 0;
+          bar.style.width = pct + '%';
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  }());
+
+  // ── Scroll-to-top button ──
+  (function () {
+    const btn = document.getElementById('scroll-to-top');
+    if (!btn) return;
+    let ticking = false;
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        requestAnimationFrame(function () {
+          if (window.scrollY > 400) {
+            btn.classList.add('visible');
+          } else {
+            btn.classList.remove('visible');
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+    btn.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }());
+
+  // ── Wrap tables in scroll containers for mobile ──
+  (function () {
+    document.querySelectorAll('.content table').forEach(function (table) {
+      if (table.closest('.table-scroll-wrapper')) return;
+      const firstRow = table.querySelector('tbody tr');
+      if (firstRow && firstRow.children.length === 2) table.classList.add('two-col-mobile');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'table-scroll-wrapper';
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    });
+  }());
+</script>
+
+</body>
+</html>

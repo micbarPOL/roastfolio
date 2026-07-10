@@ -1,0 +1,35 @@
+.DS_Store
+.aws-sam/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment and secrets
+.env
+.fake_jwt
+event.json
+response.json
+*.pid
+
+# Editor config
+.vscode/
+.idea/
+
+# Custom data files
+chrome_err.txt
+chrome_out.txt
+output.txt
+test_results.txt
+tmp_logs.txt
+tmp_logs2.txt
+*.csv
+*backup*.json
+*report.json

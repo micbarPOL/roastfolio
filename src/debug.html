@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Chart</title>
+</head>
+<body>
+    <h1>Debugging CSV Load</h1>
+    <div id="output" style="white-space: pre; border: 1px solid #ccc; padding: 10px; height: 500px; overflow-y: auto; font-family: monospace; background: #f5f5f5;"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        const log = (msg) => {
+            output.innerHTML += msg + '\n';
+            output.scrollTop = output.scrollHeight;
+        };
+        
+        (async () => {
+            log('=== CSV Loading Debug ===\n');
+            
+            const paths = [
+                './data/myfund.pl_Emerytura_wkladIWartosc.csv',
+                './src/data/myfund.pl_Emerytura_wkladIWartosc.csv',
+                'data/myfund.pl_Emerytura_wkladIWartosc.csv'
+            ];
+            
+            for (const path of paths) {
+                log(`\nTrying: ${path}`);
+                try {
+                    const response = await fetch(path);
+                    log(`  Status: ${response.status} (${response.statusText})`);
+                    log(`  OK: ${response.ok}`);
+                    log(`  Content-Type: ${response.headers.get('content-type')}`);
+                    
+                    if (response.ok) {
+                        const text = await response.text();
+                        log(`  ✓ Content length: ${text.length} bytes`);
+                        const lines = text.split('\n');
+                        log(`  ✓ Lines: ${lines.length}`);
+                        log(`  ✓ First line: ${lines[0].substring(0, 100)}`);
+                        log(`  ✓ Second line: ${lines[1].substring(0, 100)}`);
+                        break;
+                    }
+                } catch (e) {
+                    log(`  ✗ Error: ${e.message}`);
+                }
+            }
+            
+            log('\n=== Done ===');
+        })();
+    </script>
+</body>
+</html>
