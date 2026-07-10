@@ -296,11 +296,12 @@ function renderSummaryCards() {
             const recordedAth = Number(athInfo.athValue || 0);
             const athDate = athInfo.athDate || '';
             const current = Number(PORTFOLIO_TOTAL_VALUE || 0);
-            const effectiveAth = Math.max(recordedAth, current);
-            const ddPLN = current - effectiveAth;
-            const ddPct = effectiveAth ? ((ddPLN / effectiveAth) * 100).toFixed(2) : '0.00';
-            const ddColor = ddPLN === 0 ? '#64748b' : '#c0392b';
-            const ddSign  = ddPLN >= 0 ? '+' : '';
+            const ddPLN = current - recordedAth;
+            const ddPct = recordedAth ? ((ddPLN / recordedAth) * 100).toFixed(2) : '0.00';
+            let ddColor = '#64748b';
+            if (ddPLN > 0) ddColor = '#27ae60';
+            else if (ddPLN < 0) ddColor = '#c0392b';
+            const ddSign  = ddPLN > 0 ? '+' : '';
             const sourceLabel = athInfo.athSource === 'MANUAL' ? 'Manual ATH' : 'ATH';
             drawdownEl.innerHTML =
                 `<div class="ath-title">From All-Time High</div>` +
