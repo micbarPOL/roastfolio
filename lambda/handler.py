@@ -1757,6 +1757,22 @@ def roast_events_handler(event: dict) -> dict:
     except Exception as e:
         print(f"roast_events_handler error: {e}")
         return _resp(500, {"error": "Internal server error"})
+def roast_report_handler(event: dict) -> dict:
+    import roast_tracking
+    user_id, _, _ = _get_caller_identity(event)
+    # Could optionally enforce that only the admin or specific users can view this
+    if not user_id:
+        return _resp(401, {"error": "Unauthorized"})
+    
+    try:
+        # Default to 30 days
+        days = int(event.get("queryStringParameters", {}).get("days", 30)) if event.get("queryStringParameters") else 30
+        report = roast_tracking.get_template_report(days=days)
+        return _resp(200, report)
+    except Exception as e:
+        print(f"roast_report_handler error: {e}")
+        return _resp(500, {"error": "Internal server error"})
+
 
 
 # ── Lambda entry point ────────────────────────────────────────
@@ -1804,6 +1820,10 @@ def handler(event, context):
         # Route /roast-events
         if path.endswith("/roast-events"):
             return roast_events_handler(event)
+
+        # Route /roast-report
+        if path.endswith("/roast-report"):
+            return roast_report_handler(event)
 
         # Route /migrate
         if path.endswith("/migrate"):
