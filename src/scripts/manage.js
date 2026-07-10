@@ -2555,6 +2555,9 @@
     _loadBenchmarkSetting();
     _loadRoastIntensitySetting();
   });
+  // Also load immediately in case the auth event already fired or is unused
+  _loadBenchmarkSetting();
+  _loadRoastIntensitySetting();
   window.addEventListener('resize', () => {
     _setWalletSelectorOpen(!_isCompactWalletSelector(), { force: true });
     _syncWalletStickyCondensed(true);
