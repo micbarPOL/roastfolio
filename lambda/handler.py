@@ -2133,6 +2133,9 @@ def handler(event, context):
                         new_daily_pct = round((new_daily_pln / snap_val) * 100, 4) if snap_val else 0.0
                         wallet_summaries[wallet_name]["dailyPLN"] = new_daily_pln
                         wallet_summaries[wallet_name]["dailyPct"] = new_daily_pct
+                        if wallet_name == "Summary":
+                            summary["dailyPLN"] = new_daily_pln
+                            summary["dailyPct"] = new_daily_pct
 
             except Exception as err:
                 print(f"Snapshot/ATH load failed (non-fatal): {err}")
