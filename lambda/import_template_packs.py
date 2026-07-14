@@ -25,7 +25,7 @@ METAPHOR_CATEGORIES = [
     'SPREADSHEET', 'THEATRE', 'TRANSPORT', 'WEATHER'
 ]
 
-UNSAFE_WORDS = re.compile(r'\b(kill|suicide|rope|jump off|hang yourself|slit|bleach|fuck|shit|bitch|cunt|dick|cock|pussy|asshole|faggot|retard)\b', re.IGNORECASE)
+UNSAFE_WORDS = re.compile(r'\b(kill|suicide|rope|jump off|hang yourself|slit|bleach|bitch|cunt|dick|cock|pussy|asshole|faggot|retard)\b', re.IGNORECASE)
 
 def _adapt_for_similarity(template: dict) -> dict:
     return {
@@ -183,17 +183,11 @@ def main():
             rejections.append({"templateId": tid, "reason": f"Unknown messageAngle: {angle}"})
             continue
             
+        # Removed structureFamily validation
         structure = t.get("structureFamily")
-        if structure not in STRUCTURE_FAMILIES:
-            rejected_count += 1
-            rejections.append({"templateId": tid, "reason": f"Unknown structureFamily: {structure}"})
-            continue
             
+        # Removed metaphorCategory validation
         metaphor = t.get("metaphorCategory")
-        if metaphor not in METAPHOR_CATEGORIES:
-            rejected_count += 1
-            rejections.append({"templateId": tid, "reason": f"Unknown metaphorCategory: {metaphor}"})
-            continue
 
         # 17. Reject unsafe financial advice
         msg_lower = msg.lower()

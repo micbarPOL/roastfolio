@@ -1024,6 +1024,26 @@
     "enabled": true
   },
   {
+    "templateId": "best_asset_sarcastic_geralt_01",
+    "scenarioKey": "BEST_ASSET_CARRIED_PORTFOLIO",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "BEST_ASSET",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Heavy Lifting",
+    "messageTemplate": "{{dailyBestAsset}} is up {{bestAssetReturn}}%, doing all the heavy lifting. The rest of your bags are just useless peasants waiting to be eaten.",
+    "mainReasonTemplate": "One asset is carrying your entire net worth.",
+    "suggestedFocusTemplate": "Hope it doesn't get tired.",
+    "requiredData": [
+      "dailyBestAsset",
+      "bestAssetReturn"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "best_asset_carried_portfolio_sarcastic_BEST_ASSET_26",
     "scenarioKey": "BEST_ASSET_CARRIED_PORTFOLIO",
     "tone": "mixed",
@@ -1431,6 +1451,28 @@
     "mainReasonTemplate": "Nothing happened today",
     "suggestedFocusTemplate": "Review your worst asset",
     "enabled": true
+  },
+  {
+    "templateId": "both_flat_degen_ABSOLUTE_RETURN_99",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "mixed",
+    "intensity": "degen",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "Mind Numbing",
+    "messageTemplate": "A {{portfolioReturnPercent}}% return. This is mind-numbingly boring.",
+    "mainReasonTemplate": "My brain cells are dying watching this chart.",
+    "suggestedFocusTemplate": "Find a different hobby today.",
+    "requiredData": [
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 7,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase"
+    ]
   },
   {
     "templateId": "gen_BOTH_FLAT_degen_23_5744f5b9",
@@ -2472,6 +2514,29 @@
     "enabled": true
   },
   {
+    "templateId": "both_negative_user_better_brutal_ABSOLUTE_RETURN_073",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "brutal",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "A Loss With Better Grammar",
+    "messageTemplate": "{{portfolioReturnPercent}} is still a bad sentence. The benchmark wrote a worse one, which is not the same as literature.",
+    "mainReasonTemplate": "The portfolio lost less than the benchmark.",
+    "suggestedFocusTemplate": "Review the construction of the smaller loss.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "requiredData fields not used in text: {'benchmarkReturnPercent'}"
+    ]
+  },
+  {
     "templateId": "both_negative_user_better_brutal_ABSOLUTE_RETURN_063",
     "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
     "tone": "mixed",
@@ -2661,6 +2726,29 @@
     "enabled": true
   },
   {
+    "templateId": "both_negative_user_better_brutal_DRAWDOWN_STATUS_084",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "Drawdown Paper Needs Editing",
+    "messageTemplate": "The drawdown at {{currentDrawdownFromATH}} still weakens the argument. Relative outperformance merely improves the punctuation.",
+    "mainReasonTemplate": "The portfolio is still in drawdown, though it did better than the benchmark.",
+    "suggestedFocusTemplate": "Review relative improvement without ignoring the drawdown.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "requiredData fields not used in text: {'relativePerformancePercent'}"
+    ]
+  },
+  {
     "templateId": "both_negative_user_better_brutal_DRAWDOWN_STATUS_079",
     "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
     "tone": "mixed",
@@ -2760,6 +2848,29 @@
     "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
     "suggestedFocusTemplate": "Review your no change",
     "enabled": true
+  },
+  {
+    "templateId": "both_negative_user_better_brutal_RELATIVE_RETURN_062",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "brutal",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "A Superior Failure",
+    "messageTemplate": "{{relativePerformancePercent}} relative outperformance is real. So is the loss. The thesis passes, but the room remains unimpressed.",
+    "mainReasonTemplate": "Relative performance was positive while absolute performance was negative.",
+    "suggestedFocusTemplate": "Review what created the relative advantage during a losing day.",
+    "requiredData": [
+      "relativePerformancePercent",
+      "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "requiredData fields not used in text: {'portfolioReturnPercent'}"
+    ]
   },
   {
     "templateId": "both_negative_user_better_brutal_RELATIVE_RETURN_072",
@@ -3441,6 +3552,30 @@
     "enabled": true
   },
   {
+    "templateId": "both_negative_user_better_gentle_DRAWDOWN_STATUS_019",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "gentle",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "Drawdown Essay Has One Good Paragraph",
+    "messageTemplate": "{{currentDrawdownFromATH}} from ATH is not ideal. The better-than-benchmark result, however, gives the essay one redeeming paragraph.",
+    "mainReasonTemplate": "The portfolio remains below ATH but outperformed the benchmark during the decline.",
+    "suggestedFocusTemplate": "Look at what supported relative resilience.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "requiredData fields not used in text: {'relativePerformancePercent'}",
+      "Highly repeated opening phrase"
+    ]
+  },
+  {
     "templateId": "both_negative_user_better_gentle_DRAWDOWN_STATUS_009",
     "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
     "tone": "mixed",
@@ -3917,6 +4052,29 @@
     "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
     "suggestedFocusTemplate": "Review your deposit discipline",
     "enabled": true
+  },
+  {
+    "templateId": "both_negative_user_better_sarcastic_DRAWDOWN_STATUS_039",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "Drawdown Thesis: Minor Defense",
+    "messageTemplate": "The portfolio is {{currentDrawdownFromATH}} from ATH. Today's relative performance is the one paragraph that does not need rewriting.",
+    "mainReasonTemplate": "Drawdown remains, but the portfolio outperformed the negative benchmark today.",
+    "suggestedFocusTemplate": "Review what supported the relative defense.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "requiredData fields not used in text: {'relativePerformancePercent'}"
+    ]
   },
   {
     "templateId": "both_negative_user_better_sarcastic_DRAWDOWN_STATUS_044",
@@ -4448,6 +4606,28 @@
     "titleTemplate": "Defensive Code Did Not Compile",
     "messageTemplate": "{{currentDrawdownFromATH}} from ATH and worse than benchmark. The defensive code failed before runtime.",
     "mainReasonTemplate": "The portfolio showed weak downside defense.",
+    "suggestedFocusTemplate": null,
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase"
+    ]
+  },
+  {
+    "templateId": "both_negative_user_worse_brutal_DRAWDOWN_STATUS_072",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "ENGINEERING",
+    "titleTemplate": "Shock Absorbers Missing",
+    "messageTemplate": "{{currentDrawdownFromATH}} from ATH plus deeper benchmark loss suggests the shock absorbers were ornamental.",
+    "mainReasonTemplate": "The portfolio did not absorb market weakness well.",
     "suggestedFocusTemplate": null,
     "requiredData": [
       "currentDrawdownFromATH"
@@ -6063,6 +6243,26 @@
     "suggestedFocusTemplate": null,
     "requiredData": [
       "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "both_negative_user_worse_sarcastic_geralt_01",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Brought a Butter Knife",
+    "messageTemplate": "Market's bleeding {{benchmarkReturnPercent}}%. You're bleeding {{portfolioReturnPercent}}%. You should have brought the silver sword, but instead you brought a butter knife.",
+    "mainReasonTemplate": "You underperformed the market on a bloody day.",
+    "suggestedFocusTemplate": "Visit an armorer.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
@@ -11643,6 +11843,26 @@
     "enabled": true
   },
   {
+    "templateId": "both_pos_worse_sarcastic_geralt_01",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Surviving, Barely",
+    "messageTemplate": "Green day. Benchmark did {{benchmarkReturnPercent}}%, you only managed {{portfolioReturnPercent}}%. You survived the day, but you're still fighting like a novice.",
+    "mainReasonTemplate": "You underperformed on a green day.",
+    "suggestedFocusTemplate": "Learn to parry.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_positive_user_worse_sarcastic_RELATIVE_RETURN_028",
     "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
     "tone": "mixed",
@@ -14883,6 +15103,25 @@
     "_editor_comments": [
       "Highly repeated opening phrase"
     ]
+  },
+  {
+    "templateId": "drawdown_significant_sarcastic_geralt_01",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Wind's Howling",
+    "messageTemplate": "{{currentDrawdownFromATH}}% below peak. Looks like a griffin took a massive bite out of your coin pouch. Best brew a swallow potion and wait it out.",
+    "mainReasonTemplate": "You are deep in the swamps of a drawdown.",
+    "suggestedFocusTemplate": "Stop picking fights with higher level monsters.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
   },
   {
     "templateId": "drawdown_significant_sarcastic_DRAWDOWN_STATUS_26",
@@ -18951,6 +19190,23 @@
     "enabled": true
   },
   {
+    "templateId": "new_ath_sarcastic_geralt_01",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Enjoy the View",
+    "messageTemplate": "New all-time high. Enjoy it while it lasts. The monsters always come back when the sun goes down.",
+    "mainReasonTemplate": "You reached the peak.",
+    "suggestedFocusTemplate": "Prepare your oils for the inevitable drop.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "new_ath_sarcastic_sheldon_01",
     "scenarioKey": "NEW_ATH_DAY",
     "tone": "praise",
@@ -18981,6 +19237,28 @@
     "mainReasonTemplate": "You hit a new all-time high",
     "suggestedFocusTemplate": "Review your benchmark comparison",
     "enabled": true
+  },
+  {
+    "templateId": "new_ath_day_sarcastic_BEST_ASSET_61",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "BEST_ASSET",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "Grading on a Curve",
+    "messageTemplate": "You hit a new high, but only because {{dailyBestAsset}} completely skewed the grading curve.",
+    "mainReasonTemplate": "You are passing by technicality.",
+    "suggestedFocusTemplate": "Don't brag about it.",
+    "requiredData": [
+      "dailyBestAsset"
+    ],
+    "cooldownDays": 21,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase"
+    ]
   },
   {
     "templateId": "new_ath_day_sarcastic_BEST_ASSET_53",
@@ -21355,6 +21633,23 @@
     "enabled": true
   },
   {
+    "templateId": "no_change_sarcastic_geralt_01",
+    "scenarioKey": "NO_MEANINGFUL_CHANGE",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Wind's Howling",
+    "messageTemplate": "Nothing happened today. Wind's howling. At least you didn't lose your coin to a striga, so there's that.",
+    "mainReasonTemplate": "The market did nothing.",
+    "suggestedFocusTemplate": "Play Gwent instead.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "no_meaningful_change_sarcastic_NO_CHANGE_058",
     "scenarioKey": "NO_MEANINGFUL_CHANGE",
     "tone": "mixed",
@@ -22200,6 +22495,29 @@
     "cooldownDays": 14,
     "weight": 1,
     "enabled": true
+  },
+  {
+    "templateId": "user_negative_benchmark_positive_brutal_WORST_ASSET_059",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "WORST_ASSET",
+    "structureFamily": "DETECTIVE",
+    "metaphorCategory": "DETECTIVE",
+    "titleTemplate": "The Lead Suspect Did Not Try To Hide",
+    "messageTemplate": "{{dailyWorstAsset}} left fingerprints on a day when the benchmark was green. Subtlety, evidently, was unavailable.",
+    "mainReasonTemplate": "The worst asset dragged the portfolio down against positive benchmark performance.",
+    "suggestedFocusTemplate": "Quantify the damage from {{dailyWorstAsset}} before broad explanations begin breeding.",
+    "requiredData": [
+      "dailyWorstAsset",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "requiredData fields not used in text: {'benchmarkReturnPercent'}"
+    ]
   },
   {
     "templateId": "user_negative_benchmark_positive_brutal_WORST_ASSET_065",
@@ -23177,6 +23495,29 @@
     "enabled": true
   },
   {
+    "templateId": "user_negative_benchmark_positive_sarcastic_DRAWDOWN_STATUS_037",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "Drawdown Thesis Needs Revision",
+    "messageTemplate": "Remaining {{currentDrawdownFromATH}} below ATH during a positive benchmark session is a compelling argument against the thesis titled 'It Was Just The Market.'",
+    "mainReasonTemplate": "The portfolio\u2019s drawdown did not improve with the positive benchmark.",
+    "suggestedFocusTemplate": "Compare today\u2019s lag to the longer drawdown pattern.",
+    "requiredData": [
+      "currentDrawdownFromATH",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "requiredData fields not used in text: {'benchmarkReturnPercent'}"
+    ]
+  },
+  {
     "templateId": "user_negative_benchmark_positive_sarcastic_DRAWDOWN_STATUS_055",
     "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
     "tone": "mixed",
@@ -23414,6 +23755,29 @@
     "mainReasonTemplate": "You lost {{portfolioreturnpercent}}% while the market handed out a {{benchmarkreturnpercent}}% gain",
     "suggestedFocusTemplate": "Review your withdrawal behavior",
     "enabled": true
+  },
+  {
+    "templateId": "user_negative_benchmark_positive_sarcastic_WORST_ASSET_048",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "WORST_ASSET",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "SCHOOL",
+    "titleTemplate": "Marked Down For Participation",
+    "messageTemplate": "{{dailyWorstAsset}} participated energetically in the wrong direction. The benchmark\u2019s positive result makes the essay harder to defend.",
+    "mainReasonTemplate": "The worst asset moved against the positive benchmark backdrop.",
+    "suggestedFocusTemplate": "Review {{dailyWorstAsset}} as a contributor, not as a narrative shortcut.",
+    "requiredData": [
+      "dailyWorstAsset",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "requiredData fields not used in text: {'benchmarkReturnPercent'}"
+    ]
   },
   {
     "templateId": "user_negative_benchmark_positive_sarcastic_WORST_ASSET_042",
@@ -25337,6 +25701,26 @@
     "enabled": true
   },
   {
+    "templateId": "user_pos_bench_neg_degen_002",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "degen",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Chad Energy",
+    "messageTemplate": "The benchmark dumped {{benchmarkReturnPercent}}% but you pumped {{portfolioReturnPercent}}%. True gigachad moves.",
+    "mainReasonTemplate": "You defied gravity today.",
+    "suggestedFocusTemplate": "Post your PnL to Twitter.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_positive_benchmark_negative_degen_ABSOLUTE_RETURN_098",
     "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
     "tone": "praise",
@@ -26267,6 +26651,26 @@
     "enabled": true
   },
   {
+    "templateId": "user_pos_bench_neg_sarcastic_001",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Look Who's Winning",
+    "messageTemplate": "The market is bleeding {{benchmarkReturnPercent}}% today, but you managed a cheeky {{portfolioReturnPercent}}% gain. Did you finally stop inverse-ing yourself?",
+    "mainReasonTemplate": "You are positive while the benchmark is negative.",
+    "suggestedFocusTemplate": "Don't let it go to your head.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_positive_benchmark_negative_sarcastic_ABSOLUTE_RETURN_058",
     "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
     "tone": "mixed",
@@ -26686,6 +27090,26 @@
     "enabled": true
   },
   {
+    "templateId": "user_pos_bench_neg_sarcastic_geralt_02",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Quen Sign Active",
+    "messageTemplate": "Market's down {{benchmarkReturnPercent}}%, but you're up {{portfolioReturnPercent}}%. Hmm. Must have cast a Quen sign on your bags before leaving the inn.",
+    "mainReasonTemplate": "You survived a bloodbath.",
+    "suggestedFocusTemplate": "Keep your guard up. The monsters return at night.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_pos_bench_neg_sarcastic_sheldon_02",
     "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
     "tone": "praise",
@@ -27074,6 +27498,28 @@
     "mainReasonTemplate": "You vastly underperformed the market by {{relativeperformancepercent}}%",
     "suggestedFocusTemplate": "Review your deposit discipline",
     "enabled": true
+  },
+  {
+    "templateId": "user_underperformed_by_large_margin_brutal_DRAWDOWN_STATUS_071",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
+    "tone": "roast",
+    "intensity": "brutal",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "Drawdown Essay Fails The Abstract",
+    "messageTemplate": "{{currentDrawdownFromATH}} from ATH plus large benchmark lag is an essay arguing against its own conclusion.",
+    "mainReasonTemplate": "The drawdown and benchmark gap together weaken the portfolio narrative.",
+    "suggestedFocusTemplate": null,
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase"
+    ]
   },
   {
     "templateId": "user_underperformed_by_large_margin_brutal_DRAWDOWN_STATUS_095",
@@ -28726,6 +29172,50 @@
     "mainReasonTemplate": "You vastly underperformed the market by {{relativeperformancepercent}}%",
     "suggestedFocusTemplate": "Review your no change",
     "enabled": true
+  },
+  {
+    "templateId": "user_underperformed_by_large_margin_sarcastic_RELATIVE_RETURN_022",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "ACADEMIC_REVIEW",
+    "metaphorCategory": "ACADEMIA",
+    "titleTemplate": "Not A Rounding Error",
+    "messageTemplate": "{{relativePerformancePercent}} behind benchmark is not noise. It is a sentence with punctuation.",
+    "mainReasonTemplate": "The relative underperformance is too large to dismiss as random.",
+    "suggestedFocusTemplate": null,
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase"
+    ]
+  },
+  {
+    "templateId": "user_underperformed_by_large_margin_sarcastic_RELATIVE_RETURN_040",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "ANALYST_NOTE",
+    "metaphorCategory": "ENGINEERING",
+    "titleTemplate": "Bridge Failed The Load Test",
+    "messageTemplate": "{{relativePerformancePercent}} behind benchmark suggests the bridge did not collapse, but nobody is inviting guests onto it.",
+    "mainReasonTemplate": "The relative performance shortfall was significant.",
+    "suggestedFocusTemplate": null,
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true,
+    "_editor_comments": [
+      "Highly repeated opening phrase"
+    ]
   },
   {
     "templateId": "gen_USER_UNDERPERFORMED_BY_LARGE_MARGIN_sarcastic_57_970ba728",
@@ -31575,6 +32065,26 @@
     "suggestedFocusTemplate": "Pour it down the drain.",
     "requiredData": [
       "dailyWorstAsset"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "worst_asset_sarcastic_geralt_01",
+    "scenarioKey": "WORST_ASSET_DRAGGED_PORTFOLIO",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "WORST_ASSET",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Swamp Hag",
+    "messageTemplate": "{{dailyWorstAsset}} is dragging you down by {{worstAssetReturn}}%, like a water hag pulling you into the muck. Toss it a coin, or cut it loose.",
+    "mainReasonTemplate": "One asset is poisoning your portfolio.",
+    "suggestedFocusTemplate": "Time to draw the silver sword.",
+    "requiredData": [
+      "dailyWorstAsset",
+      "worstAssetReturn"
     ],
     "cooldownDays": 14,
     "weight": 1,
