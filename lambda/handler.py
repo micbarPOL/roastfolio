@@ -2124,18 +2124,7 @@ def handler(event, context):
                     if wallet_name != "Summary":
                         wallet_aths[wallet_name] = snapshots.get_portfolio_ath(user_id, pid)
 
-                    # Override daily PLN/Pct using exact difference from latest snapshot
-                    latest_snap = snapshots.list_snapshots(user_id, pid, limit=1)
-                    if latest_snap:
-                        snap_val = float(latest_snap[0].get("portfolioValue") or 0)
-                        wallet_total = wallet_summaries[wallet_name]["total"]
-                        new_daily_pln = round(wallet_total - snap_val, 2)
-                        new_daily_pct = round((new_daily_pln / snap_val) * 100, 4) if snap_val else 0.0
-                        wallet_summaries[wallet_name]["dailyPLN"] = new_daily_pln
-                        wallet_summaries[wallet_name]["dailyPct"] = new_daily_pct
-                        if wallet_name == "Summary":
-                            summary["dailyPLN"] = new_daily_pln
-                            summary["dailyPct"] = new_daily_pct
+
 
             except Exception as err:
                 print(f"Snapshot/ATH load failed (non-fatal): {err}")
