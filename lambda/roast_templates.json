@@ -2262,6 +2262,23 @@
     "enabled": true
   },
   {
+    "templateId": "sc8_both_flat_geralt_03",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Dead Calm Before Storm",
+    "messageTemplate": "Zero movement today. The swamp is quiet. It's usually quiet before something very large decides to emerge from the water. Keep your potions ready.",
+    "mainReasonTemplate": "A completely flat day.",
+    "suggestedFocusTemplate": "Brew potions.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_flat_sarcastic_ABSOLUTE_RETURN_56",
     "scenarioKey": "BOTH_FLAT",
     "tone": "mixed",
@@ -2296,6 +2313,23 @@
       "portfolioReturnPercent"
     ],
     "cooldownDays": 7,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc8_both_flat_sheldon_03",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Zero Sum Entropy",
+    "messageTemplate": "Today was a zero. Not the exciting kind of zero, like absolute zero, which has implications. Just a regular, tedious, deeply unambitious zero. Markets agreed. So did you, apparently.",
+    "mainReasonTemplate": "Both portfolio and market were flat.",
+    "suggestedFocusTemplate": "Find ambition somewhere.",
+    "requiredData": [],
+    "cooldownDays": 14,
     "weight": 1,
     "enabled": true
   },
@@ -2364,6 +2398,23 @@
     "enabled": true
   },
   {
+    "templateId": "sc8_both_flat_sheldon_04",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Synchronized Monotony",
+    "messageTemplate": "You and the market have achieved synchronized inactivity. While I appreciate the mathematical elegance of moving in perfect lockstep towards nothing, I would prefer you both try harder.",
+    "mainReasonTemplate": "Portfolio and benchmark both flat.",
+    "suggestedFocusTemplate": "Try harder.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_BOTH_FLAT_sarcastic_25_04580fb7",
     "scenarioKey": "BOTH_FLAT",
     "tone": "neutral",
@@ -2421,6 +2472,125 @@
     "messageTemplate": "New Title: nothing happened today. Try another game.",
     "mainReasonTemplate": "Nothing happened today",
     "suggestedFocusTemplate": "Review your no change",
+    "enabled": true
+  },
+  {
+    "templateId": "sc8_both_flat_geralt_01",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Path Was Empty",
+    "messageTemplate": "Nothing stirred today. No monsters, no coin, no movement. The Path was empty. Even empty Paths are safer than charging blind into the dark.",
+    "mainReasonTemplate": "Market and portfolio were both flat.",
+    "suggestedFocusTemplate": "Patrol quietly.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc8_both_flat_geralt_02",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Quiet Night on Watch",
+    "messageTemplate": "Flat market. Flat portfolio. Some nights the monsters don't come. Don't mistake quiet for safe.",
+    "mainReasonTemplate": "A flat day for everyone.",
+    "suggestedFocusTemplate": "Stay sharp. It never stays quiet.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc8_both_flat_geralt_04",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "No Contract Today",
+    "messageTemplate": "The notice board was empty today. No contracts, no movement, no coin. Even Novigrad had nothing. Some days the Continent just holds its breath.",
+    "mainReasonTemplate": "Nothing happened.",
+    "suggestedFocusTemplate": "Upgrade equipment while you wait.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc8_both_flat_geralt_05",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Still Water",
+    "messageTemplate": "Still water. No ripples. That's how the drowners hide. Don't lean over the edge.",
+    "mainReasonTemplate": "Everything was flat today.",
+    "suggestedFocusTemplate": "Remain alert.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc8_both_flat_sheldon_01",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "An Unremarkable Tuesday",
+    "messageTemplate": "Both you and the market registered approximately zero change today. The universe continued expanding. Your wealth did not. These two facts are unrelated, but equally unimpressive.",
+    "mainReasonTemplate": "Nothing moved.",
+    "suggestedFocusTemplate": "Stare at the horizon and think about your choices.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc8_both_flat_sheldon_02",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "STATUS_UPDATE",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "No Signal",
+    "messageTemplate": "Both the market and your portfolio transmitted zero signal today. In signal theory, zero signal is indistinguishable from a broken antenna. I am not ruling that out.",
+    "mainReasonTemplate": "Nothing happened.",
+    "suggestedFocusTemplate": "Check your antenna.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc8_both_flat_sheldon_05",
+    "scenarioKey": "BOTH_FLAT",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "WEATHER_REPORT",
+    "metaphorCategory": "WEATHER",
+    "titleTemplate": "Financial Forecast: Beige",
+    "messageTemplate": "Today's financial forecast: beige. Not red, not green. Beige. Like a cardigan nobody wanted. Market and portfolio both agreed to do absolutely nothing and somehow succeeded.",
+    "mainReasonTemplate": "Flat day.",
+    "suggestedFocusTemplate": "Pick a colour. Any colour.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -3833,6 +4003,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc2_both_neg_better_sheldon_03",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "COURTROOM_VERDICT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Least Guilty Party",
+    "messageTemplate": "The court finds you down {{portfolioReturnPercent}}%, while the market is down {{benchmarkReturnPercent}}%. You are the least guilty party in a courtroom full of losers. Acquitted on a technicality.",
+    "mainReasonTemplate": "You outperformed on a brutal day.",
+    "suggestedFocusTemplate": "Try not to come back to court tomorrow.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_negative_user_better_sarcastic_ABSOLUTE_RETURN_058",
     "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
     "tone": "mixed",
@@ -3900,6 +4090,46 @@
     "messageTemplate": "A round of applause, the climate is shifting because you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). What a legacy.",
     "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
     "suggestedFocusTemplate": "Review your absolute return",
+    "enabled": true
+  },
+  {
+    "templateId": "sc2_both_neg_better_geralt_03",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Mutagen Held",
+    "messageTemplate": "Everything lost ground today. You lost {{portfolioReturnPercent}}%, market lost {{benchmarkReturnPercent}}%. Your mutagen held. Barely. Don't push your luck.",
+    "mainReasonTemplate": "You were more resilient than the market.",
+    "suggestedFocusTemplate": "Rest at the nearest inn.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc2_both_neg_better_geralt_04",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Slower Bleeding",
+    "messageTemplate": "Down {{portfolioReturnPercent}}%, market's down {{benchmarkReturnPercent}}%. You're slower to bleed out. That's what passes for victory when you hire a Witcher. I'll take it.",
+    "mainReasonTemplate": "Your portfolio held up better.",
+    "suggestedFocusTemplate": "Find a healer.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -4021,6 +4251,66 @@
     "messageTemplate": "Analyzing the numbers, you got voted off the island when you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). The truth hurts.",
     "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
     "suggestedFocusTemplate": "Review your benchmark comparison",
+    "enabled": true
+  },
+  {
+    "templateId": "sc2_both_neg_better_geralt_02",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Not Dead Yet",
+    "messageTemplate": "Market bled {{benchmarkReturnPercent}}%, you only bled {{portfolioReturnPercent}}%. You lived. Today. Tomorrow the endrega don't care about yesterday's survival rate.",
+    "mainReasonTemplate": "You held up better than the market.",
+    "suggestedFocusTemplate": "Prepare your signs for tomorrow.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc2_both_neg_better_sheldon_02",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Relative Mediocrity",
+    "messageTemplate": "Your {{portfolioReturnPercent}}% loss is, relatively speaking, a victory over the benchmark's {{benchmarkReturnPercent}}%. It's like winning a contest for who's least bad at bowling. Still a bad bowler.",
+    "mainReasonTemplate": "Your loss was smaller than the index.",
+    "suggestedFocusTemplate": "Set a higher bar than 'lost less'.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc2_both_neg_better_sheldon_05",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "STATUS_UPDATE",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Error Grade C",
+    "messageTemplate": "Status: Error. Portfolio down {{portfolioReturnPercent}}%. Benchmark down {{benchmarkReturnPercent}}%. Severity: DEGRADED, not CRITICAL. You are failing at a slightly higher resolution than average. Engineers are not impressed.",
+    "mainReasonTemplate": "Portfolio outperformed the benchmark on a red day.",
+    "suggestedFocusTemplate": "Patch your positions.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -4336,6 +4626,46 @@
     "enabled": true
   },
   {
+    "templateId": "sc2_both_neg_better_geralt_01",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Smaller Wound",
+    "messageTemplate": "Market took a {{benchmarkReturnPercent}}% slash. You only took {{portfolioReturnPercent}}%. A smaller wound is still a wound, but I've survived worse in the swamps of Velen.",
+    "mainReasonTemplate": "You bled less than the market today.",
+    "suggestedFocusTemplate": "Apply Swallow and get some sleep.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc2_both_neg_better_geralt_05",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Nilfgaard Lost More",
+    "messageTemplate": "Market down {{benchmarkReturnPercent}}%, you down {{portfolioReturnPercent}}%. Even Nilfgaard lost more troops today. A hollow comfort, but I've seen men celebrate less.",
+    "mainReasonTemplate": "You beat the market on a red day.",
+    "suggestedFocusTemplate": "The war is not won. Keep your sword sharp.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_negative_user_better_sarcastic_RELATIVE_RETURN_037",
     "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
     "tone": "mixed",
@@ -4349,6 +4679,46 @@
     "suggestedFocusTemplate": "Notice which positions created the relative strength.",
     "requiredData": [
       "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc2_both_neg_better_sheldon_01",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Consolation Physics",
+    "messageTemplate": "You lost {{portfolioReturnPercent}}% versus the market losing {{benchmarkReturnPercent}}%. You lost less. In physics, we call this being a smaller catastrophe. Congratulations, I suppose.",
+    "mainReasonTemplate": "You declined less than the benchmark.",
+    "suggestedFocusTemplate": "Aim for actual positive numbers next time.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc2_both_neg_better_sheldon_04",
+    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "The Lesser Decay",
+    "messageTemplate": "In nuclear physics, a slower decay rate is still decay. Your portfolio decayed at {{portfolioReturnPercent}}% while the market decayed at {{benchmarkReturnPercent}}%. You are still radioactive. Just slightly less so.",
+    "mainReasonTemplate": "You outperformed the benchmark on a down day.",
+    "suggestedFocusTemplate": "Reduce your half-life.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
@@ -5913,6 +6283,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc3_both_neg_worse_sheldon_02",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Incident Classification: SEVERE",
+    "messageTemplate": "Incident report filed. Market loss: {{benchmarkReturnPercent}}%. Your loss: {{portfolioReturnPercent}}%. Root cause: unclear, but almost certainly user error. Recommend immediate review of investment thesis. If you have one.",
+    "mainReasonTemplate": "You lost more than the benchmark today.",
+    "suggestedFocusTemplate": "File a post-mortem. Also, have a thesis.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_negative_user_worse_sarcastic_ABSOLUTE_RETURN_029",
     "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
     "tone": "mixed",
@@ -5927,6 +6317,26 @@
     "requiredData": [
       "benchmarkReturnPercent",
       "portfolioReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc3_both_neg_worse_sheldon_05",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "You Are the Control Group",
+    "messageTemplate": "The market fell {{benchmarkReturnPercent}}%. Your portfolio fell {{portfolioReturnPercent}}%. In this experiment, you are the control group demonstrating what happens with zero alpha. The result is not surprising.",
+    "mainReasonTemplate": "You generated negative excess returns.",
+    "suggestedFocusTemplate": "The scientific method requires you to change the variable.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
@@ -6014,6 +6424,66 @@
     "messageTemplate": "In a direct matchup, you got voted off the island when you lost {{portfolioReturnPercent}}%, completely trailing the {{benchmarkReturnPercent}}% market drop. The truth hurts.",
     "mainReasonTemplate": "You lost {{portfolioreturnpercent}}%, completely trailing the {{benchmarkreturnpercent}}% market drop",
     "suggestedFocusTemplate": "Review your benchmark comparison",
+    "enabled": true
+  },
+  {
+    "templateId": "sc3_both_neg_worse_geralt_03",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Sidequest Gone Wrong",
+    "messageTemplate": "You abandoned the safe Path and wandered into the wilderness. Market: {{benchmarkReturnPercent}}%. You: {{portfolioReturnPercent}}%. The monsters there were well fed tonight.",
+    "mainReasonTemplate": "You went off-script and lost more than the index.",
+    "suggestedFocusTemplate": "Stick to the main quest.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc3_both_neg_worse_geralt_05",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Weak Signs",
+    "messageTemplate": "You came to this fight with weak signs and no oils. Market down {{benchmarkReturnPercent}}%, you down {{portfolioReturnPercent}}%. Yen would have been disappointed. I am merely unsurprised.",
+    "mainReasonTemplate": "You were outpaced in both direction and magnitude.",
+    "suggestedFocusTemplate": "Brew the right potions before the fight.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc3_both_neg_worse_sheldon_03",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Extra Credit in Losing",
+    "messageTemplate": "The market achieved a {{benchmarkReturnPercent}}% loss. You clearly felt that wasn't ambitious enough and pushed for {{portfolioReturnPercent}}%. Nobody asked for extra credit in wealth destruction, but here we are.",
+    "mainReasonTemplate": "You underperformed the index.",
+    "suggestedFocusTemplate": "Aim lower. No wait, that's how you got here.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -6269,6 +6739,66 @@
     "enabled": true
   },
   {
+    "templateId": "sc3_both_neg_worse_geralt_01",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Killed Twice",
+    "messageTemplate": "Market got mauled by {{benchmarkReturnPercent}}%. You walked into the same bear trap and somehow got mauled worse at {{portfolioReturnPercent}}%. Only you could manage that.",
+    "mainReasonTemplate": "You underperformed on a red day.",
+    "suggestedFocusTemplate": "Reread the bestiary. Know your enemy.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc3_both_neg_worse_geralt_04",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "No Contracts Left",
+    "messageTemplate": "Market fell {{benchmarkReturnPercent}}%. You fell {{portfolioReturnPercent}}%. Even the Nilfgaardian treasury looks smarter. No Witcher contract pays for this kind of mission failure.",
+    "mainReasonTemplate": "You underperformed significantly.",
+    "suggestedFocusTemplate": "Take fewer contracts. Think more.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc3_both_neg_worse_sheldon_04",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Q3 Review: Fail",
+    "messageTemplate": "Performance review summary: market managed a {{benchmarkReturnPercent}}% decline, which is your ceiling. You declined {{portfolioReturnPercent}}%. You have failed to meet even reduced expectations. There is no bonus.",
+    "mainReasonTemplate": "You underperformed the benchmark.",
+    "suggestedFocusTemplate": "Set a performance improvement plan.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_negative_user_worse_sarcastic_RELATIVE_RETURN_034",
     "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
     "tone": "roast",
@@ -6299,6 +6829,26 @@
     "messageTemplate": "While the benchmark gracefully declined by {{benchmarkReturnPercent}}%, you plummeted by {{portfolioReturnPercent}}%. It's like comparing the orbit of Mercury to a rock falling down an elevator shaft.",
     "mainReasonTemplate": "Your gravity is stronger than the market's.",
     "suggestedFocusTemplate": "Try investing in frictionless vacuums.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc3_both_neg_worse_sheldon_01",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Achieving Peak Failure",
+    "messageTemplate": "A market down {{benchmarkReturnPercent}}% is bad. A portfolio down {{portfolioReturnPercent}}% is you finding a new floor. I'm almost impressed by the precision of your underperformance.",
+    "mainReasonTemplate": "You underperformed the market on a red day.",
+    "suggestedFocusTemplate": "Run more controlled experiments. Like buying an index fund.",
     "requiredData": [
       "portfolioReturnPercent",
       "benchmarkReturnPercent"
@@ -8023,6 +8573,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc4_both_pos_better_sheldon_05",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "EMERGENCY_BROADCAST",
+    "metaphorCategory": "WEATHER",
+    "titleTemplate": "Positive Alert",
+    "messageTemplate": "ALERT: Portfolio outperformed at {{portfolioReturnPercent}}% versus benchmark {{benchmarkReturnPercent}}%. This is not a drill. This is not an error. Acknowledge and resume normal operations.",
+    "mainReasonTemplate": "You beat the market.",
+    "suggestedFocusTemplate": "Do not panic. This happens occasionally.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_BOTH_POSITIVE_USER_BETTER_sarcastic_1_2da3d5f5",
     "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
     "tone": "praise",
@@ -8035,6 +8605,26 @@
     "messageTemplate": "Drumroll please, the climate is shifting because you gained {{portfolioReturnPercent}}%, beating the {{benchmarkReturnPercent}}% market. Frame this immediately.",
     "mainReasonTemplate": "You gained {{portfolioreturnpercent}}%, beating the {{benchmarkreturnpercent}}% market",
     "suggestedFocusTemplate": "Review your absolute return",
+    "enabled": true
+  },
+  {
+    "templateId": "sc4_both_pos_better_geralt_02",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Cat Potion Worked",
+    "messageTemplate": "Market at {{benchmarkReturnPercent}}%, you at {{portfolioReturnPercent}}%. The Cat potion gave you sharper vision than the crowd today. Don't forget to check the toxicity buildup.",
+    "mainReasonTemplate": "You outperformed.",
+    "suggestedFocusTemplate": "Don't overuse the potions.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -8285,6 +8875,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc4_both_pos_better_sheldon_02",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Anomalous Competence Detected",
+    "messageTemplate": "{{portfolioReturnPercent}}% against the market's {{benchmarkReturnPercent}}%. You outperformed. I've reviewed the data three times expecting an error. There wasn't one. Remarkable.",
+    "mainReasonTemplate": "You outperformed the benchmark.",
+    "suggestedFocusTemplate": "Document this event. It may be rare.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_positive_user_better_sarcastic_ABSOLUTE_RETURN_028",
     "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
     "tone": "mixed",
@@ -8319,6 +8929,46 @@
     "enabled": true
   },
   {
+    "templateId": "sc4_both_pos_better_geralt_03",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Second Sword Drawn",
+    "messageTemplate": "You drew the second sword today. {{portfolioReturnPercent}}% versus the market's {{benchmarkReturnPercent}}%. Effective. But don't get reckless. Reckless Witchers don't grow old.",
+    "mainReasonTemplate": "You outperformed the benchmark.",
+    "suggestedFocusTemplate": "Stay disciplined.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc4_both_pos_better_geralt_05",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "No Ambush Tonight",
+    "messageTemplate": "Market: {{benchmarkReturnPercent}}%. You: {{portfolioReturnPercent}}%. You navigated the Path today without an ambush. Enjoy the inn. But post a lookout.",
+    "mainReasonTemplate": "Clean outperformance on a green day.",
+    "suggestedFocusTemplate": "Rest, but don't get comfortable.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_positive_user_better_v2_sarcastic_BENCHMARK_COMPARISON_006",
     "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
     "tone": "mixed",
@@ -8350,6 +9000,26 @@
     "messageTemplate": "Investigation complete: {{portfolioReturnPercent}} beat {{benchmarkReturnPercent}}. The evidence is annoyingly tidy.",
     "mainReasonTemplate": "The portfolio return was above the benchmark return.",
     "suggestedFocusTemplate": "The evidence confirms outperformance.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc4_both_pos_better_sheldon_03",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Exceeded Low Expectations",
+    "messageTemplate": "Your {{portfolioReturnPercent}}% exceeds the benchmark's {{benchmarkReturnPercent}}%. You have, somehow, exceeded expectations. The bar was low, but you cleared it. Employee of the day. Please do not make this a habit.",
+    "mainReasonTemplate": "You outperformed the market on a green day.",
+    "suggestedFocusTemplate": "Replicate the process, not just the outcome.",
     "requiredData": [
       "portfolioReturnPercent",
       "benchmarkReturnPercent"
@@ -8672,6 +9342,46 @@
     "messageTemplate": "Analyst downgrade: you gained {{portfolioReturnPercent}}%, beating the {{benchmarkReturnPercent}}% market. Underperform rating maintained.",
     "mainReasonTemplate": "You gained {{portfolioreturnpercent}}%, beating the {{benchmarkreturnpercent}}% market",
     "suggestedFocusTemplate": "Review your relative return",
+    "enabled": true
+  },
+  {
+    "templateId": "sc4_both_pos_better_sheldon_04",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "FAKE_AWARD",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Congratulations, Technically",
+    "messageTemplate": "I am awarding you the distinction of today's relative outperformer with {{portfolioReturnPercent}}% versus {{benchmarkReturnPercent}}%. It's not a Nobel Prize. It's not even a participation ribbon. But it is a fact.",
+    "mainReasonTemplate": "You outperformed the market today.",
+    "suggestedFocusTemplate": "Consistency is what earns real prizes.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc4_both_pos_better_geralt_04",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Earned Your Coin",
+    "messageTemplate": "{{portfolioReturnPercent}}% today, market only made {{benchmarkReturnPercent}}%. You earned your coin like a Witcher who didn't get ambushed at the contract site. Rare.",
+    "mainReasonTemplate": "You outperformed the benchmark.",
+    "suggestedFocusTemplate": "Spend the coin wisely.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -11514,6 +12224,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc5_both_pos_worse_geralt_02",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Everyone Found Gold But You",
+    "messageTemplate": "Green day. Market found {{benchmarkReturnPercent}}% worth of gold. You found {{portfolioReturnPercent}}%. You were walking the same forest and still tripped over a root.",
+    "mainReasonTemplate": "You missed the upside.",
+    "suggestedFocusTemplate": "Open your eyes when you walk.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_positive_user_worse_sarcastic_ABSOLUTE_RETURN_047",
     "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
     "tone": "mixed",
@@ -11525,6 +12255,46 @@
     "messageTemplate": "Profit arrived at {{portfolioReturnPercent}}, forgot half its paperwork, and then stood next to {{benchmarkReturnPercent}} looking smaller.",
     "mainReasonTemplate": "The positive portfolio return lagged the benchmark return.",
     "suggestedFocusTemplate": "Check which holdings reduced the portfolio's upside.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc5_both_pos_worse_sheldon_02",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Missing Beta",
+    "messageTemplate": "Your {{portfolioReturnPercent}}% return is noticeably below the market's {{benchmarkReturnPercent}}%. You've managed to extract less from the same market environment. This is what we call negative alpha. You are generating it reliably.",
+    "mainReasonTemplate": "You underperformed on a green day.",
+    "suggestedFocusTemplate": "Study the concept of market beta.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc5_both_pos_worse_sheldon_05",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Incomplete Extraction",
+    "messageTemplate": "The market offered {{benchmarkReturnPercent}}% in available return. You extracted only {{portfolioReturnPercent}}%. Your extraction efficiency is suboptimal. This is a solvable engineering problem. If you could solve engineering problems.",
+    "mainReasonTemplate": "You left gains on the table.",
+    "suggestedFocusTemplate": "Improve your extraction coefficient.",
     "requiredData": [
       "portfolioReturnPercent",
       "benchmarkReturnPercent"
@@ -11615,6 +12385,26 @@
     "messageTemplate": "Portfolio output: {{portfolioReturnPercent}}. Benchmark output: {{benchmarkReturnPercent}}. Green build, underwhelming performance profile.",
     "mainReasonTemplate": "The portfolio was positive but less positive than the benchmark.",
     "suggestedFocusTemplate": "Debug why the portfolio captured less of the positive move.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc5_both_pos_worse_sheldon_04",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "COURTROOM_VERDICT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Technically Positive, Effectively Failing",
+    "messageTemplate": "Court notes: Your {{portfolioReturnPercent}}% return is positive. Technically. However, the benchmark returned {{benchmarkReturnPercent}}%. You are found guilty of underperformance despite favourable conditions. Sentencing: more homework.",
+    "mainReasonTemplate": "You trailed the market on a green day.",
+    "suggestedFocusTemplate": "Favourable conditions should yield better results.",
     "requiredData": [
       "portfolioReturnPercent",
       "benchmarkReturnPercent"
@@ -11863,6 +12653,46 @@
     "enabled": true
   },
   {
+    "templateId": "sc5_both_pos_worse_geralt_03",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Potion Wore Off",
+    "messageTemplate": "Market up {{benchmarkReturnPercent}}%, you up {{portfolioReturnPercent}}%. Your Tawny Owl wore off early. Always time your potions correctly.",
+    "mainReasonTemplate": "You missed the full market rally.",
+    "suggestedFocusTemplate": "Check potion duration before the fight.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc5_both_pos_worse_geralt_05",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Igni Fizzled",
+    "messageTemplate": "You had a green day but Igni fizzled on the finish. Market took {{benchmarkReturnPercent}}%, you only managed {{portfolioReturnPercent}}%. The monster got away with your gold.",
+    "mainReasonTemplate": "You underperformed the market.",
+    "suggestedFocusTemplate": "Upgrade your signs before next time.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_positive_user_worse_sarcastic_RELATIVE_RETURN_028",
     "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
     "tone": "mixed",
@@ -11931,6 +12761,26 @@
     "messageTemplate": "The market practically gave away {{benchmarkReturnPercent}}%, and you only managed {{portfolioReturnPercent}}%. Your inability to capture basic market beta is, frankly, astounding.",
     "mainReasonTemplate": "You left money on the table.",
     "suggestedFocusTemplate": "Perhaps index funds are more your speed.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc5_both_pos_worse_sheldon_03",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "STATUS_UPDATE",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Performance Degraded",
+    "messageTemplate": "System status: DEGRADED. The market ran at {{benchmarkReturnPercent}}% throughput. Your portfolio ran at {{portfolioReturnPercent}}%. Engineers are investigating the bottleneck. Current hypothesis: operator error.",
+    "mainReasonTemplate": "You ran slower than the market on a good day.",
+    "suggestedFocusTemplate": "Profile your execution.",
     "requiredData": [
       "portfolioReturnPercent",
       "benchmarkReturnPercent"
@@ -12350,6 +13200,91 @@
     "enabled": true
   },
   {
+    "templateId": "sc19_deposit_geralt_01",
+    "scenarioKey": "DEPOSIT_POSITIVE_BEHAVIOR",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "DEPOSIT_DISCIPLINE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Coin in the Pouch",
+    "messageTemplate": "You added coin to the pouch instead of spending it at the tavern. Discipline like that is rare. Most people I've met in Novigrad could learn from this. Most won't.",
+    "mainReasonTemplate": "A deposit was made.",
+    "suggestedFocusTemplate": "Keep the coin protected.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc19_deposit_geralt_02",
+    "scenarioKey": "DEPOSIT_POSITIVE_BEHAVIOR",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "DEPOSIT_DISCIPLINE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Saving for the Next Hunt",
+    "messageTemplate": "Saving coin. Good. Every Witcher saves a little for the next contract. The monsters never stop coming. Neither should the saving.",
+    "mainReasonTemplate": "Deposit made.",
+    "suggestedFocusTemplate": "Keep the reserve growing.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc19_deposit_sheldon_02",
+    "scenarioKey": "DEPOSIT_POSITIVE_BEHAVIOR",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "DEPOSIT_DISCIPLINE",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Behaving Optimally",
+    "messageTemplate": "A deposit has been recorded. This is the financially optimal action and one of the few things you've done today that I cannot criticise. Enjoy the moment. There are limited of them.",
+    "mainReasonTemplate": "Deposit made. Good.",
+    "suggestedFocusTemplate": "This is what you should always be doing.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc19_deposit_sheldon_01",
+    "scenarioKey": "DEPOSIT_POSITIVE_BEHAVIOR",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "DEPOSIT_DISCIPLINE",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Positive Reinforcement Detected",
+    "messageTemplate": "You made a deposit. This is, statistically, one of the most reliable wealth-building behaviours. You have stumbled into correct behaviour. I will not overthink it.",
+    "mainReasonTemplate": "A deposit was made.",
+    "suggestedFocusTemplate": "Repeat this behaviour indefinitely.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc19_deposit_sheldon_03",
+    "scenarioKey": "DEPOSIT_POSITIVE_BEHAVIOR",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "DEPOSIT_DISCIPLINE",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Compound Effect Initiated",
+    "messageTemplate": "Deposit registered. You have invoked the compound interest function. Einstein allegedly called compound interest the eighth wonder of the world. He also had better hair. The principle stands.",
+    "mainReasonTemplate": "You added fresh capital.",
+    "suggestedFocusTemplate": "Don't interrupt the compounding.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_DEPOSIT_POSITIVE_BEHAVIOR_sarcastic_17_64ebbc82",
     "scenarioKey": "DEPOSIT_POSITIVE_BEHAVIOR",
     "tone": "praise",
@@ -12650,6 +13585,82 @@
     "enabled": true
   },
   {
+    "templateId": "sc17_drawdown_mild_geralt_02",
+    "scenarioKey": "DRAWDOWN_MILD",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "First Cut",
+    "messageTemplate": "Down {{currentDrawdownFromATH}}% from your peak. First cut. It's not deep, but it's the first cut that tells you whether you know how to fight. Some people panic at the first cut.",
+    "mainReasonTemplate": "Mild drawdown from the ATH.",
+    "suggestedFocusTemplate": "Don't panic.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc17_drawdown_mild_geralt_03",
+    "scenarioKey": "DRAWDOWN_MILD",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Shields Still Up",
+    "messageTemplate": "{{currentDrawdownFromATH}}% off peak. Your Quen sign is holding. Barely. Don't mistake 'still standing' for 'doing well'.",
+    "mainReasonTemplate": "Mild drawdown.",
+    "suggestedFocusTemplate": "Recast the sign before it breaks.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc17_drawdown_mild_sheldon_02",
+    "scenarioKey": "DRAWDOWN_MILD",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Early Erosion",
+    "messageTemplate": "{{currentDrawdownFromATH}}% below your peak. Mild erosion. Like a sandcastle losing its towers before the tide arrives. The tide always arrives.",
+    "mainReasonTemplate": "A mild but real drawdown from the top.",
+    "suggestedFocusTemplate": "Build your defences before the tide.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc17_drawdown_mild_sheldon_04",
+    "scenarioKey": "DRAWDOWN_MILD",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Controlled Descent",
+    "messageTemplate": "A {{currentDrawdownFromATH}}% drawdown is currently classified as controlled descent. Aircraft do this on purpose. Your portfolio may not have had that intention, but here we are.",
+    "mainReasonTemplate": "A mild, controlled drawdown.",
+    "suggestedFocusTemplate": "Choose your landing point.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_DRAWDOWN_MILD_sarcastic_17_aff25d65",
     "scenarioKey": "DRAWDOWN_MILD",
     "tone": "mixed",
@@ -12662,6 +13673,25 @@
     "messageTemplate": "Doppler radar indicates, the boss phase started and you slipped {{currentDrawdownFromATH}} from the peak. Expect severe conditions.",
     "mainReasonTemplate": "You slipped {{currentdrawdownfromath}} from the peak",
     "suggestedFocusTemplate": "Review your drawdown status",
+    "enabled": true
+  },
+  {
+    "templateId": "sc17_drawdown_mild_sheldon_03",
+    "scenarioKey": "DRAWDOWN_MILD",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "WEATHER_REPORT",
+    "metaphorCategory": "WEATHER",
+    "titleTemplate": "Partly Cloudy",
+    "messageTemplate": "Drawdown of {{currentDrawdownFromATH}}% from the high. Conditions: partly cloudy. Chance of further decline: always present. Chance you'll make good decisions about it: lower than I'd like.",
+    "mainReasonTemplate": "Light drawdown from peak.",
+    "suggestedFocusTemplate": "Have a clear plan for if clouds darken.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -13472,6 +14502,101 @@
     "messageTemplate": "Manager notes state, the boss phase started and your portfolio collapsed {{currentDrawdownFromATH}} from the top. Clean out your desk.",
     "mainReasonTemplate": "Your portfolio collapsed {{currentdrawdownfromath}} from the top",
     "suggestedFocusTemplate": "Review your deposit discipline",
+    "enabled": true
+  },
+  {
+    "templateId": "sc18_drawdown_severe_geralt_02",
+    "scenarioKey": "DRAWDOWN_SEVERE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Fallen to the Abyss",
+    "messageTemplate": "Down {{currentDrawdownFromATH}}% from the top. The abyss doesn't look up at you with pity. It looks up at you for company. This is the moment where choices matter most.",
+    "mainReasonTemplate": "Severe drawdown.",
+    "suggestedFocusTemplate": "Make the right choices now.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc18_drawdown_severe_geralt_03",
+    "scenarioKey": "DRAWDOWN_SEVERE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Path is Gone",
+    "messageTemplate": "{{currentDrawdownFromATH}}% below the high and falling. The Path is gone. You're off the map entirely. Even seasoned Witchers don't survive off-map for long without a plan.",
+    "mainReasonTemplate": "Severe drawdown.",
+    "suggestedFocusTemplate": "Find the Path again.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc18_drawdown_severe_sheldon_03",
+    "scenarioKey": "DRAWDOWN_SEVERE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Major Incident Active",
+    "messageTemplate": "MAJOR INCIDENT ACTIVE. Portfolio at {{currentDrawdownFromATH}}% drawdown. All hands on deck. Though looking at your recent decisions, I'm not sure whose hands we want.",
+    "mainReasonTemplate": "Severe drawdown requires attention.",
+    "suggestedFocusTemplate": "All hands on deck. The right hands.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc18_drawdown_severe_sheldon_02",
+    "scenarioKey": "DRAWDOWN_SEVERE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Terminal Velocity",
+    "messageTemplate": "At {{currentDrawdownFromATH}}% below your peak, you have reached what physics calls terminal velocity. The good news: it doesn't get faster. The bad news: you're still in freefall.",
+    "mainReasonTemplate": "Severe drawdown from ATH.",
+    "suggestedFocusTemplate": "Deploy the parachute. Whatever's left of it.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc18_drawdown_severe_sheldon_04",
+    "scenarioKey": "DRAWDOWN_SEVERE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Structural Damage Confirmed",
+    "messageTemplate": "At {{currentDrawdownFromATH}}% below peak, the modelling indicates structural damage. Not surface-level volatility. Structural. This requires more than patience. It requires introspection.",
+    "mainReasonTemplate": "Severe drawdown signals deeper issues.",
+    "suggestedFocusTemplate": "Conduct a structural review of your strategy.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -17717,6 +18842,91 @@
     "enabled": true
   },
   {
+    "templateId": "sc16_near_ath_geralt_01",
+    "scenarioKey": "NEAR_ATH",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Almost at the Throne",
+    "messageTemplate": "Near your all-time high. The throne room is right there. Nobody gets knighted for 'almost entered the room'. Get in.",
+    "mainReasonTemplate": "Close to ATH but not there.",
+    "suggestedFocusTemplate": "Finish the quest.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc16_near_ath_geralt_02",
+    "scenarioKey": "NEAR_ATH",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Door is Right There",
+    "messageTemplate": "Near your all-time high. The door is right there. You've walked up to it three times this month. Open it or stop visiting.",
+    "mainReasonTemplate": "Near ATH, not at it.",
+    "suggestedFocusTemplate": "Push through.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc16_near_ath_sheldon_01",
+    "scenarioKey": "NEAR_ATH",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Within Striking Distance",
+    "messageTemplate": "You are near your all-time high, but not at it. In football, this is called being on the one-yard line. In investing, it's just Tuesday with ambition.",
+    "mainReasonTemplate": "Portfolio near but not at ATH.",
+    "suggestedFocusTemplate": "Punch it in.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc16_near_ath_sheldon_03",
+    "scenarioKey": "NEAR_ATH",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Approaching Escape Velocity",
+    "messageTemplate": "You are approaching the gravitational escape point of your all-time high. Apply sufficient force and you break through. Apply insufficient force and gravity pulls you back. The physics is straightforward. The execution, evidently, less so.",
+    "mainReasonTemplate": "Near the ATH.",
+    "suggestedFocusTemplate": "Apply sufficient force.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc16_near_ath_sheldon_02",
+    "scenarioKey": "NEAR_ATH",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "WEATHER_REPORT",
+    "metaphorCategory": "WEATHER",
+    "titleTemplate": "Approaching Ceiling",
+    "messageTemplate": "Conditions: near-peak. You are close to your all-time high. The ceiling is visible. Whether you hit it or bounce off it again remains to be seen. Historical accuracy: 50/50.",
+    "mainReasonTemplate": "Near the ATH.",
+    "suggestedFocusTemplate": "Break through this time.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_NEAR_ATH_sarcastic_17_11e8be79",
     "scenarioKey": "NEAR_ATH",
     "tone": "roast",
@@ -19190,6 +20400,23 @@
     "enabled": true
   },
   {
+    "templateId": "sc15_ath_sheldon_03",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "FAKE_AWARD",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Peak Performance Certificate",
+    "messageTemplate": "Certificate of Peak Performance issued to your portfolio. Note: peaks are, by definition, followed by descents. This document does not constitute financial advice. Or comfort.",
+    "mainReasonTemplate": "New ATH achieved.",
+    "suggestedFocusTemplate": "The only way from a peak is down, temporarily.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "new_ath_sarcastic_geralt_01",
     "scenarioKey": "NEW_ATH_DAY",
     "tone": "praise",
@@ -19207,6 +20434,40 @@
     "enabled": true
   },
   {
+    "templateId": "sc15_ath_geralt_02",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Mountain Summit",
+    "messageTemplate": "You've reached the summit. New all-time high. The view from here is good. Mountains are also where avalanches start. Take note.",
+    "mainReasonTemplate": "New portfolio ATH.",
+    "suggestedFocusTemplate": "Strap yourself in.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc15_ath_geralt_03",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Ciri Approved",
+    "messageTemplate": "New all-time high. Even Ciri would be mildly impressed. She'd also immediately ask what the plan is for when it goes wrong. She's wise like that.",
+    "mainReasonTemplate": "Portfolio hit a new ATH.",
+    "suggestedFocusTemplate": "Have a plan.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "new_ath_sarcastic_sheldon_01",
     "scenarioKey": "NEW_ATH_DAY",
     "tone": "praise",
@@ -19218,6 +20479,40 @@
     "messageTemplate": "Your portfolio has reached a new local maximum. Just remember, what goes up must eventually succumb to the gravitational pull of market regression. Bazinga.",
     "mainReasonTemplate": "You hit a new ATH.",
     "suggestedFocusTemplate": "Prepare for the downward parabola.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc15_ath_sheldon_02",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Peak Hypothesis Confirmed",
+    "messageTemplate": "Your portfolio has set a new all-time high. I had modelled this as a low-probability event. The universe disagreed with my model. Duly noted.",
+    "mainReasonTemplate": "You hit a new ATH.",
+    "suggestedFocusTemplate": "Update the model with today's data. Don't get smug.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc15_ath_sheldon_04",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Asymptotic Approach",
+    "messageTemplate": "Your portfolio has reached its asymptote for the moment. All-time high. This is either the start of a new range or the top of a parabola. History suggests the latter more often than you'd like.",
+    "mainReasonTemplate": "New ATH today.",
+    "suggestedFocusTemplate": "Identify which scenario this is.",
     "requiredData": [],
     "cooldownDays": 14,
     "weight": 1,
@@ -21650,6 +22945,40 @@
     "enabled": true
   },
   {
+    "templateId": "sc21_no_change_geralt_02",
+    "scenarioKey": "NO_MEANINGFUL_CHANGE",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "No Contract, No Pay",
+    "messageTemplate": "No meaningful movement today. In Witcher terms: the noticeboard was bare, no contract taken, no coin earned. At least you survived the day with your potions intact.",
+    "mainReasonTemplate": "Nothing moved.",
+    "suggestedFocusTemplate": "Tomorrow the board will have contracts.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc21_no_change_geralt_03",
+    "scenarioKey": "NO_MEANINGFUL_CHANGE",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Fog Rolled In",
+    "messageTemplate": "The fog rolled in today and nothing moved. Not your portfolio, not the market, not the monsters. Even monsters rest sometimes. Tomorrow won't be this quiet.",
+    "mainReasonTemplate": "No meaningful activity.",
+    "suggestedFocusTemplate": "Rest while you can.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "no_meaningful_change_sarcastic_NO_CHANGE_058",
     "scenarioKey": "NO_MEANINGFUL_CHANGE",
     "tone": "mixed",
@@ -21905,6 +23234,40 @@
     "enabled": true
   },
   {
+    "templateId": "sc21_no_change_sheldon_02",
+    "scenarioKey": "NO_MEANINGFUL_CHANGE",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Schr\u00f6dinger's Portfolio",
+    "messageTemplate": "Nothing happened today, which means your portfolio is both doing well and poorly simultaneously. Like Schr\u00f6dinger's cat, you won't know until you open the box. I advise against opening the box.",
+    "mainReasonTemplate": "No meaningful change detected.",
+    "suggestedFocusTemplate": "Leave the box closed for now.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc21_no_change_sheldon_04",
+    "scenarioKey": "NO_MEANINGFUL_CHANGE",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Homeostasis",
+    "messageTemplate": "Your portfolio achieved homeostasis today. It is maintaining its own state without external input. In biology, this is sophisticated. In investing, it's called 'nothing happened'. Less sophisticated.",
+    "mainReasonTemplate": "Static day.",
+    "suggestedFocusTemplate": "Seek to grow, not just maintain.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "no_meaningful_change_sarcastic_NO_CHANGE_065",
     "scenarioKey": "NO_MEANINGFUL_CHANGE",
     "tone": "neutral",
@@ -21969,6 +23332,23 @@
     "suggestedFocusTemplate": null,
     "requiredData": [],
     "cooldownDays": 3,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc21_no_change_sheldon_03",
+    "scenarioKey": "NO_MEANINGFUL_CHANGE",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "STATUS_UPDATE",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "System Idle",
+    "messageTemplate": "Portfolio status: IDLE. No processes running. No significant output. The CPU is technically on but producing nothing. This is the financial equivalent of leaving the lights on in an empty room.",
+    "mainReasonTemplate": "No change today.",
+    "suggestedFocusTemplate": "Turn off the idle processes.",
+    "requiredData": [],
+    "cooldownDays": 14,
     "weight": 1,
     "enabled": true
   },
@@ -23287,6 +24667,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc7_user_neg_bench_pos_sheldon_03",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "BUG_REPORT",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Catastrophic Desync",
+    "messageTemplate": "Bug report: Market running at +{{benchmarkReturnPercent}}%. Portfolio running at {{portfolioReturnPercent}}%. Systems are desynced. Root cause unknown. Suspected: strategy.",
+    "mainReasonTemplate": "You are completely out of phase with the market.",
+    "suggestedFocusTemplate": "Rebuild from scratch.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_negative_benchmark_positive_sarcastic_ABSOLUTE_RETURN_029",
     "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
     "tone": "roast",
@@ -23356,6 +24756,26 @@
     "messageTemplate": "Please step up to the podium, the climate is shifting because you lost {{portfolioReturnPercent}}% while the market handed out a {{benchmarkReturnPercent}}% gain. Put it on your fridge.",
     "mainReasonTemplate": "You lost {{portfolioreturnpercent}}% while the market handed out a {{benchmarkreturnpercent}}% gain",
     "suggestedFocusTemplate": "Review your absolute return",
+    "enabled": true
+  },
+  {
+    "templateId": "sc7_user_neg_bench_pos_geralt_03",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Wrong Contract Again",
+    "messageTemplate": "Market collected {{benchmarkReturnPercent}}% coin today. You paid {{portfolioReturnPercent}}% for the privilege of being there. That's not how contracts work. That's really not how contracts work.",
+    "mainReasonTemplate": "You lost while the market gained.",
+    "suggestedFocusTemplate": "Renegotiate your contract terms.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -23462,6 +24882,46 @@
     "messageTemplate": "Looking closely, you lost {{portfolioReturnPercent}}% while the market handed out a {{benchmarkReturnPercent}}% gain. Do better.",
     "mainReasonTemplate": "You lost {{portfolioreturnpercent}}% while the market handed out a {{benchmarkreturnpercent}}% gain",
     "suggestedFocusTemplate": "Review your benchmark comparison",
+    "enabled": true
+  },
+  {
+    "templateId": "sc7_user_neg_bench_pos_geralt_05",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Cursed Dice",
+    "messageTemplate": "Market rolled natural twenties at {{benchmarkReturnPercent}}%. Your dice came up {{portfolioReturnPercent}}%. You are playing with cursed dice. Find a mage to lift it.",
+    "mainReasonTemplate": "You underperformed massively.",
+    "suggestedFocusTemplate": "Change the dice.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc7_user_neg_bench_pos_sheldon_05",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Anti-correlation Specialist",
+    "messageTemplate": "I am adding 'anti-correlation specialist' to your performance review. Benchmark: +{{benchmarkReturnPercent}}%. You: {{portfolioReturnPercent}}%. You have mastered the one skill nobody asked for.",
+    "mainReasonTemplate": "You are losing while the market is winning.",
+    "suggestedFocusTemplate": "Invert your process and see what happens.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -23673,6 +25133,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc7_user_neg_bench_pos_geralt_04",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Stood in the Fire",
+    "messageTemplate": "Everyone ran from the burning village and found gold on the road. You ran into the burning village and lost {{portfolioReturnPercent}}% while the market earned {{benchmarkReturnPercent}}%. I cannot explain this.",
+    "mainReasonTemplate": "You lost when everyone else was winning.",
+    "suggestedFocusTemplate": "Run away from fire, not into it.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_negative_benchmark_positive_sarcastic_RELATIVE_RETURN_034",
     "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
     "tone": "roast",
@@ -23686,6 +25166,26 @@
     "suggestedFocusTemplate": "Inspect the holdings responsible for the relative gap.",
     "requiredData": [
       "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc7_user_neg_bench_pos_sheldon_04",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Inverse Talent",
+    "messageTemplate": "It takes a special kind of talent to lose {{portfolioReturnPercent}}% when the market gains {{benchmarkReturnPercent}}%. I've studied inverse correlations, but this is something else entirely.",
+    "mainReasonTemplate": "You went down while the market went up.",
+    "suggestedFocusTemplate": "Consider the opposite of your current approach.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
@@ -24543,6 +26043,82 @@
     "enabled": true
   },
   {
+    "templateId": "sc11_outperform_large_sheldon_02",
+    "scenarioKey": "USER_OUTPERFORMED_BY_LARGE_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "FAKE_AWARD",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Quarterly Apex Award",
+    "messageTemplate": "I am awarding the Quarterly Apex Certificate for your {{relativePerformancePercent}}% outperformance. This distinction is given so rarely I had to dust off the template. Consider it an honour.",
+    "mainReasonTemplate": "Exceptional relative performance.",
+    "suggestedFocusTemplate": "Don't cash in the momentum too soon.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc11_outperform_large_geralt_02",
+    "scenarioKey": "USER_OUTPERFORMED_BY_LARGE_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "A Saga Worth Telling",
+    "messageTemplate": "{{relativePerformancePercent}}% over the market. They'll be talking about this contract in the taverns of Novigrad. Not long, mind you, but they'll mention it.",
+    "mainReasonTemplate": "Remarkable outperformance.",
+    "suggestedFocusTemplate": "Don't let them buy you too many rounds.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc11_outperform_large_sheldon_01",
+    "scenarioKey": "USER_OUTPERFORMED_BY_LARGE_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Outlier Detected",
+    "messageTemplate": "You outperformed by {{relativePerformancePercent}}%. This is a genuine outlier on the distribution curve. I'm suspicious. But the data is clear. Congratulations. I'll allow it.",
+    "mainReasonTemplate": "Large outperformance recorded.",
+    "suggestedFocusTemplate": "Determine if this is repeatable.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc11_outperform_large_sheldon_03",
+    "scenarioKey": "USER_OUTPERFORMED_BY_LARGE_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Significant Alpha",
+    "messageTemplate": "A {{relativePerformancePercent}}% edge over the market is what mathematicians call significant. The probability of this occurring by chance is low enough that I'm inclined to credit you. Grudgingly.",
+    "mainReasonTemplate": "Large alpha generated today.",
+    "suggestedFocusTemplate": "Publish your method. Then retire.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_USER_OUTPERFORMED_BY_LARGE_MARGIN_sarcastic_9_eb9315dc",
     "scenarioKey": "USER_OUTPERFORMED_BY_LARGE_MARGIN",
     "tone": "roast",
@@ -24843,6 +26419,82 @@
     "enabled": true
   },
   {
+    "templateId": "sc10_outperform_med_geralt_01",
+    "scenarioKey": "USER_OUTPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Proper Witcher Work",
+    "messageTemplate": "{{relativePerformancePercent}}% ahead of the market. That's proper Witcher work. Monster's dead, client's impressed, you got paid more than expected. Don't spend it all in the tavern.",
+    "mainReasonTemplate": "You outperformed by a meaningful margin.",
+    "suggestedFocusTemplate": "Manage the coin responsibly.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc10_outperform_med_geralt_02",
+    "scenarioKey": "USER_OUTPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Good Preparation Paid Off",
+    "messageTemplate": "Beat the market by {{relativePerformancePercent}}%. You read the bestiary, applied the right oil, and the nekker barely touched you. This is what preparation does. Remember it.",
+    "mainReasonTemplate": "Solid outperformance driven by good decisions.",
+    "suggestedFocusTemplate": "Repeat the preparation.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc10_outperform_med_sheldon_02",
+    "scenarioKey": "USER_OUTPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Exceeded Mid-Tier Expectations",
+    "messageTemplate": "You outperformed by {{relativePerformancePercent}}%. This puts you in the top two-thirds of days you've ever had. Statistically, this is above average. Literally. I checked.",
+    "mainReasonTemplate": "Meaningful outperformance.",
+    "suggestedFocusTemplate": "Aim for the top third.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc10_outperform_med_sheldon_03",
+    "scenarioKey": "USER_OUTPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Statistically Noteworthy",
+    "messageTemplate": "Outperforming by {{relativePerformancePercent}}% is statistically noteworthy. Not Nobel Prize territory, but at minimum a footnote in a grad student paper. Well done.",
+    "mainReasonTemplate": "You beat the market by a meaningful margin.",
+    "suggestedFocusTemplate": "Publish your method before the hedge funds copy it.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_USER_OUTPERFORMED_BY_MEDIUM_MARGIN_sarcastic_9_5a1ae3e6",
     "scenarioKey": "USER_OUTPERFORMED_BY_MEDIUM_MARGIN",
     "tone": "roast",
@@ -25140,6 +26792,82 @@
     "messageTemplate": "Analyst downgrade: the climate is shifting because you barely beat the market by {{relativePerformancePercent}}%. Underperform rating maintained.",
     "mainReasonTemplate": "You barely beat the market by {{relativeperformancepercent}}%",
     "suggestedFocusTemplate": "Review your relative return",
+    "enabled": true
+  },
+  {
+    "templateId": "sc9_outperform_small_geralt_02",
+    "scenarioKey": "USER_OUTPERFORMED_BY_SMALL_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Scratched, Not Slain",
+    "messageTemplate": "Outperformed by {{relativePerformancePercent}}%. You scratched ahead of the pack. The griffin barely grazed you. Better trajectory than last week, at least.",
+    "mainReasonTemplate": "Small but real outperformance.",
+    "suggestedFocusTemplate": "Don't let the next one graze you.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc9_outperform_small_sheldon_02",
+    "scenarioKey": "USER_OUTPERFORMED_BY_SMALL_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Adequacy Confirmed",
+    "messageTemplate": "You have outperformed by {{relativePerformancePercent}}%. This confirms you are operating at the level of 'adequate'. Your file will note 'met minimum standards'. This is not the high point of your career.",
+    "mainReasonTemplate": "Marginal outperformance.",
+    "suggestedFocusTemplate": "Aim for distinguished, not adequate.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc9_outperform_small_sheldon_01",
+    "scenarioKey": "USER_OUTPERFORMED_BY_SMALL_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Margin of Error",
+    "messageTemplate": "You outperformed the benchmark by {{relativePerformancePercent}}%. This is within the margin of statistical noise. I'll log it as outperformance, but I'll also log my scepticism.",
+    "mainReasonTemplate": "Small outperformance recorded.",
+    "suggestedFocusTemplate": "Try to clear the noise threshold.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc9_outperform_small_sheldon_03",
+    "scenarioKey": "USER_OUTPERFORMED_BY_SMALL_MARGIN",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Incremental Progress",
+    "messageTemplate": "You outperformed the market by {{relativePerformancePercent}}% today. Science calls this incremental progress. I call it the minimum viable result. But we'll take it.",
+    "mainReasonTemplate": "You beat the benchmark by a small margin.",
+    "suggestedFocusTemplate": "Progress is progress. Do more of it.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -26621,6 +28349,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc6_user_pos_bench_neg_sheldon_04",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "FAKE_AWARD",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Against the Grain Award",
+    "messageTemplate": "You have been awarded the Against-The-Grain Certificate. Market: {{benchmarkReturnPercent}}%. You: +{{portfolioReturnPercent}}%. Framing optional. Repeating this performance is mandatory.",
+    "mainReasonTemplate": "You were positive while the market was negative.",
+    "suggestedFocusTemplate": "Make it a pattern, not a poster.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_USER_POSITIVE_BENCHMARK_NEGATIVE_sarcastic_45_f6da06f6",
     "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
     "tone": "mixed",
@@ -26648,6 +28396,26 @@
     "messageTemplate": "Congratulations, the climate is shifting because you gained {{portfolioReturnPercent}}% while the market dropped {{benchmarkReturnPercent}}%. Be proud of this.",
     "mainReasonTemplate": "You gained {{portfolioreturnpercent}}% while the market dropped {{benchmarkreturnpercent}}%",
     "suggestedFocusTemplate": "Review your absolute return",
+    "enabled": true
+  },
+  {
+    "templateId": "sc6_user_pos_bench_neg_geralt_04",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Survived the Swamp",
+    "messageTemplate": "Market sank {{benchmarkReturnPercent}}% into the bog. You floated up {{portfolioReturnPercent}}%. You walked through the drowner swamp and came out dry. Today.",
+    "mainReasonTemplate": "You survived and profited on a down day.",
+    "suggestedFocusTemplate": "Know that the swamp is still there.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -26812,6 +28580,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc6_user_pos_bench_neg_geralt_03",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Read the Contract Right",
+    "messageTemplate": "Everyone else fell for {{benchmarkReturnPercent}}% losses today. You came away with {{portfolioReturnPercent}}%. You read the contract right. I'll admit it. This time.",
+    "mainReasonTemplate": "You profited on a down day.",
+    "suggestedFocusTemplate": "Always read the contract.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_positive_benchmark_negative_sarcastic_BENCHMARK_COMPARISON_051",
     "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
     "tone": "mixed",
@@ -26824,6 +28612,26 @@
     "mainReasonTemplate": "The portfolio outperformed the benchmark by staying positive while the benchmark was negative.",
     "suggestedFocusTemplate": null,
     "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc6_user_pos_bench_neg_sheldon_03",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "BENCHMARK_COMPARISON",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Positive Deviance",
+    "messageTemplate": "Your {{portfolioReturnPercent}}% gain while the market falls {{benchmarkReturnPercent}}% is statistically unusual. I've prepared three hypotheses: skill, luck, or error. In decreasing order of likelihood.",
+    "mainReasonTemplate": "You went up while the market went down.",
+    "suggestedFocusTemplate": "Determine which hypothesis is correct before celebrating.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
     "cooldownDays": 14,
     "weight": 1,
     "enabled": true
@@ -27090,6 +28898,26 @@
     "enabled": true
   },
   {
+    "templateId": "sc6_user_pos_bench_neg_geralt_05",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Better Oils Than the Crowd",
+    "messageTemplate": "While the market took {{benchmarkReturnPercent}}% damage, your oils held and you came away up {{portfolioReturnPercent}}%. Decent preparation. Don't skip it tomorrow.",
+    "mainReasonTemplate": "You were positive while the market was negative.",
+    "suggestedFocusTemplate": "Preparation before battle, always.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_pos_bench_neg_sarcastic_geralt_02",
     "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
     "tone": "praise",
@@ -27162,6 +28990,26 @@
     "suggestedFocusTemplate": null,
     "requiredData": [
       "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc6_user_pos_bench_neg_sheldon_05",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "STATUS_UPDATE",
+    "metaphorCategory": "SOFTWARE",
+    "titleTemplate": "Inverted Correlation Detected",
+    "messageTemplate": "Portfolio: +{{portfolioReturnPercent}}%. Benchmark: {{benchmarkReturnPercent}}%. Your negative correlation to market decline is noted. I'd say well done, but I need to verify the data source first.",
+    "mainReasonTemplate": "You moved opposite to the market and won.",
+    "suggestedFocusTemplate": "Verify this was intentional.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
@@ -29270,6 +31118,44 @@
     ]
   },
   {
+    "templateId": "sc14_underperform_large_geralt_02",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "The Whole Nest Woke Up",
+    "messageTemplate": "You didn't just miss the contract, you woke up the whole nest. {{relativePerformancePercent}}% behind the market. Every decision compounded the last mistake. Start over.",
+    "mainReasonTemplate": "Catastrophic underperformance.",
+    "suggestedFocusTemplate": "Start fresh. Clean slate. Better oils.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc14_underperform_large_sheldon_02",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Catastrophic Shortfall",
+    "messageTemplate": "Incident severity: CRITICAL. You underperformed by {{relativePerformancePercent}}%. The post-mortem committee has convened. Their opening question is: why?",
+    "mainReasonTemplate": "Massive underperformance.",
+    "suggestedFocusTemplate": "Answer the committee's question.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_underperformed_by_large_margin_sarcastic_RELATIVE_RETURN_052",
     "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
     "tone": "roast",
@@ -29290,6 +31176,25 @@
     "_editor_comments": [
       "Highly repeated opening phrase"
     ]
+  },
+  {
+    "templateId": "sc14_underperform_large_sheldon_03",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "The Singularity of Bad Decisions",
+    "messageTemplate": "{{relativePerformancePercent}}% below the market is what happens when multiple bad decisions converge at a single point in time. Physicists call that a singularity. I call it your portfolio.",
+    "mainReasonTemplate": "Large-scale underperformance.",
+    "suggestedFocusTemplate": "Escape the event horizon.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
   },
   {
     "templateId": "user_underperformed_by_large_margin_sarcastic_RELATIVE_RETURN_046",
@@ -29735,6 +31640,101 @@
     "enabled": true
   },
   {
+    "templateId": "sc13_underperform_med_geralt_01",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Wrong Oils",
+    "messageTemplate": "You showed up with the wrong oils for this monster. Market made {{relativePerformancePercent}}% more than you. The bestiary was clearly opened to the wrong page.",
+    "mainReasonTemplate": "Medium underperformance vs the index.",
+    "suggestedFocusTemplate": "Reread the bestiary. Tonight.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc13_underperform_med_geralt_02",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Half a Sword Length",
+    "messageTemplate": "The market was half a sword length ahead of you all day. {{relativePerformancePercent}}% is the gap. You were in the fight but never landed the killing blow.",
+    "mainReasonTemplate": "You underperformed by a meaningful amount.",
+    "suggestedFocusTemplate": "Close the gap or the monster survives.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc13_underperform_med_sheldon_03",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Non-Trivial Gap",
+    "messageTemplate": "A {{relativePerformancePercent}}% gap is what I classify as non-trivial. It's large enough to matter, small enough to ignore if you have no self-discipline. Based on prior performance, you'll ignore it.",
+    "mainReasonTemplate": "A real and meaningful underperformance.",
+    "suggestedFocusTemplate": "Don't ignore it.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc13_underperform_med_sheldon_02",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Missed by a Neighbourhood",
+    "messageTemplate": "You trailed the market by {{relativePerformancePercent}}%. That's not a rounding error, that's a neighbourhood. I'd recommend moving, metaphorically speaking, to a better part of the return distribution.",
+    "mainReasonTemplate": "Medium underperformance.",
+    "suggestedFocusTemplate": "Move to a better neighbourhood on the return curve.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc13_underperform_med_sheldon_01",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Measurably Worse",
+    "messageTemplate": "You underperformed the market by {{relativePerformancePercent}}%. This is no longer rounding error territory. This is measurably, reproducibly, sadly worse. The data is not on your side.",
+    "mainReasonTemplate": "Meaningful underperformance.",
+    "suggestedFocusTemplate": "The hypothesis that you have an edge is failing.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_USER_UNDERPERFORMED_BY_MEDIUM_MARGIN_sarcastic_9_bff02573",
     "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
     "tone": "roast",
@@ -30032,6 +32032,101 @@
     "messageTemplate": "Memo to desk: you lagged the market by a tiny {{relativePerformancePercent}}%. Target price lowered.",
     "mainReasonTemplate": "You lagged the market by a tiny {{relativeperformancepercent}}%",
     "suggestedFocusTemplate": "Review your relative return",
+    "enabled": true
+  },
+  {
+    "templateId": "sc12_underperform_small_geralt_01",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_SMALL_MARGIN",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "A Step Behind",
+    "messageTemplate": "You fell behind the market by {{relativePerformancePercent}}%. A small gap, but a Witcher who's a step behind the drowner usually ends up in the water.",
+    "mainReasonTemplate": "Slight underperformance.",
+    "suggestedFocusTemplate": "Quicken your pace.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc12_underperform_small_geralt_02",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_SMALL_MARGIN",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Slow Parry",
+    "messageTemplate": "Missed the market by {{relativePerformancePercent}}%. Your parry was a hair too slow. The blade got through. Not deep, but it got through. Work on your timing.",
+    "mainReasonTemplate": "Marginal underperformance.",
+    "suggestedFocusTemplate": "Train your reflexes.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc12_underperform_small_sheldon_02",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_SMALL_MARGIN",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "PERFORMANCE_REVIEW",
+    "metaphorCategory": "OFFICE",
+    "titleTemplate": "Marginally Below Par",
+    "messageTemplate": "You trailed the benchmark by {{relativePerformancePercent}}%. This is what we diplomatically call 'room for improvement'. Less diplomatically, you almost made it. Almost.",
+    "mainReasonTemplate": "Small underperformance.",
+    "suggestedFocusTemplate": "Almost is not quite enough.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc12_underperform_small_sheldon_01",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_SMALL_MARGIN",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Negligible Gap",
+    "messageTemplate": "You underperformed by {{relativePerformancePercent}}%. Technically within the bounds of acceptable variance. Practically, it means you paid transaction costs to achieve slightly less than doing nothing.",
+    "mainReasonTemplate": "Small underperformance vs the benchmark.",
+    "suggestedFocusTemplate": "Close the gap.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc12_underperform_small_sheldon_03",
+    "scenarioKey": "USER_UNDERPERFORMED_BY_SMALL_MARGIN",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Tolerable Deficiency",
+    "messageTemplate": "Trailing the benchmark by {{relativePerformancePercent}}% is, I suppose, tolerable. It's like getting 98 on an exam instead of 100. The difference matters less than the pattern of mediocrity it signals.",
+    "mainReasonTemplate": "Small but consistent underperformance is worth watching.",
+    "suggestedFocusTemplate": "Identify what's creating the gap.",
+    "requiredData": [
+      "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
@@ -30347,6 +32442,91 @@
     "messageTemplate": "Quick update: you got voted off the island when you pulled funds out of the market. Please advise.",
     "mainReasonTemplate": "You pulled funds out of the market",
     "suggestedFocusTemplate": "Review your volatility",
+    "enabled": true
+  },
+  {
+    "templateId": "sc20_withdrawal_geralt_01",
+    "scenarioKey": "WITHDRAWAL_DETECTED",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "WITHDRAWAL_BEHAVIOR",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Spent the Contract Reward",
+    "messageTemplate": "You withdrew coin from the hoard. Witchers who spend their contract rewards at the first inn never save enough for the hard winters. Winter is always coming.",
+    "mainReasonTemplate": "You withdrew funds.",
+    "suggestedFocusTemplate": "Think about winter.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc20_withdrawal_geralt_02",
+    "scenarioKey": "WITHDRAWAL_DETECTED",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "WITHDRAWAL_BEHAVIOR",
+    "structureFamily": "GAMING",
+    "metaphorCategory": "GAMING",
+    "titleTemplate": "Left the Inn Poorer",
+    "messageTemplate": "Withdrawal detected. You left the inn poorer than you entered. The barkeep smiles. Your future self does not.",
+    "mainReasonTemplate": "A withdrawal was made.",
+    "suggestedFocusTemplate": "Your future self sends a message: stop.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc20_withdrawal_sheldon_02",
+    "scenarioKey": "WITHDRAWAL_DETECTED",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "WITHDRAWAL_BEHAVIOR",
+    "structureFamily": "INCIDENT_REPORT",
+    "metaphorCategory": "BUREAUCRACY",
+    "titleTemplate": "Capital Reduction Event",
+    "messageTemplate": "Capital reduction event detected. Category: voluntary. Motivation: unclear. Consequence: compound interest function interrupted. Filing this under 'avoidable mistakes'.",
+    "mainReasonTemplate": "Withdrawal recorded.",
+    "suggestedFocusTemplate": "Don't make avoidable mistakes.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc20_withdrawal_sheldon_01",
+    "scenarioKey": "WITHDRAWAL_DETECTED",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "WITHDRAWAL_BEHAVIOR",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Entropy Accelerated",
+    "messageTemplate": "A withdrawal has been detected. You have voluntarily accelerated the entropy of your portfolio. Thermodynamics was already doing this for free. Apparently you felt it wasn't fast enough.",
+    "mainReasonTemplate": "A withdrawal was made.",
+    "suggestedFocusTemplate": "Let thermodynamics work at its own pace.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "sc20_withdrawal_sheldon_03",
+    "scenarioKey": "WITHDRAWAL_DETECTED",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "WITHDRAWAL_BEHAVIOR",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Self-Inflicted Reduction",
+    "messageTemplate": "Withdrawal recorded. You are now smaller than you were. The market didn't do this. You did. The market at least has the decency to occasionally give it back.",
+    "mainReasonTemplate": "A self-inflicted reduction in capital.",
+    "suggestedFocusTemplate": "Was this absolutely necessary?",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
     "enabled": true
   },
   {
