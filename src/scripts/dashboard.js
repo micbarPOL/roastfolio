@@ -1,5 +1,14 @@
-window.submitRoastReaction = function(reaction) {
+window.submitRoastReaction = function(reaction, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
     if (!window.ROAST_DATA || !window.RoastTracker) return;
+    
+    // Prevent double submission spam
+    if (window._roastFeedbackSubmitting) return;
+    window._roastFeedbackSubmitting = true;
+
     const rd = window.ROAST_DATA;
     let eventType = 'roast_reacted_negative';
     if (reaction === 'good') eventType = 'roast_reacted_positive';
@@ -14,16 +23,19 @@ window.submitRoastReaction = function(reaction) {
         bestAsset: rd.bestAsset,
         worstAsset: rd.worstAsset
     }).then(res => {
+        window._roastFeedbackSubmitting = false;
         if (res && res.ok) {
-            const btnContainer = document.querySelector('.roast-reactions');
-            if (btnContainer) {
+            const containers = document.querySelectorAll('.roast-reactions');
+            containers.forEach(btnContainer => {
                 const prevHtml = btnContainer.innerHTML;
                 btnContainer.innerHTML = '<span style="font-size:12px; color:#27ae60; font-weight:600;">Feedback saved! Thanks.</span>';
                 setTimeout(() => {
                     if (btnContainer) btnContainer.innerHTML = prevHtml;
                 }, 3000);
-            }
+            });
         }
+    }).catch(err => {
+        window._roastFeedbackSubmitting = false;
     });
 };
 
@@ -524,11 +536,11 @@ function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgre
                 stateClass = absDiff < 0.2 ? 'bm-neutral' : (isAhead ? 'bm-winning' : 'bm-losing');
             }
             tooltip.innerHTML = `<span class="bm-msg">"${msg}"</span>
-<div class="roast-reactions" style="margin-top: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
-    <button onclick="window.submitRoastReaction('good')" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit;">👍 Good</button>
-    <button onclick="window.submitRoastReaction('repetitive')" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit;">🔁 Repetitive</button>
-    <button onclick="window.submitRoastReaction('wrong')" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit;">❌ Wrong</button>
-    <button onclick="window.submitRoastReaction('boring')" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit;">🥱 Boring</button>
+<div class="roast-reactions" style="margin-top: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 50; pointer-events: auto;">
+    <button onclick="window.submitRoastReaction('good', event)" ontouchend="window.submitRoastReaction('good', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">👍 Good</button>
+    <button onclick="window.submitRoastReaction('repetitive', event)" ontouchend="window.submitRoastReaction('repetitive', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">🔁 Repetitive</button>
+    <button onclick="window.submitRoastReaction('wrong', event)" ontouchend="window.submitRoastReaction('wrong', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">❌ Wrong</button>
+    <button onclick="window.submitRoastReaction('boring', event)" ontouchend="window.submitRoastReaction('boring', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">🥱 Boring</button>
 </div>`;
             tooltip.className   = stateClass + ' bm-modern-roast';
             tooltip.style.display = 'block';
