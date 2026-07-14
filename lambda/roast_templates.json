@@ -6088,6 +6088,26 @@
     "enabled": true
   },
   {
+    "templateId": "both_negative_user_worse_sarcastic_sheldon_01",
+    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "A Rock Down a Well",
+    "messageTemplate": "While the benchmark gracefully declined by {{benchmarkReturnPercent}}%, you plummeted by {{portfolioReturnPercent}}%. It's like comparing the orbit of Mercury to a rock falling down an elevator shaft.",
+    "mainReasonTemplate": "Your gravity is stronger than the market's.",
+    "suggestedFocusTemplate": "Try investing in frictionless vacuums.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "both_negative_user_worse_sarcastic_RELATIVE_RETURN_052",
     "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
     "tone": "roast",
@@ -8582,6 +8602,26 @@
     "suggestedFocusTemplate": "The relative edge is clean and favorable.",
     "requiredData": [
       "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "both_pos_better_sarcastic_sheldon_01",
+    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "A Broken Clock",
+    "messageTemplate": "You beat the benchmark's {{benchmarkReturnPercent}}% with a {{portfolioReturnPercent}}% return. I suppose even a fundamentally misguided retail investor is right twice a decade.",
+    "mainReasonTemplate": "You outperformed the benchmark.",
+    "suggestedFocusTemplate": "Do not mistake luck for intellect.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
@@ -11654,6 +11694,26 @@
     "suggestedFocusTemplate": "Review the sources of relative underperformance with attention to weightings.",
     "requiredData": [
       "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "both_pos_worse_sarcastic_sheldon_01",
+    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
+    "tone": "mixed",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Astounding Incompetence",
+    "messageTemplate": "The market practically gave away {{benchmarkReturnPercent}}%, and you only managed {{portfolioReturnPercent}}%. Your inability to capture basic market beta is, frankly, astounding.",
+    "mainReasonTemplate": "You left money on the table.",
+    "suggestedFocusTemplate": "Perhaps index funds are more your speed.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
@@ -14950,6 +15010,25 @@
     "messageTemplate": "Your portfolio and your ego are both {{currentDrawdownFromATH}} off their all-time highs. It's a package deal.",
     "mainReasonTemplate": "Portfolio is meaningfully below its all-time high.",
     "suggestedFocusTemplate": "Try not to obsess over the peak.",
+    "requiredData": [
+      "currentDrawdownFromATH"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "drawdown_significant_sarcastic_sheldon_01",
+    "scenarioKey": "DRAWDOWN_SIGNIFICANT",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "DRAWDOWN_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Rapid Entropy",
+    "messageTemplate": "Your portfolio is down {{currentDrawdownFromATH}}%. It's in a state of rapid entropy, decaying faster than a radioactive isotope. Fascinating. From a purely observational standpoint, of course.",
+    "mainReasonTemplate": "Your wealth is dissolving.",
+    "suggestedFocusTemplate": "Accept the inevitability of thermodynamics.",
     "requiredData": [
       "currentDrawdownFromATH"
     ],
@@ -18872,6 +18951,23 @@
     "enabled": true
   },
   {
+    "templateId": "new_ath_sarcastic_sheldon_01",
+    "scenarioKey": "NEW_ATH_DAY",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "ATH_STATUS",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Local Maximum",
+    "messageTemplate": "Your portfolio has reached a new local maximum. Just remember, what goes up must eventually succumb to the gravitational pull of market regression. Bazinga.",
+    "mainReasonTemplate": "You hit a new ATH.",
+    "suggestedFocusTemplate": "Prepare for the downward parabola.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "gen_NEW_ATH_DAY_sarcastic_33_940f8c1c",
     "scenarioKey": "NEW_ATH_DAY",
     "tone": "mixed",
@@ -21446,6 +21542,23 @@
     "enabled": true
   },
   {
+    "templateId": "no_change_sarcastic_sheldon_01",
+    "scenarioKey": "NO_MEANINGFUL_CHANGE",
+    "tone": "neutral",
+    "intensity": "sarcastic",
+    "messageAngle": "NO_CHANGE",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Static Mediocrity",
+    "messageTemplate": "Your portfolio remained entirely static today. It's almost as boring as a lecture by the geology department. Almost.",
+    "mainReasonTemplate": "Your wealth is stationary.",
+    "suggestedFocusTemplate": "Do not attempt to interact with it.",
+    "requiredData": [],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "no_meaningful_change_sarcastic_NO_CHANGE_036",
     "scenarioKey": "NO_MEANINGFUL_CHANGE",
     "tone": "mixed",
@@ -23232,6 +23345,26 @@
     "suggestedFocusTemplate": "Inspect the holdings responsible for the relative gap.",
     "requiredData": [
       "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "user_neg_bench_pos_sarcastic_sheldon_01",
+    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
+    "tone": "roast",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "A Statistical Anomaly of Failure",
+    "messageTemplate": "I could explain why your portfolio is down {{portfolioReturnPercent}}% while the index is up {{benchmarkReturnPercent}}%, but it would require you to understand basic arithmetic. Bazinga.",
+    "mainReasonTemplate": "You are negatively correlated with success.",
+    "suggestedFocusTemplate": "Perhaps switch to a less intellectually demanding hobby.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
@@ -26547,6 +26680,26 @@
     "suggestedFocusTemplate": null,
     "requiredData": [
       "relativePerformancePercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
+    "templateId": "user_pos_bench_neg_sarcastic_sheldon_02",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "sarcastic",
+    "messageAngle": "RELATIVE_RETURN",
+    "structureFamily": "SCIENTIFIC_OBSERVATION",
+    "metaphorCategory": "SCIENCE",
+    "titleTemplate": "Statistical Improbability",
+    "messageTemplate": "You achieved a {{portfolioReturnPercent}}% gain against the market's {{benchmarkReturnPercent}}% loss. I suspect a catastrophic rounding error in your broker's system, but I will let you have your moment.",
+    "mainReasonTemplate": "You defied the laws of market physics.",
+    "suggestedFocusTemplate": "Enjoy it before the regression to the mean.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
     ],
     "cooldownDays": 14,
     "weight": 1,
