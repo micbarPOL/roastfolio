@@ -25679,6 +25679,26 @@
     ]
   },
   {
+    "templateId": "user_pos_bench_neg_gentle_003",
+    "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
+    "tone": "praise",
+    "intensity": "gentle",
+    "messageAngle": "ABSOLUTE_RETURN",
+    "structureFamily": "PRIVATE_BANKER_NOTE",
+    "metaphorCategory": "BANKING",
+    "titleTemplate": "Defying the Trend",
+    "messageTemplate": "Excellent work today. While the broader market index receded by {{benchmarkReturnPercent}}%, your portfolio appreciated by {{portfolioReturnPercent}}%.",
+    "mainReasonTemplate": "Solid outperformance during a market dip.",
+    "suggestedFocusTemplate": "Maintain your current allocation strategy.",
+    "requiredData": [
+      "portfolioReturnPercent",
+      "benchmarkReturnPercent"
+    ],
+    "cooldownDays": 14,
+    "weight": 1,
+    "enabled": true
+  },
+  {
     "templateId": "user_positive_benchmark_negative_gentle_ABSOLUTE_RETURN_003",
     "scenarioKey": "USER_POSITIVE_BENCHMARK_NEGATIVE",
     "tone": "praise",
