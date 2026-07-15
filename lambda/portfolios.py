@@ -642,6 +642,8 @@ def update_transaction(user_id: str, portfolio_id: str, transaction_id: str, upd
         value = quantity * price + commission
     elif tx_type == "SELL" and quantity is not None and price is not None:
         value = quantity * price - commission
+    elif tx_type == "DIVIDEND" and quantity is not None and price is not None:
+        value = quantity * price - commission - tax
     else:
         value = _to_decimal(existing.get("value", 0))
 
