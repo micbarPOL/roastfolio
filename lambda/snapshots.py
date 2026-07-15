@@ -803,69 +803,70 @@ def recalculate_portfolio_snapshots_from_date(
     updated = 0
     prev_value: "Decimal | None" = None  # for dailyReturn
 
-    for snapshot in snapshots_to_update:
-        snap_date = snapshot["snapshotDate"]
-        holdings = _holdings_at_date(all_transactions, snap_date)
+    with _table().batch_writer() as batch:
+        for snapshot in snapshots_to_update:
+            snap_date = snapshot["snapshotDate"]
+            holdings = _holdings_at_date(all_transactions, snap_date)
 
-        portfolio_value = Decimal("0")
-        for h in holdings:
-            ticker = h.get("ticker")
-            currency = h.get("currency") or "PLN"
-            units = _to_decimal(h.get("units", 0))
-            purchase_value = _to_decimal(h.get("purchaseValue", 0))
+            portfolio_value = Decimal("0")
+            for h in holdings:
+                ticker = h.get("ticker")
+                currency = h.get("currency") or "PLN"
+                units = _to_decimal(h.get("units", 0))
+                purchase_value = _to_decimal(h.get("purchaseValue", 0))
 
-            if not ticker or str(ticker).upper().startswith("TFI:"):
-                portfolio_value += purchase_value
-                continue
+                if not ticker or str(ticker).upper().startswith("TFI:"):
+                    portfolio_value += purchase_value
+                    continue
 
-            close_price = _price_at_or_before(price_history, ticker, snap_date)
-            fx_rate = (
-                _price_at_or_before(price_history, f"{currency}PLN=X", snap_date)
-                if currency != "PLN"
-                else Decimal("1")
-            )
-            if close_price is not None and fx_rate is not None:
-                portfolio_value += units * close_price * fx_rate
-            else:
-                # No historical price available — fall back to purchase value
-                portfolio_value += purchase_value
+                close_price = _price_at_or_before(price_history, ticker, snap_date)
+                fx_rate = (
+                    _price_at_or_before(price_history, f"{currency}PLN=X", snap_date)
+                    if currency != "PLN"
+                    else Decimal("1")
+                )
+                if close_price is not None and fx_rate is not None:
+                    portfolio_value += units * close_price * fx_rate
+                else:
+                    # No historical price available — fall back to purchase value
+                    portfolio_value += purchase_value
 
-        portfolio_value = _quantize_money(portfolio_value)
-        investment_value = _quantize_money(_investment_total_at_date(all_transactions, snap_date))
+            portfolio_value = _quantize_money(portfolio_value)
+            investment_value = _quantize_money(_investment_total_at_date(all_transactions, snap_date))
 
-        daily_return = Decimal("0")
-        if prev_value is not None and prev_value > 0:
-            daily_return = _quantize_pct(((portfolio_value - prev_value) / prev_value) * 100)
-        elif snapshot.get("dailyReturn") not in (None, ""):
-            daily_return = _to_decimal(snapshot["dailyReturn"])
-        prev_value = portfolio_value
-        
-        xirr_snapshot = xirr_history_by_date.get(str(snap_date))
-        if xirr_snapshot is not None:
-            xirr_snapshot["portfolioValue"] = portfolio_value
-            xirr_snapshot["investmentValue"] = investment_value
-        snap_xirr = _xirr_from_investment_history(xirr_history, snap_date)
+            daily_return = Decimal("0")
+            if prev_value is not None and prev_value > 0:
+                daily_return = _quantize_pct(((portfolio_value - prev_value) / prev_value) * 100)
+            elif snapshot.get("dailyReturn") not in (None, ""):
+                daily_return = _to_decimal(snapshot["dailyReturn"])
+            prev_value = portfolio_value
+            
+            xirr_snapshot = xirr_history_by_date.get(str(snap_date))
+            if xirr_snapshot is not None:
+                xirr_snapshot["portfolioValue"] = portfolio_value
+                xirr_snapshot["investmentValue"] = investment_value
+            snap_xirr = _xirr_from_investment_history(xirr_history, snap_date)
 
-        item: dict = {
-            "userId": user_id,
-            "sk": _snapshot_sk(portfolio_id, snap_date),
-            "portfolioId": portfolio_id,
-            "snapshotDate": snap_date,
-            "portfolioValue": portfolio_value,
-            "investmentValue": investment_value,
-            "dailyReturn": daily_return,
-            "xirr": snap_xirr,
-            "xirrVersion": _XIRR_CALCULATION_VERSION,
-            "updatedAt": now,
-            "createdAt": snapshot.get("createdAt", now),
-        }
-        if snapshot.get("benchmarkId"):
-            item["benchmarkId"] = snapshot["benchmarkId"]
-        if snapshot.get("benchmarkValue") not in (None, ""):
-            item["benchmarkValue"] = _quantize_money(snapshot["benchmarkValue"])
+            item: dict = {
+                "userId": user_id,
+                "sk": _snapshot_sk(portfolio_id, snap_date),
+                "portfolioId": portfolio_id,
+                "snapshotDate": snap_date,
+                "portfolioValue": portfolio_value,
+                "investmentValue": investment_value,
+                "dailyReturn": daily_return,
+                "xirr": snap_xirr,
+                "xirrVersion": _XIRR_CALCULATION_VERSION,
+                "updatedAt": now,
+                "createdAt": snapshot.get("createdAt", now),
+            }
+            if snapshot.get("benchmarkId"):
+                item["benchmarkId"] = snapshot["benchmarkId"]
+            if snapshot.get("benchmarkValue") not in (None, ""):
+                item["benchmarkValue"] = _quantize_money(snapshot["benchmarkValue"])
 
-        _table().put_item(Item=item)
-        updated += 1
+            batch.put_item(Item=item)
+            updated += 1
 
     recalculate_ath(user_id, portfolio_id)
     return {"updated": updated, "fromDate": from_date, "portfolioId": portfolio_id}
@@ -901,43 +902,44 @@ def recalculate_summary_snapshots_from_date(user_id: str, from_date: str) -> int
 
     now = _now_iso()
     updated = 0
-    for summary_snap in summary_snapshots:
-        snap_date = summary_snap["snapshotDate"]
-        total_portfolio_value = Decimal("0")
-        total_investment_value = Decimal("0")
-        for snaps_by_date in portfolio_snap_map.values():
-            day_snap = snaps_by_date.get(snap_date)
-            if day_snap:
-                total_portfolio_value += _to_decimal(day_snap.get("portfolioValue", 0))
-                total_investment_value += _to_decimal(day_snap.get("investmentValue", 0))
-                
-        xirr_snapshot = xirr_history_by_date.get(str(snap_date))
-        if xirr_snapshot is not None:
-            xirr_snapshot["portfolioValue"] = total_portfolio_value
-            xirr_snapshot["investmentValue"] = total_investment_value
-        snap_xirr = _xirr_from_investment_history(xirr_history, snap_date)
+    with _table().batch_writer() as batch:
+        for summary_snap in summary_snapshots:
+            snap_date = summary_snap["snapshotDate"]
+            total_portfolio_value = Decimal("0")
+            total_investment_value = Decimal("0")
+            for snaps_by_date in portfolio_snap_map.values():
+                day_snap = snaps_by_date.get(snap_date)
+                if day_snap:
+                    total_portfolio_value += _to_decimal(day_snap.get("portfolioValue", 0))
+                    total_investment_value += _to_decimal(day_snap.get("investmentValue", 0))
 
-        item: dict = {
-            "userId": user_id,
-            "sk": _snapshot_sk("summary", snap_date),
-            "portfolioId": "summary",
-            "snapshotDate": snap_date,
-            "portfolioValue": _quantize_money(total_portfolio_value),
-            "investmentValue": _quantize_money(total_investment_value),
-            "xirr": snap_xirr,
-            "xirrVersion": _XIRR_CALCULATION_VERSION,
-            "updatedAt": now,
-            "createdAt": summary_snap.get("createdAt", now),
-        }
-        if summary_snap.get("benchmarkId"):
-            item["benchmarkId"] = summary_snap["benchmarkId"]
-        if summary_snap.get("benchmarkValue") not in (None, ""):
-            item["benchmarkValue"] = _quantize_money(summary_snap["benchmarkValue"])
-        if summary_snap.get("dailyReturn") not in (None, ""):
-            item["dailyReturn"] = _to_decimal(summary_snap["dailyReturn"])
+            xirr_snapshot = xirr_history_by_date.get(str(snap_date))
+            if xirr_snapshot is not None:
+                xirr_snapshot["portfolioValue"] = total_portfolio_value
+                xirr_snapshot["investmentValue"] = total_investment_value
+            snap_xirr = _xirr_from_investment_history(xirr_history, snap_date)
 
-        _table().put_item(Item=item)
-        updated += 1
+            item: dict = {
+                "userId": user_id,
+                "sk": _snapshot_sk("summary", snap_date),
+                "portfolioId": "summary",
+                "snapshotDate": snap_date,
+                "portfolioValue": _quantize_money(total_portfolio_value),
+                "investmentValue": _quantize_money(total_investment_value),
+                "xirr": snap_xirr,
+                "xirrVersion": _XIRR_CALCULATION_VERSION,
+                "updatedAt": now,
+                "createdAt": summary_snap.get("createdAt", now),
+            }
+            if summary_snap.get("benchmarkId"):
+                item["benchmarkId"] = summary_snap["benchmarkId"]
+            if summary_snap.get("benchmarkValue") not in (None, ""):
+                item["benchmarkValue"] = _quantize_money(summary_snap["benchmarkValue"])
+            if summary_snap.get("dailyReturn") not in (None, ""):
+                item["dailyReturn"] = _to_decimal(summary_snap["dailyReturn"])
+
+            batch.put_item(Item=item)
+            updated += 1
 
     recalculate_ath(user_id, "summary")
     return updated
@@ -951,19 +953,20 @@ def recalculate_snapshot_xirr_from_date(user_id: str, portfolio_id: str, from_da
 
     now = _now_iso()
     updated = 0
-    for snapshot in snapshots_to_update:
-        snap_date = snapshot["snapshotDate"]
-        item = dict(snapshot)
-        item["userId"] = user_id
-        item["sk"] = _snapshot_sk(portfolio_id, snap_date)
-        item["portfolioId"] = portfolio_id
-        item["snapshotDate"] = snap_date
-        item["xirr"] = _xirr_from_investment_history(all_snapshots, snap_date)
-        item["xirrVersion"] = _XIRR_CALCULATION_VERSION
-        item["updatedAt"] = now
-        item["createdAt"] = snapshot.get("createdAt", now)
-        _table().put_item(Item=item)
-        updated += 1
+    with _table().batch_writer() as batch:
+        for snapshot in snapshots_to_update:
+            snap_date = snapshot["snapshotDate"]
+            item = dict(snapshot)
+            item["userId"] = user_id
+            item["sk"] = _snapshot_sk(portfolio_id, snap_date)
+            item["portfolioId"] = portfolio_id
+            item["snapshotDate"] = snap_date
+            item["xirr"] = _xirr_from_investment_history(all_snapshots, snap_date)
+            item["xirrVersion"] = _XIRR_CALCULATION_VERSION
+            item["updatedAt"] = now
+            item["createdAt"] = snapshot.get("createdAt", now)
+            batch.put_item(Item=item)
+            updated += 1
 
     return updated
 
