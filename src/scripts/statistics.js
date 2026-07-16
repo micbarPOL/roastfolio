@@ -25,8 +25,8 @@ function statCard(label, value, sub) {
     </div>`;
 }
 
-let _statisticsHistoryCache = null;
-let _statisticsHistoryPromise = null;
+let _statisticsHistoryCache = {};
+let _statisticsHistoryPromise = {};
 
 function _sortSnapshotRows(rows) {
     return [...(rows || [])]
@@ -40,18 +40,18 @@ function _sortSnapshotRows(rows) {
         .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-async function _loadStatisticsHistory(force = false) {
+async function _loadStatisticsHistory(portfolioId = 'summary', force = false) {
     if (!window.PortfolioClient) return [];
-    if (_statisticsHistoryCache && !force) return _statisticsHistoryCache;
-    if (_statisticsHistoryPromise && !force) return _statisticsHistoryPromise;
-    _statisticsHistoryPromise = PortfolioClient.listSnapshots('summary')
+    if (_statisticsHistoryCache[portfolioId] && !force) return _statisticsHistoryCache[portfolioId];
+    if (_statisticsHistoryPromise[portfolioId] && !force) return _statisticsHistoryPromise[portfolioId];
+    _statisticsHistoryPromise[portfolioId] = PortfolioClient.listSnapshots(portfolioId)
         .then(data => {
             const rows = _sortSnapshotRows(data?.snapshots || []);
-            _statisticsHistoryCache = rows;
-            _statisticsHistoryPromise = null;
+            _statisticsHistoryCache[portfolioId] = rows;
+            _statisticsHistoryPromise[portfolioId] = null;
             return rows;
         });
-    return _statisticsHistoryPromise;
+    return _statisticsHistoryPromise[portfolioId];
 }
 
 // ── Benchmark columns registry ────────────────────────────────────────────
@@ -144,6 +144,27 @@ function _buildPortfolioMonthlyPeriods(snapshots) {
     }).filter(Boolean);
 }
 
+function _buildPortfolioDailyPeriods(snapshots) {
+    const sorted = [...(snapshots || [])].sort((a, b) => a.date.localeCompare(b.date));
+    const result = [];
+    for (let i = 1; i < sorted.length; i++) {
+        const start = sorted[i - 1];
+        const end = sorted[i];
+        const netGain = (end.value - start.value) - (end.investment - start.investment);
+        result.push({
+            month: end.date, // Represents the date, but using 'month' key for compatibility with existing render loop
+            start,
+            end,
+            endValue: end.value,
+            invested: end.investment,
+            netGain,
+            pct: _monthReturn(start, end),
+            xirr: end.xirr,
+        });
+    }
+    return result;
+}
+
 // ── Accordion toggle ──────────────────────────────────────────────────────
 function toggleStatsAccordion(id) {
     const body = document.getElementById('acc-' + id);
@@ -180,7 +201,7 @@ function toggleMobileBmRow(rowEl) {
 window.toggleMobileBmRow = toggleMobileBmRow;
 
 // ── Section 1: Monthly Snapshot Summary ──────────────────────────────────
-function renderMonthlySnapshotTable(data) {
+function renderMonthlySnapshotTable(data, granularity = 'monthly') {
     const wrap = document.getElementById('returns-table-wrap');
     if (!wrap) return;
 
@@ -189,10 +210,11 @@ function renderMonthlySnapshotTable(data) {
         return;
     }
 
-    const rows = _buildPortfolioMonthlyPeriods(data).reverse();
+    const isDaily = granularity === 'daily';
+    const rows = (isDaily ? _buildPortfolioDailyPeriods(data) : _buildPortfolioMonthlyPeriods(data)).reverse();
 
     if (rows.length < 1) {
-        wrap.innerHTML = '<div class="stats-empty">Need at least two months of snapshots to build the summary.</div>';
+        wrap.innerHTML = `<div class="stats-empty">Need at least two ${isDaily ? 'days' : 'months'} of snapshots to build the summary.</div>`;
         return;
     }
 
@@ -210,8 +232,10 @@ function renderMonthlySnapshotTable(data) {
             xirrDisplay = (xirrPct >= 0 ? '+' : '') + xirrPct.toFixed(2) + '%';
         }
         
+        const dateLabel = isDaily ? fmtDate(r.month) : fmtMonth(r.month);
+
         return `<tr>
-            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">${fmtMonth(r.month)}</td>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">${dateLabel}</td>
             <td style="padding:6px 10px;text-align:right;">${fmtPLN(r.endValue)}</td>
             <td style="padding:6px 10px;text-align:right;">${fmtPLN(r.invested)}</td>
             <td style="padding:6px 10px;text-align:right;color:${gainColor};font-weight:700;">${gainDisplay}</td>
@@ -220,12 +244,14 @@ function renderMonthlySnapshotTable(data) {
         </tr>`;
     }).join('');
 
+    const dateHeader = isDaily ? 'Date' : 'Month';
+
     wrap.innerHTML = `
         <div style="overflow-x:auto;margin-top:4px;">
             <table class="holdings-table" style="width:100%;font-size:13px;">
                 <thead>
                     <tr>
-                        <th style="text-align:left;">Month</th>
+                        <th style="text-align:left;">${dateHeader}</th>
                         <th style="text-align:right;">End Value</th>
                         <th style="text-align:right;">Total Invested</th>
                         <th style="text-align:right;">Net Gain</th>
@@ -416,38 +442,40 @@ function renderBenchmarkComparisonTable(snapshotData, benchmarkData) {
         </div>`;
 }
 
-async function renderStatisticsSummary(force = false) {
-    let data = await _loadStatisticsHistory(force);
-    if (typeof window !== 'undefined' && window.PORTFOLIO_TOTAL_VALUE) {
-        const now = new Date();
-        const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-        const hasToday = data.some(d => d.date === todayStr);
-        let latestInvestment = 0;
-        let latestXirr = null;
-        if (data.length > 0) {
-            latestInvestment = data[data.length - 1].investment;
-            latestXirr = data[data.length - 1].xirr;
-        }
-        // Use live XIRR from wallet summaries if available (dynamically calculated per-request)
-        const liveXirr = (typeof WALLET_SUMMARIES !== 'undefined' && WALLET_SUMMARIES && WALLET_SUMMARIES.Summary)
-            ? WALLET_SUMMARIES.Summary.annualReturn
-            : null;
-        const todayXirr = liveXirr != null ? Number(liveXirr) : latestXirr;
-        if (!hasToday) {
-            data = [...data, {
-                date: todayStr,
-                value: Number(window.PORTFOLIO_TOTAL_VALUE),
-                investment: latestInvestment,
-                xirr: todayXirr
-            }];
-        } else {
-            data = data.map(d => d.date === todayStr ? {
-                ...d,
-                value: Number(window.PORTFOLIO_TOTAL_VALUE),
-                xirr: todayXirr
-            } : d);
-        }
+function _injectLiveSummaryValue(data) {
+    if (typeof window === 'undefined' || !window.PORTFOLIO_TOTAL_VALUE) return data;
+    const now = new Date();
+    const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    const hasToday = data.some(d => d.date === todayStr);
+    let latestInvestment = 0;
+    let latestXirr = null;
+    if (data.length > 0) {
+        latestInvestment = data[data.length - 1].investment;
+        latestXirr = data[data.length - 1].xirr;
     }
+    const liveXirr = (typeof WALLET_SUMMARIES !== 'undefined' && WALLET_SUMMARIES && WALLET_SUMMARIES.Summary)
+        ? WALLET_SUMMARIES.Summary.annualReturn
+        : null;
+    const todayXirr = liveXirr != null ? Number(liveXirr) : latestXirr;
+    if (!hasToday) {
+        return [...data, {
+            date: todayStr,
+            value: Number(window.PORTFOLIO_TOTAL_VALUE),
+            investment: latestInvestment,
+            xirr: todayXirr
+        }];
+    } else {
+        return data.map(d => d.date === todayStr ? {
+            ...d,
+            value: Number(window.PORTFOLIO_TOTAL_VALUE),
+            xirr: todayXirr
+        } : d);
+    }
+}
+
+async function renderStatisticsSummary(force = false) {
+    let data = await _loadStatisticsHistory('summary', force);
+    data = _injectLiveSummaryValue(data);
     const snapshotAth = window.PORTFOLIO_ATH || null;
     const txRows = window.LedgerTransactions ? await window.LedgerTransactions.loadRows() : [];
     const tradeRows = txRows.filter(r => r.operation !== 'Deposit' && r.operation !== 'Withdrawal');
@@ -574,7 +602,7 @@ async function renderStatisticsSummary(force = false) {
         dailyTurnoverCard;
 
     // ── Render both accordions ────────────────────────────────
-    renderMonthlySnapshotTable(data);
+    refreshSnapshotTable();
 
     // Benchmark comparison loads async in parallel, renders when ready
     _loadAllBenchmarkReturns(false).then(benchmarkData => {
@@ -585,8 +613,73 @@ async function renderStatisticsSummary(force = false) {
     });
 }
 
+let _snapshotGranularity = 'monthly';
+let _snapshotPortfolio = 'summary';
+
+window.setSnapshotGranularity = function(gran) {
+    _snapshotGranularity = gran;
+    const btns = document.querySelectorAll('#stats-snap-granularity-btns .benchmark-range-btn');
+    btns.forEach(b => {
+        if (b.getAttribute('data-val') === gran) b.classList.add('active');
+        else b.classList.remove('active');
+    });
+    refreshSnapshotTable();
+};
+
+window.setSnapshotPortfolio = function(port) {
+    _snapshotPortfolio = port;
+    const btns = document.querySelectorAll('#stats-snap-portfolio-btns .history-wallet-btn');
+    btns.forEach(b => {
+        if (b.getAttribute('data-wallet-key') === port) b.classList.add('is-active');
+        else b.classList.remove('is-active');
+    });
+    refreshSnapshotTable();
+};
+
+async function refreshSnapshotTable() {
+    const wrap = document.getElementById('returns-table-wrap');
+    if (wrap && !wrap.innerHTML) {
+        wrap.innerHTML = '<div class="stats-loading">Loading snapshots…</div>';
+    }
+    
+    try {
+        let rawData = await _loadStatisticsHistory(_snapshotPortfolio, false);
+        if (_snapshotPortfolio === 'summary') {
+            rawData = _injectLiveSummaryValue(rawData);
+        }
+        renderMonthlySnapshotTable(rawData, _snapshotGranularity);
+    } catch (e) {
+        console.error('Error refreshing snapshot table:', e);
+        if (wrap) wrap.innerHTML = '<div class="stats-empty">Error loading snapshots.</div>';
+    }
+}
+
+async function _initSnapshotControls() {
+    const strip = document.getElementById('stats-snap-portfolio-btns');
+    if (!strip) return;
+
+    try {
+        const list = await window.PortfolioClient.listPortfolios();
+        const portfolios = Array.isArray(list?.portfolios) ? list.portfolios : [];
+        const realPortfolios = portfolios.filter(p => p.portfolioId !== 'summary');
+        
+        const allKeys = ['summary', ...realPortfolios.map(p => p.portfolioId)];
+        const allLabels = ['Total', ...realPortfolios.map(p => p.name || p.portfolioId)];
+        
+        strip.innerHTML = allKeys.map((key, i) => {
+            const label = allLabels[i];
+            const active = key === _snapshotPortfolio;
+            return `<button class="history-wallet-btn${active ? ' is-active' : ''}" data-wallet-key="${key}" onclick="setSnapshotPortfolio('${key}')">${label}</button>`;
+        }).join('');
+    } catch (e) {
+        console.warn('Failed to load portfolios for snapshot table', e);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     let _statsRendered = false;
+
+    _initSnapshotControls();
 
     // Initial render on page load — loads snapshots + transactions + benchmark data once.
     renderStatisticsSummary().then(() => {

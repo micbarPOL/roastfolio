@@ -962,10 +962,19 @@
         </section>
         <section class="stats-section stats-acc-section">
             <button class="stats-acc-btn" onclick="toggleStatsAccordion('monthly-snap')">
-                <span>Monthly Snapshot Summary</span>
+                <span>Snapshot Summary</span>
                 <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
             <div id="acc-monthly-snap" class="stats-acc-body">
+                <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
+                    <div class="benchmark-range-btns wig-range-btns" id="stats-snap-granularity-btns">
+                        <button class="benchmark-range-btn wig-range-btn active" data-val="monthly" onclick="setSnapshotGranularity('monthly')">Monthly</button>
+                        <button class="benchmark-range-btn wig-range-btn" data-val="daily" onclick="setSnapshotGranularity('daily')">Daily</button>
+                    </div>
+                    <div class="history-wallet-btns" id="stats-snap-portfolio-btns" role="tablist">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
                 <div id="returns-table-wrap"></div>
             </div>
         </section>
