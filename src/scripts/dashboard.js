@@ -1572,7 +1572,15 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
                 }))
                 .sort((a, b) => a.date.localeCompare(b.date));
 
-            const monthStartSnap = firstSnapshotOnOrAfter(snapshots, monthlyPeriod.startDate) || snapshots[0] || null;
+            // Start snapshot is ideally the last snapshot strictly before this month
+            let monthStartSnap = null;
+            const prevSnaps = snapshots.filter(r => r.date < monthlyPeriod.startDate);
+            if (prevSnaps.length > 0) {
+                monthStartSnap = prevSnaps[prevSnaps.length - 1];
+            } else {
+                // Fallback: first snapshot of this month (only happens for the very first month)
+                monthStartSnap = snapshots.find(r => r.date >= monthlyPeriod.startDate) || snapshots[0] || null;
+            }
 
             const prevMonthValue = monthStartSnap ? monthStartSnap.value : 0;
             const prevMonthInvestment = monthStartSnap ? monthStartSnap.investment : 0;
