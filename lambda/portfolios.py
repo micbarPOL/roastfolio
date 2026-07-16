@@ -520,6 +520,13 @@ def _transaction_value(tx_type: str, transaction: dict, quantity: Decimal | None
     raw_value = transaction.get("value")
     if raw_value not in (None, ""):
         value = _to_decimal(raw_value)
+        if tx_type == "BUY":
+            value = value + commission
+        elif tx_type == "SELL":
+            value = value - commission
+        elif tx_type == "DIVIDEND":
+            tax = _to_decimal(transaction.get("tax", 0))
+            value = value - commission - tax
     elif tx_type in {"DEPOSIT", "WITHDRAWAL"}:
         fallback = transaction.get("amount", transaction.get("quantity"))
         value = _to_decimal(fallback)

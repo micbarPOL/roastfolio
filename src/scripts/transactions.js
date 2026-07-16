@@ -603,7 +603,7 @@ function ensureTransactionsUi() {
             const comm = Number(commStr) || 0;
 
             let rawValue = qty * price;
-            const op = (row.operation || '').toUpperCase();
+            const op = (row.type || '').toUpperCase();
             if (op === 'BUY') {
                 rawValue = -(rawValue + comm);
             } else if (op === 'SELL') {
@@ -611,7 +611,7 @@ function ensureTransactionsUi() {
             } else if (op === 'DIVIDEND') {
                 const tax = row.tax || 0;
                 rawValue = rawValue - comm - tax;
-            } else if (op === 'SPIN-OFF') {
+            } else if (op === 'SPINOFF' || op === 'SPIN-OFF') {
                 rawValue = 0;
             }
 
