@@ -130,12 +130,21 @@ function _firstSnapshotOnOrAfter(snapshots, date) {
 function _buildPortfolioMonthlyPeriods(snapshots) {
     const sorted = [...(snapshots || [])].sort((a, b) => a.date.localeCompare(b.date));
     const months = [...new Set(sorted.map(row => row.date.slice(0, 7)))].sort();
-    const latest = sorted[sorted.length - 1] || null;
+    
     return months.map(month => {
-        const start = _firstSnapshotOnOrAfter(sorted, `${month}-01`);
-        const nextMonth = _nextMonthString(month);
-        const completedEnd = _firstSnapshotOnOrAfter(sorted, `${nextMonth}-01`);
-        const end = completedEnd || (latest && latest.date >= `${month}-01` ? latest : null);
+        const snapsInMonth = sorted.filter(r => r.date.startsWith(month));
+        if (snapsInMonth.length === 0) return null;
+
+        const end = snapsInMonth[snapsInMonth.length - 1];
+
+        let start = null;
+        const prevMonthSnaps = sorted.filter(r => r.date < `${month}-01`);
+        if (prevMonthSnaps.length > 0) {
+            start = prevMonthSnaps[prevMonthSnaps.length - 1];
+        } else {
+            start = snapsInMonth[0];
+        }
+
         if (!start || !end || start.date === end.date) return null;
         const netGain = (end.value - start.value) - (end.investment - start.investment);
         return {
