@@ -74,15 +74,22 @@ async function _loadAllBenchmarkReturns(force = false) {
     if (_benchmarkAllCache && !force) return _benchmarkAllCache;
     if (_benchmarkAllPromise && !force) return _benchmarkAllPromise;
 
-    _benchmarkAllPromise = Promise.all(
-        BENCHMARK_COLS.map(b =>
-            (window.PortfolioClient && window.PortfolioClient.getBenchmarkReturns)
-                ? window.PortfolioClient.getBenchmarkReturns(b.id, '2010-01')
-                    .then(data => ({ id: b.id, returns: data?.returns || [] }))
-                    .catch(() => ({ id: b.id, returns: [] }))
-                : Promise.resolve({ id: b.id, returns: [] })
-        )
-    ).then(results => {
+    _benchmarkAllPromise = (async () => {
+        const results = [];
+        for (const b of BENCHMARK_COLS) {
+            try {
+                if (window.PortfolioClient && window.PortfolioClient.getBenchmarkReturns) {
+                    const data = await window.PortfolioClient.getBenchmarkReturns(b.id, '2010-01');
+                    results.push({ id: b.id, returns: data?.returns || [] });
+                } else {
+                    results.push({ id: b.id, returns: [] });
+                }
+            } catch (err) {
+                console.warn(`Failed to load benchmark ${b.id}`, err);
+                results.push({ id: b.id, returns: [] });
+            }
+        }
+        
         const cache = {};
         for (const { id, returns } of results) {
             cache[id] = {};
@@ -93,7 +100,7 @@ async function _loadAllBenchmarkReturns(force = false) {
         _benchmarkAllCache = cache;
         _benchmarkAllPromise = null;
         return cache;
-    });
+    })();
 
     return _benchmarkAllPromise;
 }

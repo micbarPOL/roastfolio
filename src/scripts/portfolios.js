@@ -22,17 +22,37 @@
     };
   }
 
+  const _fetchPromises = {};
+
   async function _fetch(path, options = {}) {
-    const headers = await _authHeaders();
-    const url = `${_apiBase()}${path}`;
-    const res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers || {}) } });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      const err = new Error(body.error || `HTTP ${res.status}`);
-      err.status = res.status;
-      throw err;
+    const isGet = (!options.method || options.method === 'GET');
+    
+    if (isGet && _fetchPromises[path]) {
+      return _fetchPromises[path];
     }
-    return res.json();
+
+    const promise = (async () => {
+      const headers = await _authHeaders();
+      const url = `${_apiBase()}${path}`;
+      const res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers || {}) } });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const err = new Error(body.error || `HTTP ${res.status}`);
+        err.status = res.status;
+        throw err;
+      }
+      return res.json();
+    })();
+
+    if (isGet) {
+      _fetchPromises[path] = promise;
+      // Clean up cache shortly after it settles to allow fresh fetches later
+      promise.finally(() => {
+        setTimeout(() => { delete _fetchPromises[path]; }, 100);
+      });
+    }
+
+    return promise;
   }
 
   const PortfolioClient = {
