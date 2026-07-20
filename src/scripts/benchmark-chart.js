@@ -189,12 +189,28 @@ async function renderBenchmarkComparisonChart(force) {
             bmDataList.push(data);
         }
 
-        // Build wallet series (date → value)
+        // Build wallet series (date → TWR index)
         const walletSeriesMap = new Map();
         Array.from(_selectedWallets).forEach(function(wKey) {
             const rows = wKey === 'summary' ? snapData.summary : (snapData.wallets[wKey] || []);
             if (rows.length > 1) {
-                walletSeriesMap.set(wKey, rows.map(function(r) { return { t: r.date, v: r.value }; }));
+                let twrIndex = 1.0;
+                let prevVal = null;
+                let prevInv = null;
+                
+                const twrSeries = rows.map(function(r) {
+                    if (prevVal !== null && prevInv !== null && prevVal > 0) {
+                        const netCashFlow = r.investment - prevInv;
+                        let dailyReturn = (r.value - netCashFlow) / prevVal - 1;
+                        if (dailyReturn < -1) dailyReturn = -1; // Floor at -100% loss
+                        twrIndex = twrIndex * (1 + dailyReturn);
+                    }
+                    prevVal = r.value;
+                    prevInv = r.investment;
+                    
+                    return { t: r.date, v: twrIndex };
+                });
+                walletSeriesMap.set(wKey, twrSeries);
             }
         });
 
