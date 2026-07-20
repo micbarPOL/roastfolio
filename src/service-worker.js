@@ -8,7 +8,7 @@
  *    data always comes from the network and stale prices are never shown.
  */
 
-const CACHE_NAME = 'roastfolio-v57';
+const CACHE_NAME = 'roastfolio-v58';
 
 // Assets that live locally and rarely change — cache on install
 const PRECACHE = [
@@ -24,7 +24,9 @@ const PRECACHE = [
     '/scripts/manage.js',
     '/scripts/dashboard.js',
     '/scripts/chart.js',
+    '/scripts/benchmark-chart.js',
     '/scripts/portfolio-chart.js',
+
     '/scripts/statistics.js',
     '/scripts/transactions.js',
     '/scripts/wig-chart.js',
