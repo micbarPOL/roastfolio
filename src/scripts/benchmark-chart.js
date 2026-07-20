@@ -370,12 +370,12 @@ async function renderBenchmarkComparisonChart(force) {
                         position: 'top',
                         labels: {
                             color: _textColor(),
-                            boxWidth: 24,
-                            font: { size: 12 },
                             generateLabels: function(chart) {
                                 return chart.data.datasets.map(function(ds, i) {
                                     return {
                                         text: ds.label,
+                                        fontColor: _textColor(),
+                                        color: _textColor(),
                                         fillStyle: ds.borderColor,
                                         strokeStyle: ds.borderColor,
                                         lineWidth: ds.borderWidth,
@@ -415,12 +415,6 @@ async function renderBenchmarkComparisonChart(force) {
                         grid: { color: _gridColor(false) },
                     },
                     y: {
-                        title: {
-                            display: true,
-                            text: 'Cumulative Return (%)',
-                            color: _textColor(),
-                            font: { size: 11 },
-                        },
                         ticks: {
                             color: _textColor(),
                             callback: function(v) { return (v >= 0 ? '+' : '') + v.toFixed(0) + '%'; },
