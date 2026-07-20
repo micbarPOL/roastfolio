@@ -229,7 +229,13 @@ async function renderBenchmarkComparisonChart(force) {
             });
         });
 
-        const labels = Array.from(allDates).sort();
+        let labels = Array.from(allDates).sort();
+        
+        // Downsample labels depending on the selected range for clarity and performance
+        if (typeof _getResamplingStrategy === 'function' && typeof _resampleHistoryDates === 'function' && labels.length > 0) {
+            const strategy = _getResamplingStrategy(_bmRange, labels);
+            labels = _resampleHistoryDates(labels, strategy);
+        }
 
         if (labels.length === 0) {
             _showBmMessage('No data in the selected time range.');
