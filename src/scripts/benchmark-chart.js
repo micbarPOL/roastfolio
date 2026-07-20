@@ -203,19 +203,18 @@ async function renderBenchmarkComparisonChart(force) {
                         const netCashFlow = r.investment - prevInv;
                         let dailyReturn = 0;
                         
-                        if (netCashFlow > 0) {
-                            // Deposit: assume Beginning of Day cashflow.
-                            // This prevents massive artificial drops when depositing into a small/empty portfolio.
-                            const denominator = prevVal + netCashFlow;
-                            if (denominator > 0) {
-                                dailyReturn = r.value / denominator - 1;
-                            }
-                        } else {
-                            // Withdrawal or flat: assume End of Day cashflow.
-                            // This prevents massive artificial spikes when withdrawing heavily.
-                            if (prevVal > 0) {
-                                dailyReturn = (r.value - netCashFlow) / prevVal - 1;
-                            }
+                        let denominator = prevVal;
+                        if (netCashFlow !== 0) {
+                            // Use Daily Modified Dietz (0.5 weight) to balance cashflows.
+                            // This prevents systematic dilution of returns on deposit days.
+                            denominator = prevVal + 0.5 * netCashFlow;
+                        }
+                        
+                        if (denominator > 0) {
+                            dailyReturn = (r.value - prevVal - netCashFlow) / denominator;
+                        } else if (prevVal > 0) {
+                            // Fallback for extreme anomaly (denominator <= 0)
+                            dailyReturn = (r.value - netCashFlow) / prevVal - 1;
                         }
                         
                         // Prevent absolute 100% loss from destroying the continuous index
