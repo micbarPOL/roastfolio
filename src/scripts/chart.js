@@ -50,6 +50,46 @@ function _clearChartMessage(canvasId) {
     canvas.style.display = '';
 }
 
+function _getResamplingStrategy(range, dates) {
+    if (range === 'ALL' || range === '10Y' || range === '5Y') return 'monthly';
+    if (range === '3Y' || range === '1Y') return 'weekly';
+    
+    if (range === 'YTD') {
+        if (!dates || dates.length === 0) return 'daily';
+        const start = new Date(dates[0] + 'T00:00:00');
+        const end = new Date(dates[dates.length - 1] + 'T00:00:00');
+        const diffMonths = (end - start) / (1000 * 60 * 60 * 24 * 30);
+        if (diffMonths > 6) return 'weekly';
+        return 'daily';
+    }
+    
+    return 'daily'; // 6M, 3M, 1M, 1W
+}
+
+function _resampleHistoryDates(dates, strategy) {
+    if (strategy === 'daily') return dates;
+    
+    const grouped = new Map();
+    dates.forEach(d => {
+        let key = d;
+        if (strategy === 'monthly') {
+            key = d.substring(0, 7); // YYYY-MM
+        } else if (strategy === 'weekly') {
+            const dt = new Date(d + 'T00:00:00');
+            const epochDays = Math.floor(dt.getTime() / 86400000);
+            key = 'W' + Math.floor((epochDays + 3) / 7);
+        }
+        grouped.set(key, d);
+    });
+    return Array.from(grouped.values()).sort();
+}
+
+function _resampleHistoryRows(rows, strategy) {
+    if (strategy === 'daily') return rows;
+    const keptDates = new Set(_resampleHistoryDates(rows.map(r => r.date), strategy));
+    return rows.filter(r => keptDates.has(r.date));
+}
+
 function _sortSnapshotsAscending(items) {
     const sorted = [...(items || [])]
         .map(item => ({
@@ -688,9 +728,13 @@ async function renderHistoryTab(force = false) {
         const anchoredMain = _filterHistoryRowsWithAnchor(activeRows, _historyRange);
         const activeAth = isTotal ? (window.PORTFOLIO_ATH || null) : ((window.WALLET_ATHS || {})[_historyWalletKey] || null);
 
-        _makeLineChart('investmentChart', filteredMain, false, activeAth);
+        // Resample line charts to improve rendering on long histories
+        const strategy = _getResamplingStrategy(_historyRange, filteredMain.map(r => r.date));
+        const resampledMain = _resampleHistoryRows(filteredMain, strategy);
+
+        _makeLineChart('investmentChart', resampledMain, false, activeAth);
         _makeMonthlyReturnsChart('monthlyReturnsChart', anchoredMain);
-        _makeCumulativeReturnChart('returnsChart', filteredMain, _historyReturnMode);
+        _makeCumulativeReturnChart('returnsChart', resampledMain, _historyReturnMode);
         _makeDailyChangeChart('dailyChangeChart', anchoredMain, 'pct');
         _makeDailyChangeChart('dailyPLNChart', anchoredMain, 'pln');
     } catch (error) {
