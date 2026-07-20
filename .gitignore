@@ -33,3 +33,7 @@ tmp_logs2.txt
 *.csv
 *backup*.json
 *report.json
+
+# Test files
+src/test-comments.html
+lambda/feedback.json

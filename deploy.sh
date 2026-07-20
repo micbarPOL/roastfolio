@@ -127,7 +127,8 @@ aws s3 sync src/ "s3://$BUCKET/" \
   --delete \
   --exclude "*.DS_Store" \
   --exclude "scripts/config.js" \
-  --exclude "*.json"
+  --exclude "*.json" \
+  --exclude "test-comments.html"
 
 echo ""
 echo "=== Invalidating CloudFront cache ==="
