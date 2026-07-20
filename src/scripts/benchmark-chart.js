@@ -177,16 +177,17 @@ async function renderBenchmarkComparisonChart(force) {
     try {
         // Load snapshot data and all selected benchmarks in parallel
         const bmIds = Array.from(_selectedBenchmarks);
-        const loadResults = await Promise.all(
-            [_loadSnapshotData(force)].concat(
-                bmIds.map(function(id) {
-                    return _loadBenchmarkDaily(id, _customTickers.has(id));
-                })
-            )
-        );
-
-        const snapData = loadResults[0];
-        const bmDataList = loadResults.slice(1); // [{daily, name}, ...]
+        // Fetch snapshot first
+        const snapData = await _loadSnapshotData(force);
+        
+        // Fetch benchmarks sequentially to avoid hitting Yahoo Finance rate limits
+        // on cache misses (parallel requests from Lambda get tarpitted)
+        const bmDataList = [];
+        for (let i = 0; i < bmIds.length; i++) {
+            const id = bmIds[i];
+            const data = await _loadBenchmarkDaily(id, _customTickers.has(id));
+            bmDataList.push(data);
+        }
 
         // Build wallet series (date → value)
         const walletSeriesMap = new Map();
