@@ -638,6 +638,67 @@ class InvestmentHandler(http.server.SimpleHTTPRequestHandler):
                     _json_resp(self, {'error': 'not found'}, 404)
             return True
 
+        # /test-templates
+        if path == '/test-templates':
+            import os, json
+            templates_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lambda', 'roast_templates.json')
+            feedback_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lambda', 'feedback.json')
+            
+            if method == 'GET':
+                if os.path.exists(templates_path):
+                    with open(templates_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        
+                    feedback_data = {}
+                    if os.path.exists(feedback_path):
+                        with open(feedback_path, 'r', encoding='utf-8') as f:
+                            try:
+                                feedback_data = json.load(f)
+                            except:
+                                pass
+                                
+                    # Merge feedback
+                    for t in data:
+                        tid = t.get('templateId')
+                        msg = t.get('messageTemplate')
+                        # Check by templateId or messageTemplate
+                        if tid in feedback_data:
+                            t['feedback'] = feedback_data[tid].get('action')
+                        elif msg in feedback_data:
+                            t['feedback'] = feedback_data[msg].get('action')
+                            
+                    _json_resp(self, data)
+                else:
+                    _json_resp(self, [], 404)
+            elif method == 'POST':
+                body = _read_body(self)
+                template_id = body.get('templateId')
+                message = body.get('messageTemplate')
+                action = body.get('action') # 'stay' or 'remove'
+                
+                feedback_data = {}
+                if os.path.exists(feedback_path):
+                    with open(feedback_path, 'r', encoding='utf-8') as f:
+                        try:
+                            feedback_data = json.load(f)
+                        except:
+                            pass
+                            
+                # Key by messageTemplate to survive UUID regeneration
+                key = message if message else template_id
+                feedback_data[key] = {
+                    'templateId': template_id,
+                    'messageTemplate': message,
+                    'action': action,
+                    'timestamp': datetime.now(timezone.utc).isoformat()
+                }
+                
+                with open(feedback_path, 'w', encoding='utf-8') as f:
+                    json.dump(feedback_data, f, indent=2, ensure_ascii=False)
+                    
+                _json_resp(self, {'status': 'ok'})
+            return True
+
         # /profile
         if path == '/profile':
             if method == 'GET':
