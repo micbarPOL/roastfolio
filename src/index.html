@@ -967,9 +967,9 @@
             </button>
             <div id="acc-monthly-snap" class="stats-acc-body">
                 <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
-                    <div class="benchmark-range-btns wig-range-btns" id="stats-snap-granularity-btns">
-                        <button class="benchmark-range-btn wig-range-btn active" data-val="monthly" onclick="setSnapshotGranularity('monthly')">Monthly</button>
-                        <button class="benchmark-range-btn wig-range-btn" data-val="daily" onclick="setSnapshotGranularity('daily')">Daily</button>
+                    <div class="history-wallet-btns" id="stats-snap-granularity-btns" role="tablist">
+                        <button class="history-wallet-btn is-active" data-val="monthly" onclick="setSnapshotGranularity('monthly')">Monthly</button>
+                        <button class="history-wallet-btn" data-val="daily" onclick="setSnapshotGranularity('daily')">Daily</button>
                     </div>
                     <div class="history-wallet-btns" id="stats-snap-portfolio-btns" role="tablist">
                         <!-- Populated by JS -->
