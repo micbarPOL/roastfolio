@@ -58,6 +58,7 @@ sam deploy \
   --capabilities  CAPABILITY_IAM \
   --s3-bucket     "micbarfund-website" \
   --s3-prefix     "sam-artifacts-${ENV}" \
+  --force-upload \
   --no-fail-on-empty-changeset
 
 # ── For dev: read bucket + CF domain from stack outputs ───────────
@@ -127,7 +128,9 @@ aws s3 sync src/ "s3://$BUCKET/" \
   --delete \
   --exclude "*.DS_Store" \
   --exclude "scripts/config.js" \
-  --exclude "*.json"
+  --exclude "*.json" \
+  --exclude "test-comments.html" \
+  --exclude "sam-artifacts-*"
 
 echo ""
 echo "=== Invalidating CloudFront cache ==="
