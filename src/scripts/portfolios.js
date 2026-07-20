@@ -164,7 +164,23 @@
       return _fetch(`/benchmark-returns${qs ? '?' + qs : ''}`);
     },
 
+    /**
+     * Get up to 10 years of daily close data for a benchmark or custom ticker.
+     * Pass either benchmarkId (e.g. 'SP500') or ticker (e.g. 'AAPL').
+     * Response: { id, name, daily: [{t: "YYYY-MM-DD", c: number}] }
+     */
+    getBenchmarkDaily(benchmarkIdOrTicker, isCustomTicker = false) {
+      const params = new URLSearchParams();
+      if (isCustomTicker) {
+        params.set('ticker', benchmarkIdOrTicker);
+      } else {
+        params.set('benchmarkId', benchmarkIdOrTicker);
+      }
+      return _fetch(`/benchmark-daily?${params.toString()}`);
+    },
+
     /** Delete a holding by holdingId (URL-safe name slug). */
+
     deleteHolding(portfolioId, holdingId) {
       return _fetch(
         `/portfolios/${encodeURIComponent(portfolioId)}/holdings/${encodeURIComponent(holdingId)}`,

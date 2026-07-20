@@ -1716,6 +1716,7 @@ section {
 
 .chart-container {
     text-align: center;
+    position: relative;
 }
 
 /* ── History tab consolidated header ───────────────────────── */
@@ -1792,7 +1793,254 @@ section {
     color: #fff;
 }
 
+/* ── Return vs Benchmark chart ──────────────────────────────── */
+.bm-vs-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.bm-vs-picker-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(125, 183, 217, 0.4);
+    background: rgba(125, 183, 217, 0.1);
+    color: #7db7d9;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.bm-vs-picker-btn:hover {
+    background: rgba(125, 183, 217, 0.22);
+    color: #c8e3f5;
+    border-color: rgba(125, 183, 217, 0.65);
+}
+
+/* Floating panel */
+.bm-vs-panel {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    z-index: 200;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    background: #0f2236;
+    border: 1px solid rgba(125, 183, 217, 0.22);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+    padding: 0;
+    overflow: hidden;
+    display: none;
+}
+.bm-vs-panel.bm-vs-panel--open { display: block; }
+
+.bm-vs-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid rgba(125, 183, 217, 0.14);
+}
+.bm-vs-panel-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #c8e3f5;
+    letter-spacing: 0.02em;
+}
+.bm-vs-panel-close {
+    background: none;
+    border: none;
+    color: #7eb3d2;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: color 0.12s;
+}
+.bm-vs-panel-close:hover { color: #c8e3f5; }
+
+.bm-vs-panel-section {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(125, 183, 217, 0.08);
+}
+.bm-vs-panel-section:last-child { border-bottom: none; }
+
+.bm-vs-panel-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5a8aaa;
+    margin-bottom: 8px;
+}
+
+/* Selectable pills */
+.bm-vs-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.bm-vs-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    border: 1px solid rgba(125, 183, 217, 0.25);
+    background: transparent;
+    color: #7eb3d2;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+.bm-vs-pill:hover {
+    background: rgba(125, 183, 217, 0.12);
+    color: #c8e3f5;
+}
+.bm-vs-pill--active {
+    background: rgba(125, 183, 217, 0.2);
+    border-color: rgba(125, 183, 217, 0.55);
+    color: #e2e8f0;
+    font-weight: 700;
+}
+.bm-vs-pill-remove {
+    margin-left: 2px;
+    font-size: 13px;
+    color: #5a8aaa;
+    line-height: 1;
+    transition: color 0.12s;
+}
+.bm-vs-pill-remove:hover { color: #f87171; }
+
+/* Search */
+.bm-vs-search-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+.bm-vs-search {
+    flex: 1;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(125, 183, 217, 0.25);
+    background: rgba(255,255,255,0.04);
+    color: #e2e8f0;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.bm-vs-search:focus { border-color: rgba(125, 183, 217, 0.55); }
+.bm-vs-search::placeholder { color: #5a8aaa; }
+.bm-vs-search-clear {
+    background: none;
+    border: none;
+    color: #5a8aaa;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: color 0.12s;
+}
+.bm-vs-search-clear:hover { color: #c8e3f5; }
+
+.bm-vs-search-results {
+    max-height: 160px;
+    overflow-y: auto;
+}
+.bm-vs-search-result {
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 6px;
+    align-items: center;
+    padding: 7px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+.bm-vs-search-result:hover { background: rgba(125, 183, 217, 0.1); }
+.bm-vs-result-symbol {
+    font-size: 12px;
+    font-weight: 700;
+    color: #7db7d9;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+.bm-vs-result-name {
+    font-size: 11px;
+    color: #94a3b8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.bm-vs-result-exch {
+    font-size: 10px;
+    color: #5a8aaa;
+    white-space: nowrap;
+}
+.bm-vs-search-loading {
+    font-size: 12px;
+    color: #5a8aaa;
+    padding: 8px;
+    text-align: center;
+}
+
+/* Empty / loading state inside chart wrapper */
+.bm-vs-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #5a8aaa;
+    text-align: center;
+    padding: 24px;
+}
+
+/* Light mode overrides */
+:root[data-theme="light"] .bm-vs-panel {
+    background: #f0f6fc;
+    border-color: rgba(0, 96, 128, 0.18);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+:root[data-theme="light"] .bm-vs-panel-title { color: #102033; }
+:root[data-theme="light"] .bm-vs-panel-label { color: #4a7a99; }
+:root[data-theme="light"] .bm-vs-pill { color: #2c6b8a; border-color: rgba(0, 96, 128, 0.25); }
+:root[data-theme="light"] .bm-vs-pill:hover { background: rgba(0, 96, 128, 0.08); color: #102033; }
+:root[data-theme="light"] .bm-vs-pill--active { background: rgba(0, 96, 128, 0.14); border-color: rgba(0, 96, 128, 0.45); color: #102033; }
+:root[data-theme="light"] .bm-vs-search { background: #fff; border-color: rgba(0, 96, 128, 0.25); color: #102033; }
+:root[data-theme="light"] .bm-vs-search-result:hover { background: rgba(0, 96, 128, 0.07); }
+:root[data-theme="light"] .bm-vs-result-symbol { color: #1a6e9c; }
+:root[data-theme="light"] .bm-vs-result-name { color: #4a7a99; }
+:root[data-theme="light"] .bm-vs-picker-btn { color: #1a6e9c; border-color: rgba(0, 96, 128, 0.35); background: rgba(0, 96, 128, 0.06); }
+:root[data-theme="light"] .bm-vs-picker-btn:hover { background: rgba(0, 96, 128, 0.14); color: #102033; }
+
+/* Mobile: full-width panel */
+@media (max-width: 600px) {
+    .bm-vs-panel {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 16px 16px 0 0;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    .bm-vs-header-controls { gap: 8px; }
+}
+
 .portfolio-ath-section {
+
     text-align: left;
 }
 
