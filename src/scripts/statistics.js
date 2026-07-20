@@ -634,10 +634,10 @@ let _snapshotPortfolio = 'summary';
 
 window.setSnapshotGranularity = function(gran) {
     _snapshotGranularity = gran;
-    const btns = document.querySelectorAll('#stats-snap-granularity-btns .benchmark-range-btn');
+    const btns = document.querySelectorAll('#stats-snap-granularity-btns .history-wallet-btn');
     btns.forEach(b => {
-        if (b.getAttribute('data-val') === gran) b.classList.add('active');
-        else b.classList.remove('active');
+        if (b.getAttribute('data-val') === gran) b.classList.add('is-active');
+        else b.classList.remove('is-active');
     });
     refreshSnapshotTable();
 };
