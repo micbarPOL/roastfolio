@@ -201,8 +201,25 @@ async function renderBenchmarkComparisonChart(force) {
                 const twrSeries = rows.map(function(r) {
                     if (prevVal !== null && prevInv !== null && prevVal > 0) {
                         const netCashFlow = r.investment - prevInv;
-                        let dailyReturn = (r.value - netCashFlow) / prevVal - 1;
-                        if (dailyReturn < -1) dailyReturn = -1; // Floor at -100% loss
+                        let dailyReturn = 0;
+                        
+                        if (netCashFlow > 0) {
+                            // Deposit: assume Beginning of Day cashflow.
+                            // This prevents massive artificial drops when depositing into a small/empty portfolio.
+                            const denominator = prevVal + netCashFlow;
+                            if (denominator > 0) {
+                                dailyReturn = r.value / denominator - 1;
+                            }
+                        } else {
+                            // Withdrawal or flat: assume End of Day cashflow.
+                            // This prevents massive artificial spikes when withdrawing heavily.
+                            if (prevVal > 0) {
+                                dailyReturn = (r.value - netCashFlow) / prevVal - 1;
+                            }
+                        }
+                        
+                        // Prevent absolute 100% loss from destroying the continuous index
+                        if (dailyReturn < -0.99) dailyReturn = -0.99; 
                         twrIndex = twrIndex * (1 + dailyReturn);
                     }
                     prevVal = r.value;
