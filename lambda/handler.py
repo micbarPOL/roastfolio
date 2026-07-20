@@ -419,7 +419,12 @@ def _cors_headers(cache_seconds=0):
     return h
 
 def _resp(status, body, cache_seconds=0):
-    return {"statusCode": status, "headers": _cors_headers(cache_seconds), "body": json.dumps(_DecimalEncoder._sanitize(body), cls=_DecimalEncoder)}
+    try:
+        payload = json.dumps(_DecimalEncoder._sanitize(body), cls=_DecimalEncoder)
+    except Exception as e:
+        print(f"JSON SERIALIZE ERROR: {e}")
+        payload = '{"error": "Internal serialization error"}'
+    return {"statusCode": status, "headers": _cors_headers(cache_seconds), "body": payload}
 
 
 # ── RBAC middleware ───────────────────────────────────────────

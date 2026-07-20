@@ -17,7 +17,8 @@
     ],
     "cooldownDays": 14,
     "weight": 1,
-    "enabled": true
+    "enabled": true,
+    "feedback": "stay"
   },
   {
     "templateId": "best_asset_carried_portfolio_brutal_ABSOLUTE_RETURN_56",
@@ -23241,8 +23242,8 @@
     "messageAngle": "NO_CHANGE",
     "structureFamily": "SCIENTIFIC_OBSERVATION",
     "metaphorCategory": "SCIENCE",
-    "titleTemplate": "Schr\u00f6dinger's Portfolio",
-    "messageTemplate": "Nothing happened today, which means your portfolio is both doing well and poorly simultaneously. Like Schr\u00f6dinger's cat, you won't know until you open the box. I advise against opening the box.",
+    "titleTemplate": "Schrödinger's Portfolio",
+    "messageTemplate": "Nothing happened today, which means your portfolio is both doing well and poorly simultaneously. Like Schrödinger's cat, you won't know until you open the box. I advise against opening the box.",
     "mainReasonTemplate": "No meaningful change detected.",
     "suggestedFocusTemplate": "Leave the box closed for now.",
     "requiredData": [],
@@ -23653,7 +23654,7 @@
     "titleTemplate": "Recovery Plan Not Visible",
     "messageTemplate": "{{currentDrawdownFromATH}} below ATH during a green benchmark day is the sort of KPI that makes the room go quiet.",
     "mainReasonTemplate": "The portfolio did not recover toward ATH despite benchmark strength.",
-    "suggestedFocusTemplate": "Review whether the portfolio\u2019s recovery depends on too few assets.",
+    "suggestedFocusTemplate": "Review whether the portfolio’s recovery depends on too few assets.",
     "requiredData": [
       "currentDrawdownFromATH"
     ],
@@ -23672,7 +23673,7 @@
     "titleTemplate": "The Crown Remains Elsewhere",
     "messageTemplate": "Still {{currentDrawdownFromATH}} from ATH while the benchmark advances. The throne is not vacant; it is simply ignoring this petition.",
     "mainReasonTemplate": "The portfolio remained away from ATH despite positive benchmark movement.",
-    "suggestedFocusTemplate": "Assess whether today\u2019s lag increased the distance to ATH.",
+    "suggestedFocusTemplate": "Assess whether today’s lag increased the distance to ATH.",
     "requiredData": [
       "currentDrawdownFromATH"
     ],
@@ -23944,7 +23945,7 @@
     "titleTemplate": "Localized Storm Named Asset",
     "messageTemplate": "{{dailyWorstAsset}} brought weather severe enough to make a positive benchmark day look like a clerical rumor.",
     "mainReasonTemplate": "The worst asset created localized damage against a positive benchmark backdrop.",
-    "suggestedFocusTemplate": "Review exposure to {{dailyWorstAsset}} and its effect on today\u2019s return.",
+    "suggestedFocusTemplate": "Review exposure to {{dailyWorstAsset}} and its effect on today’s return.",
     "requiredData": [
       "dailyWorstAsset"
     ],
@@ -24385,7 +24386,7 @@
     "structureFamily": "STATUS_UPDATE",
     "metaphorCategory": "SPREADSHEET",
     "titleTemplate": "Small Red Footnote",
-    "messageTemplate": "Today\u2019s number is {{portfolioReturnPercent}}, which is not ideal, but at least the spreadsheet is being honest in a calm font.",
+    "messageTemplate": "Today’s number is {{portfolioReturnPercent}}, which is not ideal, but at least the spreadsheet is being honest in a calm font.",
     "mainReasonTemplate": "The portfolio return is negative despite a positive market backdrop.",
     "suggestedFocusTemplate": "Look for the largest negative contributors before blaming the whole dashboard.",
     "requiredData": [
@@ -24496,7 +24497,7 @@
     "titleTemplate": "Clouds Over The Record High",
     "messageTemplate": "The market had sunbreaks, but the portfolio stayed {{currentDrawdownFromATH}} below ATH. Weather improved; this umbrella remained open.",
     "mainReasonTemplate": "Drawdown persisted even as the benchmark posted a gain.",
-    "suggestedFocusTemplate": "Compare the drawdown drivers with today\u2019s benchmark move.",
+    "suggestedFocusTemplate": "Compare the drawdown drivers with today’s benchmark move.",
     "requiredData": [
       "currentDrawdownFromATH"
     ],
@@ -24626,9 +24627,9 @@
     "structureFamily": "FAKE_AWARD",
     "metaphorCategory": "THEATRE",
     "titleTemplate": "Supporting Role, Main Damage",
-    "messageTemplate": "Today\u2019s dramatic contribution from {{dailyWorstAsset}} deserves a small curtain call and perhaps a quieter role in the next scene.",
+    "messageTemplate": "Today’s dramatic contribution from {{dailyWorstAsset}} deserves a small curtain call and perhaps a quieter role in the next scene.",
     "mainReasonTemplate": "{{dailyWorstAsset}} stood out negatively while the benchmark was positive.",
-    "suggestedFocusTemplate": "Review how much of today\u2019s underperformance came from {{dailyWorstAsset}}.",
+    "suggestedFocusTemplate": "Review how much of today’s underperformance came from {{dailyWorstAsset}}.",
     "requiredData": [
       "dailyWorstAsset"
     ],
@@ -24697,7 +24698,7 @@
     "titleTemplate": "Green Market, Red Output",
     "messageTemplate": "Expected behavior: portfolio notices positive backdrop. Actual behavior: {{portfolioReturnPercent}}. Severity: aesthetically irritating.",
     "mainReasonTemplate": "Portfolio performance was negative while the benchmark was positive.",
-    "suggestedFocusTemplate": "Debug which holding or wallet failed the day\u2019s positive test.",
+    "suggestedFocusTemplate": "Debug which holding or wallet failed the day’s positive test.",
     "requiredData": [
       "portfolioReturnPercent"
     ],
@@ -24811,7 +24812,7 @@
     "titleTemplate": "Negative Return Filed Correctly",
     "messageTemplate": "{{portfolioReturnPercent}} has been processed. The form titled 'Market Was Positive Anyway' remains unanswered.",
     "mainReasonTemplate": "The portfolio return was negative despite a positive benchmark environment.",
-    "suggestedFocusTemplate": "Audit the day\u2019s biggest negative contributors.",
+    "suggestedFocusTemplate": "Audit the day’s biggest negative contributors.",
     "requiredData": [
       "portfolioReturnPercent"
     ],
@@ -24964,8 +24965,8 @@
     "metaphorCategory": "ACADEMIA",
     "titleTemplate": "Drawdown Thesis Needs Revision",
     "messageTemplate": "Remaining {{currentDrawdownFromATH}} below ATH during a positive benchmark session is a compelling argument against the thesis titled 'It Was Just The Market.'",
-    "mainReasonTemplate": "The portfolio\u2019s drawdown did not improve with the positive benchmark.",
-    "suggestedFocusTemplate": "Compare today\u2019s lag to the longer drawdown pattern.",
+    "mainReasonTemplate": "The portfolio’s drawdown did not improve with the positive benchmark.",
+    "suggestedFocusTemplate": "Compare today’s lag to the longer drawdown pattern.",
     "requiredData": [
       "currentDrawdownFromATH",
       "benchmarkReturnPercent"
@@ -25026,7 +25027,7 @@
     "titleTemplate": "ATH Distance Updated",
     "messageTemplate": "Current distance from ATH: {{currentDrawdownFromATH}}. Benchmark direction: up. Portfolio interpretation: apparently optional.",
     "mainReasonTemplate": "The portfolio remained in drawdown despite benchmark strength.",
-    "suggestedFocusTemplate": "Check whether today\u2019s red move widened the ATH gap.",
+    "suggestedFocusTemplate": "Check whether today’s red move widened the ATH gap.",
     "requiredData": [
       "currentDrawdownFromATH"
     ],
@@ -25060,7 +25061,7 @@
     "titleTemplate": "Forecast: Personally Cloudy",
     "messageTemplate": "Broad conditions improved; the portfolio stayed {{currentDrawdownFromATH}} below ATH. Apparently sunlight requires a subscription.",
     "mainReasonTemplate": "The drawdown remained despite a positive benchmark.",
-    "suggestedFocusTemplate": "Review why today\u2019s market strength did not translate into drawdown relief.",
+    "suggestedFocusTemplate": "Review why today’s market strength did not translate into drawdown relief.",
     "requiredData": [
       "currentDrawdownFromATH"
     ],
@@ -25265,7 +25266,7 @@
     "structureFamily": "ACADEMIC_REVIEW",
     "metaphorCategory": "SCHOOL",
     "titleTemplate": "Marked Down For Participation",
-    "messageTemplate": "{{dailyWorstAsset}} participated energetically in the wrong direction. The benchmark\u2019s positive result makes the essay harder to defend.",
+    "messageTemplate": "{{dailyWorstAsset}} participated energetically in the wrong direction. The benchmark’s positive result makes the essay harder to defend.",
     "mainReasonTemplate": "The worst asset moved against the positive benchmark backdrop.",
     "suggestedFocusTemplate": "Review {{dailyWorstAsset}} as a contributor, not as a narrative shortcut.",
     "requiredData": [
@@ -25288,7 +25289,7 @@
     "structureFamily": "ANALYST_NOTE",
     "metaphorCategory": "THEATRE",
     "titleTemplate": "Lead Drag Identified",
-    "messageTemplate": "{{dailyWorstAsset}} delivered a performance so committed it almost made the benchmark\u2019s positive return feel like a rumor.",
+    "messageTemplate": "{{dailyWorstAsset}} delivered a performance so committed it almost made the benchmark’s positive return feel like a rumor.",
     "mainReasonTemplate": "The daily worst asset undermined performance on a positive benchmark day.",
     "suggestedFocusTemplate": "Compare {{dailyWorstAsset}} against other movers before assigning broader blame.",
     "requiredData": [
@@ -25328,7 +25329,7 @@
     "titleTemplate": "A Position With Theatre Training",
     "messageTemplate": "{{dailyWorstAsset}} turned a green benchmark day into a private banking note written with thinner lips than usual.",
     "mainReasonTemplate": "{{dailyWorstAsset}} was the largest negative contributor.",
-    "suggestedFocusTemplate": "Check whether the position\u2019s weight magnified the underperformance.",
+    "suggestedFocusTemplate": "Check whether the position’s weight magnified the underperformance.",
     "requiredData": [
       "dailyWorstAsset"
     ],
