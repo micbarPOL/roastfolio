@@ -638,6 +638,12 @@ Resources:
             Path: /benchmark-returns
             Method: GET
             RestApiId: !Ref PricesApi
+        BenchmarkDailyGet:
+          Type: Api
+          Properties:
+            Path: /benchmark-daily
+            Method: GET
+            RestApiId: !Ref PricesApi
         BenchmarksGet:
           Type: Api
           Properties:
