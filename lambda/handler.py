@@ -1135,7 +1135,139 @@ def search_handler(event: dict) -> dict:
         print(f"Search error for '{q}': {e}")
         return _resp(500, {"error": "Search failed"})
 
+def benchmark_daily_handler(event: dict) -> dict:
+    """
+    GET /benchmark-daily?benchmarkId=SP500
+    GET /benchmark-daily?ticker=AAPL
+
+    Returns up to 10 years of daily close prices for a benchmark index or
+    any yfinance-compatible ticker. Used by the frontend "Return vs Benchmark"
+    chart which computes % returns client-side.
+
+    Response: { id, name, daily: [{t: "YYYY-MM-DD", c: float}] }
+
+    Caching: results are stored in S3 under benchmark-daily-max-{id}.json.
+    Cache is refreshed if older than 7 days or missing.
+    """
+    method = event.get("httpMethod", "GET")
+    if method == "OPTIONS":
+        return _resp(200, {})
+    if method != "GET":
+        return _resp(405, {"error": "Method not allowed"})
+
+    user_id, err = _require_role(event, db.ROLE_BASIC)
+    if err:
+        return err
+
+    qs = event.get("queryStringParameters") or {}
+    benchmark_id = (qs.get("benchmarkId") or "").strip().upper()
+    raw_ticker   = (qs.get("ticker") or "").strip().upper()
+
+    # Resolve benchmark id → ticker and display name
+    if benchmark_id and benchmark_id in db.BENCHMARKS:
+        meta   = db.BENCHMARKS[benchmark_id]
+        ticker = meta["ticker"]
+        name   = meta["name"]
+        cache_id = benchmark_id
+    elif raw_ticker:
+        # Custom ticker (e.g. AAPL, CDR.WA)
+        # Validate: alphanumeric + dot + hyphen, max 20 chars
+        import re as _re
+        if not _re.match(r'^[A-Z0-9.\-]{1,20}$', raw_ticker):
+            return _resp(400, {"error": "Invalid ticker symbol"})
+        ticker   = raw_ticker
+        name     = raw_ticker
+        cache_id = "CUSTOM_" + raw_ticker.replace(".", "_").replace("-", "_")
+    else:
+        return _resp(400, {"error": "Provide benchmarkId or ticker parameter"})
+
+    s3_key = f"benchmark-daily-max-{cache_id}.json"
+
+    # Try loading from S3 cache
+    cached = {}
+    if CACHE_BUCKET:
+        try:
+            s3  = boto3.client("s3")
+            obj = s3.get_object(Bucket=CACHE_BUCKET, Key=s3_key)
+            cached = json.loads(obj["Body"].read())
+        except Exception:
+            cached = {}
+
+    # Check freshness (7-day TTL)
+    import datetime as _dt
+    updated_str = cached.get("updated", "")
+    is_fresh = False
+    if updated_str:
+        try:
+            updated_dt = _dt.datetime.strptime(updated_str, "%Y-%m-%d")
+            is_fresh = (_dt.date.today() - updated_dt.date()).days < 7
+        except Exception:
+            pass
+
+    if is_fresh and cached.get("daily"):
+        return _resp(200, {
+            "id":    cache_id,
+            "name":  cached.get("name", name),
+            "daily": cached["daily"],
+        }, cache_seconds=3600)
+
+    # Fetch full history via yfinance
+    try:
+        import yfinance as yf
+        import pandas as pd
+        tk  = yf.Ticker(ticker)
+        df  = tk.history(period="max", interval="1d")
+        if df is None or df.empty:
+            # Fall back to existing cache even if stale
+            if cached.get("daily"):
+                return _resp(200, {"id": cache_id, "name": name, "daily": cached["daily"]}, cache_seconds=3600)
+            return _resp(404, {"error": f"No data found for {ticker}"})
+
+        # Normalise timezone, keep only Close, drop NaN
+        try:
+            df.index = df.index.tz_convert("UTC")
+        except Exception:
+            pass
+        df = df.dropna(subset=["Close"])
+
+        daily = [
+            {"t": idx.strftime("%Y-%m-%d"), "c": round(float(r["Close"]), 4)}
+            for idx, r in df.iterrows()
+        ]
+
+        # Persist to S3
+        payload = {
+            "id":      cache_id,
+            "name":    name,
+            "ticker":  ticker,
+            "daily":   daily,
+            "updated": _dt.date.today().isoformat(),
+        }
+        if CACHE_BUCKET:
+            try:
+                s3 = boto3.client("s3")
+                s3.put_object(
+                    Bucket=CACHE_BUCKET,
+                    Key=s3_key,
+                    Body=json.dumps(payload),
+                    ContentType="application/json",
+                )
+                print(f"benchmark-daily-max: saved {cache_id} ({len(daily)} rows)")
+            except Exception as se:
+                print(f"benchmark-daily-max cache save failed: {se}")
+
+        return _resp(200, {"id": cache_id, "name": name, "daily": daily}, cache_seconds=3600)
+
+    except Exception as e:
+        print(f"benchmark_daily_handler error for {ticker}: {e}")
+        # Return cached data even if stale rather than fail completely
+        if cached.get("daily"):
+            return _resp(200, {"id": cache_id, "name": name, "daily": cached["daily"]}, cache_seconds=300)
+        return _resp(500, {"error": f"Failed to fetch data for {ticker}"})
+
+
 def asset_analysis_handler(event: dict) -> dict:
+
     """
     GET /asset-analysis?ticker=<ticker>
     Returns 1-year history and basic fundamental properties for the given ticker.
@@ -1789,9 +1921,14 @@ def handler(event, context):
         if path.endswith("/benchmark-returns"):
             return benchmark_returns_handler(event)
 
+        # Route /benchmark-daily (must come before /benchmarks substring check)
+        if path.endswith("/benchmark-daily"):
+            return benchmark_daily_handler(event)
+
         # Route /benchmarks
         if path.endswith("/benchmarks"):
             return benchmarks_handler(event)
+
 
         # Route /tfi/lookup
         if path.endswith("/tfi/lookup"):

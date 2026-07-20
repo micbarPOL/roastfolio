@@ -931,7 +931,33 @@
                 <canvas id="dailyPLNChart"></canvas>
             </div>
         </section>
+        <section class="chart-container">
+
+            <div class="history-sub-row">
+                <h2 class="tx-section-title" style="margin:0;">Return vs Benchmark</h2>
+                <div class="bm-vs-header-controls">
+                    <div class="wig-range-btns" id="bm-vs-range-btns">
+                        <button class="wig-range-btn" data-bm-range="1M" onclick="setBenchmarkRange('1M')">1M</button>
+                        <button class="wig-range-btn" data-bm-range="3M" onclick="setBenchmarkRange('3M')">3M</button>
+                        <button class="wig-range-btn" data-bm-range="6M" onclick="setBenchmarkRange('6M')">6M</button>
+                        <button class="wig-range-btn active" data-bm-range="1Y" onclick="setBenchmarkRange('1Y')">1Y</button>
+                        <button class="wig-range-btn" data-bm-range="5Y" onclick="setBenchmarkRange('5Y')">5Y</button>
+                        <button class="wig-range-btn" data-bm-range="10Y" onclick="setBenchmarkRange('10Y')">10Y</button>
+                    </div>
+                    <button class="bm-vs-picker-btn" id="bm-vs-picker-btn" onclick="openBenchmarkSelector()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                        Select series
+                    </button>
+                </div>
+            </div>
+            <div class="chart-wrapper" style="position:relative;height:420px;">
+                <canvas id="benchmarkVsPortfolioChart"></canvas>
+            </div>
+            <!-- Selector panel — shown when picker btn is clicked -->
+            <div class="bm-vs-panel" id="bm-vs-panel" hidden></div>
+        </section>
     </main>
+
 
 
     <!-- Tab: Statistics -->
@@ -1561,7 +1587,9 @@
     <script src="scripts/statistics.js?v=20260702b"></script>
     <script src="scripts/transactions.js?v=20260702a"></script>
     <script src="scripts/chart.js?v=20260625b"></script>
+    <script src="scripts/benchmark-chart.js?v=20260720a"></script>
     <script src="scripts/analysis.js?v=20260625a"></script>
+
     <script src="scripts/portfolio-chart.js"></script>
     <script src="scripts/retirement-simulation.js?v=20260514f"></script>
     <script src="scripts/retirement-chart.js?v=20260514g"></script>
