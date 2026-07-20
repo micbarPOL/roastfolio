@@ -8,7 +8,7 @@
  *    data always comes from the network and stale prices are never shown.
  */
 
-const CACHE_NAME = 'roastfolio-v59';
+const CACHE_NAME = 'roastfolio-v60';
 
 // Assets that live locally and rarely change — cache on install
 const PRECACHE = [
