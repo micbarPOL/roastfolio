@@ -679,6 +679,10 @@ def _holdings_at_date(all_transactions: list, as_of_date: str) -> list:
         h_id = str(tx.get("holdingId") or "")
         ticker = tx.get("ticker")
         currency = tx.get("currency") or "PLN"
+        
+        import portfolios
+        if ticker:
+            currency = portfolios._MARKET_CURRENCY_BY_TICKER.get(str(ticker).upper(), currency)
 
         if tx_type in ("BUY", "SPINOFF"):
             cur = holdings.get(h_id) or {
@@ -688,6 +692,10 @@ def _holdings_at_date(all_transactions: list, as_of_date: str) -> list:
                 "units": Decimal("0"),
                 "purchaseValue": Decimal("0"),
             }
+            if ticker:
+                cur["ticker"] = ticker
+            if currency:
+                cur["currency"] = currency
             cur["units"] += qty
             cur["purchaseValue"] += value
             holdings[h_id] = cur
