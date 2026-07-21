@@ -52,18 +52,9 @@ function _clearChartMessage(canvasId) {
 
 function _getResamplingStrategy(range, dates) {
     if (range === 'ALL' || range === '10Y' || range === '5Y') return 'monthly';
-    if (range === '3Y' || range === '1Y') return 'weekly';
+    if (range === '3Y') return 'weekly';
     
-    if (range === 'YTD') {
-        if (!dates || dates.length === 0) return 'daily';
-        const start = new Date(dates[0] + 'T00:00:00');
-        const end = new Date(dates[dates.length - 1] + 'T00:00:00');
-        const diffMonths = (end - start) / (1000 * 60 * 60 * 24 * 30);
-        if (diffMonths > 6) return 'weekly';
-        return 'daily';
-    }
-    
-    return 'daily'; // 6M, 3M, 1M, 1W
+    return 'daily'; // 1Y, YTD, 6M, 3M, 1M, 1W
 }
 
 function _resampleHistoryDates(dates, strategy) {
