@@ -1137,6 +1137,10 @@
       <li><strong>Yahoo Finance</strong> — for stocks, ETFs, crypto, and international assets (e.g. <code>CDR.WA</code>, <code>AAPL</code>, <code>BTC-USD</code>). Use arrow keys and Enter to navigate results.</li>
       <li><strong>Polish TFI</strong> — for Polish mutual funds (TFI). Enter the <a href="https://www.bankier.pl/fundusze" target="_blank" rel="noopener noreferrer">bankier.pl</a> fund code and press <em>Lookup</em>.</li>
     </ul>
+    
+    <div class="callout info">
+      <p><strong>Foreign currencies:</strong> Tickers natively traded in foreign currencies (e.g., <code>BTC-USD</code>, <code>ETH-USD</code>, <code>AAPL</code>) are automatically mapped and evaluated in their native market currency (USD, EUR, etc.) during historical recalculations. This guarantees accurate historical valuation regardless of the currency selected in your transactions.</p>
+    </div>
 
     <p>Enter the <strong>quantity</strong> (number of units) and <strong>trade value</strong> (total cash impact in PLN). Commission and a free-text comment are optional under <em>Advanced options</em>. A live review summary appears before you submit.</p>
 
@@ -1155,8 +1159,9 @@
     <h3 id="history-benchmarks">History &amp; Benchmarks</h3>
     <p>The <strong>History</strong> screen visualizes your portfolio's performance over time. You can view the history for the combined <strong>Summary</strong> of all wallets, or filter down to a specific wallet using the selector.</p>
     <ul>
-      <li><strong>Performance Charts:</strong> View your Total Value, Daily PLN Change, and Daily % Change over time. The charts automatically adjust their X-axis labels (e.g., displaying Month/Year) to maintain readability when viewing long histories.</li>
-      <li><strong>Benchmarks:</strong> Compare your portfolio's returns against major indices. You can toggle between <strong>S&amp;P 500</strong>, <strong>MSCI World</strong>, and <strong>WIG20</strong> to see how your investments measure up to the broader market.</li>
+      <li><strong>Performance Charts:</strong> View your Total Value, Daily PLN Change, and Daily % Change over time. The charts dynamically maintain high-fidelity <strong>daily datapoints</strong> for ranges up to 1 Year (e.g. YTD, 1Y) to ensure your All-Time High lines are perfectly aligned without downsampling artifacts.</li>
+      <li><strong>Return vs Benchmark:</strong> A dedicated chart calculates your Time-Weighted Return (TWR) using the <em>Modified Dietz</em> methodology. This prevents massive deposits or withdrawals from artificially distorting your percentage returns, allowing for an apples-to-apples comparison of your portfolio's raw market performance against benchmarks.</li>
+      <li><strong>Benchmarks:</strong> Compare your portfolio's returns against indices or assets. You can toggle between defaults like <strong>S&amp;P 500</strong>, <strong>MSCI World</strong>, and <strong>WIG20</strong>, or add <strong>custom benchmarks</strong> in your wallet settings using any valid Yahoo Finance ticker (e.g., <code>BTC-USD</code>).</li>
     </ul>
 
     <h3 id="ath-management">All-Time High (ATH) management</h3>
