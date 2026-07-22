@@ -56,16 +56,18 @@ def _decimal_cell(value, default: Decimal | None = Decimal("0")) -> Decimal | No
 
 def _asset_name(raw: str) -> str:
     name = str(raw or "").strip()
-    if name.startswith("Gotówka (") and name.endswith(")"):
-        inner = name[len("Gotówka ("):-1].strip()
+    if (name.startswith("Gotówka (") or name.startswith("Cash (")) and name.endswith(")"):
+        inner = name[name.find("(")+1:-1].strip()
         if inner:
             return inner
-    return name or "Gotówka"
+    if name == "Gotówka":
+        return "Cash"
+    return name or "Cash"
 
 
 def _derive_ticker(name: str, currency: str | None) -> str | None:
     cleaned = str(name or "").strip()
-    if not cleaned or cleaned.lower().startswith("got"):
+    if not cleaned or cleaned.lower().startswith("got") or cleaned.lower() == "cash":
         return None
     special = _SPECIAL_TICKERS.get(cleaned.upper())
     if special:

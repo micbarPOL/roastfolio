@@ -59,6 +59,8 @@ const COMPANY_COLORS = {
     'Meta Platforms, Inc. (META)': '#1877f2',
     'Bitcoin (BTC)':               '#f7931a',
     'Gotówka (konto)':             '#95a5a6',
+    'Cash (konto)':                '#95a5a6',
+    'Cash':                        '#95a5a6',
 };
 
 function companyLogoHtml(name) {

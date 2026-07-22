@@ -316,7 +316,7 @@ function normalizeHoldings(data) {
     if (!data) return [];
     // Rename 'Gotówka (konto)' → 'Cash' to match the synthetic cash holding name
     const renamed = [...data]
-        .map(d => d.name === 'Gotówka (konto)' ? { ...d, name: 'Cash' } : d);
+        .map(d => (d.name === 'Gotówka (konto)' || d.name === 'Gotówka') ? { ...d, name: 'Cash' } : d);
     // Merge duplicate names (e.g. two Cash positions) by summing their values
     const merged = {};
     for (const d of renamed) {
