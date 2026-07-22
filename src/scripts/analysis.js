@@ -883,48 +883,63 @@
         return token ? { 'Authorization': `Bearer ${token}` } : {};
     }
 
+    let _cachedOwnedAssets = null;
+
+    function _renderSearchResults(results) {
+        if (!results || results.length === 0) {
+            dropdownEl.innerHTML = '<div class="mgmt-dropdown-item"><div class="mgmt-ticker-symbol">No results found</div></div>';
+            dropdownEl.style.display = 'block';
+            if (typeof selectedIndex !== 'undefined') selectedIndex = -1;
+            return;
+        }
+
+        dropdownEl.innerHTML = '';
+        if (typeof selectedIndex !== 'undefined') selectedIndex = -1;
+        results.forEach((r, i) => {
+            const item = document.createElement('div');
+            item.className = 'mgmt-dropdown-item';
+            if (r.isOwned) {
+                item.className += ' is-owned';
+            }
+            item.onclick = () => loadAssetData(r.symbol, currentPeriod);
+            
+            const ownedBadge = r.isOwned 
+                ? `<span class="mgmt-ticker-badge mgmt-ticker-badge-owned" style="margin-right:8px;" title="In your portfolio">✓ Owned</span>`
+                : '';
+            
+            item.innerHTML = `
+                <div class="mgmt-dropdown-main">
+                    <span class="mgmt-ticker-symbol">${r.symbol}</span>
+                    <span class="mgmt-ticker-name">${r.name || r.symbol}</span>
+                </div>
+                <div class="mgmt-ticker-meta">
+                    ${ownedBadge}
+                    <span class="mgmt-ticker-exchange">${r.exchange || ''}</span>
+                </div>
+            `;
+            dropdownEl.appendChild(item);
+        });
+        dropdownEl.style.display = 'block';
+    }
+
     async function performSearch(query) {
+        const q = String(query || '').trim();
+
+        // If query is empty and we have cached owned assets, display them instantly
+        if (!q && _cachedOwnedAssets) {
+            _renderSearchResults(_cachedOwnedAssets);
+        }
+
         try {
-            const res = await fetch(`${_apiBase()}/search?q=${encodeURIComponent(query)}`, {
+            const res = await fetch(`${_apiBase()}/search?q=${encodeURIComponent(q)}`, {
                 headers: getAuthHeaders()
             });
             const data = await res.json();
             const results = data.results || [];
-            
-            if (results.length === 0) {
-                dropdownEl.innerHTML = '<div class="mgmt-dropdown-item"><div class="mgmt-ticker-symbol">No results found</div></div>';
-                dropdownEl.style.display = 'block';
-                if (typeof selectedIndex !== 'undefined') selectedIndex = -1;
-                return;
+            if (!q) {
+                _cachedOwnedAssets = results;
             }
-
-            dropdownEl.innerHTML = '';
-            if (typeof selectedIndex !== 'undefined') selectedIndex = -1;
-            results.forEach((r, i) => {
-                const item = document.createElement('div');
-                item.className = 'mgmt-dropdown-item';
-                if (r.isOwned) {
-                    item.className += ' is-owned';
-                }
-                item.onclick = () => loadAssetData(r.symbol, currentPeriod);
-                
-                const ownedBadge = r.isOwned 
-                    ? `<span class="mgmt-ticker-badge mgmt-ticker-badge-owned" style="margin-right:8px;" title="In your portfolio">✓ Owned</span>`
-                    : '';
-                
-                item.innerHTML = `
-                    <div class="mgmt-dropdown-main">
-                        <span class="mgmt-ticker-symbol">${r.symbol}</span>
-                        <span class="mgmt-ticker-name">${r.name || r.symbol}</span>
-                    </div>
-                    <div class="mgmt-ticker-meta">
-                        ${ownedBadge}
-                        <span class="mgmt-ticker-exchange">${r.exchange || ''}</span>
-                    </div>
-                `;
-                dropdownEl.appendChild(item);
-            });
-            dropdownEl.style.display = 'block';
+            _renderSearchResults(results);
         } catch (e) {
             console.error('Search failed', e);
         }
@@ -934,20 +949,24 @@
         inputEl.addEventListener('input', (e) => {
             const val = e.target.value.trim();
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                performSearch(val);
-            }, 300);
-        });
-
-        inputEl.addEventListener('focus', (e) => {
-            e.target.select();
-            const val = e.target.value.trim();
             if (!val) {
                 performSearch('');
             } else {
-                performSearch(val);
+                searchTimeout = setTimeout(() => {
+                    performSearch(val);
+                }, 300);
             }
         });
+
+        const showOwnedAssetsOnFocus = (e) => {
+            if (e.target && typeof e.target.select === 'function') {
+                e.target.select();
+            }
+            performSearch('');
+        };
+
+        inputEl.addEventListener('focus', showOwnedAssetsOnFocus);
+        inputEl.addEventListener('click', showOwnedAssetsOnFocus);
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
