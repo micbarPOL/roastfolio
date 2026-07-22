@@ -659,7 +659,9 @@ body.sidenav-open {
 }
 
 .retirement-hero-card {
-    gap: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
     background:
         radial-gradient(circle at top right, rgba(54, 199, 139, 0.16), transparent 35%),
         radial-gradient(circle at top left, rgba(43, 136, 207, 0.18), transparent 42%),
@@ -990,16 +992,35 @@ body.sidenav-open {
     line-height: 1.5;
 }
 
+#retirement-plan-status {
+    text-transform: none;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+    border-radius: 12px;
+    padding: 6px 12px;
+    height: auto;
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+}
+
 #retirement-plan-status[data-tone="success"] {
     color: var(--fintech-success);
+    background: rgba(39, 174, 96, 0.16);
 }
 
 #retirement-plan-status[data-tone="danger"] {
     color: var(--fintech-danger);
+    background: rgba(192, 57, 43, 0.16);
 }
 
 #retirement-plan-status[data-tone="preview"] {
     color: #8fcbff;
+    background: rgba(43, 136, 207, 0.18);
 }
 
 .stat-value-sm {
