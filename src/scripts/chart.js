@@ -297,7 +297,37 @@ const _historyXAxisCallback = function(val) {
     return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
 };
 
-function _makeLineChart(canvasId, data, compact, athInfo = null) {
+function _updateAthPeaksForChartData(data, activeRows) {
+    if (!data || !data.length) return;
+
+    let priorMax = 0;
+    if (activeRows && activeRows.length > 0 && data[0].date) {
+        const startDate = data[0].date;
+        for (let i = 0; i < activeRows.length; i++) {
+            if (activeRows[i].date < startDate) {
+                if (activeRows[i].runningAth > priorMax) {
+                    priorMax = activeRows[i].runningAth;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+
+    let runningMax = priorMax;
+    for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        if (row.value > runningMax) {
+            runningMax = row.value;
+            row.isAthPeak = true;
+        } else {
+            row.isAthPeak = false;
+        }
+        row.runningAth = runningMax;
+    }
+}
+
+function _makeLineChart(canvasId, data, compact, athInfo = null, activeRows = null) {
     if (!data || !data.length) {
         _setChartMessage(canvasId, 'No snapshot history yet.');
         return;
@@ -307,6 +337,12 @@ function _makeLineChart(canvasId, data, compact, athInfo = null) {
     _clearChartMessage(canvasId);
     _destroyHistoryChart(canvasId);
 
+    if (activeRows) {
+        _updateAthPeaksForChartData(data, activeRows);
+    } else {
+        _updateAthPeaksForChartData(data, data);
+    }
+
     // Compute absolute last ATH
     let absoluteLastAthValue = athInfo && athInfo.athValue != null ? Number(athInfo.athValue) : null;
     let absoluteLastAthDate = athInfo && athInfo.athDate ? String(athInfo.athDate).slice(0, 10) : null;
@@ -315,6 +351,19 @@ function _makeLineChart(canvasId, data, compact, athInfo = null) {
     if (absoluteLastAthValue == null || computedMax > absoluteLastAthValue) {
         absoluteLastAthValue = computedMax;
         absoluteLastAthDate = data.length > 0 ? data[data.length - 1].lastAthDate : null;
+    }
+
+    let starDate = null;
+    if (absoluteLastAthDate && data.some(d => d.date === absoluteLastAthDate)) {
+        starDate = absoluteLastAthDate;
+    } else {
+        let maxPeakVal = -1;
+        for (const row of data) {
+            if (row.isAthPeak && row.value > maxPeakVal) {
+                maxPeakVal = row.value;
+                starDate = row.date;
+            }
+        }
     }
 
     const datasets = [
@@ -351,28 +400,28 @@ function _makeLineChart(canvasId, data, compact, athInfo = null) {
             backgroundColor: context => {
                 const index = context.dataIndex;
                 if (index === undefined || !data[index]) return 'rgba(255, 200, 50, 0.5)';
-                return data[index].date === absoluteLastAthDate ? 'rgba(255, 200, 50, 0.95)' : 'rgba(255, 200, 50, 0.5)';
+                return data[index].date === starDate ? 'rgba(255, 200, 50, 0.95)' : 'rgba(255, 200, 50, 0.5)';
             },
             borderColor: context => {
                 const index = context.dataIndex;
                 if (index === undefined || !data[index]) return 'rgba(220, 140, 0, 0.7)';
-                return data[index].date === absoluteLastAthDate ? 'rgba(220, 140, 0, 1)' : 'rgba(220, 140, 0, 0.7)';
+                return data[index].date === starDate ? 'rgba(220, 140, 0, 1)' : 'rgba(220, 140, 0, 0.7)';
             },
             borderWidth: compact ? 1.5 : 2,
             pointRadius: context => {
                 const index = context.dataIndex;
                 if (index === undefined || !data[index] || !data[index].isAthPeak) return 0;
-                return data[index].date === absoluteLastAthDate ? (compact ? 6 : 9) : (compact ? 3.5 : 5.5);
+                return data[index].date === starDate ? (compact ? 6 : 9) : (compact ? 3.5 : 5.5);
             },
             pointHoverRadius: context => {
                 const index = context.dataIndex;
                 if (index === undefined || !data[index] || !data[index].isAthPeak) return 0;
-                return data[index].date === absoluteLastAthDate ? (compact ? 8 : 11) : (compact ? 5.5 : 7.5);
+                return data[index].date === starDate ? (compact ? 8 : 11) : (compact ? 5.5 : 7.5);
             },
             pointStyle: context => {
                 const index = context.dataIndex;
                 if (index === undefined || !data[index]) return 'circle';
-                return data[index].date === absoluteLastAthDate ? 'star' : 'circle';
+                return data[index].date === starDate ? 'star' : 'circle';
             },
             showLine: false,
             spanGaps: false,
@@ -723,7 +772,7 @@ async function renderHistoryTab(force = false) {
         const strategy = _getResamplingStrategy(_historyRange, filteredMain.map(r => r.date));
         const resampledMain = _resampleHistoryRows(filteredMain, strategy);
 
-        _makeLineChart('investmentChart', resampledMain, false, activeAth);
+        _makeLineChart('investmentChart', resampledMain, false, activeAth, activeRows);
         _makeMonthlyReturnsChart('monthlyReturnsChart', anchoredMain);
         _makeCumulativeReturnChart('returnsChart', resampledMain, _historyReturnMode);
         _makeDailyChangeChart('dailyChangeChart', anchoredMain, 'pct');
