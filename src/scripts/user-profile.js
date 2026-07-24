@@ -13,10 +13,13 @@
 (function () {
     'use strict';
 
-    var cfg         = window.__CONFIG__ || {};
-    // Derive profile URL from apiUrl (replace /prices with /profile)
-    var PROFILE_URL = (cfg.apiUrl || '').replace(/\/prices$/, '/profile');
     var CACHE_KEY   = 'roastfolio_profile';
+
+    function getProfileUrl() {
+        var cfg  = window.__CONFIG__ || {};
+        var base = (cfg.apiUrl || '').replace(/\/prices\/?$/, '');
+        return base ? base + '/profile' : '';
+    }
 
     // Return a per-user cache key so switching accounts never serves stale data.
     function userCacheKey() {
@@ -76,11 +79,12 @@
         if (!getIdToken()) {
             return null;
         }
-        if (!PROFILE_URL) {
+        var url = getProfileUrl();
+        if (!url) {
             console.warn('[UserProfile] No profile URL — config.js not loaded?');
             return null;
         }
-        var resp    = await fetch(PROFILE_URL, { headers: authHeaders() });
+        var resp    = await fetch(url, { headers: authHeaders() });
         var profile = await resp.json();
         if (resp.ok) {
             setCached(profile);
@@ -96,7 +100,9 @@
      */
     async function put(updates) {
         clearCache();
-        var resp    = await fetch(PROFILE_URL, {
+        var url = getProfileUrl();
+        if (!url) throw new Error('No profile API URL');
+        var resp    = await fetch(url, {
             method:  'PUT',
             headers: authHeaders(),
             body:    JSON.stringify(updates)

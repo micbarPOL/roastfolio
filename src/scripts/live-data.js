@@ -618,6 +618,8 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
         if (data.benchmarkId) {
             window.BENCHMARK_ID   = data.benchmarkId;
             window.BENCHMARK_NAME = data.benchmarkName || data.benchmarkId;
+            const bmSel = document.getElementById('mgmt-benchmark-select');
+            if (bmSel) bmSel.value = data.benchmarkId;
         } else {
             window.BENCHMARK_ID   = 'WIG';
             window.BENCHMARK_NAME = 'WIG';
