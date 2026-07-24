@@ -152,7 +152,7 @@ function renderMobileEditPanel(row, actionHtml) {
     return `<tr class="tx-mobile-edit-row" data-tx-id="${escapeHtml(row.transactionId || '')}" data-portfolio-id="${escapeHtml(row.portfolioId || '')}">
         <td colspan="9">
             <div class="tx-mobile-edit-panel">
-                <label>Date ${editableField(row, 'date', row.date, 'type="date"')}</label>
+                <label>Date ${editableField(row, 'date', row.date, `type="date" max="${new Date().toISOString().slice(0, 10)}"`)}</label>
                 <label>Stock ${editableField(row, 'asset', row.asset, stockDisabled)}</label>
                 <label>Quantity ${editableField(row, 'quantity', formatInputNumber(Math.abs(row.units)), `type="number" step="any" inputmode="decimal" ${quantityDisabled}`)}</label>
                 <label>Price ${editableField(row, 'price', formatInputNumber(row.price), `type="number" step="any" inputmode="decimal" ${numericDisabled}`)}</label>
@@ -224,7 +224,7 @@ function renderTable() {
                 : renderAssetText(r);
 
             const rowHtml = `<tr data-tx-id="${escapeHtml(r.transactionId || '')}" data-portfolio-id="${escapeHtml(r.portfolioId || '')}" style="${i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02)'}">
-                <td class="hide-on-mobile">${isEditing ? editableField(r, 'date', r.date, 'type="date"') : escapeHtml(r.date)}</td>
+                <td class="hide-on-mobile">${isEditing ? editableField(r, 'date', r.date, `type="date" max="${new Date().toISOString().slice(0, 10)}"`) : escapeHtml(r.date)}</td>
                 <td>${opBadge(r.operation)}</td>
                 <td>${assetHtml}</td>
                 <td class="hide-on-mobile">${escapeHtml(r.wallet || '—')}</td>
@@ -246,6 +246,8 @@ function readTransactionUpdatePayload(row, tr) {
     const field = name => tr.querySelector(`[data-tx-field="${name}"]`)?.value;
     const transactionDate = String(field('date') || '').trim();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(transactionDate)) throw new Error('Date must be YYYY-MM-DD.');
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if (transactionDate > todayStr) throw new Error('Transaction date cannot be in the future.');
 
     const payload = {
         transactionDate,
