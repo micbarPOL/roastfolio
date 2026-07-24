@@ -107,10 +107,15 @@ def _normalize_transaction_date(raw) -> str:
         return _today()
     raw = str(raw).strip()
     if re.match(r"^\d{4}-\d{2}-\d{2}$", raw):
-        return raw
-    if "T" in raw:
-        return raw.split("T", 1)[0]
-    raise ValueError("transactionDate must be YYYY-MM-DD")
+        date_str = raw
+    elif "T" in raw:
+        date_str = raw.split("T", 1)[0]
+    else:
+        raise ValueError("transactionDate must be YYYY-MM-DD")
+
+    if date_str > _today():
+        raise ValueError("transactionDate cannot be in the future")
+    return date_str
 
 
 # ── Portfolios ────────────────────────────────────────────────────────────────
