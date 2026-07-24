@@ -490,6 +490,88 @@
     }) || null;
   }
 
+  function _getLivePricePLN(symbol, name) {
+    if (!symbol || String(symbol).toUpperCase() === 'CASH') return null;
+    const cleanSym = String(symbol).trim().toUpperCase();
+    const cleanName = String(name || '').trim().toLowerCase();
+
+    // 1. Check current portfolio holdings
+    const existing = _findCurrentHolding(cleanSym, name);
+    if (existing) {
+      if (Number.isFinite(Number(existing.pricePLN)) && Number(existing.pricePLN) > 0) {
+        return Number(existing.pricePLN);
+      }
+      if (Number(existing.currentValue) > 0 && Number(existing.units) > 0) {
+        return Number(existing.currentValue) / Number(existing.units);
+      }
+    }
+
+    // 2. Check Summary holdings (PORTFOLIO_DATA)
+    if (typeof window !== 'undefined' && Array.isArray(window.PORTFOLIO_DATA)) {
+      const h = window.PORTFOLIO_DATA.find(item =>
+        (item.ticker && String(item.ticker).toUpperCase() === cleanSym) ||
+        (cleanName && item.name && String(item.name).trim().toLowerCase() === cleanName)
+      );
+      if (h) {
+        if (Number.isFinite(Number(h.pricePLN)) && Number(h.pricePLN) > 0) {
+          return Number(h.pricePLN);
+        }
+        if (Number(h.currentValue) > 0 && Number(h.units) > 0) {
+          return Number(h.currentValue) / Number(h.units);
+        }
+      }
+    }
+
+    // 3. Check WALLET_HOLDINGS
+    if (typeof window !== 'undefined' && window.WALLET_HOLDINGS && typeof window.WALLET_HOLDINGS === 'object') {
+      for (const walletName of Object.keys(window.WALLET_HOLDINGS)) {
+        const list = window.WALLET_HOLDINGS[walletName] || [];
+        const h = list.find(item =>
+          (item.ticker && String(item.ticker).toUpperCase() === cleanSym) ||
+          (cleanName && item.name && String(item.name).trim().toLowerCase() === cleanName)
+        );
+        if (h) {
+          if (Number.isFinite(Number(h.pricePLN)) && Number(h.pricePLN) > 0) {
+            return Number(h.pricePLN);
+          }
+          if (Number(h.currentValue) > 0 && Number(h.units) > 0) {
+            return Number(h.currentValue) / Number(h.units);
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  async function _fetchStockPricePLN(symbol) {
+    if (!symbol || symbol.toUpperCase() === 'CASH' || symbol.startsWith('TFI:')) return null;
+    try {
+      if (typeof window.PortfolioClient !== 'undefined' && typeof window.PortfolioClient.getBenchmarkDaily === 'function') {
+        const res = await window.PortfolioClient.getBenchmarkDaily(symbol, true);
+        if (res && Array.isArray(res.daily) && res.daily.length > 0) {
+          const lastCandle = res.daily[res.daily.length - 1];
+          let price = Number(lastCandle.close || 0);
+          if (price > 0) {
+            if (!symbol.toUpperCase().endsWith('.WA')) {
+              let rate = 4.0;
+              try {
+                const usdRes = await window.PortfolioClient.getBenchmarkDaily('USDPLN=X', true);
+                if (usdRes && Array.isArray(usdRes.daily) && usdRes.daily.length > 0) {
+                  const usdCandle = usdRes.daily[usdRes.daily.length - 1];
+                  if (Number(usdCandle.close) > 0) rate = Number(usdCandle.close);
+                }
+              } catch (_) {}
+              price = price * rate;
+            }
+            return price;
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
   function _isCashTransactionType(txType) {
     return txType === 'DEPOSIT' || txType === 'WITHDRAWAL';
   }
@@ -1511,6 +1593,15 @@
     _setTfiStatus(`${displayName} · Last close: ${navFmt}${navDate ? ' (' + navDate + ')' : ''}`, 'ok');
     _clearValidationState();
     _setSubmitStatus('Review the summary, then submit');
+
+    // Autopopulate price per share in PLN with fund NAV
+    const priceEl = document.getElementById('mgmt-price-input');
+    if (priceEl && nav != null && Number(nav) > 0) {
+      const txType = _getTransactionType();
+      priceEl.value = Number(nav).toFixed(txType === 'DIVIDEND' ? 2 : 4);
+      handleTransactionDraftChange('price');
+    }
+
     _renderTransactionSummary({
       txType: _getTransactionType(),
       ticker: symbol,
@@ -1653,6 +1744,29 @@
     _clearValidationState();
     _setSearchStatus(`Selected ${symbol} from Yahoo Finance`, 'ok');
     _setSubmitStatus('Review the summary, then submit');
+
+    // Autopopulate price per share in PLN with current live value
+    const priceEl = document.getElementById('mgmt-price-input');
+    let pricePLN = _getLivePricePLN(symbol, displayName);
+    if (pricePLN && pricePLN > 0) {
+      if (priceEl) {
+        const txType = _getTransactionType();
+        priceEl.value = pricePLN.toFixed(txType === 'DIVIDEND' ? 2 : 4);
+        handleTransactionDraftChange('price');
+      }
+    } else {
+      _fetchStockPricePLN(symbol).then(fetchedPrice => {
+        if (fetchedPrice && fetchedPrice > 0) {
+          const currentSymbol = document.getElementById('mgmt-ticker-hidden')?.value;
+          if (currentSymbol === symbol && priceEl) {
+            const txType = _getTransactionType();
+            priceEl.value = fetchedPrice.toFixed(txType === 'DIVIDEND' ? 2 : 4);
+            handleTransactionDraftChange('price');
+          }
+        }
+      });
+    }
+
     _renderTransactionSummary({
       txType: _getTransactionType(),
       ticker: symbol,
@@ -1846,6 +1960,15 @@
     _clearValidationState();
     _setSearchStatus(`Selected existing ${ticker}`, 'ok');
     _setSubmitStatus('Review the summary, then submit');
+
+    // Autopopulate price per share in PLN with current live value
+    const priceEl = document.getElementById('mgmt-price-input');
+    let pricePLN = _getLivePricePLN(ticker, name);
+    if (pricePLN && pricePLN > 0 && priceEl) {
+      priceEl.value = pricePLN.toFixed(type === 'DIVIDEND' ? 2 : 4);
+      handleTransactionDraftChange('price');
+    }
+
     _renderTransactionSummary({
       txType: type,
       ticker,
