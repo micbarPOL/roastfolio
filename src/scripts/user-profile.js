@@ -73,6 +73,9 @@
             var cached = getCached();
             if (cached) return cached;
         }
+        if (!getIdToken()) {
+            return null;
+        }
         if (!PROFILE_URL) {
             console.warn('[UserProfile] No profile URL — config.js not loaded?');
             return null;
