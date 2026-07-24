@@ -961,9 +961,9 @@
 
       let _actionHtml;
       if (isSummary) {
-        _actionHtml = '<span class="wht-badge">Read only</span>';
+        _actionHtml = '<span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span>';
       } else if (_isCash) {
-        _actionHtml = '<span class="wht-badge">Cash</span>';
+        _actionHtml = '<span class="wht-badge wht-badge-cash">Cash</span>';
       } else {
         _actionHtml = `
           <div class="wht-actions">
@@ -1039,13 +1039,16 @@
               </div>
               <div class="whc-alloc-bar"><div class="whc-alloc-fill" style="width:${_alloc}%"></div></div>
             </div>
-            ${isSummary || _isCash ? '' : `
+            ${isSummary ? `
+            <div class="whc-actions whc-actions-readonly">
+              <span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span>
+            </div>` : (_isCash ? '' : `
             <div class="whc-actions">
               <button class="whc-btn whc-btn-buy" type="button" aria-label="Buy ${_esc(h.name)}"
                 onclick="window._mgmt.prefillBuy('${_esc(h.holdingId)}','${_esc(h.ticker||'')}','${_esc(h.name)}',${Number(h.units||0)})">${_svgUpMobile} Buy</button>
               <button class="whc-btn whc-btn-sell" type="button" aria-label="Sell ${_esc(h.name)}"
                 onclick="window._mgmt.prefillSell('${_esc(h.holdingId)}','${_esc(h.ticker||'')}','${_esc(h.name)}',${Number(h.units||0)})">${_svgDownMobile} Sell</button>
-            </div>`}
+            </div>`)}
           </div>`;
       }).join('');
     }
