@@ -751,6 +751,14 @@
     const commentInput = document.getElementById('mgmt-comment-input');
     const autoCashInput = document.getElementById('mgmt-auto-cash-checkbox');
     const confirm = document.getElementById('mgmt-holding-confirm');
+    const dateEl = document.getElementById('mgmt-transaction-date');
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if (dateEl) {
+      dateEl.max = todayStr;
+      if (!dateEl.value || dateEl.value > todayStr) {
+        dateEl.value = todayStr;
+      }
+    }
     if (searchInput) searchInput.value = '';
     if (tickerInput) tickerInput.value = '';
     if (nameInput) nameInput.value = '';
@@ -2101,6 +2109,11 @@
       }
     }
 
+    if (txDate > new Date().toISOString().slice(0, 10)) {
+      _setQeStatus('Transaction date cannot be in the future.', 'error');
+      return;
+    }
+
     // ── Validate basics ──────────────────────────────────────────
     if (!isCash && !ticker) {
       _setQeStatus('Could not find a ticker symbol. Example: "Buy 10 AAPL for 185 to XTB"', 'error');
@@ -2247,8 +2260,12 @@
         invalidIds.push('mgmt-search-input');
       }
     }
+    const todayStr = new Date().toISOString().slice(0, 10);
     if (!txDate) {
       errors.push('Pick a transaction date.');
+      invalidIds.push('mgmt-transaction-date');
+    } else if (txDate > todayStr) {
+      errors.push('Transaction date cannot be in the future.');
       invalidIds.push('mgmt-transaction-date');
     }
     if (!Number.isFinite(units) || units <= 0) {
