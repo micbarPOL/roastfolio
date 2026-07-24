@@ -2303,11 +2303,28 @@
           });
         if (quickLink) {
           quickLink.classList.add('active');
-          quickLink.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+          const nav = document.getElementById('mobile-quick-nav');
+          if (nav) {
+            const linkLeft = quickLink.offsetLeft;
+            const linkWidth = quickLink.offsetWidth;
+            const navWidth = nav.clientWidth;
+            nav.scrollTo({ left: linkLeft - (navWidth / 2) + (linkWidth / 2), behavior: 'smooth' });
+          }
         }
-        // Scroll the active link into view in the sidebar (desktop)
+        // Scroll the active link into view inside the sidebar without window scroll side-effects
         if (window.innerWidth > 720) {
-          entry.link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          const sidebar = document.getElementById('guide-sidebar');
+          if (sidebar) {
+            const linkTop = entry.link.offsetTop;
+            const linkBottom = linkTop + entry.link.offsetHeight;
+            const sidebarTop = sidebar.scrollTop;
+            const sidebarBottom = sidebarTop + sidebar.clientHeight;
+            if (linkTop < sidebarTop) {
+              sidebar.scrollTop = linkTop - 20;
+            } else if (linkBottom > sidebarBottom) {
+              sidebar.scrollTop = linkBottom - sidebar.clientHeight + 20;
+            }
+          }
         }
       }
     }

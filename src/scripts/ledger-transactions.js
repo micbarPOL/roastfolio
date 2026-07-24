@@ -37,7 +37,7 @@
 
     function assetLabel(tx) {
         const type = String(tx.type || '').toUpperCase();
-        if (['DEPOSIT', 'WITHDRAWAL', 'EXTRA_COST'].includes(type)) return 'Gotówka';
+        if (['DEPOSIT', 'WITHDRAWAL', 'EXTRA_COST'].includes(type)) return 'Cash';
         const ticker = String(tx.ticker || '').replace(/\.WA$/, '').trim();
         const name = String(tx.name || '').trim();
         if (name && ticker && !name.includes(ticker)) return `${name} (${ticker})`;
