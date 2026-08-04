@@ -512,6 +512,10 @@ async function renderStatisticsSummary(force = false) {
     for (const d of data) {
         const spread = d.value - d.investment;
         if (spread > maxSpread) { maxSpread = spread; maxSpreadDate = d.date; }
+        if (d.value > athValue) {
+            athValue = d.value;
+            athDate = d.date;
+        }
     }
 
     const latest = data[data.length - 1] || { value: Number(window.PORTFOLIO_TOTAL_VALUE || 0), investment: 0, date: '' };
