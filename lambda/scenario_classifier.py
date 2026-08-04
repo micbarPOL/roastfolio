@@ -87,21 +87,37 @@ def classify_scenario(data: dict, thresholds: dict = None) -> dict:
         else:
             add_match("DRAWDOWN_SEVERE", "drawdown", "roast", 5, "high", "Severe drawdown from ATH.")
 
-    # Asset Contribution (in PLN / monetary gain or drag)
+    # Asset Contribution (in PLN monetary gain or drag)
     best_contrib = data.get("best_asset_contribution", 0.0)
     second_best_contrib = data.get("second_best_asset_contribution")
     worst_drag = data.get("worst_asset_drag", 0.0)
     second_worst_drag = data.get("second_worst_asset_drag")
     holdings_count = data.get("holdings_count")
+    total_val = data.get("total_portfolio_value", data.get("portfolio_value", 0.0))
     dom_ratio = thresholds.get("dominance_ratio", 2.0)
 
+    # Minimum PLN impact required for single asset dominance (max of 10 PLN or 0.05% of portfolio value)
+    min_impact_pln = max(10.0, 0.0005 * total_val) if total_val > 0 else 0.0
+
     if holdings_count != 1:
-        if best_contrib > 0:
-            if second_best_contrib is None or second_best_contrib <= 0 or best_contrib >= dom_ratio * second_best_contrib:
+        # BEST_ASSET_CARRIED_PORTFOLIO:
+        # 1. Best asset gain must be positive and meet minimum impact threshold
+        # 2. Must be >= 2.0x magnitude of second best asset gain (if second best exists)
+        # 3. Must be >= 2.0x magnitude of worst asset loss (if worst asset exists)
+        if best_contrib > 0 and best_contrib >= min_impact_pln:
+            second_best_ok = (second_best_contrib is None) or (best_contrib >= dom_ratio * abs(second_best_contrib))
+            worst_drag_ok = (worst_drag >= 0) or (best_contrib >= dom_ratio * abs(worst_drag))
+            if second_best_ok and worst_drag_ok:
                 add_match("BEST_ASSET_CARRIED_PORTFOLIO", "asset", "mixed", 3, "medium", "One asset contributed disproportionately to gains.")
 
-        if worst_drag < 0:
-            if second_worst_drag is None or second_worst_drag >= 0 or abs(worst_drag) >= dom_ratio * abs(second_worst_drag):
+        # WORST_ASSET_DRAGGED_PORTFOLIO:
+        # 1. Worst asset drag must be negative and meet minimum impact threshold
+        # 2. Must be >= 2.0x magnitude of second worst asset drag (if second worst exists)
+        # 3. Must be >= 2.0x magnitude of best asset gain (if best asset exists)
+        if worst_drag < 0 and abs(worst_drag) >= min_impact_pln:
+            second_worst_ok = (second_worst_drag is None) or (abs(worst_drag) >= dom_ratio * abs(second_worst_drag))
+            best_contrib_ok = (best_contrib <= 0) or (abs(worst_drag) >= dom_ratio * abs(best_contrib))
+            if second_worst_ok and best_contrib_ok:
                 add_match("WORST_ASSET_DRAGGED_PORTFOLIO", "asset", "roast", 4, "high", "One asset dragged the portfolio down significantly.")
 
     # Flat conditions
