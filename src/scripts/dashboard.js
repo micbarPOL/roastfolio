@@ -96,22 +96,51 @@ const ATH_CELEBRATION_NOTES = [
     "Another record high. The portfolio has entered its main-character era.",
 ];
 
+// Cached ATH derived from actual daily snapshots (set by loadSnapshotAth)
+window._SNAPSHOT_ATH = null;
+
+async function loadSnapshotAth() {
+    try {
+        if (typeof PortfolioClient === 'undefined' || !PortfolioClient.listSnapshots) return;
+        const snapshotData = await PortfolioClient.listSnapshots('summary');
+        const snapshots = snapshotData?.snapshots || [];
+        if (!snapshots.length) return;
+
+        let peakVal = 0, peakDate = '';
+        for (const s of snapshots) {
+            const v = Number(s.portfolioValue || 0);
+            if (v > peakVal) {
+                peakVal = v;
+                peakDate = String(s.snapshotDate || '').slice(0, 10);
+            }
+        }
+        if (peakVal > 0) {
+            window._SNAPSHOT_ATH = { athValue: peakVal, athDate: peakDate, athSource: 'AUTO' };
+            // Re-render drawdown and ATH celebration after snapshot data is available
+            if (typeof updateDashboard === 'function') updateDashboard();
+            if (typeof renderAthCelebration === 'function') renderAthCelebration('ath-celebration');
+        }
+    } catch (e) {
+        console.warn('loadSnapshotAth failed:', e);
+    }
+}
+
 function getRecordedSnapshotAth(baseAthInfo) {
+    // Use snapshot-derived ATH if available (most accurate)
+    const snapshotAth = window._SNAPSHOT_ATH;
+
+    // Start with the base ATH from backend
     let recAth = baseAthInfo && baseAthInfo.athValue != null ? Number(baseAthInfo.athValue) : 0;
     let recDate = baseAthInfo && baseAthInfo.athDate ? baseAthInfo.athDate : '';
     let athSource = baseAthInfo && baseAthInfo.athSource ? baseAthInfo.athSource : 'AUTO';
 
-    const history = window.HISTORY_SUMMARY || window.PORTFOLIO_HISTORY || [];
-    if (Array.isArray(history)) {
-        for (const snap of history) {
-            const val = Number(snap.value || snap.portfolioValue || 0);
-            if (val > recAth) {
-                recAth = val;
-                recDate = snap.date || snap.snapshotDate || recDate;
-                athSource = 'AUTO';
-            }
-        }
+    // Override with snapshot-derived peak if it's higher
+    if (snapshotAth && Number(snapshotAth.athValue) > recAth) {
+        recAth = Number(snapshotAth.athValue);
+        recDate = snapshotAth.athDate || recDate;
+        athSource = 'AUTO';
     }
+
     if (!recAth) return baseAthInfo || null;
     return { athValue: recAth, athDate: recDate, athSource: athSource };
 }
@@ -232,6 +261,8 @@ function initializeDashboard() {
     renderWalletCards();
     renderDailyBreakdown();
     renderMarketIndexCarousel();
+    // Load snapshot-derived ATH asynchronously; re-renders drawdown + banner when ready
+    loadSnapshotAth();
 }
 
 // Exposed for live-data.js to re-render after fresh prices arrive
