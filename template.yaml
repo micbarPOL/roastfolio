@@ -889,6 +889,19 @@ Resources:
         AllowMethods: "'GET,PUT,POST,DELETE,OPTIONS'"
         AllowHeaders: "'Content-Type,Authorization'"
         AllowOrigin: "'*'"
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,PUT,POST,DELETE,OPTIONS'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+              Access-Control-Allow-Headers: "'Content-Type,Authorization'"
+              Access-Control-Allow-Methods: "'GET,PUT,POST,DELETE,OPTIONS'"
 
 Outputs:
   ApiEndpoint:

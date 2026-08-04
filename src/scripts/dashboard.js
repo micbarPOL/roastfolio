@@ -761,7 +761,6 @@ function drawdownHtml(athInfo, currentValue) {
         <div style="color:#aaa;font-size:10px;margin-top:1px;">${sourceLabel}: ${ath.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN · ${athDate}</div>
     </div>`;
 }
-}
 
 function renderControlDial(canvasId, value) {
     const canvas = document.getElementById(canvasId);
