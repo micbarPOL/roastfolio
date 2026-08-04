@@ -79,17 +79,24 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
     # 2. Build data context
     holdings = current_snapshot.get("holdings", [])
     if holdings and len(holdings) > 0:
-        sorted_h = sorted(holdings, key=lambda h: h.get("dailyChangePct", 0.0), reverse=True)
-        top_pct = sorted_h[0].get("dailyChangePct", 0.0)
-        second_top_pct = sorted_h[1].get("dailyChangePct") if len(sorted_h) > 1 else None
-        worst_pct = sorted_h[-1].get("dailyChangePct", 0.0)
-        second_worst_pct = sorted_h[-2].get("dailyChangePct") if len(sorted_h) > 1 else None
+        def _get_pln(h):
+            if h.get("dailyChangePLN") is not None:
+                return float(h.get("dailyChangePLN"))
+            cv = float(h.get("currentValue", h.get("value", 0.0)))
+            pct = float(h.get("dailyChangePct", 0.0))
+            return round(cv * pct / 100.0, 2)
+
+        sorted_h = sorted(holdings, key=_get_pln, reverse=True)
+        top_pln = _get_pln(sorted_h[0])
+        second_top_pln = _get_pln(sorted_h[1]) if len(sorted_h) > 1 else None
+        worst_pln = _get_pln(sorted_h[-1])
+        second_worst_pln = _get_pln(sorted_h[-2]) if len(sorted_h) > 1 else None
         h_count = len(sorted_h)
     else:
-        top_pct = current_snapshot.get("topAssetPct") or 0.0
-        second_top_pct = current_snapshot.get("secondTopAssetPct")
-        worst_pct = current_snapshot.get("worstAssetPct") or 0.0
-        second_worst_pct = current_snapshot.get("secondWorstAssetPct")
+        top_pln = current_snapshot.get("topAssetPLN", current_snapshot.get("topAssetPct", 0.0))
+        second_top_pln = current_snapshot.get("secondTopAssetPLN", current_snapshot.get("secondTopAssetPct"))
+        worst_pln = current_snapshot.get("worstAssetPLN", current_snapshot.get("worstAssetPct", 0.0))
+        second_worst_pln = current_snapshot.get("secondWorstAssetPLN", current_snapshot.get("secondWorstAssetPct"))
         h_count = current_snapshot.get("holdingsCount")
 
     data = {
@@ -100,10 +107,10 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
         "drawdown_pct": current_snapshot.get("drawdownPct"),
         "recent_deposit": current_snapshot.get("recentDeposit"),
         "recent_withdrawal": current_snapshot.get("recentWithdrawal"),
-        "best_asset_contribution": top_pct,
-        "second_best_asset_contribution": second_top_pct,
-        "worst_asset_drag": worst_pct,
-        "second_worst_asset_drag": second_worst_pct,
+        "best_asset_contribution": top_pln,
+        "second_best_asset_contribution": second_top_pln,
+        "worst_asset_drag": worst_pln,
+        "second_worst_asset_drag": second_worst_pln,
         "holdings_count": h_count,
         "portfolio_return": current_snapshot.get("dailyChangePct", current_snapshot.get("portfolioReturnPercent", 0.0)),
         "benchmark_return": benchmark_snapshot.get("dailyChangePct", benchmark_snapshot.get("benchmarkReturnPercent", 0.0))

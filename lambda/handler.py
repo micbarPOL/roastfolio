@@ -2357,14 +2357,27 @@ def handler(event, context):
                         bm_cache = load_benchmark_cache(benchmark_id)
                         roast_bm_pct = _compute_benchmark_daily_pct(bm_cache, bm_meta["ticker"]) or 0.0
 
-                # Compute best/worst assets from summary holdings
+                # Compute best/worst assets from summary holdings by PLN daily gain/loss
                 holdings_list = summary.get("holdings", []) if summary.get("holdings") else []
-                sorted_holdings = sorted(holdings_list, key=lambda h: h.get("dailyChangePct", 0.0), reverse=True)
+
+                def _get_holding_daily_pln(h):
+                    if h.get("dailyChangePLN") is not None:
+                        return float(h.get("dailyChangePLN"))
+                    cv = float(h.get("currentValue", h.get("value", 0.0)))
+                    pct = float(h.get("dailyChangePct", 0.0))
+                    return round(cv * pct / 100.0, 2)
+
+                sorted_holdings = sorted(holdings_list, key=_get_holding_daily_pln, reverse=True)
 
                 best_h = sorted_holdings[0] if len(sorted_holdings) > 0 else {}
                 second_best_h = sorted_holdings[1] if len(sorted_holdings) > 1 else {}
                 worst_h = sorted_holdings[-1] if len(sorted_holdings) > 0 else {}
                 second_worst_h = sorted_holdings[-2] if len(sorted_holdings) > 1 else {}
+
+                best_pln = _get_holding_daily_pln(best_h) if best_h else 0.0
+                second_best_pln = _get_holding_daily_pln(second_best_h) if second_best_h else None
+                worst_pln = _get_holding_daily_pln(worst_h) if worst_h else 0.0
+                second_worst_pln = _get_holding_daily_pln(second_worst_h) if second_worst_h else None
 
                 # Compute drawdown from ATH
                 ath_val = float(portfolio_ath.get("athValue", 0)) if portfolio_ath else 0.0
@@ -2378,8 +2391,12 @@ def handler(event, context):
                     "isAth": summary["total"] >= ath_val if ath_val > 0 else False,
                     "topAssetPct": best_h.get("dailyChangePct", 0.0),
                     "secondTopAssetPct": second_best_h.get("dailyChangePct") if len(sorted_holdings) > 1 else None,
+                    "topAssetPLN": best_pln,
+                    "secondTopAssetPLN": second_best_pln,
                     "worstAssetPct": worst_h.get("dailyChangePct", 0.0),
                     "secondWorstAssetPct": second_worst_h.get("dailyChangePct") if len(sorted_holdings) > 1 else None,
+                    "worstAssetPLN": worst_pln,
+                    "secondWorstAssetPLN": second_worst_pln,
                     "dailyBestAsset": best_h.get("ticker", best_h.get("name")),
                     "dailyWorstAsset": worst_h.get("ticker", worst_h.get("name")),
                     "drawdownPct": dd_pct,
