@@ -83,11 +83,29 @@ def test_behavioral_events():
     assert "WITHDRAWAL_DETECTED" in [res_withdrawal["scenarioKey"]] + res_withdrawal["secondaryScenarioKeys"]
 
 def test_asset_contributions():
-    res_carry = classify_scenario({"best_asset_contribution": 2.0})
-    assert "BEST_ASSET_CARRIED_PORTFOLIO" in [res_carry["scenarioKey"]] + res_carry["secondaryScenarioKeys"]
+    # Legacy fallback when second asset is not provided
+    res_carry_legacy = classify_scenario({"best_asset_contribution": 200.0})
+    assert "BEST_ASSET_CARRIED_PORTFOLIO" in [res_carry_legacy["scenarioKey"]] + res_carry_legacy["secondaryScenarioKeys"]
 
-    res_drag = classify_scenario({"worst_asset_drag": -2.0})
-    assert "WORST_ASSET_DRAGGED_PORTFOLIO" in [res_drag["scenarioKey"]] + res_drag["secondaryScenarioKeys"]
+    # 2x PLN ratio requirement: 200 PLN vs 150 PLN is < 2x -> Should NOT trigger
+    res_carry_below_ratio = classify_scenario({"best_asset_contribution": 200.0, "second_best_asset_contribution": 150.0})
+    assert "BEST_ASSET_CARRIED_PORTFOLIO" not in [res_carry_below_ratio["scenarioKey"]] + res_carry_below_ratio["secondaryScenarioKeys"]
+
+    # 2x PLN ratio requirement: 7000 PLN vs 50 PLN is >= 2x -> Should trigger (large position +1% vs small position +5%)
+    res_carry_ratio = classify_scenario({"best_asset_contribution": 7000.0, "second_best_asset_contribution": 50.0})
+    assert "BEST_ASSET_CARRIED_PORTFOLIO" in [res_carry_ratio["scenarioKey"]] + res_carry_ratio["secondaryScenarioKeys"]
+
+    # Legacy fallback when second asset is not provided
+    res_drag_legacy = classify_scenario({"worst_asset_drag": -200.0})
+    assert "WORST_ASSET_DRAGGED_PORTFOLIO" in [res_drag_legacy["scenarioKey"]] + res_drag_legacy["secondaryScenarioKeys"]
+
+    # 2x PLN ratio requirement: -200 PLN vs -150 PLN is < 2x -> Should NOT trigger
+    res_drag_below_ratio = classify_scenario({"worst_asset_drag": -200.0, "second_worst_asset_drag": -150.0})
+    assert "WORST_ASSET_DRAGGED_PORTFOLIO" not in [res_drag_below_ratio["scenarioKey"]] + res_drag_below_ratio["secondaryScenarioKeys"]
+
+    # 2x PLN ratio requirement: -5000 PLN vs -250 PLN is >= 2x -> Should trigger
+    res_drag_ratio = classify_scenario({"worst_asset_drag": -5000.0, "second_worst_asset_drag": -250.0})
+    assert "WORST_ASSET_DRAGGED_PORTFOLIO" in [res_drag_ratio["scenarioKey"]] + res_drag_ratio["secondaryScenarioKeys"]
 
 def test_prioritization():
     # Multiple signals: Flat day vs Withdrawal. Withdrawal has higher novelty/severity.
