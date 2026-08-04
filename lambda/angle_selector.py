@@ -14,8 +14,19 @@ def determine_eligible_angles(current_snapshot: dict, benchmark_snapshot: dict, 
         eligible.add("WORST_ASSET")
         eligible.add("WALLET_MOVER")
         
-    # Baseline angles always eligible for daily roasts
-    eligible.update(["BENCHMARK_COMPARISON", "ABSOLUTE_RETURN", "RELATIVE_RETURN", "GENERAL_MARKET_CHAOS"])
+    # Baseline angles always eligible for daily roasts. Benchmark angles are
+    # added only when the benchmark contrast is actually the story.
+    eligible.update(["ABSOLUTE_RETURN", "GENERAL_MARKET_CHAOS"])
+
+    port_ret = current_snapshot.get("dailyChangePct", current_snapshot.get("portfolioReturnPercent", 0)) or 0
+    bench_ret = benchmark_snapshot.get("dailyChangePct", benchmark_snapshot.get("benchmarkReturnPercent", 0)) if benchmark_snapshot else 0
+    bench_ret = bench_ret or 0
+    rel_perf = port_ret - bench_ret
+    opposite_signs = (port_ret > 0 and bench_ret < 0) or (port_ret < 0 and bench_ret > 0)
+
+    if opposite_signs or abs(rel_perf) >= 1.0:
+        eligible.add("BENCHMARK_COMPARISON")
+        eligible.add("RELATIVE_RETURN")
     
     # Asset performance
     if current_snapshot.get("topAssetPct", 0) > 2.0:
@@ -123,8 +134,13 @@ def selectPreferredMessageAngle(params: dict) -> str:
     if data.get("recentDeposit"):
         priority_order.append("DEPOSIT_DISCIPLINE")
         
-    if "BENCHMARK_COMPARISON" not in recent_5:
+    scenario_key = params.get("scenarioKey", "")
+    if scenario_key in ["USER_NEGATIVE_BENCHMARK_POSITIVE", "USER_POSITIVE_BENCHMARK_NEGATIVE"]:
         priority_order.append("BENCHMARK_COMPARISON")
+
+    priority_order.append("GENERAL_MARKET_CHAOS")
+    priority_order.append("ABSOLUTE_RETURN")
+    priority_order.append("RELATIVE_RETURN")
         
     for p in priority_order:
         if p in strict_options:

@@ -10,6 +10,34 @@ DEFAULT_THRESHOLDS = {
     "drag_threshold": -1.5
 }
 
+SCENARIO_PRIORITY = {
+    "WITHDRAWAL_DETECTED": 100,
+    "DEPOSIT_POSITIVE_BEHAVIOR": 90,
+    "USER_NEGATIVE_BENCHMARK_POSITIVE": 85,
+    "USER_POSITIVE_BENCHMARK_NEGATIVE": 85,
+    "WORST_ASSET_DRAGGED_PORTFOLIO": 80,
+    "BEST_ASSET_CARRIED_PORTFOLIO": 75,
+    "DRAWDOWN_SEVERE": 72,
+    "DRAWDOWN_SIGNIFICANT": 68,
+    "NEW_ATH_DAY": 66,
+    "DRAWDOWN_MILD": 62,
+    "NEAR_ATH": 58,
+    "BOTH_NEGATIVE_USER_WORSE": 56,
+    "BOTH_NEGATIVE_USER_BETTER": 54,
+    "BOTH_POSITIVE_USER_BETTER": 54,
+    "BOTH_POSITIVE_USER_WORSE": 52,
+    "USER_FLAT_BENCHMARK_MOVED": 48,
+    "BENCHMARK_FLAT_USER_MOVED": 48,
+    "USER_UNDERPERFORMED_BY_LARGE_MARGIN": 44,
+    "USER_OUTPERFORMED_BY_LARGE_MARGIN": 42,
+    "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN": 38,
+    "USER_OUTPERFORMED_BY_MEDIUM_MARGIN": 36,
+    "USER_UNDERPERFORMED_BY_SMALL_MARGIN": 34,
+    "USER_OUTPERFORMED_BY_SMALL_MARGIN": 32,
+    "BOTH_FLAT": 25,
+    "NO_MEANINGFUL_CHANGE": 10,
+}
+
 def classify_scenario(data: dict, thresholds: dict = None) -> dict:
     if thresholds is None:
         thresholds = DEFAULT_THRESHOLDS
@@ -41,12 +69,13 @@ def classify_scenario(data: dict, thresholds: dict = None) -> dict:
         add_match("WITHDRAWAL_DETECTED", "behavioral", "roast", 3, "high", "Withdrawal detected.")
 
     # ATH and Drawdown
-    drawdown = data.get("drawdown_pct", 0.0)
-    is_ath = data.get("is_new_ath", False)
+    drawdown = data.get("drawdown_pct", data.get("drawdownPct"))
+    drawdown_present = drawdown is not None
+    is_ath = data.get("is_new_ath", data.get("is_ath", False))
 
     if is_ath:
         add_match("NEW_ATH_DAY", "drawdown", "praise", 1, "high", "Portfolio reached a new all-time high.")
-    else:
+    elif drawdown_present:
         if drawdown < thresholds["near_ath_margin"]:
             add_match("NEAR_ATH", "drawdown", "neutral", 1, "low", "Portfolio is near all-time high.")
         elif drawdown < thresholds["mild_drawdown_margin"]:
@@ -111,8 +140,17 @@ def classify_scenario(data: dict, thresholds: dict = None) -> dict:
     # Priority mapping
     novelty_score = {"low": 1, "medium": 2, "high": 3}
 
-    # Sort matches by novelty (desc), then severity (desc)
-    matches.sort(key=lambda x: (novelty_score[x["noveltyPriority"]], x["severity"]), reverse=True)
+    # Sort matches by business priority first, then novelty and severity.
+    # This keeps scoreboard-style relative margins as useful secondary context
+    # instead of letting them dominate the concrete story of the day.
+    matches.sort(
+        key=lambda x: (
+            SCENARIO_PRIORITY.get(x["scenarioKey"], 0),
+            novelty_score[x["noveltyPriority"]],
+            x["severity"]
+        ),
+        reverse=True
+    )
 
     primary = matches[0]
     secondary = [m["scenarioKey"] for m in matches[1:]]

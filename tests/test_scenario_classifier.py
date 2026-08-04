@@ -8,31 +8,38 @@ from scenario_classifier import classify_scenario
 
 def test_both_negative_user_better():
     res = classify_scenario({"portfolio_return": -1.0, "benchmark_return": -2.0})
+    assert res["scenarioKey"] == "BOTH_NEGATIVE_USER_BETTER"
     assert "BOTH_NEGATIVE_USER_BETTER" in [res["scenarioKey"]] + res["secondaryScenarioKeys"]
 
 def test_both_negative_user_worse():
     res = classify_scenario({"portfolio_return": -2.0, "benchmark_return": -1.0})
+    assert res["scenarioKey"] == "BOTH_NEGATIVE_USER_WORSE"
     assert "BOTH_NEGATIVE_USER_WORSE" in [res["scenarioKey"]] + res["secondaryScenarioKeys"]
 
 def test_both_positive_user_better():
     res = classify_scenario({"portfolio_return": 2.0, "benchmark_return": 1.0})
+    assert res["scenarioKey"] == "BOTH_POSITIVE_USER_BETTER"
     assert "BOTH_POSITIVE_USER_BETTER" in [res["scenarioKey"]] + res["secondaryScenarioKeys"]
 
 def test_both_positive_user_worse():
     res = classify_scenario({"portfolio_return": 1.0, "benchmark_return": 2.0})
+    assert res["scenarioKey"] == "BOTH_POSITIVE_USER_WORSE"
     assert "BOTH_POSITIVE_USER_WORSE" in [res["scenarioKey"]] + res["secondaryScenarioKeys"]
 
 def test_user_positive_benchmark_negative():
     res = classify_scenario({"portfolio_return": 1.0, "benchmark_return": -1.0})
+    assert res["scenarioKey"] == "USER_POSITIVE_BENCHMARK_NEGATIVE"
     assert "USER_POSITIVE_BENCHMARK_NEGATIVE" in [res["scenarioKey"]] + res["secondaryScenarioKeys"]
 
 def test_user_negative_benchmark_positive():
     res = classify_scenario({"portfolio_return": -1.0, "benchmark_return": 1.0})
+    assert res["scenarioKey"] == "USER_NEGATIVE_BENCHMARK_POSITIVE"
     assert "USER_NEGATIVE_BENCHMARK_POSITIVE" in [res["scenarioKey"]] + res["secondaryScenarioKeys"]
 
 def test_flat_conditions():
     # Both flat
     res = classify_scenario({"portfolio_return": 0.05, "benchmark_return": 0.05})
+    assert res["scenarioKey"] == "BOTH_FLAT"
     assert "BOTH_FLAT" in [res["scenarioKey"]] + res["secondaryScenarioKeys"]
     
     # User flat, bench moved
@@ -55,6 +62,12 @@ def test_relative_performance_margins():
 def test_ath_and_drawdowns():
     res_ath = classify_scenario({"is_new_ath": True})
     assert "NEW_ATH_DAY" in [res_ath["scenarioKey"]] + res_ath["secondaryScenarioKeys"]
+
+    res_ath_alias = classify_scenario({"is_ath": True})
+    assert "NEW_ATH_DAY" in [res_ath_alias["scenarioKey"]] + res_ath_alias["secondaryScenarioKeys"]
+
+    res_missing_drawdown = classify_scenario({"portfolio_return": 0.05, "benchmark_return": 0.05})
+    assert "NEAR_ATH" not in [res_missing_drawdown["scenarioKey"]] + res_missing_drawdown["secondaryScenarioKeys"]
 
     res_near = classify_scenario({"drawdown_pct": 1.0})
     assert "NEAR_ATH" in [res_near["scenarioKey"]] + res_near["secondaryScenarioKeys"]
