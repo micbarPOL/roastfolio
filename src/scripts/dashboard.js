@@ -96,8 +96,28 @@ const ATH_CELEBRATION_NOTES = [
     "Another record high. The portfolio has entered its main-character era.",
 ];
 
+function getRecordedSnapshotAth(baseAthInfo) {
+    let recAth = baseAthInfo && baseAthInfo.athValue != null ? Number(baseAthInfo.athValue) : 0;
+    let recDate = baseAthInfo && baseAthInfo.athDate ? baseAthInfo.athDate : '';
+    let athSource = baseAthInfo && baseAthInfo.athSource ? baseAthInfo.athSource : 'AUTO';
+
+    const history = window.HISTORY_SUMMARY || window.PORTFOLIO_HISTORY || [];
+    if (Array.isArray(history)) {
+        for (const snap of history) {
+            const val = Number(snap.value || snap.portfolioValue || 0);
+            if (val > recAth) {
+                recAth = val;
+                recDate = snap.date || snap.snapshotDate || recDate;
+                athSource = 'AUTO';
+            }
+        }
+    }
+    if (!recAth) return baseAthInfo || null;
+    return { athValue: recAth, athDate: recDate, athSource: athSource };
+}
+
 function isPortfolioAtNewAth() {
-    const athInfo = window.PORTFOLIO_ATH;
+    const athInfo = getRecordedSnapshotAth(window.PORTFOLIO_ATH);
     const current = Number(window.PORTFOLIO_TOTAL_VALUE || 0);
     const athValue = Number(athInfo && athInfo.athValue ? athInfo.athValue : 0);
     const dailyPct = Number(window.PORTFOLIO_DAILY_CHANGE_PCT || 0);
@@ -158,7 +178,7 @@ function renderAthCelebration(targetId) {
         return;
     }
 
-    const athInfo = window.PORTFOLIO_ATH || {};
+    const athInfo = getRecordedSnapshotAth(window.PORTFOLIO_ATH) || {};
     const current = Number(window.PORTFOLIO_TOTAL_VALUE || 0);
     const athValue = Number(athInfo.athValue || 0);
     const note = getStableGaugeComment(
@@ -300,7 +320,7 @@ function renderSummaryCards() {
     }
 
     if (drawdownEl) {
-        const athInfo = window.PORTFOLIO_ATH;
+        const athInfo = getRecordedSnapshotAth(window.PORTFOLIO_ATH);
         if (!athInfo || !athInfo.athValue) {
             drawdownEl.innerHTML =
                 `<div class="ath-title">From All-Time High</div>` +
