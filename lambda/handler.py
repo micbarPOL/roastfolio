@@ -2358,13 +2358,18 @@ def handler(event, context):
                         roast_bm_pct = _compute_benchmark_daily_pct(bm_cache, bm_meta["ticker"]) or 0.0
 
                 # Compute best/worst assets from summary holdings
-                best_h = max(summary["holdings"], key=lambda h: h.get("dailyChangePct", 0.0), default={}) if summary.get("holdings") else {}
-                worst_h = min(summary["holdings"], key=lambda h: h.get("dailyChangePct", 0.0), default={}) if summary.get("holdings") else {}
-                
+                holdings_list = summary.get("holdings", []) if summary.get("holdings") else []
+                sorted_holdings = sorted(holdings_list, key=lambda h: h.get("dailyChangePct", 0.0), reverse=True)
+
+                best_h = sorted_holdings[0] if len(sorted_holdings) > 0 else {}
+                second_best_h = sorted_holdings[1] if len(sorted_holdings) > 1 else {}
+                worst_h = sorted_holdings[-1] if len(sorted_holdings) > 0 else {}
+                second_worst_h = sorted_holdings[-2] if len(sorted_holdings) > 1 else {}
+
                 # Compute drawdown from ATH
                 ath_val = float(portfolio_ath.get("athValue", 0)) if portfolio_ath else 0.0
                 dd_pct = ((summary["total"] - ath_val) / ath_val * 100) if ath_val > 0 and summary["total"] < ath_val else 0.0
-                
+
                 curr_snap = {
                     "totalPortfolioValue": summary["total"],
                     "portfolioValue": summary["total"],
@@ -2372,11 +2377,15 @@ def handler(event, context):
                     "portfolioReturnPercent": summary["dailyPct"],
                     "isAth": summary["total"] >= ath_val if ath_val > 0 else False,
                     "topAssetPct": best_h.get("dailyChangePct", 0.0),
+                    "secondTopAssetPct": second_best_h.get("dailyChangePct") if len(sorted_holdings) > 1 else None,
                     "worstAssetPct": worst_h.get("dailyChangePct", 0.0),
+                    "secondWorstAssetPct": second_worst_h.get("dailyChangePct") if len(sorted_holdings) > 1 else None,
                     "dailyBestAsset": best_h.get("ticker", best_h.get("name")),
                     "dailyWorstAsset": worst_h.get("ticker", worst_h.get("name")),
                     "drawdownPct": dd_pct,
                     "currency": "PLN",
+                    "holdingsCount": len(sorted_holdings),
+                    "holdings": holdings_list,
                 }
                 bench_snap = {
                     "dailyChangePct": float(roast_bm_pct),

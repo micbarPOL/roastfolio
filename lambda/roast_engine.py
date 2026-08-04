@@ -77,6 +77,21 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
     roast_intensity = settings.get("roastIntensity", "sarcastic")
     
     # 2. Build data context
+    holdings = current_snapshot.get("holdings", [])
+    if holdings and len(holdings) > 0:
+        sorted_h = sorted(holdings, key=lambda h: h.get("dailyChangePct", 0.0), reverse=True)
+        top_pct = sorted_h[0].get("dailyChangePct", 0.0)
+        second_top_pct = sorted_h[1].get("dailyChangePct") if len(sorted_h) > 1 else None
+        worst_pct = sorted_h[-1].get("dailyChangePct", 0.0)
+        second_worst_pct = sorted_h[-2].get("dailyChangePct") if len(sorted_h) > 1 else None
+        h_count = len(sorted_h)
+    else:
+        top_pct = current_snapshot.get("topAssetPct") or 0.0
+        second_top_pct = current_snapshot.get("secondTopAssetPct")
+        worst_pct = current_snapshot.get("worstAssetPct") or 0.0
+        second_worst_pct = current_snapshot.get("secondWorstAssetPct")
+        h_count = current_snapshot.get("holdingsCount")
+
     data = {
         "portfolio": current_snapshot,
         "benchmark": benchmark_snapshot,
@@ -85,8 +100,11 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
         "drawdown_pct": current_snapshot.get("drawdownPct"),
         "recent_deposit": current_snapshot.get("recentDeposit"),
         "recent_withdrawal": current_snapshot.get("recentWithdrawal"),
-        "best_asset_contribution": current_snapshot.get("topAssetPct") or 0.0,
-        "worst_asset_drag": current_snapshot.get("worstAssetPct") or 0.0,
+        "best_asset_contribution": top_pct,
+        "second_best_asset_contribution": second_top_pct,
+        "worst_asset_drag": worst_pct,
+        "second_worst_asset_drag": second_worst_pct,
+        "holdings_count": h_count,
         "portfolio_return": current_snapshot.get("dailyChangePct", current_snapshot.get("portfolioReturnPercent", 0.0)),
         "benchmark_return": benchmark_snapshot.get("dailyChangePct", benchmark_snapshot.get("benchmarkReturnPercent", 0.0))
     }
