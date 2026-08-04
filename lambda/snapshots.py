@@ -180,7 +180,32 @@ def list_snapshots(user_id: str, portfolio_id: str, limit: int | None = None) ->
 
 def get_portfolio_ath(user_id: str, portfolio_id: str) -> dict | None:
     resp = _table().get_item(Key={"userId": user_id, "sk": _ath_sk(portfolio_id)})
-    return _public_item(resp.get("Item"))
+    item = _public_item(resp.get("Item"))
+
+    if not item or item.get("athSource") != "MANUAL":
+        snapshots_list = list_snapshots(user_id, portfolio_id, limit=5000)
+        if snapshots_list:
+            best_snap = max(snapshots_list, key=lambda s: (_to_decimal(s.get("portfolioValue", 0)), str(s.get("snapshotDate", ""))))
+            best_val = _quantize_money(best_snap["portfolioValue"])
+            rec_val = float(item.get("athValue", 0)) if item else 0.0
+            if not item or float(best_val) > rec_val:
+                now = _now_iso()
+                item = {
+                    "userId": user_id,
+                    "sk": _ath_sk(portfolio_id),
+                    "portfolioId": portfolio_id,
+                    "athValue": best_val,
+                    "athDate": str(best_snap["snapshotDate"]),
+                    "athSource": "AUTO",
+                    "createdAt": (item or {}).get("createdAt", now),
+                    "updatedAt": now,
+                }
+                try:
+                    _table().put_item(Item=item)
+                except Exception as err:
+                    print(f"Failed to update sync ATH item: {err}")
+
+    return item
 
 
 def set_manual_ath(user_id: str, portfolio_id: str, ath_value, ath_date) -> dict:
@@ -963,20 +988,19 @@ def recalculate_snapshot_xirr_from_date(user_id: str, portfolio_id: str, from_da
 
     now = _now_iso()
     updated = 0
-    with _table().batch_writer() as batch:
-        for snapshot in snapshots_to_update:
-            snap_date = snapshot["snapshotDate"]
-            item = dict(snapshot)
-            item["userId"] = user_id
-            item["sk"] = _snapshot_sk(portfolio_id, snap_date)
-            item["portfolioId"] = portfolio_id
-            item["snapshotDate"] = snap_date
-            item["xirr"] = _xirr_from_investment_history(all_snapshots, snap_date)
-            item["xirrVersion"] = _XIRR_CALCULATION_VERSION
-            item["updatedAt"] = now
-            item["createdAt"] = snapshot.get("createdAt", now)
-            batch.put_item(Item=item)
-            updated += 1
+    for snapshot in snapshots_to_update:
+        snap_date = snapshot["snapshotDate"]
+        item = dict(snapshot)
+        item["userId"] = user_id
+        item["sk"] = _snapshot_sk(portfolio_id, snap_date)
+        item["portfolioId"] = portfolio_id
+        item["snapshotDate"] = snap_date
+        item["xirr"] = _xirr_from_investment_history(all_snapshots, snap_date)
+        item["xirrVersion"] = _XIRR_CALCULATION_VERSION
+        item["updatedAt"] = now
+        item["createdAt"] = snapshot.get("createdAt", now)
+        _table().put_item(Item=item)
+        updated += 1
 
     return updated
 
