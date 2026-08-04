@@ -98,10 +98,6 @@ def determine_commentary_mode(current_snapshot: dict, last_roast: dict, benchmar
         normalized_current['relative_performance'] = normalized_current.get('dailyChangePct', 0) - normalized_current['benchmark_return']
         
     if not hasMeaningfulChangeSinceLastRoast(normalized_current, last_roast):
-        # Even if nothing changed in the last 5 minutes, if the daily performance is extreme,
-        # users want it acknowledged rather than being told 'dust'.
-        if abs(normalized_current.get('dailyChangePct', 0)) >= 1.0 or abs(normalized_current.get('relative_performance', 0)) >= 1.0:
-            return "MIDDAY_UPDATE"
         return "NO_CHANGE"
         
     # Calculate deltas for volatile classifications

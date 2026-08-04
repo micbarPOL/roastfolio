@@ -80,7 +80,13 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
     data = {
         "portfolio": current_snapshot,
         "benchmark": benchmark_snapshot,
+        "is_new_ath": current_snapshot.get("isAth", False),
         "is_ath": current_snapshot.get("isAth", False),
+        "drawdown_pct": current_snapshot.get("drawdownPct"),
+        "recent_deposit": current_snapshot.get("recentDeposit"),
+        "recent_withdrawal": current_snapshot.get("recentWithdrawal"),
+        "best_asset_contribution": current_snapshot.get("topAssetPct") or 0.0,
+        "worst_asset_drag": current_snapshot.get("worstAssetPct") or 0.0,
         "portfolio_return": current_snapshot.get("dailyChangePct", current_snapshot.get("portfolioReturnPercent", 0.0)),
         "benchmark_return": benchmark_snapshot.get("dailyChangePct", benchmark_snapshot.get("benchmarkReturnPercent", 0.0))
     }
@@ -105,7 +111,7 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
                 
                 # If generated less than 5 minutes ago and settings are the same, return it to avoid flickering
                 last_intensity = last_roast.get("roastIntensity") or last_roast.get("intensity")
-                if delta_minutes < 5 and last_intensity == roast_intensity:
+                if delta_minutes < 5 and last_intensity == roast_intensity and mode == "NO_CHANGE":
                     return {
                         "title": last_roast.get("title", ""),
                         "message": last_roast.get("messageText", ""),
@@ -114,6 +120,9 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
                         "mainReason": "",
                         "suggestedFocus": "",
                         "templateId": last_roast.get("templateId"),
+                        "scenarioKey": last_roast.get("scenarioKey"),
+                        "commentaryMode": mode,
+                        "messageAngle": last_roast.get("messageAngle"),
                         "structureFamily": last_roast.get("structureFamily"),
                         "metaphorCategory": last_roast.get("metaphorCategory")
                     }

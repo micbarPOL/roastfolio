@@ -294,7 +294,7 @@ def store_daily_snapshot(user_id: str, portfolio_id: str, snapshot: dict, overwr
         recalculate_ath(user_id, portfolio_id)
     else:
         ath_value = _to_decimal(ath.get("athValue", 0))
-        if portfolio_value > ath_value:
+        if portfolio_value >= ath_value:
             _table().put_item(Item={
                 "userId": user_id,
                 "sk": _ath_sk(portfolio_id),
@@ -305,6 +305,8 @@ def store_daily_snapshot(user_id: str, portfolio_id: str, snapshot: dict, overwr
                 "createdAt": ath.get("createdAt", now),
                 "updatedAt": now,
             })
+        elif existing and str(existing.get("snapshotDate")) == str(ath.get("athDate")) and portfolio_value < ath_value:
+            recalculate_ath(user_id, portfolio_id)
 
     return _public_item(item)
 

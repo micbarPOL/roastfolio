@@ -599,8 +599,39 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
             window.PORTFOLIO_DAILY_CHANGE_PCT   = data.portfolioDailyChangePCT;
             try { localStorage.setItem('emerytura_daily_pct', data.portfolioDailyChangePCT); } catch(_) {}
         }
-        window.PORTFOLIO_ATH                = data.portfolioAth || null;
-        window.WALLET_ATHS                  = data.walletAths || {};
+        let ath = data.portfolioAth || null;
+        const currentVal = Number(data.portfolioTotalValue || 0);
+        if (currentVal > 0) {
+            const recordedAthVal = ath ? Number(ath.athValue || 0) : 0;
+            if (!ath || currentVal > recordedAthVal) {
+                const todayStr = new Date().toISOString().slice(0, 10);
+                ath = {
+                    athValue: currentVal,
+                    athDate: todayStr,
+                    athSource: 'AUTO',
+                };
+            }
+        }
+        window.PORTFOLIO_ATH = ath;
+
+        const walletAths = data.walletAths || {};
+        if (data.walletSummaries) {
+            for (const [wName, wSummary] of Object.entries(data.walletSummaries)) {
+                if (wName === 'Summary') continue;
+                const wTotal = Number(wSummary.total || 0);
+                const wAth = walletAths[wName];
+                const wAthVal = wAth ? Number(wAth.athValue || 0) : 0;
+                if (wTotal > 0 && (!wAth || wTotal > wAthVal)) {
+                    const todayStr = new Date().toISOString().slice(0, 10);
+                    walletAths[wName] = {
+                        athValue: wTotal,
+                        athDate: todayStr,
+                        athSource: 'AUTO',
+                    };
+                }
+            }
+        }
+        window.WALLET_ATHS = walletAths;
         window.WALLET_PORTFOLIO_IDS         = data.walletPortfolioIds || {};
         window.WALLET_HOLDINGS              = preserveDeferredData
             ? _mergeWalletHoldings(data.walletHoldings || {}, previousWalletHoldings)
