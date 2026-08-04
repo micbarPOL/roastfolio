@@ -188,7 +188,7 @@ def get_portfolio_ath(user_id: str, portfolio_id: str) -> dict | None:
             best_snap = max(snapshots_list, key=lambda s: (_to_decimal(s.get("portfolioValue", 0)), str(s.get("snapshotDate", ""))))
             best_val = _quantize_money(best_snap["portfolioValue"])
             rec_val = float(item.get("athValue", 0)) if item else 0.0
-            if not item or float(best_val) > rec_val:
+            if not item or float(best_val) >= rec_val:
                 now = _now_iso()
                 item = {
                     "userId": user_id,
