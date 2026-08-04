@@ -3,7 +3,8 @@ function fmtPLN(v) {
 }
 function fmtPct(v) {
     const num = Number(v || 0);
-    return (num >= 0 ? '+' : '') + num.toFixed(2) + '%';
+    if (num === 0) return '0%';
+    return (num > 0 ? '+' : '') + num.toFixed(2) + '%';
 }
 function fmtDate(d) {
     return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -511,13 +512,19 @@ async function renderStatisticsSummary(force = false) {
     for (const d of data) {
         const spread = d.value - d.investment;
         if (spread > maxSpread) { maxSpread = spread; maxSpreadDate = d.date; }
+        if (d.value > athValue) {
+            athValue = d.value;
+            athDate = d.date;
+        }
     }
 
     const latest = data[data.length - 1] || { value: Number(window.PORTFOLIO_TOTAL_VALUE || 0), investment: 0, date: '' };
     const latestValue = latest.value;
     const hasAth = Number.isFinite(athValue) && athValue > 0 && !!athDate;
-    const drawdownPct = hasAth ? ((latestValue - athValue) / athValue) * 100 : 0;
-    const daysFromATH = hasAth ? daysBetween(athDate) : 0;
+    const isAthToday = hasAth && latestValue >= athValue;
+    const drawdownPct = hasAth ? Math.min(0, ((latestValue - athValue) / athValue) * 100) : 0;
+    const drawdownDiff = hasAth ? Math.min(0, latestValue - athValue) : 0;
+    const daysFromATH = hasAth ? (isAthToday ? 0 : daysBetween(athDate)) : 0;
     const athSourceLabel = snapshotAth && snapshotAth.athSource === 'MANUAL' ? 'Manual override' : (hasAth ? 'Daily snapshots' : 'Pending snapshot');
 
     let avgTxCard = '';
@@ -542,7 +549,7 @@ async function renderStatisticsSummary(force = false) {
     document.getElementById('stats-alltime').innerHTML =
         statCard('All-Time High', hasAth ? fmtPLN(athValue) : '—', hasAth ? `${fmtDate(athDate)} · ${athSourceLabel}` : athSourceLabel) +
         statCard('Days Since ATH', hasAth ? (daysFromATH + ' days') : '—', hasAth ? fmtDate(athDate) : 'Nightly snapshot not available yet') +
-        statCard('Drawdown from ATH', hasAth ? fmtPct(drawdownPct) : '—', hasAth ? fmtPLN(latestValue - athValue) : 'Waiting for snapshot data') +
+        statCard('Drawdown from ATH', hasAth ? (drawdownPct === 0 ? '0%' : fmtPct(drawdownPct)) : '—', hasAth ? fmtPLN(drawdownDiff) : 'Waiting for snapshot data') +
         statCard('Highest Profit (Value − Invested)', Number.isFinite(maxSpread) ? fmtPLN(maxSpread) : '—', maxSpreadDate ? fmtDate(maxSpreadDate) : 'Historical snapshot data unavailable') +
         avgTxCard;
 
