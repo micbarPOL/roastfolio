@@ -7,8 +7,10 @@ DEFAULT_THRESHOLDS = {
     "significant_drawdown_margin": 15.0,
     "severe_drawdown_margin": 25.0,
     "carry_threshold": 1.5,
-    "drag_threshold": -1.5
+    "drag_threshold": -1.5,
+    "dominance_ratio": 2.0
 }
+
 
 SCENARIO_PRIORITY = {
     "WITHDRAWAL_DETECTED": 100,
@@ -85,11 +87,22 @@ def classify_scenario(data: dict, thresholds: dict = None) -> dict:
         else:
             add_match("DRAWDOWN_SEVERE", "drawdown", "roast", 5, "high", "Severe drawdown from ATH.")
 
-    # Asset Contribution
-    if data.get("best_asset_contribution", 0.0) >= thresholds["carry_threshold"]:
-        add_match("BEST_ASSET_CARRIED_PORTFOLIO", "asset", "mixed", 3, "medium", "One asset contributed disproportionately to gains.")
-    if data.get("worst_asset_drag", 0.0) <= thresholds["drag_threshold"]:
-        add_match("WORST_ASSET_DRAGGED_PORTFOLIO", "asset", "roast", 4, "high", "One asset dragged the portfolio down significantly.")
+    # Asset Contribution (in PLN / monetary gain or drag)
+    best_contrib = data.get("best_asset_contribution", 0.0)
+    second_best_contrib = data.get("second_best_asset_contribution")
+    worst_drag = data.get("worst_asset_drag", 0.0)
+    second_worst_drag = data.get("second_worst_asset_drag")
+    holdings_count = data.get("holdings_count")
+    dom_ratio = thresholds.get("dominance_ratio", 2.0)
+
+    if holdings_count != 1:
+        if best_contrib > 0:
+            if second_best_contrib is None or second_best_contrib <= 0 or best_contrib >= dom_ratio * second_best_contrib:
+                add_match("BEST_ASSET_CARRIED_PORTFOLIO", "asset", "mixed", 3, "medium", "One asset contributed disproportionately to gains.")
+
+        if worst_drag < 0:
+            if second_worst_drag is None or second_worst_drag >= 0 or abs(worst_drag) >= dom_ratio * abs(second_worst_drag):
+                add_match("WORST_ASSET_DRAGGED_PORTFOLIO", "asset", "roast", 4, "high", "One asset dragged the portfolio down significantly.")
 
     # Flat conditions
     is_port_flat = abs(port) <= flat_m
