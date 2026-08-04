@@ -2265,31 +2265,6 @@ def handler(event, context):
 
                     if wallet_name != "Summary":
                         wallet_aths[wallet_name] = snapshots.get_portfolio_ath(user_id, pid)
-
-                today_str = datetime.now().strftime("%Y-%m-%d")
-                summary_total = summary.get("total", 0.0)
-                if summary_total > 0:
-                    rec_val = float(portfolio_ath.get("athValue", 0)) if portfolio_ath else 0.0
-                    if not portfolio_ath or summary_total > rec_val:
-                        portfolio_ath = {
-                            "athValue": summary_total,
-                            "athDate": today_str,
-                            "athSource": "AUTO",
-                        }
-
-                for wallet_name, w_summary in wallet_summaries.items():
-                    if wallet_name == "Summary":
-                        continue
-                    w_total = w_summary.get("total", 0.0)
-                    if w_total > 0:
-                        w_ath = wallet_aths.get(wallet_name)
-                        w_rec_val = float(w_ath.get("athValue", 0)) if w_ath else 0.0
-                        if not w_ath or w_total > w_rec_val:
-                            wallet_aths[wallet_name] = {
-                                "athValue": w_total,
-                                "athDate": today_str,
-                                "athSource": "AUTO",
-                            }
             except Exception as err:
                 print(f"Snapshot/ATH load failed (non-fatal): {err}")
         ath_duration = perf_counter() - ath_started
