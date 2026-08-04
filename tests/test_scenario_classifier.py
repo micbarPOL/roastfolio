@@ -107,6 +107,19 @@ def test_asset_contributions():
     res_drag_ratio = classify_scenario({"worst_asset_drag": -5000.0, "second_worst_asset_drag": -250.0})
     assert "WORST_ASSET_DRAGGED_PORTFOLIO" in [res_drag_ratio["scenarioKey"]] + res_drag_ratio["secondaryScenarioKeys"]
 
+    # Bug fix test case: +16,000 PLN top asset, +5 PLN second asset, -17 PLN worst asset on 1.2M portfolio
+    # WORST_ASSET_DRAGGED_PORTFOLIO must NOT trigger! BEST_ASSET_CARRIED_PORTFOLIO MUST trigger!
+    res_bug = classify_scenario({
+        "best_asset_contribution": 16000.0,
+        "second_best_asset_contribution": 5.0,
+        "worst_asset_drag": -17.0,
+        "second_worst_asset_drag": 5.0,
+        "total_portfolio_value": 1243038.0,
+        "holdings_count": 3
+    })
+    assert "WORST_ASSET_DRAGGED_PORTFOLIO" not in [res_bug["scenarioKey"]] + res_bug["secondaryScenarioKeys"]
+    assert "BEST_ASSET_CARRIED_PORTFOLIO" in [res_bug["scenarioKey"]] + res_bug["secondaryScenarioKeys"]
+
 def test_prioritization():
     # Multiple signals: Flat day vs Withdrawal. Withdrawal has higher novelty/severity.
     res = classify_scenario({
