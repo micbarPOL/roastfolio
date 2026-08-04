@@ -310,17 +310,16 @@ function renderSummaryCards() {
             const recordedAth = Number(athInfo.athValue || 0);
             const athDate = athInfo.athDate || '';
             const current = Number(PORTFOLIO_TOTAL_VALUE || 0);
-            const ddPLN = current - recordedAth;
-            const ddPct = recordedAth ? ((ddPLN / recordedAth) * 100).toFixed(2) : '0.00';
+            const rawDdPLN = current - recordedAth;
+            const ddPLN = Math.min(0, rawDdPLN);
+            const ddPct = recordedAth ? Math.min(0, (rawDdPLN / recordedAth) * 100).toFixed(2) : '0.00';
             let ddColor = '#64748b';
-            if (ddPLN > 0) ddColor = '#27ae60';
-            else if (ddPLN < 0) ddColor = '#c0392b';
-            const ddSign  = ddPLN > 0 ? '+' : '';
+            if (ddPLN < 0) ddColor = '#c0392b';
             const sourceLabel = athInfo.athSource === 'MANUAL' ? 'Manual ATH' : 'ATH';
             drawdownEl.innerHTML =
                 `<div class="ath-title">From All-Time High</div>` +
-                `<span class="ath-pct" style="color:${ddColor};">${ddSign}${ddPct}%</span>` +
-                `<span class="ath-pln" style="color:${ddColor};">(${ddSign}${ddPLN.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN)</span>` +
+                `<span class="ath-pct" style="color:${ddColor};">${ddPct}%</span>` +
+                `<span class="ath-pln" style="color:${ddColor};">(${ddPLN.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN)</span>` +
                 `<div class="ath-date">${sourceLabel}: ${recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN on ${athDate}</div>`;
         }
     }
@@ -750,17 +749,18 @@ function drawdownHtml(athInfo, currentValue) {
     if (!athInfo || !athInfo.athValue) return '';
     const ath = Number(athInfo.athValue || 0);
     const athDate = athInfo.athDate || '';
-    const ddPLN = currentValue - ath;
-    const ddPct = ath ? ((ddPLN / ath) * 100).toFixed(2) : '0.00';
-    const ddColor = ddPLN >= 0 ? '#27ae60' : '#c0392b';
-    const sign = ddPLN >= 0 ? '+' : '';
+    const rawDdPLN = currentValue - ath;
+    const ddPLN = Math.min(0, rawDdPLN);
+    const ddPct = ath ? Math.min(0, (rawDdPLN / ath) * 100).toFixed(2) : '0.00';
+    const ddColor = ddPLN < 0 ? '#c0392b' : '#64748b';
     const sourceLabel = athInfo.athSource === 'MANUAL' ? 'Manual ATH' : 'ATH';
     return `<div style="margin-top:8px;padding:6px 10px;background:#f8f9fa;border-radius:6px;border-left:3px solid #bdc3c7;font-size:12px;">
         <div style="color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">From ATH</div>
-        <span style="color:${ddColor};font-weight:bold;">${sign}${ddPct}%</span>
-        <span style="color:${ddColor};margin-left:6px;">(${sign}${ddPLN.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN)</span>
+        <span style="color:${ddColor};font-weight:bold;">${ddPct}%</span>
+        <span style="color:${ddColor};margin-left:6px;">(${ddPLN.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN)</span>
         <div style="color:#aaa;font-size:10px;margin-top:1px;">${sourceLabel}: ${ath.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN · ${athDate}</div>
     </div>`;
+}
 }
 
 function renderControlDial(canvasId, value) {
