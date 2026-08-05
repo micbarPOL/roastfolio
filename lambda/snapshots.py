@@ -178,24 +178,33 @@ def list_snapshots(user_id: str, portfolio_id: str, limit: int | None = None) ->
     return [item for item in items if item]
 
 
-def get_portfolio_ath(user_id: str, portfolio_id: str) -> dict | None:
+def get_portfolio_ath(user_id: str, portfolio_id: str, current_value: float | Decimal | str | None = None, current_date: str | None = None) -> dict | None:
     resp = _table().get_item(Key={"userId": user_id, "sk": _ath_sk(portfolio_id)})
     item = _public_item(resp.get("Item"))
 
     if not item or item.get("athSource") != "MANUAL":
         snapshots_list = list_snapshots(user_id, portfolio_id, limit=5000)
+        best_val = Decimal("0")
+        best_date = ""
         if snapshots_list:
             best_snap = max(snapshots_list, key=lambda s: (_to_decimal(s.get("portfolioValue", 0)), str(s.get("snapshotDate", ""))))
             best_val = _quantize_money(best_snap["portfolioValue"])
-            rec_val = float(item.get("athValue", 0)) if item else 0.0
-            if not item or float(best_val) >= rec_val:
+            best_date = str(best_snap["snapshotDate"])
+
+        if current_value is not None and _to_decimal(current_value) > best_val:
+            best_val = _quantize_money(current_value)
+            best_date = current_date or warsaw_snapshot_date()
+
+        rec_val = float(item.get("athValue", 0)) if item else 0.0
+        if not item or float(best_val) >= rec_val:
+            if float(best_val) > 0:
                 now = _now_iso()
                 item = {
                     "userId": user_id,
                     "sk": _ath_sk(portfolio_id),
                     "portfolioId": portfolio_id,
                     "athValue": best_val,
-                    "athDate": str(best_snap["snapshotDate"]),
+                    "athDate": best_date or warsaw_snapshot_date(),
                     "athSource": "AUTO",
                     "createdAt": (item or {}).get("createdAt", now),
                     "updatedAt": now,
@@ -204,6 +213,24 @@ def get_portfolio_ath(user_id: str, portfolio_id: str) -> dict | None:
                     _table().put_item(Item=item)
                 except Exception as err:
                     print(f"Failed to update sync ATH item: {err}")
+
+    if current_value is not None and item:
+        try:
+            curr_dec = _quantize_money(current_value)
+            item_dec = _to_decimal(item.get("athValue", 0))
+            if curr_dec > item_dec:
+                now = _now_iso()
+                c_date = current_date or warsaw_snapshot_date()
+                item["athValue"] = curr_dec
+                item["athDate"] = c_date
+                item["athSource"] = "AUTO"
+                item["updatedAt"] = now
+                db_item = dict(item)
+                db_item["userId"] = user_id
+                db_item["sk"] = _ath_sk(portfolio_id)
+                _table().put_item(Item=db_item)
+        except Exception as err:
+            print(f"Failed to update ATH item with current value: {err}")
 
     return item
 
