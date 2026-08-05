@@ -666,6 +666,23 @@ class InvestmentHandler(http.server.SimpleHTTPRequestHandler):
                             t['feedback'] = feedback_data[tid].get('action')
                         elif msg in feedback_data:
                             t['feedback'] = feedback_data[msg].get('action')
+
+                    # Merge production telemetry counts (last 30 days)
+                    try:
+                        import sys
+                        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lambda'))
+                        os.environ["ROAST_EVENTS_TABLE"] = os.environ.get("ROAST_EVENTS_TABLE", "roastfolio-roast-events")
+                        import roast_tracking
+                        report = roast_tracking.get_template_report(days=30)
+                        sc_stats = report.get("scenarios", {})
+                        tmpl_stats = report.get("templates", {})
+                        for t in data:
+                            tid = t.get('templateId')
+                            sc = t.get('scenarioKey')
+                            t['prodPicks'] = tmpl_stats.get(tid, {}).get('displayCount', 0)
+                            t['scenarioProdPicks'] = sc_stats.get(sc, {}).get('displayed', 0)
+                    except Exception as tel_err:
+                        pass
                             
                     _json_resp(self, data)
                 else:
