@@ -73,7 +73,9 @@ def classify_scenario(data: dict, thresholds: dict = None) -> dict:
     # ATH and Drawdown
     drawdown = data.get("drawdown_pct", data.get("drawdownPct"))
     drawdown_present = drawdown is not None
-    is_ath = data.get("is_new_ath", data.get("is_ath", False))
+    raw_is_ath = data.get("is_new_ath", data.get("is_ath", False))
+    port_ret = data.get("portfolio_return", 0.0)
+    is_ath = bool(raw_is_ath and port_ret > 0)
 
     if is_ath:
         add_match("NEW_ATH_DAY", "drawdown", "praise", 1, "high", "Portfolio reached a new all-time high.")

@@ -99,11 +99,15 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
         second_worst_pln = current_snapshot.get("secondWorstAssetPLN", current_snapshot.get("secondWorstAssetPct"))
         h_count = current_snapshot.get("holdingsCount")
 
+    port_ret = current_snapshot.get("dailyChangePct", current_snapshot.get("portfolioReturnPercent", 0.0))
+    raw_is_ath = current_snapshot.get("isNewAth", current_snapshot.get("isAth", False))
+    is_new_ath = bool(raw_is_ath and port_ret > 0)
+
     data = {
         "portfolio": current_snapshot,
         "benchmark": benchmark_snapshot,
-        "is_new_ath": current_snapshot.get("isAth", False),
-        "is_ath": current_snapshot.get("isAth", False),
+        "is_new_ath": is_new_ath,
+        "is_ath": is_new_ath,
         "drawdown_pct": current_snapshot.get("drawdownPct"),
         "recent_deposit": current_snapshot.get("recentDeposit"),
         "recent_withdrawal": current_snapshot.get("recentWithdrawal"),
