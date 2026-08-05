@@ -98,28 +98,48 @@ const ATH_CELEBRATION_NOTES = [
 
 // Cached ATH derived from actual daily snapshots (set by loadSnapshotAth)
 window._SNAPSHOT_ATH = null;
+window._WALLET_SNAPSHOT_ATHS = {};
 
 async function loadSnapshotAth() {
     try {
         if (typeof PortfolioClient === 'undefined' || !PortfolioClient.listSnapshots) return;
-        const snapshotData = await PortfolioClient.listSnapshots('summary');
-        const snapshots = snapshotData?.snapshots || [];
-        if (!snapshots.length) return;
 
-        let peakVal = 0, peakDate = '';
-        for (const s of snapshots) {
-            const v = Number(s.portfolioValue || 0);
-            if (v > peakVal) {
-                peakVal = v;
-                peakDate = String(s.snapshotDate || '').slice(0, 10);
+        const portfoliosResp = await PortfolioClient.listPortfolios().catch(() => ({ portfolios: [] }));
+        const portfolios = Array.isArray(portfoliosResp?.portfolios) ? portfoliosResp.portfolios : [];
+        const pids = ['summary', ...portfolios.map(p => p.portfolioId).filter(id => id && id.toLowerCase() !== 'summary')];
+
+        const snapshotCalls = await Promise.all(
+            pids.map(pid => PortfolioClient.listSnapshots(pid).catch(() => ({ snapshots: [] })))
+        );
+
+        snapshotCalls.forEach((snapshotData, idx) => {
+            const pid = pids[idx];
+            const snapshots = snapshotData?.snapshots || [];
+            if (!snapshots.length) return;
+
+            let peakVal = 0, peakDate = '';
+            for (const s of snapshots) {
+                const v = Number(s.portfolioValue || 0);
+                if (v > peakVal) {
+                    peakVal = v;
+                    peakDate = String(s.snapshotDate || '').slice(0, 10);
+                }
             }
-        }
-        if (peakVal > 0) {
-            window._SNAPSHOT_ATH = { athValue: peakVal, athDate: peakDate, athSource: 'AUTO' };
-            // Re-render drawdown and ATH celebration after snapshot data is available
-            if (typeof updateDashboard === 'function') updateDashboard();
-            if (typeof renderAthCelebration === 'function') renderAthCelebration('ath-celebration');
-        }
+            if (peakVal > 0) {
+                const athObj = { athValue: peakVal, athDate: peakDate, athSource: 'AUTO' };
+                if (pid === 'summary') {
+                    window._SNAPSHOT_ATH = athObj;
+                } else {
+                    window._WALLET_SNAPSHOT_ATHS[pid] = athObj;
+                    window._WALLET_SNAPSHOT_ATHS[pid.toUpperCase()] = athObj;
+                    window._WALLET_SNAPSHOT_ATHS[pid.toLowerCase()] = athObj;
+                }
+            }
+        });
+
+        if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof renderAthCelebration === 'function') renderAthCelebration('ath-celebration');
+        if (typeof renderWalletCards === 'function') renderWalletCards();
     } catch (e) {
         console.warn('loadSnapshotAth failed:', e);
     }
@@ -959,19 +979,27 @@ function renderWalletCards() {
             
             // Render wallet ATH summary/drawdown
             try {
-                const ath = (window.WALLET_ATHS || {})[name];
+                const baseAth = (window.WALLET_ATHS || {})[name];
+                const snapAth = (window._WALLET_SNAPSHOT_ATHS || {})[name] ||
+                                (window._WALLET_SNAPSHOT_ATHS || {})[String(name).toLowerCase()] ||
+                                (window._WALLET_SNAPSHOT_ATHS || {})[String(name).toUpperCase()];
                 const athEl = document.getElementById('wallet-ath-' + name);
                 if (athEl) {
-                    if (!ath || !ath.athValue) {
+                    let aVal = baseAth && baseAth.athValue != null ? Number(baseAth.athValue || 0) : 0;
+                    if (snapAth && Number(snapAth.athValue || 0) > aVal) {
+                        aVal = Number(snapAth.athValue);
+                    }
+                    if (!aVal) {
                         athEl.textContent = 'ATH pending';
                     } else {
-                        const aVal = Number(ath.athValue || 0);
                         const curr = Number(w.total || 0);
                         const diff = curr - aVal;
                         const pct = aVal ? ((diff / aVal) * 100).toFixed(2) : '0.00';
-                        const color = diff >= 0 ? '#22c55e' : '#ef4444';
-                        const sign = diff >= 0 ? '+' : '';
-                        athEl.innerHTML = `ATH Drawdown: <strong style="color:${color}">${sign}${pct}%</strong>`;
+                        const isAbove = diff >= 0;
+                        const color = isAbove ? '#22c55e' : '#ef4444';
+                        const sign = isAbove ? '+' : '';
+                        const label = isAbove ? 'From ATH' : 'ATH Drawdown';
+                        athEl.innerHTML = `${label}: <strong style="color:${color}">${sign}${pct}%</strong>`;
                     }
                 }
             } catch (e) {
