@@ -2394,6 +2394,24 @@ def handler(event, context):
                     enable_ai=False,
                     enable_retry=False
                 )
+
+                if roast_data and isinstance(roast_data, dict):
+                    try:
+                        import roast_tracking
+                        tel = roast_data.get("telemetry", {})
+                        roast_tracking.record_event({
+                            "eventType": "roast_displayed",
+                            "userId": user_id or "anonymous",
+                            "templateId": tel.get("templateId", roast_data.get("templateId", "unknown")),
+                            "scenarioKey": tel.get("scenarioKey", roast_data.get("scenarioKey", "unknown")),
+                            "intensity": tel.get("intensity", "unknown"),
+                            "messageAngle": tel.get("messageAngle", "unknown"),
+                            "structureFamily": tel.get("structureFamily", "unknown"),
+                            "portfolioChange": summary.get("dailyPct"),
+                            "benchmarkChange": roast_bm_pct
+                        })
+                    except Exception as track_err:
+                        print(f"Backend roast telemetry error (non-fatal): {track_err}")
             except Exception as e:
                 import traceback
                 print(f"Roast generation failed (non-fatal): {e}")
