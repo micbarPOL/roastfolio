@@ -161,6 +161,18 @@ function getRecordedSnapshotAth(baseAthInfo) {
         athSource = 'AUTO';
     }
 
+    // Override with live current portfolio value if it's higher
+    const currentVal = Number(window.PORTFOLIO_TOTAL_VALUE || 0);
+    if (currentVal > recAth) {
+        recAth = currentVal;
+        try {
+            recDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
+        } catch (e) {
+            recDate = new Date().toISOString().slice(0, 10);
+        }
+        athSource = 'AUTO';
+    }
+
     if (!recAth) return baseAthInfo || null;
     return { athValue: recAth, athDate: recDate, athSource: athSource };
 }
@@ -382,16 +394,22 @@ function renderSummaryCards() {
             const current = Number(PORTFOLIO_TOTAL_VALUE || 0);
             const diffPLN = current - recordedAth;
             const diffPct = recordedAth ? ((diffPLN / recordedAth) * 100).toFixed(2) : '0.00';
-            let color = '#64748b';
-            if (diffPLN > 0) color = '#27ae60';
-            else if (diffPLN < 0) color = '#c0392b';
-            const sign = diffPLN > 0 ? '+' : '';
             const sourceLabel = athInfo.athSource === 'MANUAL' ? 'Manual ATH' : 'ATH';
-            drawdownEl.innerHTML =
-                `<div class="ath-title">From All-Time High</div>` +
-                `<span class="ath-pct" style="color:${color};">${sign}${diffPct}%</span>` +
-                `<span class="ath-pln" style="color:${color};">(${sign}${diffPLN.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN)</span>` +
-                `<div class="ath-date">${sourceLabel}: ${recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN on ${athDate}</div>`;
+
+            if (diffPLN >= -0.01) {
+                drawdownEl.innerHTML =
+                    `<div class="ath-title">From All-Time High</div>` +
+                    `<span class="ath-pct" style="color:#27ae60;">At All-Time High!</span>` +
+                    `<span class="ath-pln" style="color:#27ae60;">(0 PLN drawdown)</span>` +
+                    `<div class="ath-date">${sourceLabel}: ${recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN today (${athDate})</div>`;
+            } else {
+                let color = '#c0392b';
+                drawdownEl.innerHTML =
+                    `<div class="ath-title">From All-Time High</div>` +
+                    `<span class="ath-pct" style="color:${color};">${diffPct}%</span>` +
+                    `<span class="ath-pln" style="color:${color};">(${diffPLN.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN)</span>` +
+                    `<div class="ath-date">${sourceLabel}: ${recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN on ${athDate}</div>`;
+            }
         }
     }
 
@@ -993,13 +1011,14 @@ function renderWalletCards() {
                         athEl.textContent = 'ATH pending';
                     } else {
                         const curr = Number(w.total || 0);
-                        const diff = curr - aVal;
-                        const pct = aVal ? ((diff / aVal) * 100).toFixed(2) : '0.00';
-                        const isAbove = diff >= 0;
-                        const color = isAbove ? '#22c55e' : '#ef4444';
-                        const sign = isAbove ? '+' : '';
-                        const label = isAbove ? 'From ATH' : 'ATH Drawdown';
-                        athEl.innerHTML = `${label}: <strong style="color:${color}">${sign}${pct}%</strong>`;
+                        const effectiveAth = Math.max(aVal, curr);
+                        const diff = curr - effectiveAth;
+                        const pct = effectiveAth ? ((diff / effectiveAth) * 100).toFixed(2) : '0.00';
+                        if (diff >= -0.01) {
+                            athEl.innerHTML = `Status: <strong style="color:#22c55e;">At ATH (0.00%)</strong>`;
+                        } else {
+                            athEl.innerHTML = `ATH Drawdown: <strong style="color:#ef4444;">${pct}%</strong>`;
+                        }
                     }
                 }
             } catch (e) {
