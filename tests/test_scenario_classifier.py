@@ -60,11 +60,16 @@ def test_relative_performance_margins():
     assert "USER_UNDERPERFORMED_BY_LARGE_MARGIN" in [res2["scenarioKey"]] + res2["secondaryScenarioKeys"]
 
 def test_ath_and_drawdowns():
-    res_ath = classify_scenario({"is_new_ath": True})
+    res_ath = classify_scenario({"is_new_ath": True, "portfolio_return": 1.0})
     assert "NEW_ATH_DAY" in [res_ath["scenarioKey"]] + res_ath["secondaryScenarioKeys"]
 
-    res_ath_alias = classify_scenario({"is_ath": True})
+    res_ath_alias = classify_scenario({"is_ath": True, "portfolio_return": 1.0})
     assert "NEW_ATH_DAY" in [res_ath_alias["scenarioKey"]] + res_ath_alias["secondaryScenarioKeys"]
+
+    # Negative return day under ATH must NOT trigger NEW_ATH_DAY
+    res_ath_negative = classify_scenario({"is_new_ath": True, "portfolio_return": -0.01, "drawdown_pct": 0.01})
+    assert "NEW_ATH_DAY" not in [res_ath_negative["scenarioKey"]] + res_ath_negative["secondaryScenarioKeys"]
+    assert "NEAR_ATH" in [res_ath_negative["scenarioKey"]] + res_ath_negative["secondaryScenarioKeys"]
 
     res_missing_drawdown = classify_scenario({"portfolio_return": 0.05, "benchmark_return": 0.05})
     assert "NEAR_ATH" not in [res_missing_drawdown["scenarioKey"]] + res_missing_drawdown["secondaryScenarioKeys"]
