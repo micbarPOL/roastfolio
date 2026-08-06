@@ -513,12 +513,33 @@ def get_pln_rate(currency, rates_cache, s3_cache):
 def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
     t = yf.Ticker(ticker_sym)
     info = t.fast_info
-    price = info.last_price
-    prev_close = info.previous_close
-    daily_pct = round(((price - prev_close) / prev_close) * 100, 2) if prev_close else 0.0
-    # Intraday session change: today's open → current price (for gauge / commentary)
+    price = getattr(info, 'last_price', None)
+    prev_close = getattr(info, 'previous_close', None)
     open_price = getattr(info, 'open', None)
-    intraday_pct = round(((price - open_price) / open_price) * 100, 2) if open_price else daily_pct
+
+    # Robust fallback to history if fast_info missing price or prev_close
+    if price is None or prev_close is None or price <= 0:
+        try:
+            h5d = t.history(period="5d")
+            if not h5d.empty:
+                closes = h5d['Close'].dropna().tolist()
+                opens = h5d['Open'].dropna().tolist() if 'Open' in h5d else []
+                if closes:
+                    price = float(closes[-1])
+                    if len(closes) >= 2:
+                        prev_close = float(closes[-2])
+                    else:
+                        prev_close = price
+                if opens and open_price is None:
+                    open_price = float(opens[-1])
+        except Exception as h_err:
+            print(f"  {ticker_sym} history fallback error: {h_err}")
+
+    if not price or price <= 0:
+        raise ValueError(f"Unable to resolve valid price for {ticker_sym}")
+
+    daily_pct = round(((price - prev_close) / prev_close) * 100, 2) if (prev_close and prev_close > 0) else 0.0
+    intraday_pct = round(((price - open_price) / open_price) * 100, 2) if (open_price and open_price > 0) else daily_pct
 
     today_bars = []
     year_bars  = []
@@ -616,12 +637,11 @@ def _compute_benchmark_intraday_pct(ticker: str) -> float | None:
     """Intraday benchmark % change: today's open → current price, via fast_info."""
     try:
         info = yf.Ticker(ticker).fast_info
-        price  = info.last_price
+        price  = getattr(info, 'last_price', None)
         open_p = getattr(info, 'open', None)
         if price and open_p:
             return round((price - open_p) / open_p * 10000) / 100
-        # Fallback: prev-close → current when market open price is unavailable
-        prev = info.previous_close
+        prev = getattr(info, 'previous_close', None)
         if price and prev:
             return round((price - prev) / prev * 10000) / 100
     except Exception as e:
@@ -647,6 +667,7 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                     price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars = fetch_ticker_data(
                         h["ticker"],
                         include_bars=include_bars,
+                        bars_cache=bars_cache if 'bars_cache' in locals() else None
                     )
                     if price and price > 0:
                         price_cache[h["ticker"]] = (price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars)
@@ -661,9 +682,14 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                         price_cache[h["ticker"]] = (cached[0], cached[1], cached[1], cached[2], [], [])
                         print(f"  {h['name']}: cached price {cached[0]:.2f} (live fetch failed: {fetch_err})")
                     else:
-                        print(f"  {h['name']}: no price available, skipping ({fetch_err})")
-                        results.append(entry)
-                        continue
+                        fb_price = 1.0
+                        if h.get("purchaseValue") and h.get("units"):
+                            try:
+                                fb_price = float(h["purchaseValue"]) / float(h["units"])
+                            except Exception:
+                                fb_price = 1.0
+                        price_cache[h["ticker"]] = (fb_price, 0.0, 0.0, 0.0, [], [])
+                        print(f"  {h['name']}: no price available, using fallback {fb_price:.2f} ({fetch_err})")
 
             price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars = price_cache[h["ticker"]]
             if not include_bars:
