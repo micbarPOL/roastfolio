@@ -593,12 +593,9 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
             ? _mergeHoldingBars(data.portfolioData || [], previousPortfolioData)
             : data.portfolioData;
         window.PORTFOLIO_TOTAL_VALUE        = data.portfolioTotalValue;
-        if (!isFullAfterLite) {
-            // Lite sets intraday %; keep it frozen for the gauge after lite fires
-            window.PORTFOLIO_DAILY_CHANGE_PLN   = data.portfolioDailyChangePLN;
-            window.PORTFOLIO_DAILY_CHANGE_PCT   = data.portfolioDailyChangePCT;
-            try { localStorage.setItem('emerytura_daily_pct', data.portfolioDailyChangePCT); } catch(_) {}
-        }
+        window.PORTFOLIO_DAILY_CHANGE_PLN   = data.portfolioDailyChangePLN;
+        window.PORTFOLIO_DAILY_CHANGE_PCT   = data.portfolioDailyChangePCT;
+        try { localStorage.setItem('emerytura_daily_pct', data.portfolioDailyChangePCT); } catch(_) {}
         window.PORTFOLIO_ATH = data.portfolioAth || null;
         window.WALLET_ATHS = data.walletAths || {};
         window.WALLET_PORTFOLIO_IDS         = data.walletPortfolioIds || {};
