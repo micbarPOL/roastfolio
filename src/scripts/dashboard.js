@@ -1128,7 +1128,7 @@ function renderDailyBreakdown() {
     const mode = window._sparkMode || 'today';
     const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
 
-    // Sort by absolute daily PLN change descending
+    // Sort by absolute daily PLN change descending (include all holdings)
     const sorted = [...PORTFOLIO_DATA]
         .map(d => ({
             ...d,
@@ -1137,7 +1137,6 @@ function renderDailyBreakdown() {
             ytdChangePctSafe: Number.isFinite(Number(d.ytdChangePct)) ? Number(d.ytdChangePct) : null,
             pricePLNSafe: Number.isFinite(Number(d.pricePLN)) ? Number(d.pricePLN) : 0,
         }))
-        .filter(d => d.dailyChangePLNSafe !== 0)
         .sort((a, b) => Math.abs(b.dailyChangePLNSafe) - Math.abs(a.dailyChangePLNSafe));
 
     const entries = sorted.map(d => {
