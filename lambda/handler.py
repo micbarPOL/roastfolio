@@ -650,7 +650,7 @@ def _compute_benchmark_intraday_pct(ticker: str) -> float | None:
 
 # ── Wallet computation ────────────────────────────────────────
 
-def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3_cache, include_bars=True, use_intraday=False):
+def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3_cache, include_bars=True, use_intraday=False, bars_cache=None):
     results = []
     for h in holdings:
         entry = dict(h)
@@ -667,7 +667,7 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                     price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars = fetch_ticker_data(
                         h["ticker"],
                         include_bars=include_bars,
-                        bars_cache=bars_cache if 'bars_cache' in locals() else None
+                        bars_cache=bars_cache
                     )
                     if price and price > 0:
                         price_cache[h["ticker"]] = (price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars)
@@ -2093,6 +2093,7 @@ def handler(event, context):
                 include_bars=include_deferred,
                 # prev-close → current: market-standard "daily change" shown by brokers.
                 use_intraday=False,
+                bars_cache=bars_cache,
             )
             wallets_out[wallet_name] = {
                 "holdings": results,
