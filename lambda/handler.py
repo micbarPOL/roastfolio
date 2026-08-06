@@ -2195,16 +2195,12 @@ def handler(event, context):
                     else:
                         try:
                             carousel_meta = db.BENCHMARKS[carousel_id]
-                            carousel_data = fetch_benchmark_history(
-                                carousel_id,
-                                carousel_meta["ticker"],
-                                load_benchmark_cache(carousel_id),
-                            )
-                            save_benchmark_cache(carousel_id, carousel_data)
+                            carousel_data = load_benchmark_cache(carousel_id)
+                            carousel_pct  = _compute_benchmark_daily_pct(carousel_data, carousel_meta["ticker"])
                             entry = _build_market_carousel_entry(
                                 carousel_id,
                                 carousel_data,
-                                _compute_benchmark_daily_pct(carousel_data),
+                                carousel_pct,
                             )
                         except Exception as carousel_err:
                             print(f"{carousel_id} market carousel fetch failed (non-fatal): {carousel_err}")

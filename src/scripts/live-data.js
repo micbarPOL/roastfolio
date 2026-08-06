@@ -460,7 +460,7 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
         });
     }
 
-    const TIMEOUT_MS = 15000;
+    const TIMEOUT_MS = 25000;
     const RETRY_TIMEOUT_MS = 45000;
 
     function _holdingKey(row) {
