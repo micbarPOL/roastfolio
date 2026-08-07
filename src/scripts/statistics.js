@@ -699,10 +699,204 @@ async function _initSnapshotControls() {
     }
 }
 
+// ── Monthly Performance Heatmap ─────────────────────────────────────────
+
+let _heatmapMetric = 'pct';
+let _heatmapPortfolio = 'summary';
+
+window.setHeatmapMetric = function(metric) {
+    _heatmapMetric = metric;
+    const btns = document.querySelectorAll('#heatmap-metric-btns .history-wallet-btn');
+    btns.forEach(b => {
+        if (b.getAttribute('data-metric') === metric) b.classList.add('is-active');
+        else b.classList.remove('is-active');
+    });
+    refreshHeatmapTable();
+};
+
+window.setHeatmapPortfolio = function(port) {
+    _heatmapPortfolio = port;
+    const btns = document.querySelectorAll('#heatmap-portfolio-btns .history-wallet-btn');
+    btns.forEach(b => {
+        if (b.getAttribute('data-wallet-key') === port) b.classList.add('is-active');
+        else b.classList.remove('is-active');
+    });
+    refreshHeatmapTable();
+};
+
+async function refreshHeatmapTable() {
+    const wrap = document.getElementById('heatmap-table-wrap');
+    if (wrap && !wrap.innerHTML) {
+        wrap.innerHTML = '<div class="stats-loading">Loading heatmap…</div>';
+    }
+
+    try {
+        let rawData = await _loadStatisticsHistory(_heatmapPortfolio, false);
+        if (_heatmapPortfolio === 'summary') {
+            rawData = _injectLiveSummaryValue(rawData);
+        }
+        renderHeatmapTable(rawData, _heatmapMetric);
+    } catch (e) {
+        console.error('Error loading heatmap:', e);
+        if (wrap) wrap.innerHTML = '<div class="stats-empty">Error loading monthly heatmap.</div>';
+    }
+}
+
+async function _initHeatmapControls() {
+    const strip = document.getElementById('heatmap-portfolio-btns');
+    if (!strip) return;
+
+    try {
+        const list = await window.PortfolioClient.listPortfolios();
+        const portfolios = Array.isArray(list?.portfolios) ? list.portfolios : [];
+        const realPortfolios = portfolios.filter(p => p.portfolioId !== 'summary');
+        
+        const allKeys = ['summary', ...realPortfolios.map(p => p.portfolioId)];
+        const allLabels = ['Total', ...realPortfolios.map(p => p.name || p.portfolioId)];
+        
+        strip.innerHTML = allKeys.map((key, i) => {
+            const label = allLabels[i];
+            const active = key === _heatmapPortfolio;
+            return `<button class="history-wallet-btn${active ? ' is-active' : ''}" data-wallet-key="${key}" onclick="setHeatmapPortfolio('${key}')">${label}</button>`;
+        }).join('');
+    } catch (e) {
+        console.warn('Failed to load portfolios for heatmap table', e);
+    }
+}
+
+function renderHeatmapTable(data, metric = 'pct') {
+    const container = document.getElementById('heatmap-table-wrap');
+    if (!container) return;
+
+    const monthlyPeriods = _buildPortfolioMonthlyPeriods(data);
+    if (!monthlyPeriods || monthlyPeriods.length === 0) {
+        container.innerHTML = '<div class="stats-empty">No monthly snapshot history available for heatmap.</div>';
+        return;
+    }
+
+    const dataMap = {};
+    const yearSet = new Set();
+    
+    for (const p of monthlyPeriods) {
+        if (!p.month) continue;
+        const parts = p.month.split('-');
+        if (parts.length < 2) continue;
+        const year = parseInt(parts[0], 10);
+        const monthIdx = parseInt(parts[1], 10) - 1; // 0..11
+        if (isNaN(year) || isNaN(monthIdx)) continue;
+        yearSet.add(year);
+
+        const val = metric === 'pln' ? p.netGain : p.pct;
+        dataMap[`${year}-${monthIdx}`] = val;
+    }
+
+    const years = [...yearSet].sort((a, b) => a - b);
+    if (years.length === 0) {
+        container.innerHTML = '<div class="stats-empty">No yearly data available for heatmap.</div>';
+        return;
+    }
+
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // Max absolute value for heatmap opacity scaling
+    let maxAbs = 0;
+    Object.values(dataMap).forEach(v => {
+        if (Number.isFinite(v) && Math.abs(v) > maxAbs) maxAbs = Math.abs(v);
+    });
+    if (maxAbs === 0) maxAbs = 1;
+
+    let html = `<div class="heatmap-scroll-wrap"><table class="heatmap-table">`;
+
+    // Header row: Month | Avg Return | 2020 | 2021 | 2022 ...
+    html += `<thead><tr>`;
+    html += `<th class="heatmap-th-month">Month</th>`;
+    html += `<th class="heatmap-th-avg">Avg (${metric === 'pln' ? 'PLN' : '%'})</th>`;
+    years.forEach(y => {
+        html += `<th class="heatmap-th-year">${y}</th>`;
+    });
+    html += `</tr></thead><tbody>`;
+
+    // 12 Rows for Months
+    for (let m = 0; m < 12; m++) {
+        html += `<tr>`;
+        html += `<td class="heatmap-td-month">${monthNames[m]}</td>`;
+
+        // Compute average return for this month across all years
+        let mSum = 0;
+        let mCount = 0;
+        years.forEach(y => {
+            const v = dataMap[`${y}-${m}`];
+            if (v !== undefined && Number.isFinite(v)) {
+                mSum += v;
+                mCount++;
+            }
+        });
+
+        const mAvg = mCount > 0 ? (mSum / mCount) : null;
+        let avgText = '—';
+        let avgStyle = '';
+        if (mAvg !== null) {
+            const sign = mAvg > 0 ? '+' : '';
+            if (metric === 'pln') {
+                avgText = `${sign}${mAvg.toLocaleString('pl-PL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} PLN`;
+            } else {
+                avgText = `${sign}${mAvg.toFixed(2)}%`;
+            }
+            const color = mAvg > 0 ? '#27ae60' : mAvg < 0 ? '#c0392b' : '#94a3b8';
+            avgStyle = `style="color:${color};font-weight:700;"`;
+        }
+
+        html += `<td class="heatmap-td-avg" ${avgStyle}>${avgText}</td>`;
+
+        // Year cells
+        years.forEach(y => {
+            const val = dataMap[`${y}-${m}`];
+            if (val === undefined || !Number.isFinite(val)) {
+                html += `<td class="heatmap-cell heatmap-empty">—</td>`;
+            } else {
+                const sign = val > 0 ? '+' : '';
+                let text = '';
+                if (metric === 'pln') {
+                    text = `${sign}${val.toLocaleString('pl-PL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+                } else {
+                    text = `${sign}${val.toFixed(2)}%`;
+                }
+
+                const ratio = Math.min(1, Math.abs(val) / maxAbs);
+                const alpha = (0.15 + ratio * 0.40).toFixed(2);
+                let bg = '', textColor = '', border = '';
+
+                if (val > 0) {
+                    bg = `rgba(39, 174, 96, ${alpha})`;
+                    textColor = '#2ecc71';
+                    border = `rgba(39, 174, 96, ${(0.25 + ratio * 0.45).toFixed(2)})`;
+                } else if (val < 0) {
+                    bg = `rgba(192, 57, 43, ${alpha})`;
+                    textColor = '#e74c3c';
+                    border = `rgba(192, 57, 43, ${(0.25 + ratio * 0.45).toFixed(2)})`;
+                } else {
+                    bg = 'rgba(255, 255, 255, 0.04)';
+                    textColor = '#94a3b8';
+                    border = 'rgba(255, 255, 255, 0.08)';
+                }
+
+                html += `<td class="heatmap-cell" style="background:${bg};color:${textColor};border:1px solid ${border};">${text}</td>`;
+            }
+        });
+
+        html += `</tr>`;
+    }
+
+    html += `</tbody></table></div>`;
+    container.innerHTML = html;
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     let _statsRendered = false;
 
     _initSnapshotControls();
+    _initHeatmapControls();
+    refreshHeatmapTable();
 
     // Initial render on page load — loads snapshots + transactions + benchmark data once.
     renderStatisticsSummary().then(() => {
@@ -716,6 +910,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // (e.g. live data arrived before snapshots finished).
     // Never pass force=true — benchmark returns and snapshots only change monthly.
     document.addEventListener('liveDataReady', () => {
+        refreshHeatmapTable();
         if (_statsRendered) return; // already rendered, skip
         renderStatisticsSummary(false).then(() => {
             _statsRendered = true;

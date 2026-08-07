@@ -987,6 +987,29 @@
             </div>
         </section>
         <section class="stats-section stats-acc-section">
+            <button class="stats-acc-btn" onclick="toggleStatsAccordion('heatmap')">
+                <span style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;">
+                    <span>Monthly Performance Heatmap</span>
+                    <span id="heatmap-header-preview" class="stats-acc-preview"></span>
+                </span>
+                <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(0deg);"><polyline points="18 15 12 9 6 15"/></svg>
+            </button>
+            <div id="acc-heatmap" class="stats-acc-body stats-acc-body--open">
+                <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                        <div class="history-wallet-btns" id="heatmap-metric-btns" role="tablist">
+                            <button class="history-wallet-btn is-active" data-metric="pct" onclick="setHeatmapMetric('pct')">% Return</button>
+                            <button class="history-wallet-btn" data-metric="pln" onclick="setHeatmapMetric('pln')">PLN Return</button>
+                        </div>
+                    </div>
+                    <div class="history-wallet-btns" id="heatmap-portfolio-btns" role="tablist">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                <div id="heatmap-table-wrap"></div>
+            </div>
+        </section>
+        <section class="stats-section stats-acc-section">
             <button class="stats-acc-btn" onclick="toggleStatsAccordion('monthly-snap')">
                 <span>Snapshot Summary</span>
                 <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
