@@ -2,7 +2,7 @@
     let searchTimeout = null;
     let currentChart = null;
     let currentTicker = null;
-    let currentPeriod = '1y';
+    let currentPeriod = '5y';
     let currentFinancialData = { cashflow: {}, financials: {}, earnings: [] };
     let currentStatementType = 'income'; // 'income' or 'cashflow'
     let currentFinPeriod = 'annual'; // 'annual' or 'quarterly'
@@ -542,6 +542,9 @@
         currentPeriod = period;
         inputEl.value = ticker;
         dropdownEl.style.display = 'none';
+        document.querySelectorAll('.analysis-range-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.range === period);
+        });
         
         const originalPlaceholder = inputEl.placeholder;
         inputEl.placeholder = 'Loading data...';
@@ -1332,7 +1335,7 @@
                 if (window._analysis.setPortfolioFilter) {
                     await window._analysis.setPortfolioFilter(portfolioId, { reload: false });
                 }
-                window._analysis.loadAssetData(ticker, '1y');
+                window._analysis.loadAssetData(ticker, '5y');
             }
         }, 100);
     };

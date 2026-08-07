@@ -169,8 +169,9 @@
     return Number.isFinite(number) ? number : null;
   }
 
-  function _transactionAssetKey(tx) {
-    if (tx && tx.holdingId) return `id:${String(tx.holdingId)}`;
+  function _transactionAssetKey(tx, options = {}) {
+    const { preferTicker = false } = options;
+    if (!preferTicker && tx && tx.holdingId) return `id:${String(tx.holdingId)}`;
     const ticker = String(tx && tx.ticker || '').trim().toUpperCase();
     if (ticker) return `ticker:${ticker}`;
     return `name:${String(tx && tx.name || '').trim().toLowerCase()}`;
@@ -180,10 +181,11 @@
     return ['BUY', 'SELL', 'DIVIDEND', 'SPINOFF'].includes(String(tx && tx.type || '').toUpperCase());
   }
 
-  function _buildHoldingPerformance(transactions, closedHoldings = []) {
+  function _buildHoldingPerformance(transactions, closedHoldings = [], options = {}) {
+    const { aggregateByTicker = false } = options;
     const grouped = new Map();
     (transactions || []).filter(_isAssetTransaction).forEach(tx => {
-      const key = _transactionAssetKey(tx);
+      const key = _transactionAssetKey(tx, { preferTicker: aggregateByTicker });
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key).push(tx);
     });
@@ -227,7 +229,7 @@
       metrics.set(key, { units, realized, dividends, firstBuyDate, lastSellDate, name, ticker, gamification });
     });
     closedHoldings.forEach(holding => {
-      const key = _transactionAssetKey(holding);
+      const key = _transactionAssetKey(holding, { preferTicker: aggregateByTicker });
       metrics.set(key, {
         units: Number(holding.units || 0),
         realized: _holdingMetricValue(holding, 'realized_return', 'realizedReturn') || 0,
@@ -1104,7 +1106,17 @@
     if (_isSummaryPortfolio(portfolioId)) {
       const holdings = _mergeHoldings([], _liveHoldingsFor(p));
       _currentHoldings = holdings;
-      _currentTransactions = [];
+      const sourcePortfolioIds = (_portfolios || [])
+        .filter((port) => !_isSummaryPortfolio(port.portfolioId))
+        .map((port) => port.portfolioId);
+      const summaryTxResponses = await Promise.all(
+        sourcePortfolioIds.map((pid) => PortfolioClient.listTransactions(pid, 5000).catch(() => ({ transactions: [] })))
+      );
+      _currentTransactions = summaryTxResponses.flatMap((response, idx) => {
+        const pid = sourcePortfolioIds[idx];
+        const rows = (response && response.transactions) || [];
+        return rows.map((tx) => ({ ...tx, portfolioId: tx.portfolioId || pid }));
+      });
       _currentClosedHoldings = [];
       try {
         const snapshotData = await PortfolioClient.listSnapshots(portfolioId);
@@ -1112,7 +1124,7 @@
       } catch (_) {
         _currentSnapshots = [];
       }
-      _renderSettings(p, holdings.length, 0);
+      _renderSettings(p, holdings.length, _currentTransactions.length);
       _renderHoldings(portfolioId, holdings, true);
       if (txBody) {
         txBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">Summary is aggregated across wallets. Open an individual wallet to inspect its transactions.</td></tr>';
@@ -1163,7 +1175,7 @@
     const metaEl = document.getElementById('mgmt-holdings-meta');
     if (!tbody) return;
 
-    const performance = _buildHoldingPerformance(_currentTransactions, _currentClosedHoldings);
+    const performance = _buildHoldingPerformance(_currentTransactions, _currentClosedHoldings, { aggregateByTicker: isSummary });
     const activeHoldings = holdings.filter(h => _isCashHolding(h) || Number(h.units || 0) > 0.00000001);
 
     if (activeHoldings.length === 0) {
@@ -1313,7 +1325,11 @@
     _bindCemeterySortHandlers();
     _updateCemeterySortLabels();
 
-    const activeKeys = new Set((holdings || []).filter(h => Number(h.units || 0) > 0.00000001).map(_transactionAssetKey));
+    const activeKeys = new Set(
+      (holdings || [])
+        .filter(h => Number(h.units || 0) > 0.00000001)
+        .map((h) => _transactionAssetKey(h, { preferTicker: isSummary }))
+    );
     const direction = _cemeterySort.dir === 'desc' ? -1 : 1;
     const closed = Array.from(performance.entries())
       .filter(([key, row]) => !activeKeys.has(key) && Number(row.units || 0) <= 0.00000001 && row.firstBuyDate && row.lastSellDate)
@@ -1325,17 +1341,13 @@
         return String(a.lastSellDate || '').localeCompare(String(b.lastSellDate || '')) * direction;
       });
 
-    if (meta) _setPillState(meta, isSummary ? 'Choose a wallet to inspect closures' : `${closed.length} closed position${closed.length === 1 ? '' : 's'}`, '');
-    if (isSummary) {
-      tbody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">The Cemetery is ledger-based. Choose an individual wallet to inspect closed positions.</td></tr>';
-      return;
-    }
+    if (meta) _setPillState(meta, isSummary ? `${closed.length} closed position${closed.length === 1 ? '' : 's'} across all wallets` : `${closed.length} closed position${closed.length === 1 ? '' : 's'}`, '');
     if (!closed.length) {
-      tbody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">No fully closed positions in this wallet.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="3" class="cemetery-empty">${isSummary ? 'No fully closed positions across all wallets.' : 'No fully closed positions in this wallet.'}</td></tr>`;
       return;
     }
 
-    const resolvedPortfolioId = portfolioId || _activePortId || '';
+    const resolvedPortfolioId = isSummary ? '' : (portfolioId || _activePortId || '');
     tbody.innerHTML = closed.map(row => `<tr class="cemetery-row">
       <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="${_esc(row.ticker || row.name || '')}" data-portfolio-id="${_esc(resolvedPortfolioId)}"><span class="cemetery-ticker">${_esc(row.ticker || '—')}</span><span class="cemetery-name">${_esc(row.name)}</span></button></div></td>
       <td class="cemetery-lifespan">${_esc(_lifespanLabel(row.firstBuyDate, row.lastSellDate))}</td>
