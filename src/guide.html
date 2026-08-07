@@ -1009,6 +1009,7 @@
         <li><a href="#first-portfolio">First Wallet</a></li>
         <li><a href="#dashboard-control-room">Dashboard &amp; Control Room</a></li>
         <li><a href="#holdings">Holdings</a></li>
+        <li><a href="#closed-positions-avco">Closed Positions &amp; AVCO</a></li>
         <li><a href="#transactions">Transactions</a></li>
         <li><a href="#history-benchmarks">History &amp; Benchmarks</a></li>
         <li><a href="#ath-management">ATH Management</a></li>
@@ -1115,6 +1116,33 @@
     <p>To <strong>edit or delete</strong> a position, tap the ✏️ or 🗑️ icons on the holding row. To record a trade against an existing holding directly, use the <em>Buy</em> or <em>Sell</em> chip buttons on the holding card.</p>
     <div class="callout info">
       <p><strong>Cash holding:</strong> any holding without a ticker (named e.g. <em>Cash</em> or <em>Konto</em>) is treated as a cash position. Its value is used to calculate available cash for BUY transactions.</p>
+    </div>
+
+    <h3 id="closed-positions-avco">Closed Positions &amp; AVCO</h3>
+    <p>Wallet Management has two holdings views: <strong>Active Holdings</strong> and <strong>The Cemetery</strong>.</p>
+    <ul>
+      <li><strong>Active Holdings:</strong> open positions with live value, daily move, and action buttons.</li>
+      <li><strong>The Cemetery:</strong> fully closed positions with lifecycle, total return, and commentary.</li>
+    </ul>
+
+    <p>For each asset, Roastfolio calculates return components using an <strong>Average Cost Basis (AVCO)</strong> model:</p>
+    <ul>
+      <li><strong>Realized return:</strong> closed P/L from SELL transactions.</li>
+      <li><strong>Unrealized return:</strong> current open P/L on remaining units.</li>
+      <li><strong>Dividends received:</strong> cash dividends assigned to the asset.</li>
+      <li><strong>Total return:</strong> realized + unrealized + dividends.</li>
+    </ul>
+
+    <p>In the Active view, a <strong>Past Realized (AVCO)</strong> badge appears when a holding has non-trivial realized history. In The Cemetery, each row shows:</p>
+    <ul>
+      <li><strong>Asset:</strong> ticker and name.</li>
+      <li><strong>Holding lifespan:</strong> first buy date, last sell date, and days held.</li>
+      <li><strong>Total return:</strong> signed monetary result in PLN.</li>
+      <li><strong>Roast:</strong> contextual commentary from gamification metadata when available.</li>
+    </ul>
+
+    <div class="callout info">
+      <p><strong>Summary wallet behavior:</strong> The Cemetery is portfolio-ledger based and is shown only for an individual wallet. The aggregate <em>Summary</em> view remains read-only and does not render closed-position rows.</p>
     </div>
 
     <h3 id="transactions">Recording transactions</h3>
