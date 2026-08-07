@@ -35,6 +35,8 @@ function _sortSnapshotRows(rows) {
             date: String(row.snapshotDate || '').slice(0, 10),
             value: Number(row.portfolioValue || 0),
             investment: Number(row.investmentValue || 0),
+            unitPrice: row.unitPrice ?? row.unit_price ?? null,
+            cumulativeReturnPct: row.cumulativeReturnPct ?? row.cumulative_return_pct ?? null,
             xirr: row.xirr != null ? Number(row.xirr) : null,
         }))
         .filter(row => row.date)
@@ -466,9 +468,13 @@ function _injectLiveSummaryValue(data) {
     const hasToday = data.some(d => d.date === todayStr);
     let latestInvestment = 0;
     let latestXirr = null;
+    let latestUnitPrice = null;
+    let latestCumulativeReturnPct = null;
     if (data.length > 0) {
         latestInvestment = data[data.length - 1].investment;
         latestXirr = data[data.length - 1].xirr;
+        latestUnitPrice = data[data.length - 1].unitPrice;
+        latestCumulativeReturnPct = data[data.length - 1].cumulativeReturnPct;
     }
     const liveXirr = (typeof WALLET_SUMMARIES !== 'undefined' && WALLET_SUMMARIES && WALLET_SUMMARIES.Summary)
         ? WALLET_SUMMARIES.Summary.annualReturn
@@ -479,13 +485,17 @@ function _injectLiveSummaryValue(data) {
             date: todayStr,
             value: Number(window.PORTFOLIO_TOTAL_VALUE),
             investment: latestInvestment,
-            xirr: todayXirr
+            xirr: todayXirr,
+            unitPrice: latestUnitPrice,
+            cumulativeReturnPct: latestCumulativeReturnPct,
         }];
     } else {
         return data.map(d => d.date === todayStr ? {
             ...d,
             value: Number(window.PORTFOLIO_TOTAL_VALUE),
-            xirr: todayXirr
+            xirr: todayXirr,
+            unitPrice: d.unitPrice ?? latestUnitPrice,
+            cumulativeReturnPct: d.cumulativeReturnPct ?? latestCumulativeReturnPct,
         } : d);
     }
 }
@@ -895,6 +905,12 @@ function renderHeatmapTable(data, metric = 'pct') {
 
 let _underwaterPortfolio = 'summary';
 let _underwaterRange = 'ALL';
+let _underwaterSelectedLakeId = null;
+let _underwaterLakeCatalog = [];
+let _underwaterAllMetrics = [];
+let _underwaterDisplayedMetrics = [];
+let _underwaterShouldScrollDetails = false;
+let _underwaterFocusResetTimer = null;
 let _underwaterPathChart = null;
 let _underwaterLakesChart = null;
 
@@ -910,24 +926,29 @@ function _normalizeUnderwaterMetrics(payload) {
         : (Array.isArray(payload?.daily) ? payload.daily : []);
 
     const rows = source
-        .map(item => ({
-            date: String(item?.date || '').slice(0, 10),
-            value: Number(item?.value || 0),
-            hwm: Number(item?.hwm || 0),
-            drawdown: Math.min(0, Number(item?.drawdown || 0)),
-            lake_id: item?.lake_id == null ? null : Number(item.lake_id),
-        }))
-        .filter(item => item.date && Number.isFinite(item.value) && item.value > 0)
+        .map(item => {
+            const unitPrice = Number(item?.unit_price ?? item?.unitPrice ?? item?.value ?? 0);
+            return {
+                date: String(item?.date || '').slice(0, 10),
+                unit_price: unitPrice,
+            };
+        })
+        .filter(item => item.date && Number.isFinite(item.unit_price) && item.unit_price > 0)
         .sort((a, b) => a.date.localeCompare(b.date));
 
+    let maxUnitPrice = 0;
     let lakeSeq = 0;
     let isUnderwater = false;
     rows.forEach(row => {
+        maxUnitPrice = Math.max(maxUnitPrice, Number(row.unit_price || 0));
+        const drawdown = maxUnitPrice > 0
+            ? ((Number(row.unit_price || 0) - maxUnitPrice) / maxUnitPrice) * 100
+            : 0;
+        row.hwm = maxUnitPrice;
+        row.drawdown = Math.min(0, drawdown);
         if (row.drawdown < 0) {
-            if (row.lake_id == null) {
-                if (!isUnderwater) lakeSeq += 1;
-                row.lake_id = lakeSeq;
-            }
+            if (!isUnderwater) lakeSeq += 1;
+            row.lake_id = lakeSeq;
             isUnderwater = true;
         } else {
             row.lake_id = null;
@@ -946,14 +967,17 @@ function _buildUnderwaterMetricsFromSnapshots(data) {
 
     return sorted.map(row => {
         const value = Number(row.value || 0);
-        hwm = Math.max(hwm, value);
-        const drawdown = hwm > 0 ? ((value - hwm) / hwm) * 100 : 0;
+        const unitBase = row.unitPrice ?? row.unit_price ?? value ?? 0;
+        const unitPrice = Number(unitBase);
+        hwm = Math.max(hwm, unitPrice);
+        const drawdown = hwm > 0 ? ((unitPrice - hwm) / hwm) * 100 : 0;
         const isLakeDay = drawdown < 0;
         if (isLakeDay && !underwater) lakeId += 1;
         underwater = isLakeDay;
         return {
             date: row.date,
             value,
+            unit_price: unitPrice,
             hwm,
             drawdown,
             lake_id: isLakeDay ? lakeId : null,
@@ -989,6 +1013,49 @@ function _extractUnderwaterExtremes(metrics) {
     });
 
     return { deepest, widest };
+}
+
+function _buildUnderwaterLakeCatalog(metrics) {
+    const grouped = new Map();
+    (metrics || []).forEach((row, index) => {
+        const lakeId = Number(row.lake_id);
+        if (!Number.isFinite(lakeId) || lakeId <= 0) return;
+        if (!grouped.has(lakeId)) grouped.set(lakeId, []);
+        grouped.get(lakeId).push({ ...row, index });
+    });
+
+    return Array.from(grouped.entries())
+        .map(([lakeId, rows]) => {
+            const sorted = rows.slice().sort((a, b) => String(a.date).localeCompare(String(b.date)));
+            const start = sorted[0];
+            const end = sorted[sorted.length - 1];
+            const trough = sorted.reduce((acc, row) => (Number(row.drawdown) < Number(acc.drawdown) ? row : acc), sorted[0]);
+            const durationDays = Math.max(1, Math.round((new Date(`${end.date}T00:00:00`) - new Date(`${start.date}T00:00:00`)) / 86400000) + 1);
+
+            return {
+                lakeId,
+                startDate: start.date,
+                endDate: end.date,
+                isOpen: Number(end.drawdown) < 0,
+                durationDays,
+                peakTroughDepthPct: Number(trough.drawdown || 0),
+                troughDate: trough.date,
+                startIndex: start.index,
+                endIndex: end.index,
+                troughIndex: trough.index,
+                rows: sorted,
+            };
+        })
+        .sort((a, b) => a.lakeId - b.lakeId);
+}
+
+function _selectedUnderwaterLake(catalog) {
+    if (!catalog.length) return null;
+    const current = catalog.find(lake => Number(lake.lakeId) === Number(_underwaterSelectedLakeId));
+    if (current) return current;
+    const widest = catalog.reduce((acc, lake) => (!acc || lake.durationDays > acc.durationDays ? lake : acc), null);
+    _underwaterSelectedLakeId = widest ? widest.lakeId : catalog[0].lakeId;
+    return catalog.find(lake => Number(lake.lakeId) === Number(_underwaterSelectedLakeId)) || catalog[0];
 }
 
 function _underwaterRangeStartDate(endDate, range) {
@@ -1036,17 +1103,162 @@ function _ensureUnderwaterPlugin() {
             const points = (meta && meta.data) || [];
             if (!points.length) return;
 
-            const { widestStartIndex, widestEndIndex, deepestIndex, deepestLabel, widestLabel } = opts;
+            const {
+                mode,
+                lakeCatalog = [],
+                selectedLakeId = null,
+                selectedLakeLabel = '',
+                troughIndex = null,
+                deepestIndex,
+                widestStartIndex,
+                widestEndIndex,
+                deepestLabel,
+                widestLabel,
+            } = opts;
             const ctx = chart.ctx;
 
             ctx.save();
 
-            if (
-                Number.isInteger(widestStartIndex)
-                && Number.isInteger(widestEndIndex)
-                && points[widestStartIndex]
-                && points[widestEndIndex]
-            ) {
+            if (mode === 'path' && lakeCatalog.length) {
+                lakeCatalog.forEach((lake) => {
+                    if (!points[lake.startIndex] || !points[lake.endIndex]) return;
+                    const left = points[lake.startIndex].x;
+                    const right = points[lake.endIndex].x;
+                    const width = Math.max(1, right - left);
+                    const selected = Number(lake.lakeId) === Number(selectedLakeId);
+                    ctx.fillStyle = selected ? 'rgba(0, 150, 255, 0.20)' : 'rgba(0, 150, 255, 0.07)';
+                    ctx.fillRect(left, area.top, width, area.bottom - area.top);
+                    if (selected) {
+                        const label = selectedLakeLabel || `Lake ${lake.lakeId}`;
+                        const cx = left + width / 2;
+                        const labelY = Math.max(area.top + 10, area.top + 12);
+                        const padX = 8;
+                        const padY = 5;
+                        ctx.font = '600 11px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+                        const textW = ctx.measureText(label).width;
+                        const boxW = textW + padX * 2;
+                        const boxH = 22;
+                        const boxX = Math.min(Math.max(cx - boxW / 2, area.left + 6), area.right - boxW - 6);
+                        const boxY = labelY;
+
+                        ctx.fillStyle = 'rgba(2, 12, 24, 0.90)';
+                        ctx.strokeStyle = 'rgba(56, 189, 248, 0.70)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.roundRect(boxX, boxY, boxW, boxH, 8);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#d8eeff';
+                        ctx.fillText(label, boxX + padX, boxY + boxH - padY - 3);
+                    }
+                });
+
+                if (Number.isInteger(widestStartIndex) && Number.isInteger(widestEndIndex) && points[widestStartIndex] && points[widestEndIndex]) {
+                    const left = points[widestStartIndex].x;
+                    const right = points[widestEndIndex].x;
+                    const width = Math.max(1, right - left);
+                    ctx.fillStyle = 'rgba(0, 150, 255, 0.10)';
+                    ctx.fillRect(left, area.top, width, area.bottom - area.top);
+
+                    if (widestLabel) {
+                        const cx = left + width / 2;
+                        const labelY = Math.max(area.top + 10, area.top + 12);
+                        const padX = 8;
+                        const padY = 5;
+                        ctx.font = '600 11px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+                        const textW = ctx.measureText(widestLabel).width;
+                        const boxW = textW + padX * 2;
+                        const boxH = 22;
+                        const boxX = Math.min(Math.max(cx - boxW / 2, area.left + 6), area.right - boxW - 6);
+                        const boxY = labelY;
+
+                        ctx.fillStyle = 'rgba(2, 12, 24, 0.86)';
+                        ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.roundRect(boxX, boxY, boxW, boxH, 8);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#9bdcff';
+                        ctx.fillText(widestLabel, boxX + padX, boxY + boxH - padY - 3);
+                    }
+                }
+
+                if (Number.isInteger(deepestIndex) && points[deepestIndex]) {
+                    const x = points[deepestIndex].x;
+                    ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
+                    ctx.setLineDash([4, 4]);
+                    ctx.lineWidth = 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(x, area.top);
+                    ctx.lineTo(x, area.bottom);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    if (deepestLabel) {
+                        const padX = 8;
+                        const padY = 5;
+                        ctx.font = '600 11px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+                        const textW = ctx.measureText(deepestLabel).width;
+                        const boxW = textW + padX * 2;
+                        const boxH = 22;
+                        const boxX = Math.min(Math.max(x - boxW / 2, area.left + 6), area.right - boxW - 6);
+                        const boxY = area.bottom - boxH - 8;
+
+                        ctx.fillStyle = 'rgba(2, 12, 24, 0.90)';
+                        ctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.roundRect(boxX, boxY, boxW, boxH, 8);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        ctx.fillStyle = '#bae6fd';
+                        ctx.fillText(deepestLabel, boxX + padX, boxY + boxH - padY - 3);
+                    }
+                }
+
+                ctx.restore();
+                return;
+            }
+
+            if (mode === 'lake' && selectedLakeLabel) {
+                const padX = 8;
+                const padY = 5;
+                ctx.font = '600 11px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+                const textW = ctx.measureText(selectedLakeLabel).width;
+                const boxW = textW + padX * 2;
+                const boxH = 22;
+                const boxX = Math.min(area.left + 8, area.right - boxW - 8);
+                const boxY = area.top + 10;
+
+                ctx.fillStyle = 'rgba(2, 12, 24, 0.88)';
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.roundRect(boxX, boxY, boxW, boxH, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#d8eeff';
+                ctx.fillText(selectedLakeLabel, boxX + padX, boxY + boxH - padY - 3);
+            }
+
+            if (Number.isInteger(troughIndex) && points[troughIndex]) {
+                const x = points[troughIndex].x;
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
+                ctx.setLineDash([4, 4]);
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(x, area.top);
+                ctx.lineTo(x, area.bottom);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            if (Number.isInteger(widestStartIndex) && Number.isInteger(widestEndIndex) && points[widestStartIndex] && points[widestEndIndex]) {
                 const left = points[widestStartIndex].x;
                 const right = points[widestEndIndex].x;
                 const width = Math.max(1, right - left);
@@ -1128,7 +1340,7 @@ function _underwaterChartTheme() {
         valueLine: isDark ? '#67e8f9' : '#0e7490',
         hwmLine: isDark ? '#f8fafc' : '#1e293b',
         drawdownLine: isDark ? '#38bdf8' : '#0284c7',
-        fill: 'rgba(0, 150, 255, 0.15)',
+        fill: 'rgba(56, 189, 248, 0.15)',
     };
 }
 
@@ -1176,6 +1388,49 @@ function _lakeIndexSpans(metrics, extremes) {
     return { deepestIndex, widestStartIndex, widestEndIndex };
 }
 
+function _selectedLakeSpan(catalog, selectedLake) {
+    if (!selectedLake || !catalog.length) return null;
+    return {
+        lakeId: selectedLake.lakeId,
+        startIndex: selectedLake.startIndex,
+        endIndex: selectedLake.endIndex,
+        troughIndex: selectedLake.troughIndex,
+    };
+}
+
+function _pickLakeFromChart(chart, event) {
+    if (!chart || !chart.data || !chart.data.labels) return null;
+    const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: false }, true) || [];
+    if (!points.length) return null;
+    const index = points[0].index;
+    const row = _underwaterDisplayedMetrics[index];
+    if (!row || !Number.isFinite(Number(row.lake_id)) || Number(row.lake_id) <= 0) return null;
+    return Number(row.lake_id);
+}
+
+function _setSelectedLake(lakeId) {
+    const safeLakeId = Number(lakeId);
+    if (!Number.isFinite(safeLakeId) || safeLakeId <= 0) return;
+    _underwaterSelectedLakeId = safeLakeId;
+    _underwaterShouldScrollDetails = true;
+    refreshUnderwaterLakes();
+}
+
+function _scrollUnderwaterLakeDetails() {
+    if (!_underwaterShouldScrollDetails) return;
+    const panel = document.getElementById('uwl-selected-lake-panel');
+    if (!panel) return;
+    _underwaterShouldScrollDetails = false;
+    window.requestAnimationFrame(() => {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        panel.classList.add('uwl-panel-focus');
+        if (_underwaterFocusResetTimer) window.clearTimeout(_underwaterFocusResetTimer);
+        _underwaterFocusResetTimer = window.setTimeout(() => {
+            panel.classList.remove('uwl-panel-focus');
+        }, 1400);
+    });
+}
+
 function _renderUnderwaterCharts(metrics, extremes) {
     if (!window.Chart) return;
     _ensureUnderwaterPlugin();
@@ -1186,17 +1441,40 @@ function _renderUnderwaterCharts(metrics, extremes) {
 
     const theme = _underwaterChartTheme();
     const labels = metrics.map(row => row.date);
-    const values = metrics.map(row => Number(row.value || 0));
+    const values = metrics.map(row => Number(row.unit_price || 0));
     const hwm = metrics.map(row => Number(row.hwm || 0));
-    const drawdowns = metrics.map(row => Math.min(0, Number(row.drawdown || 0)));
+    const lakeCatalog = _underwaterLakeCatalog;
+    const selectedLake = _selectedUnderwaterLake(lakeCatalog);
     const spans = _lakeIndexSpans(metrics, extremes);
+    const selectedLakeMetrics = selectedLake ? selectedLake.rows : metrics;
+    const selectedLakeLabels = selectedLakeMetrics.map(row => row.date);
+    const selectedLakeDrawdowns = selectedLakeMetrics.map(row => Math.min(0, Number(row.drawdown || 0)));
+    const selectedLakeLabel = selectedLake
+        ? `Lake ${selectedLake.lakeId} · ${selectedLake.durationDays}d · ${selectedLake.isOpen ? 'Open' : `${selectedLake.startDate} → ${selectedLake.endDate}`}`
+        : '';
+    const selectedLakePill = document.getElementById('uwl-selected-lake-pill');
+    if (selectedLakePill) {
+        selectedLakePill.textContent = selectedLakeLabel || 'Click a lake on the left chart';
+    }
 
-    const sharedXAxis = {
+    const sharedXAxisPath = {
         ticks: {
             color: theme.text,
             maxTicksLimit: 8,
             callback: (_value, idx) => {
                 const raw = labels[idx] || '';
+                return raw ? raw.slice(5) : '';
+            },
+        },
+        grid: { color: theme.grid },
+    };
+
+    const sharedXAxisLake = {
+        ticks: {
+            color: theme.text,
+            maxTicksLimit: 8,
+            callback: (_value, idx) => {
+                const raw = selectedLakeLabels[idx] || '';
                 return raw ? raw.slice(5) : '';
             },
         },
@@ -1216,7 +1494,7 @@ function _renderUnderwaterCharts(metrics, extremes) {
         labels,
         datasets: [
             {
-                label: 'Portfolio value',
+                label: 'Unit price',
                 data: values,
                 borderColor: theme.valueLine,
                 borderWidth: 2.2,
@@ -1236,11 +1514,11 @@ function _renderUnderwaterCharts(metrics, extremes) {
     };
 
     const lakesData = {
-        labels,
+        labels: selectedLakeLabels,
         datasets: [
             {
                 label: 'Drawdown %',
-                data: drawdowns,
+                data: selectedLakeDrawdowns,
                 borderColor: theme.drawdownLine,
                 backgroundColor: theme.fill,
                 fill: 'origin',
@@ -1255,20 +1533,35 @@ function _renderUnderwaterCharts(metrics, extremes) {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: 'index', intersect: false },
+        onClick: (event, _elements, chart) => {
+            const lakeId = _pickLakeFromChart(chart, event);
+            if (lakeId != null) _setSelectedLake(lakeId);
+        },
         plugins: {
             legend: { labels: { color: theme.text } },
             tooltip: {
                 ...sharedTooltip,
                 callbacks: {
                     title: (items) => fmtDate(items?.[0]?.label || ''),
-                    label: (ctx) => `${ctx.dataset.label}: ${fmtPLN(ctx.parsed.y || 0)}`,
+                    label: (ctx) => `${ctx.dataset.label}: ${Number(ctx.parsed.y || 0).toFixed(2)}`,
                 },
+            },
+            underwaterLakesOverlay: {
+                mode: 'path',
+                lakeCatalog,
+                selectedLakeId: selectedLake ? selectedLake.lakeId : null,
+                selectedLakeLabel,
+                deepestIndex: spans.deepestIndex,
+                widestStartIndex: spans.widestStartIndex,
+                widestEndIndex: spans.widestEndIndex,
+                deepestLabel: extremes?.deepest ? `Deepest ${_fmtUwlPct(extremes.deepest.drawdown)}` : '',
+                widestLabel: extremes?.widest ? `Widest ${extremes.widest.duration}d` : '',
             },
         },
         scales: {
-            x: sharedXAxis,
+            x: sharedXAxisPath,
             y: {
-                ticks: { color: theme.text, callback: (v) => fmtPLN(v) },
+                ticks: { color: theme.text, callback: (v) => Number(v).toFixed(2) },
                 grid: { color: theme.grid },
             },
         },
@@ -1288,17 +1581,18 @@ function _renderUnderwaterCharts(metrics, extremes) {
                 },
             },
             underwaterLakesOverlay: {
-                deepestIndex: spans.deepestIndex,
-                widestStartIndex: spans.widestStartIndex,
-                widestEndIndex: spans.widestEndIndex,
-                deepestLabel: extremes.deepest ? `Deepest ${_fmtUwlPct(extremes.deepest.drawdown)}` : '',
-                widestLabel: extremes.widest ? `Widest ${extremes.widest.duration}d` : '',
+                mode: 'lake',
+                selectedLakeId: selectedLake ? selectedLake.lakeId : null,
+                selectedLakeLabel: selectedLake
+                    ? `Lake ${selectedLake.lakeId} · ${selectedLake.durationDays}d · ${selectedLake.isOpen ? 'Open' : `${selectedLake.startDate} → ${selectedLake.endDate}`}`
+                    : '',
+                troughIndex: selectedLake ? selectedLake.troughIndex : null,
             },
         },
         scales: {
-            x: sharedXAxis,
+            x: sharedXAxisLake,
             y: {
-                min: -100,
+                min: null,
                 max: 0,
                 ticks: { color: theme.text, callback: (v) => `${v}%` },
                 grid: { color: theme.grid },
@@ -1329,6 +1623,8 @@ function _renderUnderwaterCharts(metrics, extremes) {
             options: lakesOptions,
         });
     }
+
+    _scrollUnderwaterLakeDetails();
 }
 
 async function _loadUnderwaterMetrics(portfolioId) {
@@ -1345,7 +1641,18 @@ async function refreshUnderwaterLakes() {
 
     try {
         const allMetrics = await _loadUnderwaterMetrics(_underwaterPortfolio);
+        _underwaterAllMetrics = allMetrics;
         const metrics = _filterUnderwaterMetricsByRange(allMetrics, _underwaterRange);
+        _underwaterDisplayedMetrics = metrics;
+        _underwaterLakeCatalog = _buildUnderwaterLakeCatalog(metrics);
+        if (_underwaterLakeCatalog.length) {
+            const stillExists = _underwaterLakeCatalog.some(lake => Number(lake.lakeId) === Number(_underwaterSelectedLakeId));
+            if (!stillExists) {
+                _underwaterSelectedLakeId = _selectedUnderwaterLake(_underwaterLakeCatalog)?.lakeId || null;
+            }
+        } else {
+            _underwaterSelectedLakeId = null;
+        }
         const extremes = _extractUnderwaterExtremes(metrics);
         _setUnderwaterCards(extremes);
         _renderUnderwaterCharts(metrics, extremes);
@@ -1360,6 +1667,8 @@ window.setUnderwaterLakesRange = function(range) {
         ? String(range).toUpperCase()
         : 'ALL';
     _underwaterRange = safe;
+    _underwaterSelectedLakeId = null;
+    _underwaterShouldScrollDetails = false;
 
     const btns = document.querySelectorAll('#underwater-lakes-range-btns .history-wallet-btn');
     btns.forEach(btn => {
@@ -1370,8 +1679,14 @@ window.setUnderwaterLakesRange = function(range) {
     refreshUnderwaterLakes();
 };
 
+window.setUnderwaterLakesSelection = function(lakeId) {
+    _setSelectedLake(lakeId);
+};
+
 window.setUnderwaterLakesPortfolio = function(portfolioId) {
     _underwaterPortfolio = portfolioId || 'summary';
+    _underwaterSelectedLakeId = null;
+    _underwaterShouldScrollDetails = false;
     const btns = document.querySelectorAll('#underwater-lakes-portfolio-btns .history-wallet-btn');
     btns.forEach(btn => {
         if (btn.getAttribute('data-wallet-key') === _underwaterPortfolio) btn.classList.add('is-active');
@@ -1404,6 +1719,12 @@ async function _initUnderwaterLakeControls() {
 window.updateUnderwaterLakesVisualizer = function(metricsPayload) {
     const rawMetrics = _normalizeUnderwaterMetrics(metricsPayload);
     const metrics = _filterUnderwaterMetricsByRange(rawMetrics, _underwaterRange);
+    _underwaterAllMetrics = metrics;
+    _underwaterDisplayedMetrics = metrics;
+    _underwaterLakeCatalog = _buildUnderwaterLakeCatalog(metrics);
+    if (!_underwaterLakeCatalog.some(lake => Number(lake.lakeId) === Number(_underwaterSelectedLakeId))) {
+        _underwaterSelectedLakeId = _selectedUnderwaterLake(_underwaterLakeCatalog)?.lakeId || null;
+    }
     const extremes = _extractUnderwaterExtremes(metrics);
     _setUnderwaterCards(extremes);
     _renderUnderwaterCharts(metrics, extremes);

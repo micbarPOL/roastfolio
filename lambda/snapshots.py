@@ -34,6 +34,9 @@ _snapshots_table_ref = None
 _WARSAW_TZ = ZoneInfo("Europe/Warsaw")
 _TWOPLACES = Decimal("0.01")
 _FOURPLACES = Decimal("0.0001")
+_SIXPLACES = Decimal("0.000001")
+_EIGHTPLACES = Decimal("0.00000001")
+_VIRTUAL_UNIT_BASE_PRICE = Decimal("100.00")
 _XIRR_CALCULATION_VERSION = "investment-history-v1"
 
 
@@ -96,6 +99,96 @@ def _quantize_money(value) -> Decimal:
 
 def _quantize_pct(value) -> Decimal:
     return _to_decimal(value).quantize(_FOURPLACES, rounding=ROUND_HALF_UP)
+
+
+def _quantize_unit_price(value) -> Decimal:
+    return _to_decimal(value).quantize(_SIXPLACES, rounding=ROUND_HALF_UP)
+
+
+def _quantize_unit_count(value) -> Decimal:
+    return _to_decimal(value).quantize(_EIGHTPLACES, rounding=ROUND_HALF_UP)
+
+
+def _build_net_cash_flow_by_date(all_transactions: list[dict]) -> dict[str, Decimal]:
+    """Daily net external cash flow = DEPOSIT (+) - WITHDRAWAL (-)."""
+    flows: dict[str, Decimal] = {}
+    for tx in all_transactions:
+        tx_date = str(tx.get("transactionDate") or "").strip()[:10]
+        if not tx_date:
+            continue
+        tx_type = str(tx.get("type") or "").upper()
+        value = _to_decimal(tx.get("value") or 0)
+        if tx_type == "DEPOSIT":
+            flows[tx_date] = flows.get(tx_date, Decimal("0")) + value
+        elif tx_type == "WITHDRAWAL":
+            flows[tx_date] = flows.get(tx_date, Decimal("0")) - value
+    return flows
+
+
+def _virtual_unit_step(
+    ending_value: Decimal,
+    net_cash_flow: Decimal,
+    prev_value: Decimal | None,
+    prev_unit_price: Decimal | None,
+) -> dict:
+    """Compute one-day TWR virtual unit state."""
+    ending_value = _to_decimal(ending_value)
+    net_cash_flow = _to_decimal(net_cash_flow)
+
+    if prev_value is None or prev_value == 0:
+        unit_price = _VIRTUAL_UNIT_BASE_PRICE
+        unit_count = (ending_value / _VIRTUAL_UNIT_BASE_PRICE) if _VIRTUAL_UNIT_BASE_PRICE > 0 else Decimal("0")
+        daily_return = Decimal("0")
+    else:
+        base_price = prev_unit_price if prev_unit_price not in (None, Decimal("0")) else _VIRTUAL_UNIT_BASE_PRICE
+        daily_return = (ending_value - net_cash_flow - prev_value) / prev_value
+        unit_price = base_price * (Decimal("1") + daily_return)
+        unit_count = (ending_value / unit_price) if unit_price != 0 else Decimal("0")
+
+    cumulative_return_pct = ((unit_price / _VIRTUAL_UNIT_BASE_PRICE) - Decimal("1")) * Decimal("100")
+    return {
+        "daily_return": _quantize_pct(daily_return),
+        "unit_price": _quantize_unit_price(unit_price),
+        "unit_count": _quantize_unit_count(unit_count),
+        "cumulative_return_pct": _quantize_pct(cumulative_return_pct),
+    }
+
+
+def calculate_virtual_unit_series(daily_rows: list[dict]) -> list[dict]:
+    """
+    Build a chronological TWR virtual unit series.
+
+    Input row keys accepted:
+      - date or snapshotDate
+      - ending_value or portfolioValue
+      - net_cash_flow or netCashFlow
+    """
+    ordered = sorted(
+        [row for row in (daily_rows or []) if row],
+        key=lambda row: str(row.get("date") or row.get("snapshotDate") or ""),
+    )
+
+    out: list[dict] = []
+    prev_value: Decimal | None = None
+    prev_unit_price: Decimal | None = None
+
+    for row in ordered:
+        date_str = str(row.get("date") or row.get("snapshotDate") or "")[:10]
+        ending_value = _to_decimal(row.get("ending_value", row.get("portfolioValue", 0)))
+        net_cash_flow = _to_decimal(row.get("net_cash_flow", row.get("netCashFlow", 0)))
+        step = _virtual_unit_step(ending_value, net_cash_flow, prev_value, prev_unit_price)
+
+        out.append({
+            "date": date_str,
+            "ending_value": _quantize_money(ending_value),
+            "net_cash_flow": _quantize_money(net_cash_flow),
+            **step,
+        })
+
+        prev_value = ending_value
+        prev_unit_price = step["unit_price"]
+
+    return out
 
 
 def _missing_xirr(value) -> bool:
@@ -310,6 +403,30 @@ def store_daily_snapshot(user_id: str, portfolio_id: str, snapshot: dict, overwr
     elif existing and existing.get("investmentValue") not in (None, ""):
         investment_value = _quantize_money(existing.get("investmentValue"))
 
+    net_cash_flow = snapshot.get("netCashFlow", snapshot.get("net_cash_flow"))
+    if net_cash_flow not in (None, ""):
+        net_cash_flow = _quantize_money(net_cash_flow)
+    elif existing and existing.get("netCashFlow") not in (None, ""):
+        net_cash_flow = _quantize_money(existing.get("netCashFlow"))
+
+    unit_price = snapshot.get("unitPrice", snapshot.get("unit_price"))
+    if unit_price not in (None, ""):
+        unit_price = _quantize_unit_price(unit_price)
+    elif existing and existing.get("unitPrice") not in (None, ""):
+        unit_price = _quantize_unit_price(existing.get("unitPrice"))
+
+    unit_count = snapshot.get("unitCount", snapshot.get("unit_count"))
+    if unit_count not in (None, ""):
+        unit_count = _quantize_unit_count(unit_count)
+    elif existing and existing.get("unitCount") not in (None, ""):
+        unit_count = _quantize_unit_count(existing.get("unitCount"))
+
+    cumulative_return_pct = snapshot.get("cumulativeReturnPct", snapshot.get("cumulative_return_pct"))
+    if cumulative_return_pct not in (None, ""):
+        cumulative_return_pct = _quantize_pct(cumulative_return_pct)
+    elif existing and existing.get("cumulativeReturnPct") not in (None, ""):
+        cumulative_return_pct = _quantize_pct(existing.get("cumulativeReturnPct"))
+
     benchmark_id = snapshot.get("benchmarkId", existing.get("benchmarkId") if existing else None)
 
     xirr_value = snapshot.get("xirr")
@@ -333,6 +450,10 @@ def store_daily_snapshot(user_id: str, portfolio_id: str, snapshot: dict, overwr
         "benchmarkId": benchmark_id,
         "benchmarkValue": benchmark_value,
         "dailyReturn": daily_return,
+        "netCashFlow": net_cash_flow,
+        "unitPrice": unit_price,
+        "unitCount": unit_count,
+        "cumulativeReturnPct": cumulative_return_pct,
         "xirr": xirr_value,
         "updatedAt": now,
     }
@@ -511,8 +632,31 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
         snapshot = calculate_portfolio_snapshot(holdings)
         investment_value = _quantize_money(portfolios.calculate_investment_total(user_id, portfolio_id))
         summary_investment += investment_value
+
+        all_transactions = portfolios.list_all_transactions(user_id, portfolio_id, scan_forward=True)
+        net_cash_flow_by_date = _build_net_cash_flow_by_date(all_transactions)
+        net_cash_flow = _quantize_money(net_cash_flow_by_date.get(snapshot_date, Decimal("0")))
         
-        xirr_history = [s for s in list_snapshots(user_id, portfolio_id) if str(s.get("snapshotDate", "")) < snapshot_date]
+        portfolio_history_all = list_snapshots(user_id, portfolio_id)
+        xirr_history = [s for s in portfolio_history_all if str(s.get("snapshotDate", "")) < snapshot_date]
+        seed_rows = [
+            {
+                "date": s["snapshotDate"],
+                "ending_value": _to_decimal(s.get("portfolioValue", 0)),
+                "net_cash_flow": _to_decimal(net_cash_flow_by_date.get(s["snapshotDate"], Decimal("0"))),
+            }
+            for s in sorted(xirr_history, key=lambda item: str(item.get("snapshotDate", "")))
+        ]
+        seed_series = calculate_virtual_unit_series(seed_rows)
+        twr_prev_value = _to_decimal(seed_series[-1]["ending_value"]) if seed_series else None
+        twr_prev_unit_price = _to_decimal(seed_series[-1]["unit_price"]) if seed_series else None
+        twr_step = _virtual_unit_step(
+            ending_value=_to_decimal(snapshot["portfolioValue"]),
+            net_cash_flow=net_cash_flow,
+            prev_value=twr_prev_value,
+            prev_unit_price=twr_prev_unit_price,
+        )
+
         xirr_history.append({
             "snapshotDate": snapshot_date,
             "portfolioValue": snapshot["portfolioValue"],
@@ -527,6 +671,10 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
             "benchmarkId": benchmark_id,
             "benchmarkValue": benchmark_value,
             "dailyReturn": snapshot["dailyReturn"],
+            "netCashFlow": net_cash_flow,
+            "unitPrice": twr_step["unit_price"],
+            "unitCount": twr_step["unit_count"],
+            "cumulativeReturnPct": twr_step["cumulative_return_pct"],
             "xirr": snap_xirr,
             "xirrVersion": _XIRR_CALCULATION_VERSION,
         }
@@ -544,11 +692,40 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
             "portfolioValue": snapshot["portfolioValue"],
             "investmentValue": investment_value,
             "dailyReturn": snapshot["dailyReturn"],
+            "netCashFlow": net_cash_flow,
+            "unitPrice": twr_step["unit_price"],
+            "unitCount": twr_step["unit_count"],
+            "cumulativeReturnPct": twr_step["cumulative_return_pct"],
         })
 
     if portfolios_out:
         summary_snapshot = calculate_portfolio_snapshot(summary_holdings)
-        xirr_history = [s for s in list_snapshots(user_id, "summary") if str(s.get("snapshotDate", "")) < snapshot_date]
+        summary_net_cash_flow = _quantize_money(sum((_to_decimal(p.get("netCashFlow", 0)) for p in portfolios_out), Decimal("0")))
+        summary_history_all = list_snapshots(user_id, "summary")
+        xirr_history = [s for s in summary_history_all if str(s.get("snapshotDate", "")) < snapshot_date]
+
+        seed_rows = []
+        prev_seed_investment: Decimal | None = None
+        for s in sorted(xirr_history, key=lambda item: str(item.get("snapshotDate", ""))):
+            current_investment = _to_decimal(s.get("investmentValue", 0))
+            inferred_flow = current_investment if prev_seed_investment is None else (current_investment - prev_seed_investment)
+            seed_rows.append({
+                "date": s["snapshotDate"],
+                "ending_value": _to_decimal(s.get("portfolioValue", 0)),
+                "net_cash_flow": _to_decimal(s.get("netCashFlow", inferred_flow)),
+            })
+            prev_seed_investment = current_investment
+
+        seed_series = calculate_virtual_unit_series(seed_rows)
+        twr_prev_value = _to_decimal(seed_series[-1]["ending_value"]) if seed_series else None
+        twr_prev_unit_price = _to_decimal(seed_series[-1]["unit_price"]) if seed_series else None
+        summary_twr_step = _virtual_unit_step(
+            ending_value=_to_decimal(summary_snapshot["portfolioValue"]),
+            net_cash_flow=summary_net_cash_flow,
+            prev_value=twr_prev_value,
+            prev_unit_price=twr_prev_unit_price,
+        )
+
         xirr_history.append({
             "snapshotDate": snapshot_date,
             "portfolioValue": summary_snapshot["portfolioValue"],
@@ -563,6 +740,10 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
                 "benchmarkId": benchmark_id,
                 "benchmarkValue": benchmark_value,
                 "dailyReturn": summary_snapshot["dailyReturn"],
+                "netCashFlow": summary_net_cash_flow,
+                "unitPrice": summary_twr_step["unit_price"],
+                "unitCount": summary_twr_step["unit_count"],
+                "cumulativeReturnPct": summary_twr_step["cumulative_return_pct"],
                 "xirr": summary_xirr,
                 "xirrVersion": _XIRR_CALCULATION_VERSION,
             }, overwrite=overwrite)
@@ -865,6 +1046,28 @@ def recalculate_portfolio_snapshots_from_date(
     now = _now_iso()
     updated = 0
     prev_value: "Decimal | None" = None  # for dailyReturn
+    net_cash_flow_by_date = _build_net_cash_flow_by_date(all_transactions)
+
+    historical_before_from = sorted(
+        [s for s in all_snapshots if str(s.get("snapshotDate", "")) < from_date],
+        key=lambda s: s["snapshotDate"],
+    )
+    twr_prev_value: Decimal | None = None
+    twr_prev_unit_price: Decimal | None = None
+    if historical_before_from:
+        seed_rows = [
+            {
+                "date": s["snapshotDate"],
+                "ending_value": _to_decimal(s.get("portfolioValue", 0)),
+                "net_cash_flow": _to_decimal(net_cash_flow_by_date.get(s["snapshotDate"], Decimal("0"))),
+            }
+            for s in historical_before_from
+        ]
+        seed_series = calculate_virtual_unit_series(seed_rows)
+        if seed_series:
+            seed_last = seed_series[-1]
+            twr_prev_value = _to_decimal(seed_last["ending_value"])
+            twr_prev_unit_price = _to_decimal(seed_last["unit_price"])
 
     with _table().batch_writer() as batch:
         for snapshot in snapshots_to_update:
@@ -896,6 +1099,7 @@ def recalculate_portfolio_snapshots_from_date(
 
             portfolio_value = _quantize_money(portfolio_value)
             investment_value = _quantize_money(_investment_total_at_date(all_transactions, snap_date))
+            net_cash_flow = _quantize_money(net_cash_flow_by_date.get(snap_date, Decimal("0")))
 
             daily_return = Decimal("0")
             if prev_value is not None and prev_value > 0:
@@ -903,6 +1107,15 @@ def recalculate_portfolio_snapshots_from_date(
             elif snapshot.get("dailyReturn") not in (None, ""):
                 daily_return = _to_decimal(snapshot["dailyReturn"])
             prev_value = portfolio_value
+
+            twr_step = _virtual_unit_step(
+                ending_value=portfolio_value,
+                net_cash_flow=net_cash_flow,
+                prev_value=twr_prev_value,
+                prev_unit_price=twr_prev_unit_price,
+            )
+            twr_prev_value = portfolio_value
+            twr_prev_unit_price = _to_decimal(twr_step["unit_price"])
             
             xirr_snapshot = xirr_history_by_date.get(str(snap_date))
             if xirr_snapshot is not None:
@@ -918,6 +1131,10 @@ def recalculate_portfolio_snapshots_from_date(
                 "portfolioValue": portfolio_value,
                 "investmentValue": investment_value,
                 "dailyReturn": daily_return,
+                "netCashFlow": net_cash_flow,
+                "unitPrice": twr_step["unit_price"],
+                "unitCount": twr_step["unit_count"],
+                "cumulativeReturnPct": twr_step["cumulative_return_pct"],
                 "xirr": snap_xirr,
                 "xirrVersion": _XIRR_CALCULATION_VERSION,
                 "updatedAt": now,
@@ -976,16 +1193,58 @@ def recalculate_summary_snapshots_from_date(user_id: str, from_date: str) -> int
 
     now = _now_iso()
     updated = 0
+
+    historical_before_from = sorted(
+        [s for s in all_summary_snapshots if str(s.get("snapshotDate", "")) < from_date],
+        key=lambda s: s["snapshotDate"],
+    )
+    twr_prev_value: Decimal | None = None
+    twr_prev_unit_price: Decimal | None = None
+    prev_seed_investment: Decimal | None = None
+    if historical_before_from:
+        seed_rows = []
+        for s in historical_before_from:
+            current_investment = _to_decimal(s.get("investmentValue", 0))
+            inferred_flow = current_investment if prev_seed_investment is None else (current_investment - prev_seed_investment)
+            seed_rows.append({
+                "date": s["snapshotDate"],
+                "ending_value": _to_decimal(s.get("portfolioValue", 0)),
+                "net_cash_flow": _to_decimal(s.get("netCashFlow", inferred_flow)),
+            })
+            prev_seed_investment = current_investment
+        seed_series = calculate_virtual_unit_series(seed_rows)
+        if seed_series:
+            seed_last = seed_series[-1]
+            twr_prev_value = _to_decimal(seed_last["ending_value"])
+            twr_prev_unit_price = _to_decimal(seed_last["unit_price"])
+
     with _table().batch_writer() as batch:
+        prev_total_investment: Decimal | None = None
         for summary_snap in summary_snapshots:
             snap_date = summary_snap["snapshotDate"]
             total_portfolio_value = Decimal("0")
             total_investment_value = Decimal("0")
+            total_net_cash_flow = Decimal("0")
             for snaps_by_date in portfolio_snap_map.values():
                 day_snap = snaps_by_date.get(snap_date)
                 if day_snap:
                     total_portfolio_value += _to_decimal(day_snap.get("portfolioValue", 0))
                     total_investment_value += _to_decimal(day_snap.get("investmentValue", 0))
+                    total_net_cash_flow += _to_decimal(day_snap.get("netCashFlow", 0))
+
+            if total_net_cash_flow == 0:
+                inferred_flow = total_investment_value if prev_total_investment is None else (total_investment_value - prev_total_investment)
+                total_net_cash_flow = inferred_flow
+            prev_total_investment = total_investment_value
+
+            twr_step = _virtual_unit_step(
+                ending_value=total_portfolio_value,
+                net_cash_flow=total_net_cash_flow,
+                prev_value=twr_prev_value,
+                prev_unit_price=twr_prev_unit_price,
+            )
+            twr_prev_value = total_portfolio_value
+            twr_prev_unit_price = _to_decimal(twr_step["unit_price"])
 
             xirr_snapshot = xirr_history_by_date.get(str(snap_date))
             if xirr_snapshot is not None:
@@ -1000,6 +1259,10 @@ def recalculate_summary_snapshots_from_date(user_id: str, from_date: str) -> int
                 "snapshotDate": snap_date,
                 "portfolioValue": _quantize_money(total_portfolio_value),
                 "investmentValue": _quantize_money(total_investment_value),
+                "netCashFlow": _quantize_money(total_net_cash_flow),
+                "unitPrice": twr_step["unit_price"],
+                "unitCount": twr_step["unit_count"],
+                "cumulativeReturnPct": twr_step["cumulative_return_pct"],
                 "xirr": snap_xirr,
                 "xirrVersion": _XIRR_CALCULATION_VERSION,
                 "updatedAt": now,
