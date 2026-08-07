@@ -5858,6 +5858,12 @@ section.wallet-screen {
 .cemetery-return.is-negative { color: var(--fintech-danger); }
 .cemetery-return.is-neutral { color: var(--fintech-text-muted); }
 
+.cemetery-unrealized {
+    color: var(--fintech-text-muted);
+    font-weight: 600;
+    margin-left: 4px;
+}
+
 .analysis-scope-row {
     display: flex;
     flex-wrap: wrap;

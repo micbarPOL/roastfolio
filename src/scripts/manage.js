@@ -267,6 +267,17 @@
     return `${firstBuyDate} → ${lastSellDate} · ${days === 1 ? '1 day' : `${days} days`}`;
   }
 
+  function _positionLifespanLabel(firstBuyDate, lastSellDate) {
+    if (!firstBuyDate) return 'Dates unavailable';
+    if (!lastSellDate) {
+      const start = new Date(`${firstBuyDate}T00:00:00`);
+      const now = new Date();
+      const days = Math.max(0, Math.round((now - start) / 86400000));
+      return `${firstBuyDate} → Active · ${days === 1 ? '1 day' : `${days} days`}`;
+    }
+    return _lifespanLabel(firstBuyDate, lastSellDate);
+  }
+
   function _bindCemeterySortHandlers() {
     const dateBtn = document.getElementById('cemetery-sort-date');
     const returnBtn = document.getElementById('cemetery-sort-return');
@@ -295,7 +306,7 @@
 
     const arrow = (_cemeterySort.dir === 'desc') ? ' ↓' : ' ↑';
     dateBtn.textContent = `Holding lifespan${_cemeterySort.key === 'date' ? arrow : ''}`;
-    returnBtn.textContent = `Total return${_cemeterySort.key === 'return' ? arrow : ''}`;
+    returnBtn.textContent = `Realized (Unrealized)${_cemeterySort.key === 'return' ? arrow : ''}`;
   }
 
   function _isCompactWalletSelector() {
@@ -1332,26 +1343,37 @@
     );
     const direction = _cemeterySort.dir === 'desc' ? -1 : 1;
     const closed = Array.from(performance.entries())
-      .filter(([key, row]) => !activeKeys.has(key) && Number(row.units || 0) <= 0.00000001 && row.firstBuyDate && row.lastSellDate)
-      .map(([, row]) => ({ ...row, totalReturn: Number(row.realized || 0) + Number(row.unrealized || 0) + Number(row.dividends || 0) }))
+      .filter(([, row]) => row.firstBuyDate)
+      .map(([key, row]) => ({
+        ...row,
+        isActive: activeKeys.has(key) || Number(row.units || 0) > 0.00000001,
+        totalReturn: Number(row.realized || 0) + Number(row.unrealized || 0) + Number(row.dividends || 0),
+      }))
       .sort((a, b) => {
         if (_cemeterySort.key === 'return') {
           return (Number(a.totalReturn || 0) - Number(b.totalReturn || 0)) * direction;
         }
-        return String(a.lastSellDate || '').localeCompare(String(b.lastSellDate || '')) * direction;
+        const aDate = String(a.lastSellDate || a.firstBuyDate || '');
+        const bDate = String(b.lastSellDate || b.firstBuyDate || '');
+        return aDate.localeCompare(bDate) * direction;
       });
 
-    if (meta) _setPillState(meta, isSummary ? `${closed.length} closed position${closed.length === 1 ? '' : 's'} across all wallets` : `${closed.length} closed position${closed.length === 1 ? '' : 's'}`, '');
+    const activeCount = closed.filter((row) => row.isActive).length;
+    const closedCount = closed.length - activeCount;
+    if (meta) {
+      const base = `${closed.length} position${closed.length === 1 ? '' : 's'} · ${activeCount} active · ${closedCount} closed`;
+      _setPillState(meta, isSummary ? `${base} across all wallets` : base, '');
+    }
     if (!closed.length) {
-      tbody.innerHTML = `<tr><td colspan="3" class="cemetery-empty">${isSummary ? 'No fully closed positions across all wallets.' : 'No fully closed positions in this wallet.'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" class="cemetery-empty">${isSummary ? 'No investment positions across all wallets.' : 'No investment positions in this wallet.'}</td></tr>`;
       return;
     }
 
     const resolvedPortfolioId = isSummary ? '' : (portfolioId || _activePortId || '');
     tbody.innerHTML = closed.map(row => `<tr class="cemetery-row">
       <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="${_esc(row.ticker || row.name || '')}" data-portfolio-id="${_esc(resolvedPortfolioId)}"><span class="cemetery-ticker">${_esc(row.ticker || '—')}</span><span class="cemetery-name">${_esc(row.name)}</span></button></div></td>
-      <td class="cemetery-lifespan">${_esc(_lifespanLabel(row.firstBuyDate, row.lastSellDate))}</td>
-      <td class="cemetery-return ${_dailyChangeClass(row.totalReturn)}">${_fmtSignedMoney(row.totalReturn)}</td>
+      <td class="cemetery-lifespan">${_esc(_positionLifespanLabel(row.firstBuyDate, row.lastSellDate))}</td>
+      <td class="cemetery-return ${_dailyChangeClass(row.realized)}">${_fmtSignedMoney(row.realized)} <span class="cemetery-unrealized">(${_fmtSignedMoney(row.unrealized)})</span></td>
     </tr>`).join('');
 
     tbody.querySelectorAll('.cemetery-asset-link').forEach((button) => {
