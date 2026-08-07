@@ -1357,14 +1357,32 @@
         .filter(h => Number(h.units || 0) > 0.00000001)
         .map((h) => _transactionAssetKey(h, { preferTicker: isSummary }))
     );
+    const holdingsByKey = new Map(
+      (holdings || []).map((h) => [_transactionAssetKey(h, { preferTicker: isSummary }), h])
+    );
     const direction = _cemeterySort.dir === 'desc' ? -1 : 1;
     const allRows = Array.from(performance.entries())
       .filter(([, row]) => row.firstBuyDate)
-      .map(([key, row]) => ({
-        ...row,
-        isActive: activeKeys.has(key) || Number(row.units || 0) > 0.00000001,
-        totalReturn: Number(row.realized || 0) + Number(row.unrealized || 0) + Number(row.dividends || 0),
-      }))
+      .map(([key, row]) => {
+        const holding = holdingsByKey.get(key) || null;
+        const holdingUnrealized = _holdingMetricValue(holding, 'unrealized_return', 'unrealizedReturn');
+        const holdingProfit = holding
+          ? (Number.isFinite(Number(holding.profit))
+              ? Number(holding.profit)
+              : Number(holding.currentValue || 0) - Number(holding.purchaseValue || 0))
+          : null;
+        const rowUnrealized = Number(row.unrealized);
+        const unrealized = Number.isFinite(rowUnrealized)
+          ? rowUnrealized
+          : (holdingUnrealized ?? holdingProfit ?? 0);
+
+        return {
+          ...row,
+          unrealized,
+          isActive: activeKeys.has(key) || Number(row.units || 0) > 0.00000001,
+          totalReturn: Number(row.realized || 0) + Number(unrealized || 0) + Number(row.dividends || 0),
+        };
+      })
       .sort((a, b) => {
         if (_cemeterySort.key === 'return') {
           return (Number(a.totalReturn || 0) - Number(b.totalReturn || 0)) * direction;
