@@ -900,6 +900,7 @@ let _underwaterLakeCatalog = [];
 let _underwaterAllMetrics = [];
 let _underwaterDisplayedMetrics = [];
 let _underwaterShouldScrollDetails = false;
+let _underwaterFocusResetTimer = null;
 let _underwaterPathChart = null;
 let _underwaterLakesChart = null;
 
@@ -1368,6 +1369,11 @@ function _scrollUnderwaterLakeDetails() {
     _underwaterShouldScrollDetails = false;
     window.requestAnimationFrame(() => {
         panel.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        panel.classList.add('uwl-panel-focus');
+        if (_underwaterFocusResetTimer) window.clearTimeout(_underwaterFocusResetTimer);
+        _underwaterFocusResetTimer = window.setTimeout(() => {
+            panel.classList.remove('uwl-panel-focus');
+        }, 1400);
     });
 }
 
