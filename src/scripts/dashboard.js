@@ -178,14 +178,30 @@ function getRecordedSnapshotAth(baseAthInfo) {
 }
 
 function isPortfolioAtNewAth() {
-    const athInfo = getRecordedSnapshotAth(window.PORTFOLIO_ATH);
+    const baseAth = window.PORTFOLIO_ATH;
+    const snapAth = window._SNAPSHOT_ATH;
     const current = Number(window.PORTFOLIO_TOTAL_VALUE || 0);
-    const athValue = Number(athInfo && athInfo.athValue ? athInfo.athValue : 0);
     const dailyPct = Number(window.PORTFOLIO_DAILY_CHANGE_PCT || 0);
-    if (dailyPct < 0) return false;
-    // Don't show ATH celebration for micro gains (< 0.05% or < 50 PLN) to ignore FX/price discrepancies
-    const threshold = Math.max(athValue * 0.0005, 50); 
-    return Boolean(athValue && current > athValue + threshold);
+
+    if (!current || dailyPct < 0) return false;
+
+    let baseAthVal = baseAth && baseAth.athValue != null ? Number(baseAth.athValue) : 0;
+    let baseAthDate = baseAth && baseAth.athDate ? baseAth.athDate : '';
+
+    if (snapAth && Number(snapAth.athValue) > baseAthVal) {
+        baseAthVal = Number(snapAth.athValue);
+        baseAthDate = snapAth.athDate || baseAthDate;
+    }
+
+    let todayDate = '';
+    try {
+        todayDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
+    } catch (e) {
+        todayDate = new Date().toISOString().slice(0, 10);
+    }
+
+    // Portfolio is at new ATH if today's date matches ATH date or current value meets/exceeds base ATH
+    return Boolean(baseAthVal > 0 && (baseAthDate === todayDate || current >= baseAthVal - 10));
 }
 
 function fireworkBurstMarkup(prefix, burstIndex) {
@@ -204,6 +220,10 @@ function fireworkBurstMarkup(prefix, burstIndex) {
 }
 
 function athCelebrationMarkup(title, note, gain) {
+    const metaText = (gain && gain > 10)
+        ? `Up ${gain.toLocaleString('pl-PL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} PLN above previous recorded peak.`
+        : `Portfolio is currently trading at its peak all-time value today.`;
+
     return `
         <div class="ath-celebration-inner">
             <div class="ath-hologram" aria-hidden="true">
@@ -222,9 +242,7 @@ function athCelebrationMarkup(title, note, gain) {
                 <div class="ath-celebration-badge">New All-Time High</div>
                 <div class="ath-celebration-title">${title}</div>
                 <div class="ath-celebration-note">${note}</div>
-                <div class="ath-celebration-meta">
-                    Up ${gain.toLocaleString('pl-PL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} PLN above the last recorded ATH.
-                </div>
+                <div class="ath-celebration-meta">${metaText}</div>
             </div>
         </div>
     `;
@@ -239,7 +257,7 @@ function renderAthCelebration(targetId) {
         return;
     }
 
-    const athInfo = getRecordedSnapshotAth(window.PORTFOLIO_ATH) || {};
+    const athInfo = window.PORTFOLIO_ATH || {};
     const current = Number(window.PORTFOLIO_TOTAL_VALUE || 0);
     const athValue = Number(athInfo.athValue || 0);
     const note = getStableGaugeComment(
@@ -263,8 +281,16 @@ function renderAthCelebrationFor(targetId, athInfo, currentValue, dailyPct) {
     }
     const current = Number(currentValue || 0);
     const athValue = Number(athInfo && athInfo.athValue ? athInfo.athValue : 0);
-    const threshold = Math.max(athValue * 0.0005, 50);
-    if (!athValue || current <= athValue + threshold) {
+
+    let todayDate = '';
+    try {
+        todayDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
+    } catch (e) {
+        todayDate = new Date().toISOString().slice(0, 10);
+    }
+
+    const isTodayAth = (athInfo && athInfo.athDate === todayDate) || (athValue > 0 && current >= athValue - 10);
+    if (!isTodayAth) {
         el.hidden = true;
         el.innerHTML = '';
         return;
