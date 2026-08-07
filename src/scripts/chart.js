@@ -87,6 +87,8 @@ function _sortSnapshotsAscending(items) {
             date: String(item.snapshotDate || '').slice(0, 10),
             value: Number(item.portfolioValue || 0),
             investment: Number(item.investmentValue || 0),
+            unitPrice: item.unitPrice ?? item.unit_price ?? null,
+            cumulativeReturnPct: item.cumulativeReturnPct ?? item.cumulative_return_pct ?? null,
         }))
         .filter(item => item.date)
         .sort((a, b) => a.date.localeCompare(b.date));
@@ -149,15 +151,21 @@ async function _loadHistorySnapshots(force = false) {
                 latestInvestment = summaryRows[summaryRows.length - 1].investment;
             }
             if (!hasToday) {
+                const last = summaryRows[summaryRows.length - 1] || {};
                 summaryRows.push({
                     date: todayStr,
                     value: Number(window.PORTFOLIO_TOTAL_VALUE),
-                    investment: latestInvestment
+                    investment: latestInvestment,
+                    unitPrice: Number(last.unitPrice || 0),
+                    cumulativeReturnPct: Number(last.cumulativeReturnPct || 0),
                 });
             } else {
+                const last = summaryRows[summaryRows.length - 1] || {};
                 summaryRows = summaryRows.map(d => d.date === todayStr ? {
                     ...d,
-                    value: Number(window.PORTFOLIO_TOTAL_VALUE)
+                    value: Number(window.PORTFOLIO_TOTAL_VALUE),
+                    unitPrice: Number(d.unitPrice || last.unitPrice || 0),
+                    cumulativeReturnPct: Number(d.cumulativeReturnPct || last.cumulativeReturnPct || 0),
                 } : d);
             }
             // Recalculate ATH and peaks
@@ -190,15 +198,21 @@ async function _loadHistorySnapshots(force = false) {
                     latestInvestment = walletRows[walletRows.length - 1].investment;
                 }
                 if (!hasToday) {
+                    const last = walletRows[walletRows.length - 1] || {};
                     walletRows.push({
                         date: todayStr,
                         value: liveWalletVal,
-                        investment: latestInvestment
+                        investment: latestInvestment,
+                        unitPrice: Number(last.unitPrice || 0),
+                        cumulativeReturnPct: Number(last.cumulativeReturnPct || 0),
                     });
                 } else {
+                    const last = walletRows[walletRows.length - 1] || {};
                     walletRows = walletRows.map(d => d.date === todayStr ? {
                         ...d,
-                        value: liveWalletVal
+                        value: liveWalletVal,
+                        unitPrice: Number(d.unitPrice || last.unitPrice || 0),
+                        cumulativeReturnPct: Number(d.cumulativeReturnPct || last.cumulativeReturnPct || 0),
                     } : d);
                 }
                 // Recalculate ATH and peaks for wallet
@@ -694,6 +708,19 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
     const returns = data.map(item => {
         const profit = item.value - item.investment;
         if (mode === 'pln') return Number(profit.toFixed(2));
+
+        if (item.cumulativeReturnPct != null && item.cumulativeReturnPct !== '') {
+            const backendTwrPct = Number(item.cumulativeReturnPct);
+            if (Number.isFinite(backendTwrPct)) return Number(backendTwrPct.toFixed(2));
+        }
+
+        if (item.unitPrice != null && item.unitPrice !== '') {
+            const unitPrice = Number(item.unitPrice);
+            if (Number.isFinite(unitPrice) && unitPrice > 0) {
+                return Number((((unitPrice / 100) - 1) * 100).toFixed(2));
+            }
+        }
+
         if (!item.investment) return 0;
         return Number(((profit / item.investment) * 100).toFixed(2));
     });
