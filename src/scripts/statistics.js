@@ -1302,9 +1302,11 @@ function _renderUnderwaterCharts(metrics, extremes) {
 async function _loadUnderwaterMetrics(portfolioId) {
     if (window.PortfolioClient && typeof window.PortfolioClient.getDrawdownLakes === 'function') {
         try {
-            const payload = await window.PortfolioClient.getDrawdownLakes(portfolioId);
-            const normalized = _normalizeUnderwaterMetrics(payload);
-            if (normalized.length) return normalized;
+            const payload = await window.PortfolioClient.getDrawdownLakes(portfolioId).catch(() => null);
+            if (payload) {
+                const normalized = _normalizeUnderwaterMetrics(payload);
+                if (normalized.length) return normalized;
+            }
         } catch (_err) {
             // Endpoint may not exist yet in all environments; fallback to local calc.
         }

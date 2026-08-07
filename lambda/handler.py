@@ -1666,6 +1666,40 @@ def portfolios_handler(event: dict) -> dict:
                 return _resp(500, {"error": str(e), "trace": err_trace})
         return _resp(405, {"error": f"Method {method} not allowed"})
 
+    # ── /portfolios/{id}/drawdown-lakes ─────────────────────────
+    if portfolio_id and "/drawdown-lakes" in path:
+        if method == "GET":
+            try:
+                import drawdown_lakes
+                import pandas as pd
+                snaps = snapshots.list_snapshots(user_id, portfolio_id)
+                if not snaps:
+                    return _resp(200, {"daily": [], "lakes": [], "extremes": {}})
+                
+                rows = []
+                for s in snaps:
+                    d = str(s.get("snapshotDate") or s.get("date") or "")[:10]
+                    val = float(s.get("portfolioValue", s.get("value", 0)))
+                    if d and val > 0:
+                        rows.append({"date": d, "value": val})
+                
+                if not rows:
+                    return _resp(200, {"daily": [], "lakes": [], "extremes": {}})
+                
+                df = pd.DataFrame(rows).drop_duplicates("date").sort_values("date")
+                df["date"] = pd.to_datetime(df["date"])
+                df = df.set_index("date")
+
+                analyzer = drawdown_lakes.DrawdownLakeAnalyzer(value_col="value")
+                result = analyzer.analyze(df)
+                return _resp(200, result)
+            except Exception as e:
+                import traceback
+                err_trace = traceback.format_exc()
+                print(f"DRAWDOWN LAKES ERROR: {err_trace}")
+                return _resp(500, {"error": str(e), "trace": err_trace})
+        return _resp(405, {"error": f"Method {method} not allowed"})
+
     # ── /portfolios/{id}/ath ──────────────────────────────────
     if portfolio_id and "/ath" in path:
         if method == "GET":
