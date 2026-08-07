@@ -1034,6 +1034,12 @@
                     <div class="history-wallet-btns" id="underwater-lakes-portfolio-btns" role="tablist">
                         <!-- Populated by JS -->
                     </div>
+                    <div class="history-wallet-btns" id="underwater-lakes-range-btns" role="tablist" aria-label="Underwater lakes time range">
+                        <button class="history-wallet-btn is-active" data-range="ALL" onclick="setUnderwaterLakesRange('ALL')">All</button>
+                        <button class="history-wallet-btn" data-range="3Y" onclick="setUnderwaterLakesRange('3Y')">3Y</button>
+                        <button class="history-wallet-btn" data-range="1Y" onclick="setUnderwaterLakesRange('1Y')">1Y</button>
+                        <button class="history-wallet-btn" data-range="YTD" onclick="setUnderwaterLakesRange('YTD')">YTD</button>
+                    </div>
                 </div>
 
                 <div class="uwl-stat-grid" id="underwater-lakes-stat-grid">
