@@ -24,6 +24,7 @@
   let _currentSnapshots = [];
   let _holdingsView = 'active';
   let _cemeterySort = { key: 'date', dir: 'desc' }; // default: latest close first
+  let _cemeteryFilter = 'all'; // all | active | closed
   let _transactionsPanelMode = 'trade';
   let _priceInputSource = 'price'; // 'price' | 'total' — last edited price-related field
 
@@ -307,6 +308,20 @@
     const arrow = (_cemeterySort.dir === 'desc') ? ' ↓' : ' ↑';
     dateBtn.textContent = `Holding lifespan${_cemeterySort.key === 'date' ? arrow : ''}`;
     returnBtn.textContent = `Realized (Unrealized)${_cemeterySort.key === 'return' ? arrow : ''}`;
+  }
+
+  function _bindCemeteryFilterHandler() {
+    const select = document.getElementById('cemetery-filter');
+    if (!select || select.dataset.bound === '1') return;
+    select.dataset.bound = '1';
+    select.value = _cemeteryFilter;
+    select.addEventListener('change', () => {
+      const next = String(select.value || 'all');
+      _cemeteryFilter = ['all', 'active', 'closed'].includes(next) ? next : 'all';
+      if (_activePortId) {
+        _renderHoldings(_activePortId, _currentHoldings, _isSummaryPortfolio(_activePortId));
+      }
+    });
   }
 
   function _isCompactWalletSelector() {
@@ -1334,6 +1349,7 @@
     if (!tbody) return;
 
     _bindCemeterySortHandlers();
+    _bindCemeteryFilterHandler();
     _updateCemeterySortLabels();
 
     const activeKeys = new Set(
@@ -1342,7 +1358,7 @@
         .map((h) => _transactionAssetKey(h, { preferTicker: isSummary }))
     );
     const direction = _cemeterySort.dir === 'desc' ? -1 : 1;
-    const closed = Array.from(performance.entries())
+    const allRows = Array.from(performance.entries())
       .filter(([, row]) => row.firstBuyDate)
       .map(([key, row]) => ({
         ...row,
@@ -1358,14 +1374,21 @@
         return aDate.localeCompare(bDate) * direction;
       });
 
-    const activeCount = closed.filter((row) => row.isActive).length;
-    const closedCount = closed.length - activeCount;
+    const closed = allRows.filter((row) => {
+      if (_cemeteryFilter === 'active') return row.isActive;
+      if (_cemeteryFilter === 'closed') return !row.isActive;
+      return true;
+    });
+
+    const activeCount = allRows.filter((row) => row.isActive).length;
+    const closedCount = allRows.length - activeCount;
     if (meta) {
-      const base = `${closed.length} position${closed.length === 1 ? '' : 's'} · ${activeCount} active · ${closedCount} closed`;
+      const visible = `${closed.length} shown`;
+      const base = `${visible} · ${activeCount} active · ${closedCount} closed`;
       _setPillState(meta, isSummary ? `${base} across all wallets` : base, '');
     }
     if (!closed.length) {
-      tbody.innerHTML = `<tr><td colspan="3" class="cemetery-empty">${isSummary ? 'No investment positions across all wallets.' : 'No investment positions in this wallet.'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" class="cemetery-empty">${isSummary ? 'No positions match this filter across all wallets.' : 'No positions match this filter in this wallet.'}</td></tr>`;
       return;
     }
 

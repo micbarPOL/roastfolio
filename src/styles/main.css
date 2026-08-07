@@ -5799,6 +5799,28 @@ section.wallet-screen {
     font-weight: 750;
 }
 
+.cemetery-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cemetery-filter-label {
+    color: var(--fintech-text-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cemetery-filter-select {
+    min-width: 108px;
+    background: rgba(8, 17, 27, 0.75);
+    border: 1px solid var(--fintech-border);
+    border-radius: 10px;
+    color: var(--fintech-text);
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
 .cemetery-table-wrap { min-height: 220px; }
 .cemetery-table th:nth-child(1) { width: 21%; }
 .cemetery-table th:nth-child(2) { width: 25%; }
@@ -5903,6 +5925,8 @@ section.wallet-screen {
     .holdings-view-toggle { width: 100%; }
     .holdings-view-btn { flex: 1; padding-inline: 8px; }
     .cemetery-header { align-items: stretch; flex-direction: column; }
+    .cemetery-controls { width: 100%; flex-wrap: wrap; }
+    .cemetery-filter-select { flex: 1; min-width: 0; }
     .cemetery-table { min-width: 690px; }
     .cemetery-table-wrap { overflow-x: auto; }
     .analysis-scope-row { align-items: stretch; flex-direction: column; }

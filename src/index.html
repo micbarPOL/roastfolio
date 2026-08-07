@@ -849,7 +849,15 @@
                                     <div class="cemetery-title">Closed Positions</div>
                                     <div class="wallet-table-subtitle">Closed positions with lifecycle and total return.</div>
                                 </div>
-                                <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
+                                <div class="cemetery-controls">
+                                    <label for="cemetery-filter" class="cemetery-filter-label">View</label>
+                                    <select id="cemetery-filter" class="cemetery-filter-select">
+                                        <option value="all">All</option>
+                                        <option value="active">Active</option>
+                                        <option value="closed">Closed</option>
+                                    </select>
+                                    <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
+                                </div>
                             </div>
                             <div class="wallet-table-wrap cemetery-table-wrap">
                                 <table class="wallet-holdings-table cemetery-table">
