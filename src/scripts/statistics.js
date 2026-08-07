@@ -1092,6 +1092,8 @@ function _ensureUnderwaterPlugin() {
                 selectedLakeLabel = '',
                 troughIndex = null,
                 deepestIndex,
+                widestStartIndex,
+                widestEndIndex,
                 deepestLabel,
                 widestLabel,
             } = opts;
