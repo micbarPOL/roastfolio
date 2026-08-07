@@ -54,22 +54,26 @@ _update_version = 0   # increments every time a fresh update completes
 def _iso(d):
     return d.strftime('%Y-%m-%dT%H:%M:%SZ') if isinstance(d, datetime) else d.isoformat() + 'T00:00:00Z'
 
-def _gen_snapshots(portfolio_id, start_value, invested, days=120):
-    """Generate plausible daily snapshots with random-walk portfolio value."""
-    random.seed(42)  # deterministic so the chart looks the same every run
+def _gen_snapshots(portfolio_id, start_value, invested, days=2200):
+    """Generate plausible multi-year daily snapshots (2020-2026) with random-walk portfolio value."""
+    random.seed(abs(hash(portfolio_id)) % 100000)
     snaps = []
     v = start_value
+    inv = invested
     today = date.today()
     for i in range(days, 0, -1):
         d = today - timedelta(days=i)
         if d.weekday() >= 5:
             continue
-        v *= 1 + random.gauss(0.0005, 0.011)
+        if d.day == 1 and i < days:
+            inv += random.choice([500, 1000, 1500, 2000])
+            v += inv * 0.05
+        v *= 1 + random.gauss(0.0006, 0.012)
         snaps.append({
             'snapshotDate':    d.isoformat(),
             'portfolioId':     portfolio_id,
             'portfolioValue':  round(v, 2),
-            'investmentValue': round(invested, 2),
+            'investmentValue': round(inv, 2),
             'dailyReturn':     round(random.gauss(0.05, 1.1), 4),
             'benchmarkId':     'WIG',
             'benchmarkValue':  round(50000 + (days - i) * 18 + random.gauss(0, 400), 2),
@@ -286,17 +290,19 @@ def _mock_prices(view='full'):
 
 
 def _build_mock_state():
-    snaps_demo = _gen_snapshots('demo', start_value=14500, invested=11700)
-    snaps_ike  = _gen_snapshots('ike',  start_value=8200,  invested=7000)
-    ath_demo   = max(snaps_demo, key=lambda s: s['portfolioValue'])
-    ath_ike    = max(snaps_ike,  key=lambda s: s['portfolioValue'])
+    snaps_summary = _gen_snapshots('summary', start_value=22700, invested=18700)
+    snaps_demo    = _gen_snapshots('demo',    start_value=14500, invested=11700)
+    snaps_ike     = _gen_snapshots('ike',     start_value=8200,  invested=7000)
+    ath_summary   = max(snaps_summary, key=lambda s: s['portfolioValue'])
+    ath_demo      = max(snaps_demo,    key=lambda s: s['portfolioValue'])
+    ath_ike       = max(snaps_ike,     key=lambda s: s['portfolioValue'])
     return {
         'user': {
             'userId':    'dev-user-localhost',
             'email':     'dev@localhost',
             'nickname':  'Dev User',
             'role':      'ADVANCED',
-            'createdAt': '2026-01-01T00:00:00Z',
+            'createdAt': '2020-01-01T00:00:00Z',
             'updatedAt': '2026-01-01T00:00:00Z',
             'settings':  {'theme': 'dark', 'currency': 'PLN'},
         },
@@ -355,12 +361,14 @@ def _build_mock_state():
             ],
         },
         'snapshots': {
-            'demo': snaps_demo,
-            'ike':  snaps_ike,
+            'summary': snaps_summary,
+            'demo':    snaps_demo,
+            'ike':     snaps_ike,
         },
         'ath': {
-            'demo': {'portfolioId': 'demo', 'athValue': ath_demo['portfolioValue'], 'athDate': ath_demo['snapshotDate'], 'athSource': 'AUTO'},
-            'ike':  {'portfolioId': 'ike',  'athValue': ath_ike['portfolioValue'],  'athDate': ath_ike['snapshotDate'],  'athSource': 'AUTO'},
+            'summary': {'portfolioId': 'summary', 'athValue': ath_summary['portfolioValue'], 'athDate': ath_summary['snapshotDate'], 'athSource': 'AUTO'},
+            'demo':    {'portfolioId': 'demo',    'athValue': ath_demo['portfolioValue'],    'athDate': ath_demo['snapshotDate'],    'athSource': 'AUTO'},
+            'ike':     {'portfolioId': 'ike',     'athValue': ath_ike['portfolioValue'],     'athDate': ath_ike['snapshotDate'],     'athSource': 'AUTO'},
         },
     }
 
