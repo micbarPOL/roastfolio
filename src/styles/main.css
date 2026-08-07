@@ -5741,6 +5741,115 @@ section.wallet-screen {
     line-height: 1.5;
 }
 
+.holdings-view-toggle {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    margin: 0 0 var(--fintech-space-4);
+    border: 1px solid var(--fintech-border);
+    border-radius: var(--fintech-radius-control);
+    background: rgba(7, 15, 23, 0.5);
+}
+
+.holdings-view-btn {
+    border: 0;
+    border-radius: calc(var(--fintech-radius-control) - 3px);
+    background: transparent;
+    color: var(--fintech-text-muted);
+    padding: 8px 11px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    cursor: pointer;
+}
+
+.holdings-view-btn.is-active {
+    background: rgba(74, 159, 212, 0.18);
+    color: #a8dcff;
+    box-shadow: inset 0 0 0 1px rgba(74, 159, 212, 0.25);
+}
+
+.wht-realized {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 3px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.25;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.wht-realized.is-positive { color: var(--fintech-success); }
+.wht-realized.is-negative { color: var(--fintech-danger); }
+
+.cemetery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--fintech-space-3);
+    margin-bottom: var(--fintech-space-4);
+}
+
+.cemetery-title {
+    color: var(--fintech-text);
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.cemetery-table-wrap { min-height: 220px; }
+.cemetery-table th:nth-child(1) { width: 21%; }
+.cemetery-table th:nth-child(2) { width: 25%; }
+.cemetery-table th:nth-child(3) { width: 16%; text-align: right; }
+.cemetery-table td:nth-child(3) { text-align: right; white-space: nowrap; }
+
+.cemetery-asset {
+    display: grid;
+    gap: 3px;
+}
+
+.cemetery-ticker {
+    color: #a8dcff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.cemetery-name,
+.cemetery-lifespan {
+    color: var(--fintech-text-muted);
+    font-size: 12px;
+}
+
+.cemetery-return { font-weight: 750; }
+.cemetery-return.is-positive { color: var(--fintech-success); }
+.cemetery-return.is-negative { color: var(--fintech-danger); }
+.cemetery-return.is-neutral { color: var(--fintech-text-muted); }
+
+.cemetery-roast {
+    display: inline-block;
+    max-width: 360px;
+    color: var(--fintech-text-muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.cemetery-empty {
+    padding: 42px 20px !important;
+    color: var(--fintech-text-muted) !important;
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .holdings-view-toggle { width: 100%; }
+    .holdings-view-btn { flex: 1; padding-inline: 8px; }
+    .cemetery-header { align-items: stretch; flex-direction: column; }
+    .cemetery-table { min-width: 690px; }
+    .cemetery-table-wrap { overflow-x: auto; }
+}
+
 .wallet-settings-grid {
     display: grid;
     gap: 12px;

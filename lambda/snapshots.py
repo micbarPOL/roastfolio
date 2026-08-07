@@ -25,6 +25,7 @@ from boto3.dynamodb.conditions import Key
 
 import db
 import portfolios
+import portfolio_avco
 
 
 _SNAPSHOTS_TABLE_NAME = os.environ.get("SNAPSHOTS_TABLE", "roastfolio-snapshots")
@@ -843,6 +844,7 @@ def recalculate_portfolio_snapshots_from_date(
         key=lambda s: s["snapshotDate"],
     )
     if not snapshots_to_update:
+        portfolio_avco.persist_portfolio_avco(user_id, portfolio_id, all_transactions)
         return {"updated": 0, "fromDate": from_date, "portfolioId": portfolio_id}
 
     max_date = snapshots_to_update[-1]["snapshotDate"]
@@ -929,6 +931,17 @@ def recalculate_portfolio_snapshots_from_date(
             batch.put_item(Item=item)
             updated += 1
 
+    current_prices = {
+        str(ticker).upper(): price
+        for ticker in yf_tickers
+        if (price := _price_at_or_before(price_history, ticker, max_date)) is not None
+    }
+    portfolio_avco.persist_portfolio_avco(
+        user_id,
+        portfolio_id,
+        all_transactions,
+        current_prices=current_prices,
+    )
     recalculate_ath(user_id, portfolio_id)
     return {"updated": updated, "fromDate": from_date, "portfolioId": portfolio_id}
 
