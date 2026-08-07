@@ -899,6 +899,7 @@ let _underwaterSelectedLakeId = null;
 let _underwaterLakeCatalog = [];
 let _underwaterAllMetrics = [];
 let _underwaterDisplayedMetrics = [];
+let _underwaterShouldScrollDetails = false;
 let _underwaterPathChart = null;
 let _underwaterLakesChart = null;
 
@@ -1356,7 +1357,18 @@ function _setSelectedLake(lakeId) {
     const safeLakeId = Number(lakeId);
     if (!Number.isFinite(safeLakeId) || safeLakeId <= 0) return;
     _underwaterSelectedLakeId = safeLakeId;
+    _underwaterShouldScrollDetails = true;
     refreshUnderwaterLakes();
+}
+
+function _scrollUnderwaterLakeDetails() {
+    if (!_underwaterShouldScrollDetails) return;
+    const panel = document.getElementById('uwl-selected-lake-panel');
+    if (!panel) return;
+    _underwaterShouldScrollDetails = false;
+    window.requestAnimationFrame(() => {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    });
 }
 
 function _renderUnderwaterCharts(metrics, extremes) {
@@ -1534,6 +1546,8 @@ function _renderUnderwaterCharts(metrics, extremes) {
             options: lakesOptions,
         });
     }
+
+    _scrollUnderwaterLakeDetails();
 }
 
 async function _loadUnderwaterMetrics(portfolioId) {
