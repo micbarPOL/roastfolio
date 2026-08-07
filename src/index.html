@@ -847,13 +847,19 @@
                             <div class="cemetery-header">
                                 <div>
                                     <div class="cemetery-title">Closed Positions</div>
-                                    <div class="wallet-table-subtitle">The full post-mortem: lifespan, total return, and the market's final remarks.</div>
+                                    <div class="wallet-table-subtitle">Closed positions with lifecycle and total return.</div>
                                 </div>
                                 <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
                             </div>
                             <div class="wallet-table-wrap cemetery-table-wrap">
                                 <table class="wallet-holdings-table cemetery-table">
-                                    <thead><tr><th>Asset</th><th>Holding lifespan</th><th>Total return</th><th>Roast</th></tr></thead>
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th><button type="button" id="cemetery-sort-date" class="cemetery-sort-btn" aria-label="Sort by close date">Holding lifespan</button></th>
+                                            <th><button type="button" id="cemetery-sort-return" class="cemetery-sort-btn" aria-label="Sort by total return">Total return</button></th>
+                                        </tr>
+                                    </thead>
                                     <tbody id="mgmt-cemetery-body"></tbody>
                                 </table>
                             </div>
@@ -1437,6 +1443,13 @@
         <section class="analysis-screen-header">
             <h2>Asset Analysis</h2>
             <p class="analysis-subtitle">Search for a company to view its 1-year performance and fundamental properties.</p>
+            <div class="analysis-scope-row">
+                <label class="analysis-scope-label" for="analysis-portfolio-filter">Transactions scope</label>
+                <select id="analysis-portfolio-filter" class="analysis-scope-select">
+                    <option value="all">All wallets</option>
+                </select>
+                <span id="analysis-portfolio-hint" class="analysis-scope-hint">Markers show transactions from all wallets.</span>
+            </div>
         </section>
 
         <!-- Search Bar -->

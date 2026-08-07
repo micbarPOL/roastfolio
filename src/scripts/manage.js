@@ -23,6 +23,7 @@
   let _currentClosedHoldings = [];
   let _currentSnapshots = [];
   let _holdingsView = 'active';
+  let _cemeterySort = { key: 'date', dir: 'desc' }; // default: latest close first
   let _transactionsPanelMode = 'trade';
   let _priceInputSource = 'price'; // 'price' | 'total' — last edited price-related field
 
@@ -264,17 +265,35 @@
     return `${firstBuyDate} → ${lastSellDate} · ${days === 1 ? '1 day' : `${days} days`}`;
   }
 
-  function _cemeteryRoast(performance) {
-    const payload = performance.gamification;
-    if (typeof payload === 'string' && payload.trim()) return payload.trim();
-    if (payload && typeof payload === 'object') {
-      const message = payload.roast || payload.commentary || payload.badge || payload.message || payload.label;
-      if (message) return String(message);
-    }
-    const total = Number(performance.realized || 0) + Number(performance.unrealized || 0) + Number(performance.dividends || 0);
-    if (total > 0) return 'Escaped with loot. The market briefly lost track of you.';
-    if (total < 0) return 'A dignified exit, if we agree never to open the receipts.';
-    return 'Position closed. The spreadsheet observed a respectful silence.';
+  function _bindCemeterySortHandlers() {
+    const dateBtn = document.getElementById('cemetery-sort-date');
+    const returnBtn = document.getElementById('cemetery-sort-return');
+    if (!dateBtn || !returnBtn || dateBtn.dataset.bound === '1') return;
+
+    dateBtn.dataset.bound = '1';
+    const applySort = (key) => {
+      if (_cemeterySort.key === key) {
+        _cemeterySort.dir = _cemeterySort.dir === 'desc' ? 'asc' : 'desc';
+      } else {
+        _cemeterySort = { key, dir: key === 'date' ? 'desc' : 'asc' };
+      }
+      if (_activePortId) {
+        _renderHoldings(_activePortId, _currentHoldings, _isSummaryPortfolio(_activePortId));
+      }
+    };
+
+    dateBtn.addEventListener('click', () => applySort('date'));
+    returnBtn.addEventListener('click', () => applySort('return'));
+  }
+
+  function _updateCemeterySortLabels() {
+    const dateBtn = document.getElementById('cemetery-sort-date');
+    const returnBtn = document.getElementById('cemetery-sort-return');
+    if (!dateBtn || !returnBtn) return;
+
+    const arrow = (_cemeterySort.dir === 'desc') ? ' ↓' : ' ↑';
+    dateBtn.textContent = `Holding lifespan${_cemeterySort.key === 'date' ? arrow : ''}`;
+    returnBtn.textContent = `Total return${_cemeterySort.key === 'return' ? arrow : ''}`;
   }
 
   function _isCompactWalletSelector() {
@@ -1073,7 +1092,7 @@
     const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
     _renderHoldingsSkeleton();
     if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
-    if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="4" class="cemetery-empty">Loading closed positions…</td></tr>';
+    if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
     if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
     const txBody = document.getElementById('mgmt-transactions-body');
     if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
@@ -1154,7 +1173,7 @@
       tbody.innerHTML = `<tr class="wht-row"><td colspan="6" class="wht-td" style="text-align:center;color:#888;padding:36px 20px;">${_emptyMsg}</td></tr>`;
       if (cardsEl) cardsEl.innerHTML = `<div class="whc-empty">${_emptyMsg}</div>`;
       if (metaEl) _setPillState(metaEl, isSummary ? 'Summary waiting for wallets' : 'No holdings yet', '');
-      _renderCemetery(holdings, performance, isSummary);
+      _renderCemetery(holdings, performance, isSummary, portfolioId);
       return;
     }
 
@@ -1283,35 +1302,56 @@
           </div>`;
       }).join('');
     }
-    _renderCemetery(holdings, performance, isSummary);
+    _renderCemetery(holdings, performance, isSummary, portfolioId);
   }
 
-  function _renderCemetery(holdings, performance, isSummary) {
+  function _renderCemetery(holdings, performance, isSummary, portfolioId) {
     const tbody = document.getElementById('mgmt-cemetery-body');
     const meta = document.getElementById('mgmt-cemetery-meta');
     if (!tbody) return;
 
+    _bindCemeterySortHandlers();
+    _updateCemeterySortLabels();
+
     const activeKeys = new Set((holdings || []).filter(h => Number(h.units || 0) > 0.00000001).map(_transactionAssetKey));
+    const direction = _cemeterySort.dir === 'desc' ? -1 : 1;
     const closed = Array.from(performance.entries())
       .filter(([key, row]) => !activeKeys.has(key) && Number(row.units || 0) <= 0.00000001 && row.firstBuyDate && row.lastSellDate)
       .map(([, row]) => ({ ...row, totalReturn: Number(row.realized || 0) + Number(row.unrealized || 0) + Number(row.dividends || 0) }))
-      .sort((a, b) => String(b.lastSellDate).localeCompare(String(a.lastSellDate)));
+      .sort((a, b) => {
+        if (_cemeterySort.key === 'return') {
+          return (Number(a.totalReturn || 0) - Number(b.totalReturn || 0)) * direction;
+        }
+        return String(a.lastSellDate || '').localeCompare(String(b.lastSellDate || '')) * direction;
+      });
 
     if (meta) _setPillState(meta, isSummary ? 'Choose a wallet to inspect closures' : `${closed.length} closed position${closed.length === 1 ? '' : 's'}`, '');
     if (isSummary) {
-      tbody.innerHTML = '<tr><td colspan="4" class="cemetery-empty">The Cemetery is ledger-based. Choose an individual wallet to inspect closed positions.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">The Cemetery is ledger-based. Choose an individual wallet to inspect closed positions.</td></tr>';
       return;
     }
     if (!closed.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="cemetery-empty">No fully closed positions in this wallet. The archive remains mercifully quiet.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">No fully closed positions in this wallet.</td></tr>';
       return;
     }
+
+    const resolvedPortfolioId = portfolioId || _activePortId || '';
     tbody.innerHTML = closed.map(row => `<tr class="cemetery-row">
-      <td><div class="cemetery-asset"><span class="cemetery-ticker">${_esc(row.ticker || '—')}</span><span class="cemetery-name">${_esc(row.name)}</span></div></td>
+      <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="${_esc(row.ticker || row.name || '')}" data-portfolio-id="${_esc(resolvedPortfolioId)}"><span class="cemetery-ticker">${_esc(row.ticker || '—')}</span><span class="cemetery-name">${_esc(row.name)}</span></button></div></td>
       <td class="cemetery-lifespan">${_esc(_lifespanLabel(row.firstBuyDate, row.lastSellDate))}</td>
       <td class="cemetery-return ${_dailyChangeClass(row.totalReturn)}">${_fmtSignedMoney(row.totalReturn)}</td>
-      <td><span class="cemetery-roast">${_esc(_cemeteryRoast(row))}</span></td>
     </tr>`).join('');
+
+    tbody.querySelectorAll('.cemetery-asset-link').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        const ticker = String(button.getAttribute('data-ticker') || '').trim();
+        const pid = String(button.getAttribute('data-portfolio-id') || '').trim();
+        if (ticker && typeof window.openAnalysisForTicker === 'function') {
+          window.openAnalysisForTicker(ticker, { portfolioId: pid || null });
+        }
+      });
+    });
   }
 
   function setHoldingsView(view) {

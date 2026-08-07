@@ -11,6 +11,7 @@
     let showVolume = true; // Volume histogram (on by default)
     let showMA = { ma10: false, ma20: false, ma50: false }; // Moving averages
     let showMACD = false; // MACD indicator
+    let currentPortfolioFilter = 'all'; // 'all' or specific portfolioId
 
     // ── Indicator helpers ──────────────────────────────────────────────────
 
@@ -556,7 +557,11 @@
         if (loader) loader.style.display = 'flex';
 
         try {
-            const res = await fetch(`${_apiBase()}/asset-analysis?ticker=${encodeURIComponent(ticker)}&period=${period}`, {
+            const params = new URLSearchParams({ ticker, period });
+            if (currentPortfolioFilter && currentPortfolioFilter !== 'all') {
+                params.set('portfolioId', currentPortfolioFilter);
+            }
+            const res = await fetch(`${_apiBase()}/asset-analysis?${params.toString()}`, {
                 headers: getAuthHeaders()
             });
             
@@ -885,6 +890,66 @@
 
     let _cachedOwnedAssets = null;
 
+    function _updatePortfolioHint() {
+        const hintEl = document.getElementById('analysis-portfolio-hint');
+        const selectEl = document.getElementById('analysis-portfolio-filter');
+        if (!hintEl || !selectEl) return;
+        if (currentPortfolioFilter === 'all') {
+            hintEl.textContent = 'Markers show transactions from all wallets.';
+            return;
+        }
+        const selected = selectEl.options[selectEl.selectedIndex];
+        const label = selected ? selected.textContent : 'selected wallet';
+        hintEl.textContent = `Markers show transactions only from: ${label}.`;
+    }
+
+    async function _populatePortfolioFilter() {
+        const selectEl = document.getElementById('analysis-portfolio-filter');
+        if (!selectEl || selectEl.dataset.loaded === '1') return;
+
+        selectEl.innerHTML = '<option value="all">All wallets</option>';
+        try {
+            if (window.PortfolioClient && typeof window.PortfolioClient.listPortfolios === 'function') {
+                const data = await window.PortfolioClient.listPortfolios();
+                const portfolios = (data && data.portfolios) || [];
+                portfolios
+                    .filter((p) => p && p.portfolioId && p.portfolioId !== 'summary')
+                    .forEach((p) => {
+                        const option = document.createElement('option');
+                        option.value = p.portfolioId;
+                        option.textContent = p.name || p.portfolioId;
+                        selectEl.appendChild(option);
+                    });
+            }
+        } catch (e) {
+            console.warn('Analysis portfolio filter: failed to load portfolios', e);
+        }
+        selectEl.dataset.loaded = '1';
+        if (![...selectEl.options].some((o) => o.value === currentPortfolioFilter)) {
+            currentPortfolioFilter = 'all';
+        }
+        selectEl.value = currentPortfolioFilter;
+        _updatePortfolioHint();
+    }
+
+    async function setPortfolioFilter(portfolioId, options = {}) {
+        const { reload = true } = options;
+        await _populatePortfolioFilter();
+        const selectEl = document.getElementById('analysis-portfolio-filter');
+        const normalized = portfolioId && portfolioId !== 'all' ? String(portfolioId) : 'all';
+        if (selectEl && [...selectEl.options].some((o) => o.value === normalized)) {
+            currentPortfolioFilter = normalized;
+            selectEl.value = normalized;
+        } else {
+            currentPortfolioFilter = 'all';
+            if (selectEl) selectEl.value = 'all';
+        }
+        _updatePortfolioHint();
+        if (reload && currentTicker) {
+            await loadAssetData(currentTicker, currentPeriod);
+        }
+    }
+
     function _renderSearchResults(results) {
         if (!results || results.length === 0) {
             dropdownEl.innerHTML = '<div class="mgmt-dropdown-item"><div class="mgmt-ticker-symbol">No results found</div></div>';
@@ -1000,6 +1065,15 @@
                 }
             }
         });
+    }
+
+    const portfolioFilterEl = document.getElementById('analysis-portfolio-filter');
+    if (portfolioFilterEl) {
+        portfolioFilterEl.addEventListener('change', async (event) => {
+            const nextPortfolioId = String(event.target.value || 'all');
+            await setPortfolioFilter(nextPortfolioId, { reload: true });
+        });
+        _populatePortfolioFilter();
     }
 
     // Update favorite button state
@@ -1226,6 +1300,7 @@
     window._analysis = {
         loadAssetData,
         setRange,
+        setPortfolioFilter,
         switchStatementType,
         switchFinPeriod,
         toggleFavorite,
@@ -1244,15 +1319,19 @@
     };
 
     // Global helper to switch to analysis tab and load a ticker
-    window.openAnalysisForTicker = function(ticker) {
+    window.openAnalysisForTicker = function(ticker, options = {}) {
         if (!ticker) return;
+        const portfolioId = options && options.portfolioId ? String(options.portfolioId) : 'all';
         // Switch to analysis tab
         if (typeof showTab === 'function') {
             showTab('analysis');
         }
         // Wait a moment for tab to render, then load the ticker
-        setTimeout(() => {
+        setTimeout(async () => {
             if (window._analysis && window._analysis.loadAssetData) {
+                if (window._analysis.setPortfolioFilter) {
+                    await window._analysis.setPortfolioFilter(portfolioId, { reload: false });
+                }
                 window._analysis.loadAssetData(ticker, '1y');
             }
         }, 100);

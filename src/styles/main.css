@@ -5805,9 +5805,39 @@ section.wallet-screen {
 .cemetery-table th:nth-child(3) { width: 16%; text-align: right; }
 .cemetery-table td:nth-child(3) { text-align: right; white-space: nowrap; }
 
+.cemetery-sort-btn {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.cemetery-sort-btn:hover {
+    color: var(--fintech-primary);
+}
+
 .cemetery-asset {
     display: grid;
     gap: 3px;
+}
+
+.cemetery-asset-link {
+    display: grid;
+    gap: 3px;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.cemetery-asset-link:hover .cemetery-ticker,
+.cemetery-asset-link:hover .cemetery-name {
+    color: var(--fintech-primary);
 }
 
 .cemetery-ticker {
@@ -5828,12 +5858,33 @@ section.wallet-screen {
 .cemetery-return.is-negative { color: var(--fintech-danger); }
 .cemetery-return.is-neutral { color: var(--fintech-text-muted); }
 
-.cemetery-roast {
-    display: inline-block;
-    max-width: 360px;
-    color: var(--fintech-text-muted);
+.analysis-scope-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.analysis-scope-label {
+    color: var(--text-muted);
     font-size: 12px;
-    line-height: 1.45;
+    font-weight: 700;
+}
+
+.analysis-scope-select {
+    min-width: 180px;
+    background: rgba(8, 17, 27, 0.75);
+    border: 1px solid var(--fintech-border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 12px;
+    padding: 7px 10px;
+}
+
+.analysis-scope-hint {
+    color: var(--text-muted);
+    font-size: 12px;
 }
 
 .cemetery-empty {
@@ -5848,6 +5899,8 @@ section.wallet-screen {
     .cemetery-header { align-items: stretch; flex-direction: column; }
     .cemetery-table { min-width: 690px; }
     .cemetery-table-wrap { overflow-x: auto; }
+    .analysis-scope-row { align-items: stretch; flex-direction: column; }
+    .analysis-scope-select { width: 100%; }
 }
 
 .wallet-settings-grid {

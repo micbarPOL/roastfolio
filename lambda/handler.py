@@ -1315,8 +1315,10 @@ def asset_analysis_handler(event: dict) -> dict:
     if err:
         return err
 
-    ticker_symbol = (event.get("queryStringParameters") or {}).get("ticker", "").strip()
-    period_req = (event.get("queryStringParameters") or {}).get("period", "1y").strip()
+    query_params = event.get("queryStringParameters") or {}
+    ticker_symbol = (query_params.get("ticker") or "").strip()
+    period_req = (query_params.get("period") or "1y").strip()
+    portfolio_filter = (query_params.get("portfolioId") or "").strip()
     
     if not ticker_symbol:
         return _resp(400, {"error": "Missing ticker parameter"})
@@ -1456,6 +1458,11 @@ def asset_analysis_handler(event: dict) -> dict:
         # Fetch matching transactions
         user_txs = []
         user_ports = portfolios.list_portfolios(user_id)
+        if portfolio_filter:
+            user_ports = [p for p in user_ports if p.get("portfolioId") == portfolio_filter]
+            if not user_ports:
+                return _resp(400, {"error": "Invalid portfolioId"})
+
         for p_info in user_ports:
             pid = p_info.get("portfolioId")
             txs = portfolios.list_all_transactions(user_id, pid)
