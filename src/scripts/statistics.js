@@ -1598,6 +1598,8 @@ window.setUnderwaterLakesRange = function(range) {
         ? String(range).toUpperCase()
         : 'ALL';
     _underwaterRange = safe;
+    _underwaterSelectedLakeId = null;
+    _underwaterShouldScrollDetails = false;
 
     const btns = document.querySelectorAll('#underwater-lakes-range-btns .history-wallet-btn');
     btns.forEach(btn => {
@@ -1614,6 +1616,8 @@ window.setUnderwaterLakesSelection = function(lakeId) {
 
 window.setUnderwaterLakesPortfolio = function(portfolioId) {
     _underwaterPortfolio = portfolioId || 'summary';
+    _underwaterSelectedLakeId = null;
+    _underwaterShouldScrollDetails = false;
     const btns = document.querySelectorAll('#underwater-lakes-portfolio-btns .history-wallet-btn');
     btns.forEach(btn => {
         if (btn.getAttribute('data-wallet-key') === _underwaterPortfolio) btn.classList.add('is-active');
