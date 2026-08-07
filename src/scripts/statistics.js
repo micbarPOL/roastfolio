@@ -894,6 +894,7 @@ function renderHeatmapTable(data, metric = 'pct') {
 // ── Underwater Lakes visualizer ─────────────────────────────────────────
 
 let _underwaterPortfolio = 'summary';
+let _underwaterRange = 'ALL';
 let _underwaterPathChart = null;
 let _underwaterLakesChart = null;
 
@@ -988,6 +989,37 @@ function _extractUnderwaterExtremes(metrics) {
     });
 
     return { deepest, widest };
+}
+
+function _underwaterRangeStartDate(endDate, range) {
+    const end = new Date(`${endDate}T00:00:00`);
+    if (Number.isNaN(end.getTime())) return null;
+
+    if (range === 'YTD') {
+        return `${end.getFullYear()}-01-01`;
+    }
+    if (range === '1Y') {
+        const d = new Date(end);
+        d.setFullYear(d.getFullYear() - 1);
+        return d.toISOString().slice(0, 10);
+    }
+    if (range === '3Y') {
+        const d = new Date(end);
+        d.setFullYear(d.getFullYear() - 3);
+        return d.toISOString().slice(0, 10);
+    }
+    return null;
+}
+
+function _filterUnderwaterMetricsByRange(metrics, range) {
+    const rows = Array.isArray(metrics) ? metrics.slice() : [];
+    if (!rows.length || range === 'ALL') return rows;
+
+    const endDate = rows[rows.length - 1].date;
+    const startDate = _underwaterRangeStartDate(endDate, range);
+    if (!startDate) return rows;
+
+    return rows.filter(row => row.date >= startDate && row.date <= endDate);
 }
 
 function _ensureUnderwaterPlugin() {
@@ -1114,7 +1146,7 @@ function _setUnderwaterCards(extremes) {
         deepestMeta.textContent = 'No underwater periods in selected range';
         widestValue.textContent = '0 days';
         widestMeta.textContent = 'No underwater periods in selected range';
-        if (preview) preview.textContent = 'No active lakes';
+        if (preview) preview.textContent = `No active lakes (${_underwaterRange})`;
         return;
     }
 
@@ -1125,7 +1157,7 @@ function _setUnderwaterCards(extremes) {
     widestMeta.textContent = `${fmtDate(extremes.widest.start)} to ${fmtDate(extremes.widest.end)}`;
 
     if (preview) {
-        preview.innerHTML = `<span class="stats-acc-preview-pct" style="color:#38bdf8;font-weight:700;">${_fmtUwlPct(extremes.deepest.drawdown)}</span> <span class="stats-acc-preview-month">· ${extremes.widest.duration}d lake</span>`;
+        preview.innerHTML = `<span class="stats-acc-preview-pct" style="color:#38bdf8;font-weight:700;">${_fmtUwlPct(extremes.deepest.drawdown)}</span> <span class="stats-acc-preview-month">· ${extremes.widest.duration}d lake · ${_underwaterRange}</span>`;
     }
 }
 
@@ -1324,7 +1356,8 @@ async function refreshUnderwaterLakes() {
     if (widestMeta) widestMeta.textContent = 'Loading metrics…';
 
     try {
-        const metrics = await _loadUnderwaterMetrics(_underwaterPortfolio);
+        const allMetrics = await _loadUnderwaterMetrics(_underwaterPortfolio);
+        const metrics = _filterUnderwaterMetricsByRange(allMetrics, _underwaterRange);
         const extremes = _extractUnderwaterExtremes(metrics);
         _setUnderwaterCards(extremes);
         _renderUnderwaterCharts(metrics, extremes);
@@ -1333,6 +1366,21 @@ async function refreshUnderwaterLakes() {
         if (widestMeta) widestMeta.textContent = String(err?.message || 'Unknown error');
     }
 }
+
+window.setUnderwaterLakesRange = function(range) {
+    const safe = ['ALL', '3Y', '1Y', 'YTD'].includes(String(range || '').toUpperCase())
+        ? String(range).toUpperCase()
+        : 'ALL';
+    _underwaterRange = safe;
+
+    const btns = document.querySelectorAll('#underwater-lakes-range-btns .history-wallet-btn');
+    btns.forEach(btn => {
+        if (btn.getAttribute('data-range') === _underwaterRange) btn.classList.add('is-active');
+        else btn.classList.remove('is-active');
+    });
+
+    refreshUnderwaterLakes();
+};
 
 window.setUnderwaterLakesPortfolio = function(portfolioId) {
     _underwaterPortfolio = portfolioId || 'summary';
@@ -1366,7 +1414,8 @@ async function _initUnderwaterLakeControls() {
 }
 
 window.updateUnderwaterLakesVisualizer = function(metricsPayload) {
-    const metrics = _normalizeUnderwaterMetrics(metricsPayload);
+    const rawMetrics = _normalizeUnderwaterMetrics(metricsPayload);
+    const metrics = _filterUnderwaterMetricsByRange(rawMetrics, _underwaterRange);
     const extremes = _extractUnderwaterExtremes(metrics);
     _setUnderwaterCards(extremes);
     _renderUnderwaterCharts(metrics, extremes);

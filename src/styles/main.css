@@ -13772,6 +13772,7 @@ body.wallet-overlay-open {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 14px;
     padding-top: 8px;
     margin-bottom: 14px;
