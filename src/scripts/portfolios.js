@@ -96,6 +96,15 @@
       return _fetch(`/portfolios/${encodeURIComponent(portfolioId)}/snapshots`);
     },
 
+    /**
+     * Get daily underwater-lakes metrics for a portfolio.
+     * Expected payload shape from API:
+     * [{ date, value, hwm, drawdown, lake_id }, ...]
+     */
+    getDrawdownLakes(portfolioId) {
+      return _fetch(`/portfolios/${encodeURIComponent(portfolioId)}/drawdown-lakes`);
+    },
+
     /** Get the current ATH state for a portfolio. */
     getAth(portfolioId) {
       return _fetch(`/portfolios/${encodeURIComponent(portfolioId)}/ath`);

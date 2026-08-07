@@ -5741,6 +5741,198 @@ section.wallet-screen {
     line-height: 1.5;
 }
 
+.holdings-view-toggle {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    margin: 0 0 var(--fintech-space-4);
+    border: 1px solid var(--fintech-border);
+    border-radius: var(--fintech-radius-control);
+    background: rgba(7, 15, 23, 0.5);
+}
+
+.holdings-view-btn {
+    border: 0;
+    border-radius: calc(var(--fintech-radius-control) - 3px);
+    background: transparent;
+    color: var(--fintech-text-muted);
+    padding: 8px 11px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    cursor: pointer;
+}
+
+.holdings-view-btn.is-active {
+    background: rgba(74, 159, 212, 0.18);
+    color: #a8dcff;
+    box-shadow: inset 0 0 0 1px rgba(74, 159, 212, 0.25);
+}
+
+.wht-realized {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 3px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.25;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.wht-realized.is-positive { color: var(--fintech-success); }
+.wht-realized.is-negative { color: var(--fintech-danger); }
+
+.cemetery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--fintech-space-3);
+    margin-bottom: var(--fintech-space-4);
+}
+
+.cemetery-title {
+    color: var(--fintech-text);
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.cemetery-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cemetery-filter-label {
+    color: var(--fintech-text-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.cemetery-filter-select {
+    min-width: 108px;
+    background: rgba(8, 17, 27, 0.75);
+    border: 1px solid var(--fintech-border);
+    border-radius: 10px;
+    color: var(--fintech-text);
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+.cemetery-table-wrap { min-height: 220px; }
+.cemetery-table th:nth-child(1) { width: 21%; }
+.cemetery-table th:nth-child(2) { width: 25%; }
+.cemetery-table th:nth-child(3) { width: 16%; text-align: right; }
+.cemetery-table td:nth-child(3) { text-align: right; white-space: nowrap; }
+
+.cemetery-sort-btn {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.cemetery-sort-btn:hover {
+    color: var(--fintech-primary);
+}
+
+.cemetery-asset {
+    display: grid;
+    gap: 3px;
+}
+
+.cemetery-asset-link {
+    display: grid;
+    gap: 3px;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.cemetery-asset-link:hover .cemetery-ticker,
+.cemetery-asset-link:hover .cemetery-name {
+    color: var(--fintech-primary);
+}
+
+.cemetery-ticker {
+    color: #a8dcff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.cemetery-name,
+.cemetery-lifespan {
+    color: var(--fintech-text-muted);
+    font-size: 12px;
+}
+
+.cemetery-return { font-weight: 750; }
+.cemetery-return.is-positive { color: var(--fintech-success); }
+.cemetery-return.is-negative { color: var(--fintech-danger); }
+.cemetery-return.is-neutral { color: var(--fintech-text-muted); }
+
+.cemetery-unrealized {
+    color: var(--fintech-text-muted);
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.analysis-scope-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.analysis-scope-label {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.analysis-scope-select {
+    min-width: 180px;
+    background: rgba(8, 17, 27, 0.75);
+    border: 1px solid var(--fintech-border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 12px;
+    padding: 7px 10px;
+}
+
+.analysis-scope-hint {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.cemetery-empty {
+    padding: 42px 20px !important;
+    color: var(--fintech-text-muted) !important;
+    text-align: center;
+}
+
+@media (max-width: 700px) {
+    .holdings-view-toggle { width: 100%; }
+    .holdings-view-btn { flex: 1; padding-inline: 8px; }
+    .cemetery-header { align-items: stretch; flex-direction: column; }
+    .cemetery-controls { width: 100%; flex-wrap: wrap; }
+    .cemetery-filter-select { flex: 1; min-width: 0; }
+    .cemetery-table { min-width: 690px; }
+    .cemetery-table-wrap { overflow-x: auto; }
+    .analysis-scope-row { align-items: stretch; flex-direction: column; }
+    .analysis-scope-select { width: 100%; }
+}
+
 .wallet-settings-grid {
     display: grid;
     gap: 12px;
@@ -13573,4 +13765,135 @@ body.wallet-overlay-open {
 .heatmap-empty {
     color: #475569;
     background: rgba(255, 255, 255, 0.02);
+}
+
+/* Underwater Lakes visualizer */
+.uwl-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding-top: 8px;
+    margin-bottom: 14px;
+}
+
+.uwl-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.uwl-stat-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1px solid rgba(153, 219, 255, 0.22);
+    background:
+      linear-gradient(125deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+      rgba(6, 16, 29, 0.72);
+    backdrop-filter: blur(12px) saturate(130%);
+    -webkit-backdrop-filter: blur(12px) saturate(130%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 30px rgba(1, 9, 19, 0.48);
+}
+
+.uwl-stat-card::after {
+    content: '';
+    position: absolute;
+    right: -30px;
+    top: -36px;
+    width: 140px;
+    height: 140px;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.uwl-stat-card-depth::after {
+    background: radial-gradient(circle, rgba(0, 150, 255, 0.20) 0%, rgba(0, 150, 255, 0) 72%);
+}
+
+.uwl-stat-card-width::after {
+    background: radial-gradient(circle, rgba(20, 211, 198, 0.18) 0%, rgba(20, 211, 198, 0) 72%);
+}
+
+.uwl-stat-eyebrow {
+    color: rgba(196, 225, 255, 0.82);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.uwl-stat-value {
+    color: #ecf7ff;
+    font-size: 30px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.uwl-stat-meta {
+    margin-top: 4px;
+    color: rgba(148, 177, 206, 0.95);
+    font-size: 12px;
+}
+
+.uwl-chart-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+.uwl-chart-panel {
+    border-radius: 16px;
+    border: 1px solid rgba(0, 191, 255, 0.18);
+    background: linear-gradient(160deg, rgba(4, 11, 21, 0.90) 0%, rgba(2, 7, 14, 0.94) 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0, 191, 255, 0.08);
+    padding: 14px;
+}
+
+.uwl-chart-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.uwl-chart-title {
+    margin: 0;
+    color: #d8eeff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.uwl-chart-wrap {
+    position: relative;
+    min-height: 240px;
+}
+
+.uwl-chart-wrap canvas {
+    width: 100% !important;
+    height: 240px !important;
+    display: block;
+}
+
+@media (min-width: 1180px) {
+    .uwl-chart-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .uwl-stat-grid {
+        grid-template-columns: 1fr;
+    }
+    .uwl-chart-wrap,
+    .uwl-chart-wrap canvas {
+        min-height: 220px;
+        height: 220px !important;
+    }
 }

@@ -20,6 +20,7 @@ import boto3
 import yfinance as yf
 
 import db          # DynamoDB user-profile helpers
+import portfolio_avco
 import portfolios  # DynamoDB portfolios + holdings helpers
 import retirement_plans
 import snapshots   # Daily snapshot + ATH helpers
@@ -1314,8 +1315,10 @@ def asset_analysis_handler(event: dict) -> dict:
     if err:
         return err
 
-    ticker_symbol = (event.get("queryStringParameters") or {}).get("ticker", "").strip()
-    period_req = (event.get("queryStringParameters") or {}).get("period", "1y").strip()
+    query_params = event.get("queryStringParameters") or {}
+    ticker_symbol = (query_params.get("ticker") or "").strip()
+    period_req = (query_params.get("period") or "1y").strip()
+    portfolio_filter = (query_params.get("portfolioId") or "").strip()
     
     if not ticker_symbol:
         return _resp(400, {"error": "Missing ticker parameter"})
@@ -1455,6 +1458,11 @@ def asset_analysis_handler(event: dict) -> dict:
         # Fetch matching transactions
         user_txs = []
         user_ports = portfolios.list_portfolios(user_id)
+        if portfolio_filter:
+            user_ports = [p for p in user_ports if p.get("portfolioId") == portfolio_filter]
+            if not user_ports:
+                return _resp(400, {"error": "Invalid portfolioId"})
+
         for p_info in user_ports:
             pid = p_info.get("portfolioId")
             txs = portfolios.list_all_transactions(user_id, pid)
@@ -1658,6 +1666,40 @@ def portfolios_handler(event: dict) -> dict:
                 return _resp(500, {"error": str(e), "trace": err_trace})
         return _resp(405, {"error": f"Method {method} not allowed"})
 
+    # ── /portfolios/{id}/drawdown-lakes ─────────────────────────
+    if portfolio_id and "/drawdown-lakes" in path:
+        if method == "GET":
+            try:
+                import drawdown_lakes
+                import pandas as pd
+                snaps = snapshots.list_snapshots(user_id, portfolio_id)
+                if not snaps:
+                    return _resp(200, {"daily": [], "lakes": [], "extremes": {}})
+                
+                rows = []
+                for s in snaps:
+                    d = str(s.get("snapshotDate") or s.get("date") or "")[:10]
+                    val = float(s.get("portfolioValue", s.get("value", 0)))
+                    if d and val > 0:
+                        rows.append({"date": d, "value": val})
+                
+                if not rows:
+                    return _resp(200, {"daily": [], "lakes": [], "extremes": {}})
+                
+                df = pd.DataFrame(rows).drop_duplicates("date").sort_values("date")
+                df["date"] = pd.to_datetime(df["date"])
+                df = df.set_index("date")
+
+                analyzer = drawdown_lakes.DrawdownLakeAnalyzer(value_col="value")
+                result = analyzer.analyze(df)
+                return _resp(200, result)
+            except Exception as e:
+                import traceback
+                err_trace = traceback.format_exc()
+                print(f"DRAWDOWN LAKES ERROR: {err_trace}")
+                return _resp(500, {"error": str(e), "trace": err_trace})
+        return _resp(405, {"error": f"Method {method} not allowed"})
+
     # ── /portfolios/{id}/ath ──────────────────────────────────
     if portfolio_id and "/ath" in path:
         if method == "GET":
@@ -1705,7 +1747,49 @@ def portfolios_handler(event: dict) -> dict:
             p = portfolios.get_portfolio(user_id, portfolio_id)
             if not p:
                 return _resp(404, {"error": "Portfolio not found"})
-            p["holdings"] = portfolios.list_holdings(user_id, portfolio_id)
+            holdings = portfolios.list_holdings(user_id, portfolio_id)
+            avco = portfolio_avco.load_portfolio_avco(user_id, portfolio_id)
+            active_by_holding = {
+                row.get("holding_id"): row
+                for row in avco["active"]
+                if row.get("holding_id")
+            }
+            active_by_ticker = {
+                str(row.get("ticker") or "").upper(): row
+                for row in avco["active"]
+                if row.get("ticker")
+            }
+            for holding in holdings:
+                analytics = active_by_holding.get(holding.get("holdingId"))
+                if analytics is None:
+                    analytics = active_by_ticker.get(str(holding.get("ticker") or "").upper())
+                if analytics:
+                    holding.update({
+                        "avco": analytics["avco"],
+                        "realizedReturn": analytics["realized_return"],
+                        "unrealizedReturn": analytics["unrealized_return"],
+                        "dividendsReceived": analytics["dividends_received"],
+                        "totalReturn": analytics["total_return"],
+                        "gamification": analytics["gamification"],
+                    })
+            p["holdings"] = holdings
+            p["closedHoldings"] = [{
+                "holdingId": row.get("holding_id"),
+                "ticker": row.get("ticker"),
+                "name": row.get("name"),
+                "currency": row.get("currency"),
+                "status": row.get("status"),
+                "units": row.get("shares", 0),
+                "avco": row.get("avco", 0),
+                "realizedReturn": row.get("realized_return", 0),
+                "unrealizedReturn": row.get("unrealized_return", 0),
+                "dividendsReceived": row.get("dividends_received", 0),
+                "totalReturn": row.get("total_return", 0),
+                "firstBuyDate": row.get("first_buy_date"),
+                "lastSellDate": row.get("last_sell_date"),
+                "gamification": row.get("gamification"),
+            } for row in avco["closed"]]
+            p["avcoUpdatedAt"] = avco["updated_at"]
             p["transactions"] = portfolios.list_transactions(user_id, portfolio_id)
             return _resp(200, p)
         if method == "DELETE":

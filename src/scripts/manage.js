@@ -20,7 +20,11 @@
   let _searchSource = 'yf';   // 'yf' | 'tfi'
   let _currentHoldings = [];
   let _currentTransactions = [];
+  let _currentClosedHoldings = [];
   let _currentSnapshots = [];
+  let _holdingsView = 'active';
+  let _cemeterySort = { key: 'date', dir: 'desc' }; // default: latest close first
+  let _cemeteryFilter = 'all'; // all | active | closed
   let _transactionsPanelMode = 'trade';
   let _priceInputSource = 'price'; // 'price' | 'total' — last edited price-related field
 
@@ -158,6 +162,166 @@
     const num = Number(value || 0);
     const sign = num > 0 ? '+' : '';
     return `${sign}${num.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
+  }
+
+  function _holdingMetricValue(holding, snakeCase, camelCase) {
+    const value = holding && (holding[snakeCase] ?? holding[camelCase]);
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function _transactionAssetKey(tx, options = {}) {
+    const { preferTicker = false } = options;
+    if (!preferTicker && tx && tx.holdingId) return `id:${String(tx.holdingId)}`;
+    const ticker = String(tx && tx.ticker || '').trim().toUpperCase();
+    if (ticker) return `ticker:${ticker}`;
+    return `name:${String(tx && tx.name || '').trim().toLowerCase()}`;
+  }
+
+  function _isAssetTransaction(tx) {
+    return ['BUY', 'SELL', 'DIVIDEND', 'SPINOFF'].includes(String(tx && tx.type || '').toUpperCase());
+  }
+
+  function _buildHoldingPerformance(transactions, closedHoldings = [], options = {}) {
+    const { aggregateByTicker = false } = options;
+    const grouped = new Map();
+    (transactions || []).filter(_isAssetTransaction).forEach(tx => {
+      const key = _transactionAssetKey(tx, { preferTicker: aggregateByTicker });
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(tx);
+    });
+
+    const metrics = new Map();
+    grouped.forEach((rows, key) => {
+      const sorted = rows.slice().sort((a, b) => String(a.transactionDate || a.date || '').localeCompare(String(b.transactionDate || b.date || '')));
+      let units = 0;
+      let costBasis = 0;
+      let realized = 0;
+      let dividends = 0;
+      let firstBuyDate = '';
+      let lastSellDate = '';
+      let name = '';
+      let ticker = '';
+      let gamification = null;
+
+      sorted.forEach(tx => {
+        const type = String(tx.type || '').toUpperCase();
+        const quantity = Math.abs(Number(tx.quantity || 0));
+        const value = Math.abs(Number(tx.value || 0));
+        name = String(tx.name || name || 'Unknown asset');
+        ticker = String(tx.ticker || ticker || '');
+        gamification = tx.gamification || tx.gamificationPayload || tx.gamification_payload || gamification;
+
+        if (type === 'BUY') {
+          units += quantity;
+          costBasis += value;
+          if (!firstBuyDate) firstBuyDate = String(tx.transactionDate || tx.date || '').slice(0, 10);
+        } else if (type === 'SELL' && quantity > 0) {
+          const soldCost = units > 0 ? costBasis * Math.min(quantity, units) / units : 0;
+          realized += value - soldCost;
+          costBasis = Math.max(0, costBasis - soldCost);
+          units = Math.max(0, units - quantity);
+          lastSellDate = String(tx.transactionDate || tx.date || '').slice(0, 10);
+        } else if (type === 'DIVIDEND') {
+          dividends += value;
+        }
+      });
+
+      metrics.set(key, { units, realized, dividends, firstBuyDate, lastSellDate, name, ticker, gamification });
+    });
+    closedHoldings.forEach(holding => {
+      const key = _transactionAssetKey(holding, { preferTicker: aggregateByTicker });
+      metrics.set(key, {
+        units: Number(holding.units || 0),
+        realized: _holdingMetricValue(holding, 'realized_return', 'realizedReturn') || 0,
+        unrealized: _holdingMetricValue(holding, 'unrealized_return', 'unrealizedReturn') || 0,
+        dividends: _holdingMetricValue(holding, 'dividends_received', 'dividendsReceived') || 0,
+        firstBuyDate: holding.first_buy_date || holding.firstBuyDate || '',
+        lastSellDate: holding.last_sell_date || holding.lastSellDate || '',
+        name: holding.name || holding.ticker || 'Unknown asset',
+        ticker: holding.ticker || '',
+        gamification: holding.gamification || holding.gamificationPayload || holding.gamification_payload || null,
+      });
+    });
+    return metrics;
+  }
+
+  function _holdingPerformanceFor(holding, performance) {
+    const fallback = performance.get(_transactionAssetKey(holding)) || {};
+    const realized = _holdingMetricValue(holding, 'realized_return', 'realizedReturn');
+    const unrealized = _holdingMetricValue(holding, 'unrealized_return', 'unrealizedReturn');
+    const dividends = _holdingMetricValue(holding, 'dividends_received', 'dividendsReceived');
+    return {
+      ...fallback,
+      realized: realized ?? fallback.realized ?? 0,
+      unrealized: unrealized ?? fallback.unrealized ?? 0,
+      dividends: dividends ?? fallback.dividends ?? 0,
+      gamification: holding.gamification || holding.gamificationPayload || holding.gamification_payload || fallback.gamification || null,
+    };
+  }
+
+  function _lifespanLabel(firstBuyDate, lastSellDate) {
+    if (!firstBuyDate || !lastSellDate) return 'Dates unavailable';
+    const start = new Date(`${firstBuyDate}T00:00:00`);
+    const end = new Date(`${lastSellDate}T00:00:00`);
+    const days = Math.max(0, Math.round((end - start) / 86400000));
+    return `${firstBuyDate} → ${lastSellDate} · ${days === 1 ? '1 day' : `${days} days`}`;
+  }
+
+  function _positionLifespanLabel(firstBuyDate, lastSellDate) {
+    if (!firstBuyDate) return 'Dates unavailable';
+    if (!lastSellDate) {
+      const start = new Date(`${firstBuyDate}T00:00:00`);
+      const now = new Date();
+      const days = Math.max(0, Math.round((now - start) / 86400000));
+      return `${firstBuyDate} → Active · ${days === 1 ? '1 day' : `${days} days`}`;
+    }
+    return _lifespanLabel(firstBuyDate, lastSellDate);
+  }
+
+  function _bindCemeterySortHandlers() {
+    const dateBtn = document.getElementById('cemetery-sort-date');
+    const returnBtn = document.getElementById('cemetery-sort-return');
+    if (!dateBtn || !returnBtn || dateBtn.dataset.bound === '1') return;
+
+    dateBtn.dataset.bound = '1';
+    const applySort = (key) => {
+      if (_cemeterySort.key === key) {
+        _cemeterySort.dir = _cemeterySort.dir === 'desc' ? 'asc' : 'desc';
+      } else {
+        _cemeterySort = { key, dir: key === 'date' ? 'desc' : 'asc' };
+      }
+      if (_activePortId) {
+        _renderHoldings(_activePortId, _currentHoldings, _isSummaryPortfolio(_activePortId));
+      }
+    };
+
+    dateBtn.addEventListener('click', () => applySort('date'));
+    returnBtn.addEventListener('click', () => applySort('return'));
+  }
+
+  function _updateCemeterySortLabels() {
+    const dateBtn = document.getElementById('cemetery-sort-date');
+    const returnBtn = document.getElementById('cemetery-sort-return');
+    if (!dateBtn || !returnBtn) return;
+
+    const arrow = (_cemeterySort.dir === 'desc') ? ' ↓' : ' ↑';
+    dateBtn.textContent = `Holding lifespan${_cemeterySort.key === 'date' ? arrow : ''}`;
+    returnBtn.textContent = `Realized (Unrealized)${_cemeterySort.key === 'return' ? arrow : ''}`;
+  }
+
+  function _bindCemeteryFilterHandler() {
+    const select = document.getElementById('cemetery-filter');
+    if (!select || select.dataset.bound === '1') return;
+    select.dataset.bound = '1';
+    select.value = _cemeteryFilter;
+    select.addEventListener('change', () => {
+      const next = String(select.value || 'all');
+      _cemeteryFilter = ['all', 'active', 'closed'].includes(next) ? next : 'all';
+      if (_activePortId) {
+        _renderHoldings(_activePortId, _currentHoldings, _isSummaryPortfolio(_activePortId));
+      }
+    });
   }
 
   function _isCompactWalletSelector() {
@@ -950,10 +1114,14 @@
     const p = _portfolios.find(x => x.portfolioId === portfolioId);
     const tbody = document.getElementById('mgmt-holdings-body');
     const holdingsMeta = document.getElementById('mgmt-holdings-meta');
+    const cemeteryBody = document.getElementById('mgmt-cemetery-body');
+    const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
     const valueHistoryBody = document.getElementById('mgmt-value-history-body');
     const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
     _renderHoldingsSkeleton();
     if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
+    if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
+    if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
     const txBody = document.getElementById('mgmt-transactions-body');
     if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
     if (valueHistoryBody) valueHistoryBody.innerHTML = '<tr><td colspan="3" class="mgmt-loading" style="text-align:center;padding:20px;">Loading…</td></tr>';
@@ -964,14 +1132,25 @@
     if (_isSummaryPortfolio(portfolioId)) {
       const holdings = _mergeHoldings([], _liveHoldingsFor(p));
       _currentHoldings = holdings;
-      _currentTransactions = [];
+      const sourcePortfolioIds = (_portfolios || [])
+        .filter((port) => !_isSummaryPortfolio(port.portfolioId))
+        .map((port) => port.portfolioId);
+      const summaryTxResponses = await Promise.all(
+        sourcePortfolioIds.map((pid) => PortfolioClient.listTransactions(pid, 5000).catch(() => ({ transactions: [] })))
+      );
+      _currentTransactions = summaryTxResponses.flatMap((response, idx) => {
+        const pid = sourcePortfolioIds[idx];
+        const rows = (response && response.transactions) || [];
+        return rows.map((tx) => ({ ...tx, portfolioId: tx.portfolioId || pid }));
+      });
+      _currentClosedHoldings = [];
       try {
         const snapshotData = await PortfolioClient.listSnapshots(portfolioId);
         _currentSnapshots = snapshotData.snapshots || [];
       } catch (_) {
         _currentSnapshots = [];
       }
-      _renderSettings(p, holdings.length, 0);
+      _renderSettings(p, holdings.length, _currentTransactions.length);
       _renderHoldings(portfolioId, holdings, true);
       if (txBody) {
         txBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">Summary is aggregated across wallets. Open an individual wallet to inspect its transactions.</td></tr>';
@@ -989,9 +1168,11 @@
       ]);
       const holdings = _mergeHoldings(data.holdings || [], _liveHoldingsFor(p));
       const transactions = data.transactions || [];
+      const closedHoldings = data.closedHoldings || [];
       const snapshots = snapshotData.snapshots || [];
       _currentHoldings = holdings;
       _currentTransactions = transactions;
+      _currentClosedHoldings = closedHoldings;
       _currentSnapshots = snapshots;
       _renderSettings(p, holdings.length, transactions.length);
       _renderHoldings(portfolioId, holdings, false);
@@ -1002,6 +1183,7 @@
     } catch(e) {
       _currentHoldings = [];
       _currentTransactions = [];
+      _currentClosedHoldings = [];
       _currentSnapshots = [];
       _renderSettings(p, 0, 0);
       tbody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
@@ -1019,19 +1201,23 @@
     const metaEl = document.getElementById('mgmt-holdings-meta');
     if (!tbody) return;
 
-    if (holdings.length === 0) {
+    const performance = _buildHoldingPerformance(_currentTransactions, _currentClosedHoldings, { aggregateByTicker: isSummary });
+    const activeHoldings = holdings.filter(h => _isCashHolding(h) || Number(h.units || 0) > 0.00000001);
+
+    if (activeHoldings.length === 0) {
       const _emptyMsg = isSummary
         ? 'No holdings yet — create a wallet and add transactions to populate Summary.'
         : 'No holdings yet — add one using the trade flow.';
       tbody.innerHTML = `<tr class="wht-row"><td colspan="6" class="wht-td" style="text-align:center;color:#888;padding:36px 20px;">${_emptyMsg}</td></tr>`;
       if (cardsEl) cardsEl.innerHTML = `<div class="whc-empty">${_emptyMsg}</div>`;
       if (metaEl) _setPillState(metaEl, isSummary ? 'Summary waiting for wallets' : 'No holdings yet', '');
+      _renderCemetery(holdings, performance, isSummary, portfolioId);
       return;
     }
 
     if (metaEl) {
-      const cashCount = holdings.filter(_isCashHolding).length;
-      const liveCount = holdings.length - cashCount;
+      const cashCount = activeHoldings.filter(_isCashHolding).length;
+      const liveCount = activeHoldings.length - cashCount;
       _setPillState(metaEl, `${liveCount} holdings${cashCount ? ` · ${cashCount} cash` : ''}`, '');
     }
 
@@ -1040,7 +1226,7 @@
     const _svgDown = `<svg class="wht-btn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
     // ── Desktop table rows ──────────────────────────────────────
-    tbody.innerHTML = holdings.map(h => {
+    tbody.innerHTML = activeHoldings.map(h => {
       const _cv      = Number.isFinite(Number(h.currentValue)) ? Number(h.currentValue) : Number(h.purchaseValue || 0);
       const _isCash  = _isCashHolding(h);
       const _isTfi   = !_isCash && String(h.ticker || '').startsWith('TFI:');
@@ -1048,6 +1234,11 @@
       const _dailyPct   = Number(h.dailyChangePct || 0);
       const _alloc      = Math.min(100, Number(h.pct || 0));
       const _dClass     = _dailyChangeClass(h.dailyChangePLN);
+      const _performance = _holdingPerformanceFor(h, performance);
+      const _realized = Number(_performance.realized || 0);
+      const _realizedBadge = !_isCash && Math.abs(_realized) >= 0.005
+        ? `<span class="wht-realized ${_realized >= 0 ? 'is-positive' : 'is-negative'}">Past Realized: ${_fmtSignedMoney(_realized)} (AVCO)</span>`
+        : '';
 
       let _actionHtml;
       if (isSummary) {
@@ -1072,6 +1263,7 @@
               <div class="wht-company-copy">
                 <span class="wht-company-name">${_esc(h.name)}</span>
                 <span class="wht-company-ticker">${_esc(_dispTicker)}</span>
+                ${_realizedBadge}
               </div>
             </div>
           </td>
@@ -1098,7 +1290,7 @@
       const _svgUpMobile   = `<svg class="whc-btn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 13V3M3 8l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       const _svgDownMobile = `<svg class="whc-btn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-      cardsEl.innerHTML = holdings.map(h => {
+      cardsEl.innerHTML = activeHoldings.map(h => {
         const _cv     = Number.isFinite(Number(h.currentValue)) ? Number(h.currentValue) : Number(h.purchaseValue || 0);
         const _isCash = _isCashHolding(h);
         const _isTfi  = !_isCash && String(h.ticker || '').startsWith('TFI:');
@@ -1106,6 +1298,11 @@
         const _dailyPct   = Number(h.dailyChangePct || 0);
         const _alloc      = Math.min(100, Number(h.pct || 0));
         const _dClass     = _dailyChangeClass(h.dailyChangePLN);
+        const _performance = _holdingPerformanceFor(h, performance);
+        const _realized = Number(_performance.realized || 0);
+        const _realizedBadge = !_isCash && Math.abs(_realized) >= 0.005
+          ? `<span class="wht-realized ${_realized >= 0 ? 'is-positive' : 'is-negative'}">Past Realized: ${_fmtSignedMoney(_realized)} (AVCO)</span>`
+          : '';
 
         return `
           <div class="whc${_isCash ? ' is-cash' : ''}${h.pending ? ' is-pending' : ''}">
@@ -1115,6 +1312,7 @@
                 <div class="whc-names">
                   <span class="whc-name">${_esc(h.name)}</span>
                   <span class="whc-ticker">${_esc(_dispTicker)}</span>
+                  ${_realizedBadge}
                 </div>
               </div>
               <div class="whc-financials">
@@ -1142,6 +1340,105 @@
           </div>`;
       }).join('');
     }
+    _renderCemetery(holdings, performance, isSummary, portfolioId);
+  }
+
+  function _renderCemetery(holdings, performance, isSummary, portfolioId) {
+    const tbody = document.getElementById('mgmt-cemetery-body');
+    const meta = document.getElementById('mgmt-cemetery-meta');
+    if (!tbody) return;
+
+    _bindCemeterySortHandlers();
+    _bindCemeteryFilterHandler();
+    _updateCemeterySortLabels();
+
+    const activeKeys = new Set(
+      (holdings || [])
+        .filter(h => Number(h.units || 0) > 0.00000001)
+        .map((h) => _transactionAssetKey(h, { preferTicker: isSummary }))
+    );
+    const holdingsByKey = new Map(
+      (holdings || []).map((h) => [_transactionAssetKey(h, { preferTicker: isSummary }), h])
+    );
+    const direction = _cemeterySort.dir === 'desc' ? -1 : 1;
+    const allRows = Array.from(performance.entries())
+      .filter(([, row]) => row.firstBuyDate)
+      .map(([key, row]) => {
+        const holding = holdingsByKey.get(key) || null;
+        const holdingUnrealized = _holdingMetricValue(holding, 'unrealized_return', 'unrealizedReturn');
+        const holdingProfit = holding
+          ? (Number.isFinite(Number(holding.profit))
+              ? Number(holding.profit)
+              : Number(holding.currentValue || 0) - Number(holding.purchaseValue || 0))
+          : null;
+        const rowUnrealized = Number(row.unrealized);
+        const unrealized = Number.isFinite(rowUnrealized)
+          ? rowUnrealized
+          : (holdingUnrealized ?? holdingProfit ?? 0);
+
+        return {
+          ...row,
+          unrealized,
+          isActive: activeKeys.has(key) || Number(row.units || 0) > 0.00000001,
+          totalReturn: Number(row.realized || 0) + Number(unrealized || 0) + Number(row.dividends || 0),
+        };
+      })
+      .sort((a, b) => {
+        if (_cemeterySort.key === 'return') {
+          return (Number(a.totalReturn || 0) - Number(b.totalReturn || 0)) * direction;
+        }
+        const aDate = String(a.lastSellDate || a.firstBuyDate || '');
+        const bDate = String(b.lastSellDate || b.firstBuyDate || '');
+        return aDate.localeCompare(bDate) * direction;
+      });
+
+    const closed = allRows.filter((row) => {
+      if (_cemeteryFilter === 'active') return row.isActive;
+      if (_cemeteryFilter === 'closed') return !row.isActive;
+      return true;
+    });
+
+    const activeCount = allRows.filter((row) => row.isActive).length;
+    const closedCount = allRows.length - activeCount;
+    if (meta) {
+      const visible = `${closed.length} shown`;
+      const base = `${visible} · ${activeCount} active · ${closedCount} closed`;
+      _setPillState(meta, isSummary ? `${base} across all wallets` : base, '');
+    }
+    if (!closed.length) {
+      tbody.innerHTML = `<tr><td colspan="3" class="cemetery-empty">${isSummary ? 'No positions match this filter across all wallets.' : 'No positions match this filter in this wallet.'}</td></tr>`;
+      return;
+    }
+
+    const resolvedPortfolioId = isSummary ? '' : (portfolioId || _activePortId || '');
+    tbody.innerHTML = closed.map(row => `<tr class="cemetery-row">
+      <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="${_esc(row.ticker || row.name || '')}" data-portfolio-id="${_esc(resolvedPortfolioId)}"><span class="cemetery-ticker">${_esc(row.ticker || '—')}</span><span class="cemetery-name">${_esc(row.name)}</span></button></div></td>
+      <td class="cemetery-lifespan">${_esc(_positionLifespanLabel(row.firstBuyDate, row.lastSellDate))}</td>
+      <td class="cemetery-return ${_dailyChangeClass(row.realized)}">${_fmtSignedMoney(row.realized)} <span class="cemetery-unrealized">(${_fmtSignedMoney(row.unrealized)})</span></td>
+    </tr>`).join('');
+
+    tbody.querySelectorAll('.cemetery-asset-link').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        const ticker = String(button.getAttribute('data-ticker') || '').trim();
+        const pid = String(button.getAttribute('data-portfolio-id') || '').trim();
+        if (ticker && typeof window.openAnalysisForTicker === 'function') {
+          window.openAnalysisForTicker(ticker, { portfolioId: pid || null });
+        }
+      });
+    });
+  }
+
+  function setHoldingsView(view) {
+    _holdingsView = view === 'cemetery' ? 'cemetery' : 'active';
+    document.querySelectorAll('[data-holdings-view]').forEach(button => {
+      const active = button.dataset.holdingsView === _holdingsView;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    document.querySelectorAll('[data-holdings-view-panel]').forEach(panel => {
+      panel.hidden = panel.dataset.holdingsViewPanel !== _holdingsView;
+    });
   }
 
   function _renderTransactions(transactions) {
@@ -2712,6 +3009,7 @@
   window.initWalletScreen = initWalletScreen;
   window._mgmt = {
     selectPortfolio,
+    setHoldingsView,
     _carouselGoTo,
     openWalletSettingsModal,
     closeWalletSettingsModal,

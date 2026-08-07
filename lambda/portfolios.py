@@ -181,6 +181,7 @@ def delete_portfolio(user_id: str, portfolio_id: str) -> bool:
                 "userId": user_id,
                 "sk": _holding_sk(portfolio_id, h["holdingId"]),
             })
+        batch.delete_item(Key={"userId": user_id, "sk": f"AVCO#{portfolio_id}"})
         batch.delete_item(Key={"userId": user_id, "sk": _portfolio_sk(portfolio_id)})
 
     with _transactions_table().batch_writer() as batch:
@@ -207,6 +208,7 @@ def clear_portfolio_ledger(user_id: str, portfolio_id: str) -> None:
                 "userId": user_id,
                 "sk": _holding_sk(portfolio_id, h["holdingId"]),
             })
+        batch.delete_item(Key={"userId": user_id, "sk": f"AVCO#{portfolio_id}"})
 
     with _transactions_table().batch_writer() as batch:
         for tx in transactions:

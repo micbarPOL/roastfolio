@@ -104,6 +104,33 @@ class PortfolioHandlerTests(unittest.TestCase):
     def test_get_portfolio_includes_transactions_and_holdings(self):
         with patch.object(handler.portfolios, "get_portfolio", return_value={"portfolioId": "xtb", "name": "XTB"}), \
              patch.object(handler.portfolios, "list_holdings", return_value=[{"holdingId": "aapl"}]), \
+             patch.object(handler.portfolio_avco, "load_portfolio_avco", return_value={
+                 "active": [{
+                     "holding_id": "aapl",
+                     "avco": 100,
+                     "realized_return": 12,
+                     "unrealized_return": 25,
+                     "dividends_received": 3,
+                     "total_return": 40,
+                     "gamification": {"badges": {}},
+                 }],
+                 "closed": [{
+                     "holding_id": "msft",
+                     "ticker": "MSFT",
+                     "name": "Microsoft",
+                     "status": "CLOSED",
+                     "shares": 0,
+                     "avco": 0,
+                     "realized_return": 20,
+                     "unrealized_return": 0,
+                     "dividends_received": 5,
+                     "total_return": 25,
+                     "first_buy_date": "2025-01-01",
+                     "last_sell_date": "2026-01-01",
+                     "gamification": {"badges": {}},
+                 }],
+                 "updated_at": "2026-07-03T10:00:00Z",
+             }), \
              patch.object(handler.portfolios, "list_transactions", return_value=[{"transactionId": "tx-1"}]):
             resp = handler.portfolios_handler(self._event(
                 "GET",
@@ -112,7 +139,11 @@ class PortfolioHandlerTests(unittest.TestCase):
             ))
         self.assertEqual(resp["statusCode"], 200)
         body = json.loads(resp["body"])
-        self.assertEqual(body["holdings"], [{"holdingId": "aapl"}])
+        self.assertEqual(body["holdings"][0]["avco"], 100)
+        self.assertEqual(body["holdings"][0]["totalReturn"], 40)
+        self.assertEqual(body["closedHoldings"][0]["holdingId"], "msft")
+        self.assertEqual(body["closedHoldings"][0]["totalReturn"], 25)
+        self.assertEqual(body["closedHoldings"][0]["firstBuyDate"], "2025-01-01")
         self.assertEqual(body["transactions"], [{"transactionId": "tx-1"}])
 
     def test_validation_error_returns_400(self):
