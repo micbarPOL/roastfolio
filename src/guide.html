@@ -1012,6 +1012,7 @@
         <li><a href="#closed-positions-avco">Closed Positions &amp; AVCO</a></li>
         <li><a href="#transactions">Transactions</a></li>
         <li><a href="#history-benchmarks">History &amp; Benchmarks</a></li>
+        <li><a href="#statistics-screen">Statistics</a></li>
         <li><a href="#ath-management">ATH Management</a></li>
         <li><a href="#analysis-screen">Asset Analysis</a></li>
       </ul>
@@ -1122,7 +1123,7 @@
     <p>Wallet Management has two holdings views: <strong>Active Holdings</strong> and <strong>The Cemetery</strong>.</p>
     <ul>
       <li><strong>Active Holdings:</strong> open positions with live value, daily move, and action buttons.</li>
-      <li><strong>The Cemetery:</strong> fully closed positions with lifecycle, total return, and commentary.</li>
+      <li><strong>The Cemetery:</strong> an AVCO performance table for positions history (both currently active and fully closed).</li>
     </ul>
 
     <p>For each asset, Roastfolio calculates return components using an <strong>Average Cost Basis (AVCO)</strong> model:</p>
@@ -1137,12 +1138,18 @@
     <ul>
       <li><strong>Asset:</strong> ticker and name.</li>
       <li><strong>Holding lifespan:</strong> first buy date, last sell date, and days held.</li>
-      <li><strong>Total return:</strong> signed monetary result in PLN.</li>
-      <li><strong>Roast:</strong> contextual commentary from gamification metadata when available.</li>
+      <li><strong>Realized (Unrealized):</strong> realized P/L, with unrealized P/L shown in brackets.</li>
+    </ul>
+
+    <p>The Cemetery table also includes power tools:</p>
+    <ul>
+      <li><strong>View filter:</strong> <em>All</em>, <em>Active</em>, or <em>Closed</em>.</li>
+      <li><strong>Sorting:</strong> by <em>Holding lifespan</em> or by <em>Realized (Unrealized)</em>.</li>
+      <li><strong>Drill-down:</strong> click an asset to open Analysis directly for that ticker.</li>
     </ul>
 
     <div class="callout info">
-      <p><strong>Summary wallet behavior:</strong> The Cemetery is portfolio-ledger based and is shown only for an individual wallet. The aggregate <em>Summary</em> view remains read-only and does not render closed-position rows.</p>
+      <p><strong>Summary wallet behavior:</strong> Summary remains read-only for trading, but The Cemetery is available there too. It is aggregated across all wallets by asset and shows combined AVCO returns for active and closed positions.</p>
     </div>
 
     <h3 id="transactions">Recording transactions</h3>
@@ -1195,6 +1202,26 @@
       <li><strong>Return vs Benchmark:</strong> A dedicated chart calculates your Time-Weighted Return (TWR) using the <em>Modified Dietz</em> methodology. This prevents massive deposits or withdrawals from artificially distorting your percentage returns, allowing for an apples-to-apples comparison of your portfolio's raw market performance against benchmarks.</li>
       <li><strong>Benchmarks:</strong> Compare your portfolio's returns against indices or assets. You can toggle between defaults like <strong>S&amp;P 500</strong>, <strong>MSCI World</strong>, and <strong>WIG20</strong>, or add <strong>custom benchmarks</strong> in your wallet settings using any valid Yahoo Finance ticker (e.g., <code>BTC-USD</code>).</li>
     </ul>
+
+    <h3 id="statistics-screen">Statistics</h3>
+    <p>The <strong>Statistics</strong> screen summarizes long-term performance using snapshots and transaction-adjusted return logic.</p>
+    <ul>
+      <li><strong>All-Time / Monthly / Daily cards:</strong> best and worst periods, drawdown from ATH, turnover, and trend summaries.</li>
+      <li><strong>Monthly snapshot table:</strong> end value, invested capital, net gain, return %, and XIRR.</li>
+      <li><strong>Benchmark comparison:</strong> month-by-month score against major benchmarks.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Monthly Performance Heatmap</h4>
+    <p>The heatmap visualizes seasonality by showing monthly performance in a matrix (<em>month rows</em> × <em>year columns</em>):</p>
+    <ul>
+      <li><strong>Metric toggle:</strong> switch between <em>% Return</em> and <em>PLN Return</em>.</li>
+      <li><strong>Portfolio toggle:</strong> switch between <em>Total</em> (Summary) and each individual wallet.</li>
+      <li><strong>Color intensity:</strong> stronger green/red means larger absolute move for the selected metric.</li>
+      <li><strong>Avg column:</strong> average result for each calendar month across available years.</li>
+    </ul>
+    <div class="callout info">
+      <p><strong>How to read it:</strong> Use the heatmap to spot recurring strong/weak months and compare whether a pattern persists in percentage terms or only in absolute PLN.</p>
+    </div>
 
     <h3 id="ath-management">All-Time High (ATH) management</h3>
     <p>Roastfolio tracks the <strong>All-Time High (ATH)</strong> portfolio value for each wallet and for the overall portfolio. ATH is used on the dashboard gauge to show how close you are to your peak. By default, ATH is computed automatically from your daily value snapshots.</p>
