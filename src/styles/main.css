@@ -13860,6 +13860,7 @@ body.wallet-overlay-open {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     margin-bottom: 10px;
 }
 
@@ -13869,6 +13870,22 @@ body.wallet-overlay-open {
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
+}
+
+.uwl-lake-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(153, 219, 255, 0.20);
+    background: rgba(3, 10, 20, 0.82);
+    color: rgba(196, 225, 255, 0.92);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
 }
 
 .uwl-chart-wrap {
