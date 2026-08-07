@@ -20,6 +20,7 @@ import boto3
 import yfinance as yf
 
 import db          # DynamoDB user-profile helpers
+import portfolio_avco
 import portfolios  # DynamoDB portfolios + holdings helpers
 import retirement_plans
 import snapshots   # Daily snapshot + ATH helpers
@@ -1705,7 +1706,49 @@ def portfolios_handler(event: dict) -> dict:
             p = portfolios.get_portfolio(user_id, portfolio_id)
             if not p:
                 return _resp(404, {"error": "Portfolio not found"})
-            p["holdings"] = portfolios.list_holdings(user_id, portfolio_id)
+            holdings = portfolios.list_holdings(user_id, portfolio_id)
+            avco = portfolio_avco.load_portfolio_avco(user_id, portfolio_id)
+            active_by_holding = {
+                row.get("holding_id"): row
+                for row in avco["active"]
+                if row.get("holding_id")
+            }
+            active_by_ticker = {
+                str(row.get("ticker") or "").upper(): row
+                for row in avco["active"]
+                if row.get("ticker")
+            }
+            for holding in holdings:
+                analytics = active_by_holding.get(holding.get("holdingId"))
+                if analytics is None:
+                    analytics = active_by_ticker.get(str(holding.get("ticker") or "").upper())
+                if analytics:
+                    holding.update({
+                        "avco": analytics["avco"],
+                        "realizedReturn": analytics["realized_return"],
+                        "unrealizedReturn": analytics["unrealized_return"],
+                        "dividendsReceived": analytics["dividends_received"],
+                        "totalReturn": analytics["total_return"],
+                        "gamification": analytics["gamification"],
+                    })
+            p["holdings"] = holdings
+            p["closedHoldings"] = [{
+                "holdingId": row.get("holding_id"),
+                "ticker": row.get("ticker"),
+                "name": row.get("name"),
+                "currency": row.get("currency"),
+                "status": row.get("status"),
+                "units": row.get("shares", 0),
+                "avco": row.get("avco", 0),
+                "realizedReturn": row.get("realized_return", 0),
+                "unrealizedReturn": row.get("unrealized_return", 0),
+                "dividendsReceived": row.get("dividends_received", 0),
+                "totalReturn": row.get("total_return", 0),
+                "firstBuyDate": row.get("first_buy_date"),
+                "lastSellDate": row.get("last_sell_date"),
+                "gamification": row.get("gamification"),
+            } for row in avco["closed"]]
+            p["avcoUpdatedAt"] = avco["updated_at"]
             p["transactions"] = portfolios.list_transactions(user_id, portfolio_id)
             return _resp(200, p)
         if method == "DELETE":

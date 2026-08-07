@@ -20,7 +20,9 @@
   let _searchSource = 'yf';   // 'yf' | 'tfi'
   let _currentHoldings = [];
   let _currentTransactions = [];
+  let _currentClosedHoldings = [];
   let _currentSnapshots = [];
+  let _holdingsView = 'active';
   let _transactionsPanelMode = 'trade';
   let _priceInputSource = 'price'; // 'price' | 'total' — last edited price-related field
 
@@ -158,6 +160,121 @@
     const num = Number(value || 0);
     const sign = num > 0 ? '+' : '';
     return `${sign}${num.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
+  }
+
+  function _holdingMetricValue(holding, snakeCase, camelCase) {
+    const value = holding && (holding[snakeCase] ?? holding[camelCase]);
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function _transactionAssetKey(tx) {
+    if (tx && tx.holdingId) return `id:${String(tx.holdingId)}`;
+    const ticker = String(tx && tx.ticker || '').trim().toUpperCase();
+    if (ticker) return `ticker:${ticker}`;
+    return `name:${String(tx && tx.name || '').trim().toLowerCase()}`;
+  }
+
+  function _isAssetTransaction(tx) {
+    return ['BUY', 'SELL', 'DIVIDEND', 'SPINOFF'].includes(String(tx && tx.type || '').toUpperCase());
+  }
+
+  function _buildHoldingPerformance(transactions, closedHoldings = []) {
+    const grouped = new Map();
+    (transactions || []).filter(_isAssetTransaction).forEach(tx => {
+      const key = _transactionAssetKey(tx);
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(tx);
+    });
+
+    const metrics = new Map();
+    grouped.forEach((rows, key) => {
+      const sorted = rows.slice().sort((a, b) => String(a.transactionDate || a.date || '').localeCompare(String(b.transactionDate || b.date || '')));
+      let units = 0;
+      let costBasis = 0;
+      let realized = 0;
+      let dividends = 0;
+      let firstBuyDate = '';
+      let lastSellDate = '';
+      let name = '';
+      let ticker = '';
+      let gamification = null;
+
+      sorted.forEach(tx => {
+        const type = String(tx.type || '').toUpperCase();
+        const quantity = Math.abs(Number(tx.quantity || 0));
+        const value = Math.abs(Number(tx.value || 0));
+        name = String(tx.name || name || 'Unknown asset');
+        ticker = String(tx.ticker || ticker || '');
+        gamification = tx.gamification || tx.gamificationPayload || tx.gamification_payload || gamification;
+
+        if (type === 'BUY') {
+          units += quantity;
+          costBasis += value;
+          if (!firstBuyDate) firstBuyDate = String(tx.transactionDate || tx.date || '').slice(0, 10);
+        } else if (type === 'SELL' && quantity > 0) {
+          const soldCost = units > 0 ? costBasis * Math.min(quantity, units) / units : 0;
+          realized += value - soldCost;
+          costBasis = Math.max(0, costBasis - soldCost);
+          units = Math.max(0, units - quantity);
+          lastSellDate = String(tx.transactionDate || tx.date || '').slice(0, 10);
+        } else if (type === 'DIVIDEND') {
+          dividends += value;
+        }
+      });
+
+      metrics.set(key, { units, realized, dividends, firstBuyDate, lastSellDate, name, ticker, gamification });
+    });
+    closedHoldings.forEach(holding => {
+      const key = _transactionAssetKey(holding);
+      metrics.set(key, {
+        units: Number(holding.units || 0),
+        realized: _holdingMetricValue(holding, 'realized_return', 'realizedReturn') || 0,
+        unrealized: _holdingMetricValue(holding, 'unrealized_return', 'unrealizedReturn') || 0,
+        dividends: _holdingMetricValue(holding, 'dividends_received', 'dividendsReceived') || 0,
+        firstBuyDate: holding.first_buy_date || holding.firstBuyDate || '',
+        lastSellDate: holding.last_sell_date || holding.lastSellDate || '',
+        name: holding.name || holding.ticker || 'Unknown asset',
+        ticker: holding.ticker || '',
+        gamification: holding.gamification || holding.gamificationPayload || holding.gamification_payload || null,
+      });
+    });
+    return metrics;
+  }
+
+  function _holdingPerformanceFor(holding, performance) {
+    const fallback = performance.get(_transactionAssetKey(holding)) || {};
+    const realized = _holdingMetricValue(holding, 'realized_return', 'realizedReturn');
+    const unrealized = _holdingMetricValue(holding, 'unrealized_return', 'unrealizedReturn');
+    const dividends = _holdingMetricValue(holding, 'dividends_received', 'dividendsReceived');
+    return {
+      ...fallback,
+      realized: realized ?? fallback.realized ?? 0,
+      unrealized: unrealized ?? fallback.unrealized ?? 0,
+      dividends: dividends ?? fallback.dividends ?? 0,
+      gamification: holding.gamification || holding.gamificationPayload || holding.gamification_payload || fallback.gamification || null,
+    };
+  }
+
+  function _lifespanLabel(firstBuyDate, lastSellDate) {
+    if (!firstBuyDate || !lastSellDate) return 'Dates unavailable';
+    const start = new Date(`${firstBuyDate}T00:00:00`);
+    const end = new Date(`${lastSellDate}T00:00:00`);
+    const days = Math.max(0, Math.round((end - start) / 86400000));
+    return `${firstBuyDate} → ${lastSellDate} · ${days === 1 ? '1 day' : `${days} days`}`;
+  }
+
+  function _cemeteryRoast(performance) {
+    const payload = performance.gamification;
+    if (typeof payload === 'string' && payload.trim()) return payload.trim();
+    if (payload && typeof payload === 'object') {
+      const message = payload.roast || payload.commentary || payload.badge || payload.message || payload.label;
+      if (message) return String(message);
+    }
+    const total = Number(performance.realized || 0) + Number(performance.unrealized || 0) + Number(performance.dividends || 0);
+    if (total > 0) return 'Escaped with loot. The market briefly lost track of you.';
+    if (total < 0) return 'A dignified exit, if we agree never to open the receipts.';
+    return 'Position closed. The spreadsheet observed a respectful silence.';
   }
 
   function _isCompactWalletSelector() {
@@ -950,10 +1067,14 @@
     const p = _portfolios.find(x => x.portfolioId === portfolioId);
     const tbody = document.getElementById('mgmt-holdings-body');
     const holdingsMeta = document.getElementById('mgmt-holdings-meta');
+    const cemeteryBody = document.getElementById('mgmt-cemetery-body');
+    const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
     const valueHistoryBody = document.getElementById('mgmt-value-history-body');
     const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
     _renderHoldingsSkeleton();
     if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
+    if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="4" class="cemetery-empty">Loading closed positions…</td></tr>';
+    if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
     const txBody = document.getElementById('mgmt-transactions-body');
     if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
     if (valueHistoryBody) valueHistoryBody.innerHTML = '<tr><td colspan="3" class="mgmt-loading" style="text-align:center;padding:20px;">Loading…</td></tr>';
@@ -965,6 +1086,7 @@
       const holdings = _mergeHoldings([], _liveHoldingsFor(p));
       _currentHoldings = holdings;
       _currentTransactions = [];
+      _currentClosedHoldings = [];
       try {
         const snapshotData = await PortfolioClient.listSnapshots(portfolioId);
         _currentSnapshots = snapshotData.snapshots || [];
@@ -989,9 +1111,11 @@
       ]);
       const holdings = _mergeHoldings(data.holdings || [], _liveHoldingsFor(p));
       const transactions = data.transactions || [];
+      const closedHoldings = data.closedHoldings || [];
       const snapshots = snapshotData.snapshots || [];
       _currentHoldings = holdings;
       _currentTransactions = transactions;
+      _currentClosedHoldings = closedHoldings;
       _currentSnapshots = snapshots;
       _renderSettings(p, holdings.length, transactions.length);
       _renderHoldings(portfolioId, holdings, false);
@@ -1002,6 +1126,7 @@
     } catch(e) {
       _currentHoldings = [];
       _currentTransactions = [];
+      _currentClosedHoldings = [];
       _currentSnapshots = [];
       _renderSettings(p, 0, 0);
       tbody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
@@ -1019,19 +1144,23 @@
     const metaEl = document.getElementById('mgmt-holdings-meta');
     if (!tbody) return;
 
-    if (holdings.length === 0) {
+    const performance = _buildHoldingPerformance(_currentTransactions, _currentClosedHoldings);
+    const activeHoldings = holdings.filter(h => _isCashHolding(h) || Number(h.units || 0) > 0.00000001);
+
+    if (activeHoldings.length === 0) {
       const _emptyMsg = isSummary
         ? 'No holdings yet — create a wallet and add transactions to populate Summary.'
         : 'No holdings yet — add one using the trade flow.';
       tbody.innerHTML = `<tr class="wht-row"><td colspan="6" class="wht-td" style="text-align:center;color:#888;padding:36px 20px;">${_emptyMsg}</td></tr>`;
       if (cardsEl) cardsEl.innerHTML = `<div class="whc-empty">${_emptyMsg}</div>`;
       if (metaEl) _setPillState(metaEl, isSummary ? 'Summary waiting for wallets' : 'No holdings yet', '');
+      _renderCemetery(holdings, performance, isSummary);
       return;
     }
 
     if (metaEl) {
-      const cashCount = holdings.filter(_isCashHolding).length;
-      const liveCount = holdings.length - cashCount;
+      const cashCount = activeHoldings.filter(_isCashHolding).length;
+      const liveCount = activeHoldings.length - cashCount;
       _setPillState(metaEl, `${liveCount} holdings${cashCount ? ` · ${cashCount} cash` : ''}`, '');
     }
 
@@ -1040,7 +1169,7 @@
     const _svgDown = `<svg class="wht-btn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
     // ── Desktop table rows ──────────────────────────────────────
-    tbody.innerHTML = holdings.map(h => {
+    tbody.innerHTML = activeHoldings.map(h => {
       const _cv      = Number.isFinite(Number(h.currentValue)) ? Number(h.currentValue) : Number(h.purchaseValue || 0);
       const _isCash  = _isCashHolding(h);
       const _isTfi   = !_isCash && String(h.ticker || '').startsWith('TFI:');
@@ -1048,6 +1177,11 @@
       const _dailyPct   = Number(h.dailyChangePct || 0);
       const _alloc      = Math.min(100, Number(h.pct || 0));
       const _dClass     = _dailyChangeClass(h.dailyChangePLN);
+      const _performance = _holdingPerformanceFor(h, performance);
+      const _realized = Number(_performance.realized || 0);
+      const _realizedBadge = !_isCash && Math.abs(_realized) >= 0.005
+        ? `<span class="wht-realized ${_realized >= 0 ? 'is-positive' : 'is-negative'}">Past Realized: ${_fmtSignedMoney(_realized)} (AVCO)</span>`
+        : '';
 
       let _actionHtml;
       if (isSummary) {
@@ -1072,6 +1206,7 @@
               <div class="wht-company-copy">
                 <span class="wht-company-name">${_esc(h.name)}</span>
                 <span class="wht-company-ticker">${_esc(_dispTicker)}</span>
+                ${_realizedBadge}
               </div>
             </div>
           </td>
@@ -1098,7 +1233,7 @@
       const _svgUpMobile   = `<svg class="whc-btn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 13V3M3 8l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       const _svgDownMobile = `<svg class="whc-btn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-      cardsEl.innerHTML = holdings.map(h => {
+      cardsEl.innerHTML = activeHoldings.map(h => {
         const _cv     = Number.isFinite(Number(h.currentValue)) ? Number(h.currentValue) : Number(h.purchaseValue || 0);
         const _isCash = _isCashHolding(h);
         const _isTfi  = !_isCash && String(h.ticker || '').startsWith('TFI:');
@@ -1106,6 +1241,11 @@
         const _dailyPct   = Number(h.dailyChangePct || 0);
         const _alloc      = Math.min(100, Number(h.pct || 0));
         const _dClass     = _dailyChangeClass(h.dailyChangePLN);
+        const _performance = _holdingPerformanceFor(h, performance);
+        const _realized = Number(_performance.realized || 0);
+        const _realizedBadge = !_isCash && Math.abs(_realized) >= 0.005
+          ? `<span class="wht-realized ${_realized >= 0 ? 'is-positive' : 'is-negative'}">Past Realized: ${_fmtSignedMoney(_realized)} (AVCO)</span>`
+          : '';
 
         return `
           <div class="whc${_isCash ? ' is-cash' : ''}${h.pending ? ' is-pending' : ''}">
@@ -1115,6 +1255,7 @@
                 <div class="whc-names">
                   <span class="whc-name">${_esc(h.name)}</span>
                   <span class="whc-ticker">${_esc(_dispTicker)}</span>
+                  ${_realizedBadge}
                 </div>
               </div>
               <div class="whc-financials">
@@ -1142,6 +1283,47 @@
           </div>`;
       }).join('');
     }
+    _renderCemetery(holdings, performance, isSummary);
+  }
+
+  function _renderCemetery(holdings, performance, isSummary) {
+    const tbody = document.getElementById('mgmt-cemetery-body');
+    const meta = document.getElementById('mgmt-cemetery-meta');
+    if (!tbody) return;
+
+    const activeKeys = new Set((holdings || []).filter(h => Number(h.units || 0) > 0.00000001).map(_transactionAssetKey));
+    const closed = Array.from(performance.entries())
+      .filter(([key, row]) => !activeKeys.has(key) && Number(row.units || 0) <= 0.00000001 && row.firstBuyDate && row.lastSellDate)
+      .map(([, row]) => ({ ...row, totalReturn: Number(row.realized || 0) + Number(row.unrealized || 0) + Number(row.dividends || 0) }))
+      .sort((a, b) => String(b.lastSellDate).localeCompare(String(a.lastSellDate)));
+
+    if (meta) _setPillState(meta, isSummary ? 'Choose a wallet to inspect closures' : `${closed.length} closed position${closed.length === 1 ? '' : 's'}`, '');
+    if (isSummary) {
+      tbody.innerHTML = '<tr><td colspan="4" class="cemetery-empty">The Cemetery is ledger-based. Choose an individual wallet to inspect closed positions.</td></tr>';
+      return;
+    }
+    if (!closed.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="cemetery-empty">No fully closed positions in this wallet. The archive remains mercifully quiet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = closed.map(row => `<tr class="cemetery-row">
+      <td><div class="cemetery-asset"><span class="cemetery-ticker">${_esc(row.ticker || '—')}</span><span class="cemetery-name">${_esc(row.name)}</span></div></td>
+      <td class="cemetery-lifespan">${_esc(_lifespanLabel(row.firstBuyDate, row.lastSellDate))}</td>
+      <td class="cemetery-return ${_dailyChangeClass(row.totalReturn)}">${_fmtSignedMoney(row.totalReturn)}</td>
+      <td><span class="cemetery-roast">${_esc(_cemeteryRoast(row))}</span></td>
+    </tr>`).join('');
+  }
+
+  function setHoldingsView(view) {
+    _holdingsView = view === 'cemetery' ? 'cemetery' : 'active';
+    document.querySelectorAll('[data-holdings-view]').forEach(button => {
+      const active = button.dataset.holdingsView === _holdingsView;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    document.querySelectorAll('[data-holdings-view-panel]').forEach(panel => {
+      panel.hidden = panel.dataset.holdingsViewPanel !== _holdingsView;
+    });
   }
 
   function _renderTransactions(transactions) {
@@ -2712,6 +2894,7 @@
   window.initWalletScreen = initWalletScreen;
   window._mgmt = {
     selectPortfolio,
+    setHoldingsView,
     _carouselGoTo,
     openWalletSettingsModal,
     closeWalletSettingsModal,

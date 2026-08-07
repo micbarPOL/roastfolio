@@ -812,6 +812,11 @@
                             </div>
                             <div id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading holdings…</div>
                         </div>
+                        <div class="holdings-view-toggle" role="tablist" aria-label="Holdings view">
+                            <button type="button" class="holdings-view-btn is-active" data-holdings-view="active" role="tab" aria-selected="true" onclick="window._mgmt.setHoldingsView('active')">Active Holdings</button>
+                            <button type="button" class="holdings-view-btn" data-holdings-view="cemetery" role="tab" aria-selected="false" onclick="window._mgmt.setHoldingsView('cemetery')">The Cemetery</button>
+                        </div>
+                        <div data-holdings-view-panel="active">
                         <div class="wallet-table-wrap wallet-table-wrap-stable wallet-desktop-only">
                                 <table class="wallet-holdings-table">
                                     <colgroup>
@@ -837,6 +842,22 @@
                         </div>
                         <!-- Mobile: holdings as stacked cards -->
                         <div id="mgmt-holdings-cards" class="wallet-holdings-cards"></div>
+                        </div>
+                        <div data-holdings-view-panel="cemetery" hidden>
+                            <div class="cemetery-header">
+                                <div>
+                                    <div class="cemetery-title">Closed Positions</div>
+                                    <div class="wallet-table-subtitle">The full post-mortem: lifespan, total return, and the market's final remarks.</div>
+                                </div>
+                                <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
+                            </div>
+                            <div class="wallet-table-wrap cemetery-table-wrap">
+                                <table class="wallet-holdings-table cemetery-table">
+                                    <thead><tr><th>Asset</th><th>Holding lifespan</th><th>Total return</th><th>Roast</th></tr></thead>
+                                    <tbody id="mgmt-cemetery-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
