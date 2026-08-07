@@ -1397,6 +1397,10 @@ function _renderUnderwaterCharts(metrics, extremes) {
     const selectedLakeMetrics = selectedLake ? selectedLake.rows : metrics;
     const selectedLakeLabels = selectedLakeMetrics.map(row => row.date);
     const selectedLakeDrawdowns = selectedLakeMetrics.map(row => Math.min(0, Number(row.drawdown || 0)));
+    const selectedLakeMinDrawdown = selectedLakeDrawdowns.length ? Math.min(...selectedLakeDrawdowns) : -100;
+    const selectedLakeMaxDrawdown = selectedLakeDrawdowns.length ? Math.max(...selectedLakeDrawdowns) : 0;
+    const selectedLakePad = Math.max(1, Math.abs(selectedLakeMinDrawdown) * 0.15, Math.abs(selectedLakeMaxDrawdown) * 0.15);
+    const selectedLakeYAxisMin = Math.min(-1, selectedLakeMinDrawdown - selectedLakePad);
     const selectedLakeLabel = selectedLake
         ? `Lake ${selectedLake.lakeId} · ${selectedLake.durationDays}d · ${selectedLake.isOpen ? 'Open' : `${selectedLake.startDate} → ${selectedLake.endDate}`}`
         : '';
@@ -1523,7 +1527,7 @@ function _renderUnderwaterCharts(metrics, extremes) {
         scales: {
             x: sharedXAxis,
             y: {
-                min: -100,
+                min: selectedLakeYAxisMin,
                 max: 0,
                 ticks: { color: theme.text, callback: (v) => `${v}%` },
                 grid: { color: theme.grid },
