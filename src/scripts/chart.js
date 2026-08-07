@@ -115,6 +115,35 @@ function _walletHistoryCanvasId(name) {
         .replace(/^-+|-+$/g, '');
 }
 
+function _isFiniteNumber(value) {
+    const n = Number(value);
+    return Number.isFinite(n);
+}
+
+function _resolveTwrPct(row) {
+    if (row && row.cumulativeReturnPct != null && row.cumulativeReturnPct !== '') {
+        const pct = Number(row.cumulativeReturnPct);
+        if (Number.isFinite(pct)) return pct;
+    }
+    if (row && row.unitPrice != null && row.unitPrice !== '') {
+        const unit = Number(row.unitPrice);
+        if (Number.isFinite(unit) && unit > 0) return ((unit / 100) - 1) * 100;
+    }
+    return null;
+}
+
+function _twrCarryForDate(rows, dateStr) {
+    const previous = [...(rows || [])]
+        .reverse()
+        .find(row => row && row.date < dateStr && _resolveTwrPct(row) != null);
+
+    if (!previous) return { unitPrice: null, cumulativeReturnPct: null };
+    return {
+        unitPrice: _isFiniteNumber(previous.unitPrice) ? Number(previous.unitPrice) : null,
+        cumulativeReturnPct: _isFiniteNumber(previous.cumulativeReturnPct) ? Number(previous.cumulativeReturnPct) : _resolveTwrPct(previous),
+    };
+}
+
 function _renderWalletBtns(walletNames) {
     const strip = document.getElementById('history-wallet-btns');
     if (!strip) return;
@@ -150,22 +179,21 @@ async function _loadHistorySnapshots(force = false) {
             if (summaryRows.length > 0) {
                 latestInvestment = summaryRows[summaryRows.length - 1].investment;
             }
+            const twrCarry = _twrCarryForDate(summaryRows, todayStr);
             if (!hasToday) {
-                const last = summaryRows[summaryRows.length - 1] || {};
                 summaryRows.push({
                     date: todayStr,
                     value: Number(window.PORTFOLIO_TOTAL_VALUE),
                     investment: latestInvestment,
-                    unitPrice: Number(last.unitPrice || 0),
-                    cumulativeReturnPct: Number(last.cumulativeReturnPct || 0),
+                    unitPrice: twrCarry.unitPrice,
+                    cumulativeReturnPct: twrCarry.cumulativeReturnPct,
                 });
             } else {
-                const last = summaryRows[summaryRows.length - 1] || {};
                 summaryRows = summaryRows.map(d => d.date === todayStr ? {
                     ...d,
                     value: Number(window.PORTFOLIO_TOTAL_VALUE),
-                    unitPrice: Number(d.unitPrice || last.unitPrice || 0),
-                    cumulativeReturnPct: Number(d.cumulativeReturnPct || last.cumulativeReturnPct || 0),
+                    unitPrice: d.unitPrice ?? twrCarry.unitPrice,
+                    cumulativeReturnPct: d.cumulativeReturnPct ?? twrCarry.cumulativeReturnPct,
                 } : d);
             }
             // Recalculate ATH and peaks
@@ -197,22 +225,21 @@ async function _loadHistorySnapshots(force = false) {
                 if (walletRows.length > 0) {
                     latestInvestment = walletRows[walletRows.length - 1].investment;
                 }
+                const twrCarry = _twrCarryForDate(walletRows, todayStr);
                 if (!hasToday) {
-                    const last = walletRows[walletRows.length - 1] || {};
                     walletRows.push({
                         date: todayStr,
                         value: liveWalletVal,
                         investment: latestInvestment,
-                        unitPrice: Number(last.unitPrice || 0),
-                        cumulativeReturnPct: Number(last.cumulativeReturnPct || 0),
+                        unitPrice: twrCarry.unitPrice,
+                        cumulativeReturnPct: twrCarry.cumulativeReturnPct,
                     });
                 } else {
-                    const last = walletRows[walletRows.length - 1] || {};
                     walletRows = walletRows.map(d => d.date === todayStr ? {
                         ...d,
                         value: liveWalletVal,
-                        unitPrice: Number(d.unitPrice || last.unitPrice || 0),
-                        cumulativeReturnPct: Number(d.cumulativeReturnPct || last.cumulativeReturnPct || 0),
+                        unitPrice: d.unitPrice ?? twrCarry.unitPrice,
+                        cumulativeReturnPct: d.cumulativeReturnPct ?? twrCarry.cumulativeReturnPct,
                     } : d);
                 }
                 // Recalculate ATH and peaks for wallet
@@ -705,25 +732,32 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
     _destroyHistoryChart(canvasId);
 
     const labels = data.map(item => item.date);
-    const returns = data.map(item => {
-        const profit = item.value - item.investment;
-        if (mode === 'pln') return Number(profit.toFixed(2));
+    let returns = [];
 
-        if (item.cumulativeReturnPct != null && item.cumulativeReturnPct !== '') {
-            const backendTwrPct = Number(item.cumulativeReturnPct);
-            if (Number.isFinite(backendTwrPct)) return Number(backendTwrPct.toFixed(2));
+    if (mode === 'pln') {
+        returns = data.map(item => Number((item.value - item.investment).toFixed(2)));
+    } else {
+        const hasAnyTwr = data.some(item => _resolveTwrPct(item) != null);
+
+        if (hasAnyTwr) {
+            let lastTwr = null;
+            returns = data.map(item => {
+                const twr = _resolveTwrPct(item);
+                if (twr != null) {
+                    lastTwr = twr;
+                    return Number(twr.toFixed(2));
+                }
+                if (lastTwr != null) return Number(lastTwr.toFixed(2));
+                return null;
+            });
+        } else {
+            returns = data.map(item => {
+                const profit = item.value - item.investment;
+                if (!item.investment) return 0;
+                return Number(((profit / item.investment) * 100).toFixed(2));
+            });
         }
-
-        if (item.unitPrice != null && item.unitPrice !== '') {
-            const unitPrice = Number(item.unitPrice);
-            if (Number.isFinite(unitPrice) && unitPrice > 0) {
-                return Number((((unitPrice / 100) - 1) * 100).toFixed(2));
-            }
-        }
-
-        if (!item.investment) return 0;
-        return Number(((profit / item.investment) * 100).toFixed(2));
-    });
+    }
 
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'line',
