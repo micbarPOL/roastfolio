@@ -1443,6 +1443,8 @@ function _renderUnderwaterCharts(metrics, extremes) {
     const labels = metrics.map(row => row.date);
     const values = metrics.map(row => Number(row.unit_price || 0));
     const hwm = metrics.map(row => Number(row.hwm || 0));
+    const valueReturnsPct = values.map(v => ((v / 100) - 1) * 100);
+    const hwmReturnsPct = hwm.map(v => ((v / 100) - 1) * 100);
     const lakeCatalog = _underwaterLakeCatalog;
     const selectedLake = _selectedUnderwaterLake(lakeCatalog);
     const spans = _lakeIndexSpans(metrics, extremes);
@@ -1494,16 +1496,16 @@ function _renderUnderwaterCharts(metrics, extremes) {
         labels,
         datasets: [
             {
-                label: 'Unit price',
-                data: values,
+                label: 'Cumulative return %',
+                data: valueReturnsPct,
                 borderColor: theme.valueLine,
                 borderWidth: 2.2,
                 pointRadius: 0,
                 tension: 0.26,
             },
             {
-                label: 'High-water mark',
-                data: hwm,
+                label: 'High-water mark %',
+                data: hwmReturnsPct,
                 borderColor: theme.hwmLine,
                 borderDash: [6, 5],
                 borderWidth: 1.6,
@@ -1543,7 +1545,7 @@ function _renderUnderwaterCharts(metrics, extremes) {
                 ...sharedTooltip,
                 callbacks: {
                     title: (items) => fmtDate(items?.[0]?.label || ''),
-                    label: (ctx) => `${ctx.dataset.label}: ${Number(ctx.parsed.y || 0).toFixed(2)}`,
+                    label: (ctx) => `${ctx.dataset.label}: ${_fmtUwlPct(ctx.parsed.y || 0)}`,
                 },
             },
             underwaterLakesOverlay: {
@@ -1561,7 +1563,7 @@ function _renderUnderwaterCharts(metrics, extremes) {
         scales: {
             x: sharedXAxisPath,
             y: {
-                ticks: { color: theme.text, callback: (v) => Number(v).toFixed(2) },
+                ticks: { color: theme.text, callback: (v) => `${Number(v).toFixed(1)}%` },
                 grid: { color: theme.grid },
             },
         },
