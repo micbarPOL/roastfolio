@@ -110,7 +110,17 @@ def _quantize_unit_count(value) -> Decimal:
 
 
 def _build_net_cash_flow_by_date(all_transactions: list[dict]) -> dict[str, Decimal]:
-    """Daily net external cash flow = DEPOSIT (+) - WITHDRAWAL (-)."""
+    """
+    Daily net external cash flow used by TWR.
+
+    Primary model:
+      - DEPOSIT: positive external inflow
+      - WITHDRAWAL: negative external outflow
+
+    Legacy import compatibility:
+      - BUY with affectCash=false behaves like synthetic inflow
+      - SELL/DIVIDEND with affectCash=false behaves like synthetic outflow
+    """
     flows: dict[str, Decimal] = {}
     for tx in all_transactions:
         tx_date = str(tx.get("transactionDate") or "").strip()[:10]
@@ -118,9 +128,19 @@ def _build_net_cash_flow_by_date(all_transactions: list[dict]) -> dict[str, Deci
             continue
         tx_type = str(tx.get("type") or "").upper()
         value = _to_decimal(tx.get("value") or 0)
+        affect_cash = tx.get("affectCash")
+        if affect_cash is None:
+            affect_cash = True
+        else:
+            affect_cash = bool(affect_cash)
+
         if tx_type == "DEPOSIT":
             flows[tx_date] = flows.get(tx_date, Decimal("0")) + value
         elif tx_type == "WITHDRAWAL":
+            flows[tx_date] = flows.get(tx_date, Decimal("0")) - value
+        elif tx_type == "BUY" and not affect_cash:
+            flows[tx_date] = flows.get(tx_date, Decimal("0")) + value
+        elif tx_type in ("SELL", "DIVIDEND") and not affect_cash:
             flows[tx_date] = flows.get(tx_date, Decimal("0")) - value
     return flows
 

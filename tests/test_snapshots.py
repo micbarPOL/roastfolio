@@ -379,6 +379,21 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(item["xirrVersion"], snapshots._XIRR_CALCULATION_VERSION)
         self.assertAlmostEqual(float(item["xirr"]), 0.10, places=2)
 
+    def test_build_net_cash_flow_by_date_includes_affect_cash_false_legacy_flows(self):
+        flows = snapshots._build_net_cash_flow_by_date([
+            {"transactionDate": "2022-01-03", "type": "DEPOSIT", "value": "1000"},
+            {"transactionDate": "2022-01-04", "type": "BUY", "value": "600", "affectCash": False},
+            {"transactionDate": "2022-01-05", "type": "SELL", "value": "200", "affectCash": False},
+            {"transactionDate": "2022-01-06", "type": "DIVIDEND", "value": "50", "affectCash": False},
+            {"transactionDate": "2022-01-07", "type": "WITHDRAWAL", "value": "100"},
+        ])
+
+        self.assertEqual(flows["2022-01-03"], Decimal("1000"))
+        self.assertEqual(flows["2022-01-04"], Decimal("600"))
+        self.assertEqual(flows["2022-01-05"], Decimal("-200"))
+        self.assertEqual(flows["2022-01-06"], Decimal("-50"))
+        self.assertEqual(flows["2022-01-07"], Decimal("-100"))
+
 
 if __name__ == "__main__":
     unittest.main()
