@@ -1556,8 +1556,8 @@ function _renderUnderwaterCharts(metrics, extremes) {
                 deepestIndex: spans.deepestIndex,
                 widestStartIndex: spans.widestStartIndex,
                 widestEndIndex: spans.widestEndIndex,
-                deepestLabel: extremes?.deepest ? `Deepest ${_fmtUwlPct(extremes.deepest.drawdown)}` : '',
-                widestLabel: extremes?.widest ? `Widest ${extremes.widest.duration}d` : '',
+                deepestLabel,
+                widestLabel,
             },
         },
         scales: {
