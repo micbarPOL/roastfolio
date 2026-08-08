@@ -307,7 +307,7 @@
 
     const arrow = (_cemeterySort.dir === 'desc') ? ' ↓' : ' ↑';
     dateBtn.textContent = `Holding lifespan${_cemeterySort.key === 'date' ? arrow : ''}`;
-    returnBtn.textContent = `Realized (Unrealized)${_cemeterySort.key === 'return' ? arrow : ''}`;
+    returnBtn.textContent = `Realized Return${_cemeterySort.key === 'return' ? arrow : ''}`;
   }
 
   function _bindCemeteryFilterHandler() {
@@ -1385,7 +1385,7 @@
       })
       .sort((a, b) => {
         if (_cemeterySort.key === 'return') {
-          return (Number(a.totalReturn || 0) - Number(b.totalReturn || 0)) * direction;
+          return (Number(a.realized || 0) - Number(b.realized || 0)) * direction;
         }
         const aDate = String(a.lastSellDate || a.firstBuyDate || '');
         const bDate = String(b.lastSellDate || b.firstBuyDate || '');
@@ -1414,7 +1414,7 @@
     tbody.innerHTML = closed.map(row => `<tr class="cemetery-row">
       <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="${_esc(row.ticker || row.name || '')}" data-portfolio-id="${_esc(resolvedPortfolioId)}"><span class="cemetery-ticker">${_esc(row.ticker || '—')}</span><span class="cemetery-name">${_esc(row.name)}</span></button></div></td>
       <td class="cemetery-lifespan">${_esc(_positionLifespanLabel(row.firstBuyDate, row.lastSellDate))}</td>
-      <td class="cemetery-return ${_dailyChangeClass(row.realized)}">${_fmtSignedMoney(row.realized)} <span class="cemetery-unrealized">(${_fmtSignedMoney(row.unrealized)})</span></td>
+      <td class="cemetery-return ${_dailyChangeClass(row.realized)}">${_fmtSignedMoney(row.realized)}</td>
     </tr>`).join('');
 
     tbody.querySelectorAll('.cemetery-asset-link').forEach((button) => {
