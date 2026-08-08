@@ -1459,14 +1459,23 @@ function _renderUnderwaterCharts(metrics, extremes) {
         selectedLakePill.textContent = selectedLakeLabel || 'Click a lake on the left chart';
     }
 
+    function _fmtUnderwaterXAxisLabel(dateStr) {
+        if (!dateStr) return '';
+        const raw = String(dateStr).slice(0, 10);
+        const parts = raw.split('-');
+        if (parts.length < 2) return raw;
+        const year = parts[0];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const mName = monthNames[parseInt(parts[1], 10) - 1] || parts[1];
+        return `${mName} '${year.slice(2)}`;
+    }
+
     const sharedXAxisPath = {
         ticks: {
             color: theme.text,
             maxTicksLimit: 8,
-            callback: (_value, idx) => {
-                const raw = labels[idx] || '';
-                return raw ? raw.slice(5) : '';
-            },
+            maxRotation: 0,
+            callback: (_value, idx) => _fmtUnderwaterXAxisLabel(labels[idx]),
         },
         grid: { color: theme.grid },
     };
@@ -1475,10 +1484,8 @@ function _renderUnderwaterCharts(metrics, extremes) {
         ticks: {
             color: theme.text,
             maxTicksLimit: 8,
-            callback: (_value, idx) => {
-                const raw = selectedLakeLabels[idx] || '';
-                return raw ? raw.slice(5) : '';
-            },
+            maxRotation: 0,
+            callback: (_value, idx) => _fmtUnderwaterXAxisLabel(selectedLakeLabels[idx]),
         },
         grid: { color: theme.grid },
     };
