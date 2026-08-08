@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import csv
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from zoneinfo import ZoneInfo
 
@@ -38,6 +38,7 @@ _SIXPLACES = Decimal("0.000001")
 _EIGHTPLACES = Decimal("0.00000001")
 _VIRTUAL_UNIT_BASE_PRICE = Decimal("100.00")
 _XIRR_CALCULATION_VERSION = "investment-history-v1"
+_BENCHMARK_RETURNS_REFRESHED = False
 
 
 def _table():
@@ -785,12 +786,54 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
     }
 
 
+def _refresh_benchmark_monthly_returns(snapshot_date: str) -> dict:
+    """
+    Persist current-month benchmark returns in DynamoDB once per process run.
+
+    This keeps the Statistics Benchmark Comparison table stable without any
+    browser-side persistent caching.
+    """
+    global _BENCHMARK_RETURNS_REFRESHED
+    if _BENCHMARK_RETURNS_REFRESHED:
+        return {"skipped": True, "reason": "already refreshed"}
+
+    try:
+        import benchmark_returns as br
+    except Exception as exc:
+        return {"skipped": True, "error": f"benchmark_returns import failed: {exc}"}
+
+    month = str(snapshot_date or date.today().isoformat())[:7]
+    results: dict = {}
+
+    for bid, meta in db.BENCHMARKS.items():
+        ticker = meta.get("ticker")
+        if not ticker:
+            results[bid] = {"saved": 0, "skipped": "missing ticker"}
+            continue
+        try:
+            saved = br.compute_and_save_monthly_returns(
+                benchmark_id=bid,
+                ticker=ticker,
+                from_ym=month,
+                to_ym=month,
+                overwrite=True,
+            )
+            results[bid] = {"saved": int(saved)}
+        except Exception as exc:
+            results[bid] = {"error": str(exc)}
+
+    _BENCHMARK_RETURNS_REFRESHED = True
+    return {"month": month, "results": results}
+
+
 def handler(event, _context):
     event = event or {}
     snapshot_date = _normalize_snapshot_date(event.get("snapshotDate"))
     overwrite = bool(event.get("overwrite"))
     results = []
     failures = []
+
+    benchmark_refresh = _refresh_benchmark_monthly_returns(snapshot_date)
 
     for user in db.list_users():
         user_id = user.get("userId")
@@ -805,6 +848,7 @@ def handler(event, _context):
     return {
         "ok": len(failures) == 0,
         "snapshotDate": snapshot_date,
+        "benchmarkReturnsRefresh": benchmark_refresh,
         "processedUsers": len(results),
         "failedUsers": failures,
         "results": results,

@@ -73,36 +73,70 @@ const BENCHMARK_COLS = [
 let _benchmarkAllCache = null;
 let _benchmarkAllPromise = null;
 
+function _emptyBenchmarkCache() {
+    const out = {};
+    for (const b of BENCHMARK_COLS) out[b.id] = {};
+    return out;
+}
+
+function _normalizeBenchmarkCache(raw) {
+    const out = _emptyBenchmarkCache();
+    if (!raw || typeof raw !== 'object') return out;
+
+    for (const b of BENCHMARK_COLS) {
+        const source = raw[b.id];
+        if (!source || typeof source !== 'object') continue;
+        for (const [month, value] of Object.entries(source)) {
+            const n = Number(value);
+            if (month && Number.isFinite(n)) {
+                out[b.id][month] = n;
+            }
+        }
+    }
+    return out;
+}
+
 async function _loadAllBenchmarkReturns(force = false) {
     if (_benchmarkAllCache && !force) return _benchmarkAllCache;
     if (_benchmarkAllPromise && !force) return _benchmarkAllPromise;
 
     _benchmarkAllPromise = (async () => {
-        const results = [];
+        const cache = _benchmarkAllCache ? _normalizeBenchmarkCache(_benchmarkAllCache) : _emptyBenchmarkCache();
+
+        if (!window.PortfolioClient || !window.PortfolioClient.getBenchmarkReturns) {
+            _benchmarkAllCache = cache;
+            _benchmarkAllPromise = null;
+            return cache;
+        }
+
         for (const b of BENCHMARK_COLS) {
             try {
-                if (window.PortfolioClient && window.PortfolioClient.getBenchmarkReturns) {
-                    const data = await window.PortfolioClient.getBenchmarkReturns(b.id, '2010-01');
-                    results.push({ id: b.id, returns: data?.returns || [] });
-                } else {
-                    results.push({ id: b.id, returns: [] });
+                const data = await window.PortfolioClient.getBenchmarkReturns(b.id, '2010-01');
+                const returns = Array.isArray(data?.returns) ? data.returns : [];
+
+                const fresh = {};
+                for (const r of returns) {
+                    const month = String(r?.month || '');
+                    const value = Number(r?.returnPct);
+                    if (month && Number.isFinite(value)) {
+                        fresh[month] = value;
+                    }
+                }
+
+                // Replace only when backend returned usable data; otherwise keep current in-memory values.
+                if (Object.keys(fresh).length > 0) {
+                    cache[b.id] = fresh;
                 }
             } catch (err) {
                 console.warn(`Failed to load benchmark ${b.id}`, err);
-                results.push({ id: b.id, returns: [] });
+                // Keep last known values for this benchmark from memory.
             }
         }
-        
-        const cache = {};
-        for (const { id, returns } of results) {
-            cache[id] = {};
-            for (const r of returns) {
-                if (r.month) cache[id][r.month] = Number(r.returnPct);
-            }
-        }
-        _benchmarkAllCache = cache;
+
+        const normalized = _normalizeBenchmarkCache(cache);
+        _benchmarkAllCache = normalized;
         _benchmarkAllPromise = null;
-        return cache;
+        return normalized;
     })();
 
     return _benchmarkAllPromise;
