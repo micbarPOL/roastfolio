@@ -626,12 +626,32 @@ function _makeDailyChangeChart(canvasId, data, mode) {
     if (data.length > 0) {
         changes.push({ date: data[0].date, pnl: null, pct: null });
     }
+
+    const twrSeries = data.map(item => _resolveTwrPct(item));
+    const hasTwrPath = mode === 'pct' && twrSeries.some(v => v != null);
+
     for (let i = 1; i < data.length; i++) {
         const prev = data[i - 1];
         const curr = data[i];
-        if (prev.value === 0) continue;
         const netPln = Number(((curr.value - prev.value) - (curr.investment - prev.investment)).toFixed(2));
-        const netPct = Number(((netPln / prev.value) * 100).toFixed(3));
+
+        let netPct = null;
+        if (hasTwrPath) {
+            const prevCum = twrSeries[i - 1];
+            const currCum = twrSeries[i];
+            if (prevCum != null && currCum != null) {
+                const prevFactor = 1 + (Number(prevCum) / 100);
+                const currFactor = 1 + (Number(currCum) / 100);
+                if (prevFactor > 0 && currFactor > 0) {
+                    netPct = Number((((currFactor / prevFactor) - 1) * 100).toFixed(3));
+                }
+            }
+        }
+
+        if (netPct == null && prev.value > 0) {
+            netPct = Number(((netPln / prev.value) * 100).toFixed(3));
+        }
+
         changes.push({ date: curr.date, pnl: netPln, pct: netPct });
     }
 
