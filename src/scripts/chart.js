@@ -51,10 +51,8 @@ function _clearChartMessage(canvasId) {
 }
 
 function _getResamplingStrategy(range, dates) {
-    if (range === 'ALL' || range === '10Y' || range === '5Y') return 'monthly';
-    if (range === '3Y') return 'weekly';
-    
-    return 'daily'; // 1Y, YTD, 6M, 3M, 1M, 1W
+    // Show full daily resolution across all ranges (ALL, 5Y, 3Y, 1Y, YTD, 1M, 1W)
+    return 'daily';
 }
 
 function _resampleHistoryDates(dates, strategy) {
