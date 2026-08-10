@@ -22,6 +22,7 @@ from boto3.dynamodb.conditions import Key
 from boto3.dynamodb.types import TypeSerializer
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import Any, Mapping
 
 
 def _to_decimal(value) -> Decimal:
