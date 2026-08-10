@@ -420,21 +420,22 @@ function renderSummaryCards() {
             const current = Number(PORTFOLIO_TOTAL_VALUE || 0);
             const diffPLN = current - recordedAth;
             const diffPct = recordedAth ? ((diffPLN / recordedAth) * 100).toFixed(2) : '0.00';
-            const sourceLabel = athInfo.athSource === 'MANUAL' ? 'Manual ATH' : 'ATH';
+            const athFormatted = recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const dateStr = athDate ? ` (${athDate})` : '';
 
             if (diffPLN >= -0.01) {
                 drawdownEl.innerHTML =
                     `<div class="ath-title">From All-Time High</div>` +
                     `<span class="ath-pct" style="color:#27ae60;">At All-Time High!</span>` +
                     `<span class="ath-pln" style="color:#27ae60;">(0 PLN drawdown)</span>` +
-                    `<div class="ath-date">${sourceLabel}: ${recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN today (${athDate})</div>`;
+                    `<div class="ath-date">Last recorded ATH: ${athFormatted} PLN${dateStr}</div>`;
             } else {
                 let color = '#c0392b';
                 drawdownEl.innerHTML =
                     `<div class="ath-title">From All-Time High</div>` +
                     `<span class="ath-pct" style="color:${color};">${diffPct}%</span>` +
-                    `<span class="ath-pln" style="color:${color};">(${diffPLN.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN)</span>` +
-                    `<div class="ath-date">${sourceLabel}: ${recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 0 })} PLN on ${athDate}</div>`;
+                    `<span class="ath-pln" style="color:${color};">(${diffPLN.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN)</span>` +
+                    `<div class="ath-date">Last recorded ATH: ${athFormatted} PLN${dateStr}</div>`;
             }
         }
     }

@@ -16,7 +16,7 @@ class DashboardUiContractTests(unittest.TestCase):
 
     def test_basic_user_only_has_dashboard_portfolio_user_and_wallet_access(self):
         self.assertNotIn("id=\"manage-btn\"", self.index_html)
-        self.assertIn("id=\"user-btn\"", self.index_html)
+        self.assertIn("openUserModal()", self.index_html)
         self.assertIn("showTab('dashboard')", self.index_html)
         self.assertIn("showTab('wallets')", self.index_html)
         self.assertIn("showTab('portfolio')", self.index_html)
@@ -35,8 +35,8 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("id=\"dash-daily-pln\"", self.index_html)
 
     def test_gauge_sarcastic_comment_uses_readable_typography(self):
-        self.assertIn("styles/main.css?v=20260630b", self.index_html)
-        self.assertIn("const CACHE_NAME = 'roastfolio-v64';", self.service_worker_js)
+        self.assertIn("styles/main.css?v=20260702c", self.index_html)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v65';", self.service_worker_js)
         self.assertIn("font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', sans-serif !important;", self.main_css)
         self.assertIn("font-style: normal;", self.main_css)
         self.assertIn("line-height: 1.55 !important;", self.main_css)
@@ -130,14 +130,14 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("@media (prefers-reduced-motion: reduce)", self.main_css)
 
     def test_service_worker_prefers_fresh_shell_assets(self):
-        self.assertIn("const CACHE_NAME = 'roastfolio-v64';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v65';", self.service_worker_js)
         self.assertIn("/scripts/ledger-transactions.js", self.service_worker_js)
         self.assertIn("function isShellAsset(url, request)", self.service_worker_js)
         self.assertIn("request.mode === 'navigate'", self.service_worker_js)
         self.assertIn("self.addEventListener('message'", self.service_worker_js)
         self.assertIn("event.data.type === 'SKIP_WAITING'", self.service_worker_js)
         self.assertIn("reg.update().catch(() => {});", self.index_html)
-        self.assertIn("service-worker.js?v=20260630e", self.index_html)
+        self.assertIn("service-worker.js?v=20260702b", self.index_html)
 
     def test_gauge_animation_uses_modern_neon_transition_hooks(self):
         self.assertIn("const _pulseP = (_animProgress && _animProgress.pulse != null)", self.dashboard_js)
@@ -167,8 +167,8 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("contain: paint;", self.main_css)
         self.assertIn("splash-to-gauge", self.index_html)
         self.assertIn("body.splash-to-gauge", self.main_css)
-        self.assertIn("styles/main.css?v=20260630b", self.index_html)
-        self.assertIn("scripts/dashboard.js?v=20260630e", self.index_html)
+        self.assertIn("styles/main.css?v=20260702c", self.index_html)
+        self.assertIn("scripts/dashboard.js?v=20260709b", self.index_html)
         self.assertIn("candleTransmitOut", self.main_css)
         self.assertIn("gaugeCardHandoff", self.main_css)
         self.assertIn("roastTransmissionSweep", self.main_css)
