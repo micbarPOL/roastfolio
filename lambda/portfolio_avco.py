@@ -65,7 +65,7 @@ class PortfolioAVCOCalculator:
 
     def calculate(self, transactions: Iterable[Mapping[str, Any]]) -> dict[str, Any]:
         states: dict[str, dict[str, Any]] = {}
-        def _sort_key(tx: Mapping[str, Any]) -> tuple:
+        def _sort_key(tx: dict) -> tuple:
             tx_date = str(tx.get("transactionDate") or tx.get("date") or "")[:10]
             tx_type = str(tx.get("type") or "").strip().upper()
             type_priority = 0 if tx_type in {"BUY", "SPINOFF", "DEPOSIT"} else (1 if tx_type in {"DIVIDEND", "CASH_ADJUSTMENT"} else 2)

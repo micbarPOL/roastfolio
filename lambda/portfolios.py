@@ -388,7 +388,7 @@ def calculate_investment_total(user_id: str, portfolio_id: str) -> Decimal:
     return total
 
 
-def _tx_sort_key(tx: Mapping[str, Any]) -> tuple:
+def _tx_sort_key(tx: dict) -> tuple:
     tx_date = str(tx.get("transactionDate") or tx.get("date") or "")[:10]
     tx_type = str(tx.get("type") or "").strip().upper()
     type_priority = 0 if tx_type in {"BUY", "SPINOFF", "DEPOSIT"} else (1 if tx_type in {"DIVIDEND", "CASH_ADJUSTMENT"} else 2)
