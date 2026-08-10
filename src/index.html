@@ -204,6 +204,10 @@
                 <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><polyline points="11 8 11 12 14 15"/></svg></span>
                 <span class="sidenav-item-label">Analysis</span>
             </button>
+            <button class="sidenav-item" data-tab="diary" data-role="ADVANCED" onclick="showTab('diary');closeSidenav()">
+                <span class="sidenav-item-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg></span>
+                <span class="sidenav-item-label">Coping Diary</span>
+            </button>
             <div class="sidenav-divider" role="separator"></div>
             <div class="sidenav-section-label">Account</div>
             <a href="guide.html" class="sidenav-item" style="text-decoration:none; color:inherit; align-items:center;">
@@ -1695,6 +1699,16 @@
                 </div>
             </section>
         </div>
+    </main>
+
+    <!-- Tab: Coping Diary -->
+    <main id="tab-diary" class="tab-content">
+        <section class="dash-card" style="margin: 14px 10px;">
+            <h2 style="margin:0 0 10px;">Coping Diary</h2>
+            <p style="margin:0 0 10px;color:#7f8c8d;">Capture conviction before the market captures your confidence.</p>
+            <p style="margin:0 0 10px;">This tab is now enabled in navigation for ADVANCED users. Backend foundations for notes, hypothesis checkpoints, and audit sweeps are available in the serverless layer.</p>
+            <p style="margin:0;">If you do not see this tab in test, make sure the build was deployed from the latest <strong>test</strong> branch head and refresh PWA cache.</p>
+        </section>
     </main>
 
     <script src="scripts/config.js"></script>
