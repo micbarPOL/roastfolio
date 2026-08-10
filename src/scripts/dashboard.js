@@ -1154,8 +1154,15 @@ function renderDailyBreakdown() {
     const mode = window._sparkMode || 'today';
     const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
 
-    // Sort by absolute daily PLN change descending (include all holdings)
+    // Filter out cash holdings and sort by absolute daily PLN change descending
     const sorted = [...PORTFOLIO_DATA]
+        .filter(d => {
+            if (!d) return false;
+            const name = String(d.name || '').toLowerCase();
+            const holdingId = String(d.holdingId || '').toLowerCase();
+            const isCash = name === 'cash' || name.includes('cash') || holdingId === '__cash__' || holdingId === 'cash' || (!d.ticker && (name.includes('gotówk') || name.includes('gotowk')));
+            return !isCash;
+        })
         .map(d => ({
             ...d,
             dailyChangePLNSafe: Number.isFinite(Number(d.dailyChangePLN)) ? Number(d.dailyChangePLN) : 0,
