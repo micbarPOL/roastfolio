@@ -179,7 +179,7 @@ class PortfolioAVCOCalculator:
         if sold_shares <= ZERO:
             raise ValueError("SELL quantity must be greater than zero")
         if sold_shares - state["shares"] > EPSILON:
-            raise ValueError(f"SELL quantity exceeds active shares for {state['ticker']}")
+            sold_shares = max(ZERO, state["shares"])
 
         tx_date = _date(transaction.get("transactionDate") or transaction.get("date"))
         sell_price = self._transaction_price(transaction, "SELL", sold_shares)

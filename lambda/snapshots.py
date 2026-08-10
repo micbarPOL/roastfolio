@@ -1264,12 +1264,15 @@ def recalculate_portfolio_snapshots_from_date(
         for ticker in yf_tickers
         if (price := _price_at_or_before(price_history, ticker, max_date)) is not None
     }
-    portfolio_avco.persist_portfolio_avco(
-        user_id,
-        portfolio_id,
-        all_transactions,
-        current_prices=current_prices,
-    )
+    try:
+        portfolio_avco.persist_portfolio_avco(
+            user_id,
+            portfolio_id,
+            all_transactions,
+            current_prices=current_prices,
+        )
+    except Exception as exc:
+        print(f"AVCO calculation warning for {user_id} / {portfolio_id}: {exc}")
     recalculate_ath(user_id, portfolio_id)
     return {"updated": updated, "fromDate": from_date, "portfolioId": portfolio_id}
 
