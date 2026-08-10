@@ -1110,7 +1110,10 @@ def recalculate_portfolio_snapshots_from_date(
 
     Returns: {"updated": int, "fromDate": str, "portfolioId": str}
     """
-    all_transactions = portfolios.list_all_transactions(user_id, portfolio_id, scan_forward=True)
+    all_transactions = sorted(
+        portfolios.list_all_transactions(user_id, portfolio_id, scan_forward=True),
+        key=portfolios._tx_sort_key,
+    )
     all_snapshots = list_snapshots(user_id, portfolio_id)
     xirr_history = [dict(s) for s in all_snapshots]
     xirr_history_by_date = {str(s["snapshotDate"]): s for s in xirr_history}

@@ -387,12 +387,24 @@ def calculate_investment_total(user_id: str, portfolio_id: str) -> Decimal:
     return total
 
 
+def _tx_sort_key(tx: Mapping[str, Any]) -> tuple:
+    tx_date = str(tx.get("transactionDate") or tx.get("date") or "")[:10]
+    tx_type = str(tx.get("type") or "").strip().upper()
+    type_priority = 0 if tx_type in {"BUY", "SPINOFF", "DEPOSIT"} else (1 if tx_type in {"DIVIDEND", "CASH_ADJUSTMENT"} else 2)
+    created_at = str(tx.get("createdAt") or "")
+    tx_id = str(tx.get("transactionId") or "")
+    return (tx_date, type_priority, created_at, tx_id)
+
+
 def rebuild_holdings_from_transactions(user_id: str, portfolio_id: str) -> list[dict]:
     portfolio = get_portfolio(user_id, portfolio_id)
     if not portfolio:
         raise ValueError("Portfolio not found")
 
-    transactions = list_all_transactions(user_id, portfolio_id, scan_forward=True)
+    transactions = sorted(
+        list_all_transactions(user_id, portfolio_id, scan_forward=True),
+        key=_tx_sort_key,
+    )
     holdings: dict[str, dict] = {}
     cash_balance = Decimal("0")
     portfolio_currency = str(portfolio.get("currency") or "PLN")
