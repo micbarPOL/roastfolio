@@ -1703,11 +1703,17 @@
 
     <!-- Tab: Coping Diary -->
     <main id="tab-diary" class="tab-content">
-        <section class="dash-card" style="margin: 14px 10px;">
-            <h2 style="margin:0 0 10px;">Coping Diary</h2>
-            <p style="margin:0 0 10px;color:#7f8c8d;">Capture conviction before the market captures your confidence.</p>
-            <p style="margin:0 0 10px;">This tab is now enabled in navigation for ADVANCED users. Backend foundations for notes, hypothesis checkpoints, and audit sweeps are available in the serverless layer.</p>
-            <p style="margin:0;">If you do not see this tab in test, make sure the build was deployed from the latest <strong>test</strong> branch head and refresh PWA cache.</p>
+        <section class="dash-card" style="margin: 14px 10px; padding: 18px;">
+            <div id="diary-empty-graphic-wrap" style="display:flex;justify-content:center;align-items:center;min-height:420px;">
+                <img id="diary-empty-graphic"
+                     alt="Coping Diary empty state"
+                     style="display:block;width:min(100%,1100px);height:auto;border-radius:14px;"
+                     loading="lazy">
+            </div>
+            <p id="diary-empty-fallback"
+               style="display:none;margin:0;text-align:center;color:#7f8c8d;font-size:14px;">
+                It feels empty here. Create your first note.
+            </p>
         </section>
     </main>
 
@@ -1795,6 +1801,62 @@
                 requestAnimationFrame(() => initRetirementTab());
         }
 
+        function _chooseDiaryEmptyGraphic(theme) {
+            const darkCandidates = [
+                'data/diary/coping-diary-empty.png',
+                'data/diary/coping-diary-empty-dark.png',
+                'data/diary/diary-empty.png',
+                'data/diary/empty-diary.png',
+                'data/diary-empty.png'
+            ];
+            const lightCandidates = [
+                'data/diary/coping-diary-empty-light.png',
+                'data/diary/diary-empty-light.png',
+                'data/diary/empty-diary-light.png',
+                'data/diary-empty-light.png'
+            ];
+            return theme === 'light' ? lightCandidates : darkCandidates;
+        }
+
+        function _loadFirstExistingImage(candidates, onSuccess, onFail) {
+            const queue = Array.from(candidates || []);
+            function tryNext() {
+                const next = queue.shift();
+                if (!next) {
+                    onFail();
+                    return;
+                }
+                const probe = new Image();
+                probe.onload = () => onSuccess(next);
+                probe.onerror = () => tryNext();
+                probe.src = next;
+            }
+            tryNext();
+        }
+
+        function refreshDiaryEmptyGraphic() {
+            const img = document.getElementById('diary-empty-graphic');
+            const fallback = document.getElementById('diary-empty-fallback');
+            if (!img || !fallback) return;
+
+            const theme = (document.documentElement.dataset.theme || 'dark') === 'light' ? 'light' : 'dark';
+            const candidates = _chooseDiaryEmptyGraphic(theme);
+
+            _loadFirstExistingImage(
+                candidates,
+                (resolved) => {
+                    img.src = resolved;
+                    img.style.display = 'block';
+                    fallback.style.display = 'none';
+                },
+                () => {
+                    img.removeAttribute('src');
+                    img.style.display = 'none';
+                    fallback.style.display = 'block';
+                }
+            );
+        }
+
 
         function _showUpgradeMessage(tabName) {
             const tabEl = document.getElementById('tab-' + tabName);
@@ -1817,6 +1879,9 @@
             const tab = new URLSearchParams(window.location.search).get('tab');
             if (tab) showTab(tab);
         })();
+
+        document.addEventListener('DOMContentLoaded', refreshDiaryEmptyGraphic);
+        window.addEventListener('roastfolio:themechange', refreshDiaryEmptyGraphic);
         function showHoldingsTab(contentId, btn, fromObserver = false) {
             document.querySelectorAll('.holdings-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.holdings-tab-btn').forEach(el => el.classList.remove('active'));
