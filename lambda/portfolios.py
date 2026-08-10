@@ -640,11 +640,19 @@ def update_transaction(user_id: str, portfolio_id: str, transaction_id: str, upd
         ).strip()[:120]
         ticker = updates.get("ticker", existing.get("ticker"))
         ticker = str(ticker).strip() if ticker not in (None, "") else None
-        holding_id = str(
-            updates.get("holdingId")
-            or existing.get("holdingId")
-            or _safe_id(name or ticker or "")
-        ).strip()
+
+        current_asset_id = _safe_id(ticker or name or "")
+        existing_holding_id = str(existing.get("holdingId") or "").strip()
+
+        if updates.get("holdingId"):
+            holding_id = str(updates["holdingId"]).strip()
+        elif "ticker" in updates or "name" in updates or "asset" in updates:
+            holding_id = current_asset_id
+        elif existing_holding_id and current_asset_id and existing_holding_id != current_asset_id:
+            holding_id = current_asset_id
+        else:
+            holding_id = existing_holding_id or current_asset_id
+
         if not holding_id:
             raise ValueError("holdingId, name, or ticker is required")
         currency = updates.get("currency") or existing.get("currency") or portfolio.get("currency", "PLN")

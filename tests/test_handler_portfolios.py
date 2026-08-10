@@ -370,5 +370,17 @@ class PortfolioHandlerTests(unittest.TestCase):
         self.assertEqual(json.loads(resp["body"])["error"], "Insufficient permissions")
 
 
+    def test_update_transaction_rederives_holding_id_when_mismatched(self):
+        with patch.object(handler.portfolios, "get_portfolio", return_value={"portfolioId": "xtb", "currency": "PLN"}), \
+             patch.object(handler.portfolios, "list_all_transactions", return_value=[
+                 {"transactionId": "tx-1", "transactionDate": "2026-01-01", "type": "SELL", "holdingId": "hor.wa", "ticker": "HOR.WA", "name": "HOR.WA", "quantity": 10, "price": 10, "value": 100}
+             ]), \
+             patch.object(handler.portfolios, "_client") as mock_client, \
+             patch.object(handler.portfolios, "rebuild_holdings_from_transactions", return_value=[]):
+            res = handler.portfolios.update_transaction("user-1", "xtb", "tx-1", {"ticker": "RBW.WA", "name": "RBW.WA"})
+            self.assertEqual(res["transaction"]["holdingId"], "rbw-wa")
+            self.assertEqual(res["transaction"]["ticker"], "RBW.WA")
+
+
 if __name__ == "__main__":
     unittest.main()
