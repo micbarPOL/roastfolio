@@ -116,6 +116,22 @@ Roastfolio uses Amazon DynamoDB (Pay-Per-Request / On-Demand) organized with sin
   - `xirr`: Annualized internal rate of return percentage
   - `holdings`: Map of historical holding snapshots (`units`, `pricePLN`, `valuePLN`)
 
+#### 4. `roastfolio-data` (Coping Diary Notes & Behavioral Flags)
+- **Diary Note Item**:
+    - `PK`: `USER#<userId>`
+    - `SK`: `NOTE#<noteId>`
+    - Attributes: `note_id`, `note_text`, `linked_assets`, `hypothesis`, `hypothesis_checkpoints`, `user_tags`, `is_closed`, `goalpost_change_count`, `goalpost_change_events`, `goalpost_mover_badge`, `timestamp`, `createdAt`, `updatedAt`
+- **Hypothesis Checkpoint Schema** (`hypothesis_checkpoints[]`):
+    - `checkpoint_id`: Stable checkpoint UUID
+    - `text`: Falsifiable statement text
+    - `due_date`: Date string (`YYYY-MM-DD`)
+    - `status`: `PENDING` | `OVERDUE` | `TRUE` | `FALSE`
+    - `resolved_at`: ISO timestamp for TRUE/FALSE resolutions, `null` otherwise
+- **Behavioral Flag Item**:
+    - `PK`: `USER#<userId>`
+    - `SK`: `UNJUSTIFIED_TRADE#<portfolioId>#<ticker>#<YYYY-MM-DD>#<txId>` (and analogous keys for other flag families such as hypothesis audit reminders)
+    - Attributes: `type`, `active`, `portfolio_id`, `ticker`, `transaction_id`, `date`, `reason`, `createdAt`
+
 ---
 
 ## 3. Subsystems & Data Flows
@@ -225,6 +241,42 @@ To deliver instant PWA load times, Roastfolio employs a dual-stage fetch archite
 
 ---
 
+### E. Coping Diary Checkpoint Automation & Audit Flow
+
+The Coping Diary subsystem combines user-authored thesis notes with automated daily behavioral checks.
+
+```mermaid
+flowchart TD
+    A[User writes diary note + checkpoints] --> B[POST /diary sync]
+    B --> C[Persist NOTE item in roastfolio-data]
+
+    D[Daily sweep job: trigger_recalc.py] --> E[Load notes include_closed=true]
+    E --> F{Checkpoint status}
+    F -- PENDING and due_date < today --> G[Set status OVERDUE]
+    F -- TRUE/FALSE --> H[Keep resolved state]
+    G --> I[PATCH note checkpoints]
+
+    D --> J[Detect unjustified transactions]
+    J --> K[Write UNJUSTIFIED_TRADE flag]
+
+    D --> L[Evaluate goalpost-mover edits]
+    L --> M[Set goalpost_mover_badge when thresholds met]
+```
+
+#### Sweep Responsibilities (`lambda/trigger_recalc.py`)
+- Recalculate portfolio and summary snapshots.
+- Mark overdue hypothesis checkpoints (`PENDING` to `OVERDUE`).
+- Detect and write `UNJUSTIFIED_TRADE` reminder flags.
+- Apply `#Coping` auto-tag in severe drawdown contexts.
+- Award `goalpost_mover_badge` for repeated retroactive edits to risk/exit thesis fields under drawdown conditions.
+
+#### Frontend Audit UX (`src/index.html`)
+- `HYPOTHESIS_AUDIT` toast click opens Coping Diary, selects target note, and launches a dedicated modal.
+- Modal action `YES, TRUE` resolves checkpoint as TRUE.
+- Modal action `NO, FALSE` resolves checkpoint as FALSE, auto-adds `#Coping`, re-prioritizes note to the top of the ledger, and marks failed thesis metadata for monthly roast reporting.
+
+---
+
 ## 4. API Endpoint Directory
 
 All endpoints are hosted on Amazon API Gateway and routed via `lambda/handler.py`. Requests require a valid `Authorization: Bearer <ID_TOKEN>` header (except CORS preflight `OPTIONS`).
@@ -259,6 +311,16 @@ All endpoints are hosted on Amazon API Gateway and routed via `lambda/handler.py
 | `GET` | `/retirement-plans` | List user retirement plans | Bearer JWT |
 | `PUT` | `/retirement-plans` | Save retirement plan parameters | Bearer JWT |
 | `POST` | `/retirement-plans/{id}/simulate` | Run Monte Carlo retirement simulation | Bearer JWT |
+
+### Coping Diary & Behavioral Endpoints
+
+| Method | Endpoint Path | Description | Authorization |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/diary?includeClosed=true` | List diary notes for the current user | Bearer JWT |
+| `POST` | `/diary` | Create/sync diary note payload (including checkpoints) | Bearer JWT |
+| `PATCH` | `/diary/{noteId}` | Update an existing note (hypothesis, tags, checkpoints, close state) | Bearer JWT |
+| `GET` | `/diary/flags?active=true&type=UNJUSTIFIED_TRADE` | Fetch active unjustified-trade reminders | Bearer JWT |
+| `GET` | `/diary/flags?active=true&type=HYPOTHESIS_AUDIT` | Fetch due checkpoint audit reminders for modal flow | Bearer JWT |
 
 ---
 

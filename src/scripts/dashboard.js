@@ -1154,15 +1154,30 @@ function renderDailyBreakdown() {
     const mode = window._sparkMode || 'today';
     const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
 
+    function isCashHoldingItem(item) {
+        if (!item) return false;
+        if (item.isCash === true) return true;
+        const name = String(item.name || '').trim().toLowerCase();
+        const holdingId = String(item.holdingId || '').trim().toLowerCase();
+        const ticker = String(item.ticker || '').trim().toUpperCase();
+
+        if (holdingId === '__cash__' || holdingId === 'cash' || holdingId.includes('cash') || holdingId.includes('gotowk') || holdingId.includes('gotowka')) return true;
+        if (ticker === 'CASH' || ticker === '__CASH__') return true;
+
+        if (name === 'cash' || name.includes('cash') || name.includes('gotówk') || name.includes('gotowk') || name.includes('środki') || name.includes('srodki') || name.includes('konto') || name.includes('depozyt') || name.includes('saldo') || name.includes('salda')) {
+            return true;
+        }
+
+        if (!ticker && (name.length === 0 || name.includes('cash') || name.includes('got') || name.includes('pln') || name.includes('usd') || name.includes('eur'))) {
+            return true;
+        }
+
+        return false;
+    }
+
     // Filter out cash holdings and sort by absolute daily PLN change descending
     const sorted = [...PORTFOLIO_DATA]
-        .filter(d => {
-            if (!d) return false;
-            const name = String(d.name || '').toLowerCase();
-            const holdingId = String(d.holdingId || '').toLowerCase();
-            const isCash = name === 'cash' || name.includes('cash') || holdingId === '__cash__' || holdingId === 'cash' || (!d.ticker && (name.includes('gotówk') || name.includes('gotowk')));
-            return !isCash;
-        })
+        .filter(d => !isCashHoldingItem(d))
         .map(d => ({
             ...d,
             dailyChangePLNSafe: Number.isFinite(Number(d.dailyChangePLN)) ? Number(d.dailyChangePLN) : 0,
@@ -1193,7 +1208,7 @@ function renderDailyBreakdown() {
             + (d.priceOriginalCurrency !== 'PLN' ? ` <small style="color:#888">${d.priceOriginal} ${d.priceOriginalCurrency}</small>` : '')
             : '—';
 
-        const isCash = d.name === 'Cash' || d.name.toLowerCase().includes('cash');
+        const isCash = isCashHoldingItem(d);
         const ticker = d.ticker || d.name;
 
         // Normalise bar data — support both [[ts,close],...] (new) and [close,...] (old recentBars)
