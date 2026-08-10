@@ -585,6 +585,22 @@ def _get_fx_close_pair(currency: str, cache: dict[str, tuple[Decimal, Decimal]])
     return _get_close_pair(f"{currency}PLN=X", cache)
 
 
+def _market_currency_for_asset(ticker: str | None, currency: str | None = "PLN") -> str:
+    if not ticker:
+        return currency or "PLN"
+    t = str(ticker).upper().strip()
+    import portfolios
+    if t in portfolios._MARKET_CURRENCY_BY_TICKER:
+        return portfolios._MARKET_CURRENCY_BY_TICKER[t]
+    if t.endswith(".WA"):
+        return "PLN"
+    if any(t.endswith(sfx) for sfx in (".DE", ".PA", ".AS", ".MI", ".MC")):
+        return "EUR"
+    if t.endswith(".L"):
+        return "GBP"
+    return currency or "PLN"
+
+
 def calculate_portfolio_snapshot(holdings: list[dict]) -> dict:
     price_cache: dict[str, tuple[Decimal, Decimal]] = {}
     fx_cache: dict[str, tuple[Decimal, Decimal]] = {}
@@ -596,15 +612,17 @@ def calculate_portfolio_snapshot(holdings: list[dict]) -> dict:
         units = _to_decimal(holding.get("units", 0))
         purchase_value = _to_decimal(holding.get("purchaseValue", 0))
         ticker = holding.get("ticker")
-        currency = holding.get("currency", "PLN")
+        holding_currency = holding.get("currency", "PLN")
+        market_currency = _market_currency_for_asset(ticker, holding_currency)
 
         if not ticker:
-            total_value += purchase_value
-            total_prev += purchase_value
+            close_fx, prev_fx = (Decimal("1"), Decimal("1")) if holding_currency == "PLN" else _get_fx_close_pair(holding_currency, fx_cache)
+            total_value += purchase_value * close_fx
+            total_prev += purchase_value * prev_fx
             continue
 
         close_price, prev_close = _get_close_pair(ticker, price_cache)
-        close_fx, prev_fx = _get_fx_close_pair(currency, fx_cache)
+        close_fx, prev_fx = (Decimal("1"), Decimal("1")) if market_currency == "PLN" else _get_fx_close_pair(market_currency, fx_cache)
 
         current_value = units * close_price * close_fx
         previous_value = units * prev_close * prev_fx
@@ -622,6 +640,7 @@ def calculate_portfolio_snapshot(holdings: list[dict]) -> dict:
         "portfolioValue": total_value,
         "dailyReturn": daily_return,
     }
+
 
 
 def calculate_benchmark_close(benchmark_id: str) -> Decimal:
@@ -865,14 +884,18 @@ def _fetch_price_history_range(
 ) -> dict:
     """
     Fetches daily close prices for yfinance-compatible symbols over a date range.
+    Includes a 14-day lookback buffer before `from_date` so non-trading days
+    (weekends/holidays) resolve to the closest preceding close price.
     Returns: {symbol: {date_str: Decimal}}  Missing dates (non-trading days) are absent.
     """
     price_history: dict = {}
+    fetch_start = (datetime.strptime(from_date, "%Y-%m-%d") - timedelta(days=14)).strftime("%Y-%m-%d")
     end_str = (datetime.strptime(to_date, "%Y-%m-%d") + timedelta(days=3)).strftime("%Y-%m-%d")
 
     all_symbols = list(tickers)
     for currency in fx_currencies:
-        all_symbols.append(f"{currency}PLN=X")
+        if currency and currency != "PLN":
+            all_symbols.append(f"{currency}PLN=X")
 
     def capture_symbol_history(symbol: str, hist) -> None:
         sym_prices: dict = {}
@@ -890,7 +913,7 @@ def _fetch_price_history_range(
         try:
             batch_history = yf.download(
                 all_symbols,
-                start=from_date,
+                start=fetch_start,
                 end=end_str,
                 interval="1d",
                 auto_adjust=False,
@@ -925,7 +948,7 @@ def _fetch_price_history_range(
         try:
             hist = yf.download(
                 symbol,
-                start=from_date,
+                start=fetch_start,
                 end=end_str,
                 interval="1d",
                 auto_adjust=False,
@@ -956,7 +979,7 @@ def _price_at_or_before(
     return hist[max(candidates)]
 
 
-def _holdings_at_date(all_transactions: list, as_of_date: str) -> list:
+def _holdings_at_date(all_transactions: list, as_of_date: str, portfolio_currency: str = "PLN") -> list:
     """
     Replay `all_transactions` (sorted ascending by transactionDate) up to and
     including `as_of_date` to derive the holdings composition at that point.
@@ -977,8 +1000,13 @@ def _holdings_at_date(all_transactions: list, as_of_date: str) -> list:
         value = _to_decimal(tx.get("value") or 0)
         h_id = str(tx.get("holdingId") or "")
         ticker = tx.get("ticker")
-        currency = tx.get("currency") or "PLN"
-        
+        currency = tx.get("currency") or portfolio_currency
+        affect_cash = tx.get("affectCash")
+        if affect_cash is None:
+            affect_cash = True
+        else:
+            affect_cash = bool(affect_cash)
+
         import portfolios
         if ticker:
             currency = portfolios._MARKET_CURRENCY_BY_TICKER.get(str(ticker).upper(), currency)
@@ -998,7 +1026,7 @@ def _holdings_at_date(all_transactions: list, as_of_date: str) -> list:
             cur["units"] += qty
             cur["purchaseValue"] += value
             holdings[h_id] = cur
-            if tx_type == "BUY":
+            if tx_type == "BUY" and affect_cash:
                 cash -= value
         elif tx_type == "SELL":
             cur = holdings.get(h_id)
@@ -1011,13 +1039,15 @@ def _holdings_at_date(all_transactions: list, as_of_date: str) -> list:
                     holdings.pop(h_id, None)
                 else:
                     holdings[h_id] = cur
-            cash += value
+            if affect_cash:
+                cash += value
         elif tx_type == "DEPOSIT":
             cash += value
         elif tx_type == "WITHDRAWAL":
             cash -= value
         elif tx_type == "DIVIDEND":
-            cash += value
+            if affect_cash:
+                cash += value
         elif tx_type == "CASH_ADJUSTMENT":
             cash += value
         elif tx_type == "EXTRA_COST":
@@ -1028,7 +1058,7 @@ def _holdings_at_date(all_transactions: list, as_of_date: str) -> list:
         result.append({
             "holdingId": "CASH",
             "ticker": None,
-            "currency": "PLN",
+            "currency": portfolio_currency,
             "units": cash,
             "purchaseValue": cash,
         })
@@ -1133,33 +1163,50 @@ def recalculate_portfolio_snapshots_from_date(
             twr_prev_value = _to_decimal(seed_last["ending_value"])
             twr_prev_unit_price = _to_decimal(seed_last["unit_price"])
 
+    portfolio_item = portfolios.get_portfolio(user_id, portfolio_id) or {}
+    portfolio_currency = str(portfolio_item.get("currency") or "PLN")
+
     with _table().batch_writer() as batch:
         for snapshot in snapshots_to_update:
             snap_date = snapshot["snapshotDate"]
-            holdings = _holdings_at_date(all_transactions, snap_date)
+            holdings = _holdings_at_date(all_transactions, snap_date, portfolio_currency=portfolio_currency)
 
             portfolio_value = Decimal("0")
             for h in holdings:
                 ticker = h.get("ticker")
-                currency = h.get("currency") or "PLN"
+                holding_currency = h.get("currency") or portfolio_currency
                 units = _to_decimal(h.get("units", 0))
                 purchase_value = _to_decimal(h.get("purchaseValue", 0))
 
+                market_currency = _market_currency_for_asset(ticker, holding_currency)
+
                 if not ticker or str(ticker).upper().startswith("TFI:"):
-                    portfolio_value += purchase_value
+                    fx_rate = (
+                        _price_at_or_before(price_history, f"{holding_currency}PLN=X", snap_date)
+                        if holding_currency != "PLN"
+                        else Decimal("1")
+                    )
+                    fx_rate = fx_rate if fx_rate is not None else Decimal("1")
+                    portfolio_value += purchase_value * fx_rate
                     continue
 
                 close_price = _price_at_or_before(price_history, ticker, snap_date)
                 fx_rate = (
-                    _price_at_or_before(price_history, f"{currency}PLN=X", snap_date)
-                    if currency != "PLN"
+                    _price_at_or_before(price_history, f"{market_currency}PLN=X", snap_date)
+                    if market_currency != "PLN"
                     else Decimal("1")
                 )
+
                 if close_price is not None and fx_rate is not None:
                     portfolio_value += units * close_price * fx_rate
                 else:
-                    # No historical price available — fall back to purchase value
-                    portfolio_value += purchase_value
+                    hist = price_history.get(ticker)
+                    fallback_price = hist[max(hist.keys())] if hist else None
+                    if fallback_price is not None:
+                        fx_rate = fx_rate or Decimal("1")
+                        portfolio_value += units * fallback_price * fx_rate
+                    else:
+                        portfolio_value += purchase_value
 
             portfolio_value = _quantize_money(portfolio_value)
             investment_value = _quantize_money(_investment_total_at_date(all_transactions, snap_date))

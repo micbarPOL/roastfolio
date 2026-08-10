@@ -394,6 +394,35 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(flows["2022-01-06"], Decimal("-50"))
         self.assertEqual(flows["2022-01-07"], Decimal("-100"))
 
+    def test_fetch_price_history_range_uses_lookback_buffer_for_weekends(self):
+        with patch("yfinance.download") as mock_download:
+            mock_download.return_value = None
+            snapshots._fetch_price_history_range({"XTB.WA"}, set(), "2026-08-08", "2026-08-08")
+            kwargs = mock_download.call_args[1]
+            self.assertEqual(kwargs["start"], "2026-07-25")
+
+    def test_wa_ticker_does_not_double_convert_fx_when_holding_currency_is_usd(self):
+        with patch.object(snapshots, "_get_close_pair", return_value=(Decimal("168.00"), Decimal("168.00"))):
+            result = snapshots.calculate_portfolio_snapshot([
+                {"ticker": "XTB.WA", "currency": "USD", "units": 100, "purchaseValue": 5000},
+            ])
+            self.assertEqual(result["portfolioValue"], Decimal("16800.00"))
+
+    def test_foreign_currency_cash_is_converted_in_calculate_portfolio_snapshot(self):
+        with patch.object(snapshots, "_get_fx_close_pair", return_value=(Decimal("4.00"), Decimal("4.00"))):
+            result = snapshots.calculate_portfolio_snapshot([
+                {"ticker": None, "currency": "USD", "units": 1000, "purchaseValue": 1000},
+            ])
+            self.assertEqual(result["portfolioValue"], Decimal("4000.00"))
+
+    def test_holdings_at_date_respects_affect_cash_false(self):
+        holdings = snapshots._holdings_at_date([
+            {"transactionDate": "2026-08-01", "type": "DEPOSIT", "value": "1000"},
+            {"transactionDate": "2026-08-02", "type": "BUY", "value": "800", "quantity": "10", "ticker": "XTB.WA", "affectCash": False},
+        ], "2026-08-05")
+        cash_holding = next(h for h in holdings if h.get("holdingId") == "CASH")
+        self.assertEqual(cash_holding["units"], Decimal("1000"))
+
 
 if __name__ == "__main__":
     unittest.main()
