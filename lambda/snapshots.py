@@ -293,7 +293,7 @@ def list_snapshots(user_id: str, portfolio_id: str, limit: int | None = None) ->
     return [item for item in items if item]
 
 
-def get_portfolio_ath(user_id: str, portfolio_id: str, current_value: float | Decimal | str | None = None, current_date: str | None = None) -> dict | None:
+def get_portfolio_ath(user_id: str, portfolio_id: str) -> dict | None:
     resp = _table().get_item(Key={"userId": user_id, "sk": _ath_sk(portfolio_id)})
     item = _public_item(resp.get("Item"))
 
@@ -309,19 +309,9 @@ def get_portfolio_ath(user_id: str, portfolio_id: str, current_value: float | De
             rec_val = best_snap_val
             rec_date = str(best_snap["snapshotDate"])
 
-    now = _now_iso()
-    updated = False
-
-    if current_value is not None:
-        curr_dec = _quantize_money(current_value)
-        if curr_dec > rec_val:
-            rec_val = curr_dec
-            rec_date = current_date or warsaw_snapshot_date()
-            ath_source = "AUTO"
-            updated = True
-
     if float(rec_val) > 0:
-        if not item or updated or rec_val > _to_decimal(item.get("athValue", 0)):
+        now = _now_iso()
+        if not item or rec_val > _to_decimal(item.get("athValue", 0)):
             item = {
                 "userId": user_id,
                 "sk": _ath_sk(portfolio_id),
