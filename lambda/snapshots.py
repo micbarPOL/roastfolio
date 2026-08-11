@@ -297,53 +297,45 @@ def get_portfolio_ath(user_id: str, portfolio_id: str, current_value: float | De
     resp = _table().get_item(Key={"userId": user_id, "sk": _ath_sk(portfolio_id)})
     item = _public_item(resp.get("Item"))
 
-    if item:
-        # Fast path: item exists in DynamoDB
-        rec_val = _to_decimal(item.get("athValue", 0))
-        if current_value is not None:
-            curr_dec = _quantize_money(current_value)
-            if curr_dec > rec_val:
-                now = _now_iso()
-                c_date = current_date or warsaw_snapshot_date()
-                item["athValue"] = curr_dec
-                item["athDate"] = c_date
-                item["athSource"] = "AUTO"
-                item["updatedAt"] = now
-                try:
-                    _table().put_item(Item=item)
-                except Exception as err:
-                    print(f"Failed to update ATH item: {err}")
-        return item
+    rec_val = _to_decimal(item.get("athValue", 0)) if item else Decimal("0")
+    rec_date = str(item.get("athDate", "")) if item else ""
+    ath_source = str(item.get("athSource", "AUTO")) if item else "AUTO"
 
-    # Fallback if no ATH item exists yet in DynamoDB: scan historical snapshots once
     snapshots_list = list_snapshots(user_id, portfolio_id, limit=5000)
-    best_val = Decimal("0")
-    best_date = ""
     if snapshots_list:
         best_snap = max(snapshots_list, key=lambda s: (_to_decimal(s.get("portfolioValue", 0)), str(s.get("snapshotDate", ""))))
-        best_val = _quantize_money(best_snap["portfolioValue"])
-        best_date = str(best_snap["snapshotDate"])
+        best_snap_val = _quantize_money(best_snap["portfolioValue"])
+        if best_snap_val > rec_val:
+            rec_val = best_snap_val
+            rec_date = str(best_snap["snapshotDate"])
 
-    if current_value is not None and _to_decimal(current_value) > best_val:
-        best_val = _quantize_money(current_value)
-        best_date = current_date or warsaw_snapshot_date()
+    now = _now_iso()
+    updated = False
 
-    if float(best_val) > 0:
-        now = _now_iso()
-        item = {
-            "userId": user_id,
-            "sk": _ath_sk(portfolio_id),
-            "portfolioId": portfolio_id,
-            "athValue": best_val,
-            "athDate": best_date or warsaw_snapshot_date(),
-            "athSource": "AUTO",
-            "createdAt": now,
-            "updatedAt": now,
-        }
-        try:
-            _table().put_item(Item=item)
-        except Exception as err:
-            print(f"Failed to save new ATH item: {err}")
+    if current_value is not None:
+        curr_dec = _quantize_money(current_value)
+        if curr_dec > rec_val:
+            rec_val = curr_dec
+            rec_date = current_date or warsaw_snapshot_date()
+            ath_source = "AUTO"
+            updated = True
+
+    if float(rec_val) > 0:
+        if not item or updated or rec_val > _to_decimal(item.get("athValue", 0)):
+            item = {
+                "userId": user_id,
+                "sk": _ath_sk(portfolio_id),
+                "portfolioId": portfolio_id,
+                "athValue": rec_val,
+                "athDate": rec_date or warsaw_snapshot_date(),
+                "athSource": ath_source,
+                "createdAt": item.get("createdAt") if item else now,
+                "updatedAt": now,
+            }
+            try:
+                _table().put_item(Item=item)
+            except Exception as err:
+                print(f"Failed to save ATH item: {err}")
         return item
 
     return None
