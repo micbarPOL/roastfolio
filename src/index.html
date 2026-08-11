@@ -1704,7 +1704,32 @@
     <!-- Tab: Coping Diary -->
     <main id="tab-diary" class="tab-content">
         <section class="dash-card" style="margin: 14px 10px; padding: 18px;">
-            <div id="diary-empty-graphic-wrap" style="display:flex;justify-content:center;align-items:center;min-height:420px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                <div>
+                    <h2 style="margin:0;font-size:20px;">Coping Diary</h2>
+                    <p style="margin:4px 0 0;color:#7f8c8d;">Capture conviction before the market captures your confidence.</p>
+                </div>
+                <button id="diary-add-note-btn" type="button" class="mgmt-btn mgmt-btn-primary">+ Add Note</button>
+            </div>
+
+            <div id="diary-composer" style="display:none;border:1px solid rgba(127,143,164,0.35);border-radius:12px;padding:12px;background:rgba(8,19,33,0.2);margin-bottom:12px;">
+                <label for="diary-note-editor" style="display:block;font-size:13px;font-weight:700;margin-bottom:8px;color:#8aa0ba;">New note</label>
+                <textarea id="diary-note-editor" placeholder="Write what happened, why you acted, and what would invalidate your thesis..." style="width:100%;min-height:120px;border:1px solid rgba(127,143,164,0.45);border-radius:10px;padding:10px;background:transparent;color:inherit;resize:vertical;"></textarea>
+
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                    <input id="diary-custom-tag-input" type="text" placeholder="Create custom tag (e.g. #FedWatch)" style="flex:1;min-width:220px;border:1px solid rgba(127,143,164,0.45);border-radius:8px;padding:8px;background:transparent;color:inherit;">
+                    <button id="diary-add-custom-tag-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Add Tag</button>
+                </div>
+
+                <div id="diary-tag-palette" style="margin-top:10px;display:grid;gap:8px;"></div>
+
+                <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                    <button id="diary-cancel-note-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Cancel</button>
+                    <button id="diary-save-note-btn" type="button" class="mgmt-btn mgmt-btn-primary">Save Note</button>
+                </div>
+            </div>
+
+            <div id="diary-empty-graphic-wrap" style="display:flex;justify-content:center;align-items:center;min-height:320px;">
                 <img id="diary-empty-graphic"
                      alt="Coping Diary empty state"
                      style="display:block;width:min(100%,1100px);height:auto;border-radius:14px;"
@@ -1714,6 +1739,8 @@
                style="display:none;margin:0;text-align:center;color:#7f8c8d;font-size:14px;">
                 It feels empty here. Create your first note.
             </p>
+
+            <div id="diary-notes-list" style="display:grid;gap:10px;margin-top:12px;"></div>
         </section>
     </main>
 
@@ -1799,6 +1826,12 @@
                 requestAnimationFrame(() => refreshTransactionsTabData());
             if (name === 'retirement' && typeof initRetirementTab === 'function')
                 requestAnimationFrame(() => initRetirementTab());
+            if (name === 'diary') {
+                requestAnimationFrame(() => {
+                    _renderDiaryTagPalette();
+                    _renderDiaryNotes();
+                });
+            }
         }
 
         function _chooseDiaryEmptyGraphic(theme) {
@@ -1857,6 +1890,234 @@
             );
         }
 
+        const DIARY_STORAGE_KEY = 'roastfolio-coping-diary-notes-v2';
+        let _diaryState = { notes: [], customTags: [] };
+
+        function _escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function _sanitizeTag(raw) {
+            const cleaned = String(raw || '')
+                .trim()
+                .replace(/\s+/g, '_')
+                .replace(/[^A-Za-z0-9_#.$:-]/g, '');
+            if (!cleaned) return '';
+            return cleaned.startsWith('#') ? cleaned : `#${cleaned}`;
+        }
+
+        function _loadDiaryState() {
+            try {
+                const raw = localStorage.getItem(DIARY_STORAGE_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (parsed && Array.isArray(parsed.notes)) {
+                    _diaryState.notes = parsed.notes;
+                }
+                if (parsed && Array.isArray(parsed.customTags)) {
+                    _diaryState.customTags = parsed.customTags;
+                }
+            } catch (e) {}
+        }
+
+        function _saveDiaryState() {
+            try {
+                localStorage.setItem(DIARY_STORAGE_KEY, JSON.stringify(_diaryState));
+            } catch (e) {}
+        }
+
+        function _isCashHolding(item) {
+            const ticker = String(item && item.ticker || '').trim().toUpperCase();
+            const name = String(item && item.name || '').trim().toLowerCase();
+            if (!ticker && name.includes('cash')) return true;
+            if (ticker === 'CASH') return true;
+            return name === 'cash' || name.includes('konto');
+        }
+
+        function _collectDiaryPredefinedTags() {
+            const tags = [];
+            const seen = new Set();
+
+            const holdingsByWallet = window.WALLET_HOLDINGS || {};
+            Object.values(holdingsByWallet).forEach((rows) => {
+                (rows || []).forEach((h) => {
+                    if (_isCashHolding(h)) return;
+                    const ticker = String(h && h.ticker || '').trim().toUpperCase();
+                    if (!ticker) return;
+                    const tag = _sanitizeTag(`#${ticker}`);
+                    if (!tag || seen.has(`asset:${tag}`)) return;
+                    seen.add(`asset:${tag}`);
+                    tags.push({ type: 'asset', icon: '📈', tag, label: ticker });
+                });
+            });
+
+            const summaries = window.WALLET_SUMMARIES || {};
+            Object.keys(summaries).forEach((walletName) => {
+                if (String(walletName).toLowerCase() === 'summary') return;
+                const safe = _sanitizeTag(`#WALLET_${walletName}`);
+                if (!safe || seen.has(`wallet:${safe}`)) return;
+                seen.add(`wallet:${safe}`);
+                tags.push({ type: 'wallet', icon: '👛', tag: safe, label: walletName });
+            });
+
+            const market = _sanitizeTag('#GLOBAL_MARKET');
+            if (market) {
+                tags.push({ type: 'market', icon: '🌍', tag: market, label: 'Global market' });
+            }
+
+            (_diaryState.customTags || []).forEach((custom) => {
+                const tag = _sanitizeTag(custom);
+                if (!tag || seen.has(`custom:${tag}`)) return;
+                seen.add(`custom:${tag}`);
+                tags.push({ type: 'custom', icon: '🏷️', tag, label: tag });
+            });
+
+            return tags;
+        }
+
+        function _appendTagToEditor(tag) {
+            const editor = document.getElementById('diary-note-editor');
+            if (!editor || !tag) return;
+            const current = String(editor.value || '');
+            const spacer = current.length && !current.endsWith(' ') && !current.endsWith('\n') ? ' ' : '';
+            editor.value = `${current}${spacer}${tag} `;
+            editor.focus();
+        }
+
+        function _renderDiaryTagPalette() {
+            const root = document.getElementById('diary-tag-palette');
+            if (!root) return;
+            const tags = _collectDiaryPredefinedTags();
+            if (!tags.length) {
+                root.innerHTML = '<div style="font-size:12px;color:#7f8c8d;">No predefined tags available yet. Add holdings or wallets first.</div>';
+                return;
+            }
+
+            root.innerHTML = `<div style="font-size:12px;color:#7f8c8d;">Quick tags</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">${tags.map((entry) => (
+                    `<button type="button" class="mgmt-btn mgmt-btn-secondary" data-diary-tag="${_escapeHtml(entry.tag)}" style="padding:6px 10px;font-size:12px;">
+                        <span style="margin-right:6px;">${entry.icon}</span>${_escapeHtml(entry.label)}
+                    </button>`
+                )).join('')}</div>`;
+
+            root.querySelectorAll('[data-diary-tag]').forEach((btn) => {
+                btn.addEventListener('click', () => _appendTagToEditor(btn.dataset.diaryTag));
+            });
+        }
+
+        function _renderDiaryNotes() {
+            const list = document.getElementById('diary-notes-list');
+            const emptyWrap = document.getElementById('diary-empty-graphic-wrap');
+            const fallback = document.getElementById('diary-empty-fallback');
+            if (!list || !emptyWrap || !fallback) return;
+
+            const notes = Array.isArray(_diaryState.notes) ? _diaryState.notes : [];
+            if (!notes.length) {
+                list.innerHTML = '';
+                emptyWrap.style.display = 'flex';
+                refreshDiaryEmptyGraphic();
+                return;
+            }
+
+            emptyWrap.style.display = 'none';
+            fallback.style.display = 'none';
+            list.innerHTML = notes.map((note) => {
+                const tags = (note.tags || []).map((t) => `<span style="display:inline-block;border:1px solid rgba(127,143,164,0.4);border-radius:999px;padding:2px 8px;font-size:12px;">${_escapeHtml(t)}</span>`).join(' ');
+                const title = _escapeHtml(note.title || 'Note');
+                const body = _escapeHtml(note.text || '');
+                const createdAt = _escapeHtml(new Date(note.createdAt).toLocaleString());
+                return `<article class="dash-card" style="padding:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+                        <strong style="font-size:14px;">${title}</strong>
+                        <span style="font-size:12px;color:#7f8c8d;">${createdAt}</span>
+                    </div>
+                    <p style="margin:8px 0 6px;white-space:pre-wrap;">${body}</p>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">${tags}</div>
+                </article>`;
+            }).join('');
+        }
+
+        function _extractTagsFromText(text) {
+            const matches = String(text || '').match(/#[A-Za-z0-9_.$:-]+/g) || [];
+            return Array.from(new Set(matches));
+        }
+
+        function _toggleDiaryComposer(show) {
+            const composer = document.getElementById('diary-composer');
+            const editor = document.getElementById('diary-note-editor');
+            if (!composer || !editor) return;
+            composer.style.display = show ? 'block' : 'none';
+            if (show) {
+                _renderDiaryTagPalette();
+                setTimeout(() => editor.focus(), 10);
+            }
+        }
+
+        function _bindDiaryUI() {
+            const addNoteBtn = document.getElementById('diary-add-note-btn');
+            const cancelBtn = document.getElementById('diary-cancel-note-btn');
+            const saveBtn = document.getElementById('diary-save-note-btn');
+            const addCustomTagBtn = document.getElementById('diary-add-custom-tag-btn');
+            const customTagInput = document.getElementById('diary-custom-tag-input');
+            const editor = document.getElementById('diary-note-editor');
+
+            if (addNoteBtn) {
+                addNoteBtn.addEventListener('click', () => _toggleDiaryComposer(true));
+            }
+
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', () => {
+                    if (editor) editor.value = '';
+                    _toggleDiaryComposer(false);
+                });
+            }
+
+            if (addCustomTagBtn) {
+                addCustomTagBtn.addEventListener('click', () => {
+                    const next = _sanitizeTag(customTagInput && customTagInput.value);
+                    if (!next) return;
+                    if (!_diaryState.customTags.includes(next)) {
+                        _diaryState.customTags.push(next);
+                        _saveDiaryState();
+                    }
+                    if (customTagInput) customTagInput.value = '';
+                    _renderDiaryTagPalette();
+                    _appendTagToEditor(next);
+                });
+            }
+
+            if (saveBtn) {
+                saveBtn.addEventListener('click', () => {
+                    const text = String(editor && editor.value || '').trim();
+                    if (!text) return;
+                    const tags = _extractTagsFromText(text);
+                    _diaryState.notes.unshift({
+                        id: Math.random().toString(36).slice(2, 10),
+                        title: text.slice(0, 70),
+                        text,
+                        tags,
+                        createdAt: new Date().toISOString(),
+                    });
+                    _saveDiaryState();
+                    if (editor) editor.value = '';
+                    _toggleDiaryComposer(false);
+                    _renderDiaryNotes();
+                });
+            }
+        }
+
+        function initCopingDiary() {
+            _loadDiaryState();
+            _bindDiaryUI();
+            _renderDiaryTagPalette();
+            _renderDiaryNotes();
+        }
+
 
         function _showUpgradeMessage(tabName) {
             const tabEl = document.getElementById('tab-' + tabName);
@@ -1880,7 +2141,10 @@
             if (tab) showTab(tab);
         })();
 
-        document.addEventListener('DOMContentLoaded', refreshDiaryEmptyGraphic);
+        document.addEventListener('DOMContentLoaded', () => {
+            refreshDiaryEmptyGraphic();
+            initCopingDiary();
+        });
         window.addEventListener('roastfolio:themechange', refreshDiaryEmptyGraphic);
         function showHoldingsTab(contentId, btn, fromObserver = false) {
             document.querySelectorAll('.holdings-content').forEach(el => el.classList.remove('active'));
