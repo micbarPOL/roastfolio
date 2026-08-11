@@ -1740,6 +1740,12 @@
                 It feels empty here. Create your first note.
             </p>
 
+            <div id="diary-active-filter" style="display:none;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border:1px dashed rgba(127,143,164,0.45);border-radius:10px;">
+                <span style="font-size:12px;color:#8aa0ba;">Filter:</span>
+                <span id="diary-active-filter-tag" style="display:inline-block;border:1px solid rgba(127,143,164,0.45);border-radius:999px;padding:2px 8px;font-size:12px;"></span>
+                <button id="diary-clear-filter-btn" type="button" class="mgmt-btn mgmt-btn-secondary" style="padding:4px 8px;font-size:12px;">Clear Filter</button>
+            </div>
+
             <div id="diary-notes-list" style="display:grid;gap:10px;margin-top:12px;"></div>
         </section>
     </main>
@@ -1892,6 +1898,7 @@
 
         const DIARY_STORAGE_KEY = 'roastfolio-coping-diary-notes-v2';
         let _diaryState = { notes: [], customTags: [] };
+        let _diaryUi = { activeTagFilter: '' };
 
         function _escapeHtml(value) {
             return String(value || '')
@@ -2014,37 +2021,99 @@
             const list = document.getElementById('diary-notes-list');
             const emptyWrap = document.getElementById('diary-empty-graphic-wrap');
             const fallback = document.getElementById('diary-empty-fallback');
-            if (!list || !emptyWrap || !fallback) return;
+            const activeFilterWrap = document.getElementById('diary-active-filter');
+            const activeFilterTag = document.getElementById('diary-active-filter-tag');
+            if (!list || !emptyWrap || !fallback || !activeFilterWrap || !activeFilterTag) return;
 
-            const notes = Array.isArray(_diaryState.notes) ? _diaryState.notes : [];
-            if (!notes.length) {
+            const allNotes = Array.isArray(_diaryState.notes) ? _diaryState.notes : [];
+            const normalizedFilter = _sanitizeTag(_diaryUi.activeTagFilter);
+            const notes = normalizedFilter
+                ? allNotes.filter((note) => Array.isArray(note.tags) && note.tags.includes(normalizedFilter))
+                : allNotes;
+
+            if (normalizedFilter) {
+                activeFilterWrap.style.display = 'flex';
+                activeFilterTag.textContent = normalizedFilter;
+            } else {
+                activeFilterWrap.style.display = 'none';
+                activeFilterTag.textContent = '';
+            }
+
+            if (!allNotes.length) {
                 list.innerHTML = '';
                 emptyWrap.style.display = 'flex';
+                fallback.style.display = 'none';
                 refreshDiaryEmptyGraphic();
                 return;
             }
 
             emptyWrap.style.display = 'none';
             fallback.style.display = 'none';
+
+            if (!notes.length) {
+                list.innerHTML = '<article class="dash-card" style="padding:12px;color:#7f8c8d;">No notes for this tag filter.</article>';
+                return;
+            }
+
             list.innerHTML = notes.map((note) => {
-                const tags = (note.tags || []).map((t) => `<span style="display:inline-block;border:1px solid rgba(127,143,164,0.4);border-radius:999px;padding:2px 8px;font-size:12px;">${_escapeHtml(t)}</span>`).join(' ');
-                const title = _escapeHtml(note.title || 'Note');
-                const body = _escapeHtml(note.text || '');
+                const tags = (note.tags || []).map((t) => `<button type="button" class="mgmt-btn mgmt-btn-secondary" data-diary-filter-tag="${_escapeHtml(t)}" style="display:inline-block;border:1px solid rgba(127,143,164,0.4);border-radius:999px;padding:2px 8px;font-size:12px;line-height:16px;">${_escapeHtml(t)}</button>`).join(' ');
+                const body = _renderDiaryMentions(note.text || '');
                 const createdAt = _escapeHtml(new Date(note.createdAt).toLocaleString());
                 return `<article class="dash-card" style="padding:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-                        <strong style="font-size:14px;">${title}</strong>
+                        <strong style="font-size:14px;">Note</strong>
                         <span style="font-size:12px;color:#7f8c8d;">${createdAt}</span>
                     </div>
                     <p style="margin:8px 0 6px;white-space:pre-wrap;">${body}</p>
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">${tags}</div>
                 </article>`;
             }).join('');
+
+            list.querySelectorAll('[data-diary-filter-tag]').forEach((btn) => {
+                btn.addEventListener('click', () => _setDiaryTagFilter(btn.dataset.diaryFilterTag));
+            });
+
+            list.querySelectorAll('[data-diary-mention]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const ticker = String(btn.dataset.diaryMention || '').trim();
+                    if (!ticker) return;
+                    if (typeof window.openAnalysisForTicker === 'function') {
+                        window.openAnalysisForTicker(ticker);
+                    } else if (typeof showTab === 'function') {
+                        showTab('analysis');
+                    }
+                });
+            });
         }
 
         function _extractTagsFromText(text) {
             const matches = String(text || '').match(/#[A-Za-z0-9_.$:-]+/g) || [];
             return Array.from(new Set(matches));
+        }
+
+        function _renderDiaryMentions(text) {
+            const raw = String(text || '');
+            const mentionRegex = /@([A-Za-z0-9][A-Za-z0-9._-]{0,19})/g;
+            let cursor = 0;
+            let out = '';
+            let match;
+
+            while ((match = mentionRegex.exec(raw)) !== null) {
+                const start = match.index;
+                const end = mentionRegex.lastIndex;
+                const ticker = (match[1] || '').toUpperCase();
+                out += _escapeHtml(raw.slice(cursor, start));
+                out += `<button type="button" class="mgmt-btn mgmt-btn-secondary" data-diary-mention="${_escapeHtml(ticker)}" style="padding:0 6px;font-size:12px;line-height:18px;vertical-align:baseline;">@${_escapeHtml(ticker)}</button>`;
+                cursor = end;
+            }
+
+            out += _escapeHtml(raw.slice(cursor));
+            return out;
+        }
+
+        function _setDiaryTagFilter(nextTag) {
+            _diaryUi.activeTagFilter = _sanitizeTag(nextTag);
+            _renderDiaryNotes();
         }
 
         function _toggleDiaryComposer(show) {
@@ -2064,6 +2133,7 @@
             const saveBtn = document.getElementById('diary-save-note-btn');
             const addCustomTagBtn = document.getElementById('diary-add-custom-tag-btn');
             const customTagInput = document.getElementById('diary-custom-tag-input');
+            const clearFilterBtn = document.getElementById('diary-clear-filter-btn');
             const editor = document.getElementById('diary-note-editor');
 
             if (addNoteBtn) {
@@ -2091,6 +2161,21 @@
                 });
             }
 
+            if (customTagInput) {
+                customTagInput.addEventListener('keydown', (event) => {
+                    if (event.key !== 'Enter') return;
+                    event.preventDefault();
+                    if (addCustomTagBtn) addCustomTagBtn.click();
+                });
+            }
+
+            if (clearFilterBtn) {
+                clearFilterBtn.addEventListener('click', () => {
+                    _diaryUi.activeTagFilter = '';
+                    _renderDiaryNotes();
+                });
+            }
+
             if (saveBtn) {
                 saveBtn.addEventListener('click', () => {
                     const text = String(editor && editor.value || '').trim();
@@ -2098,7 +2183,6 @@
                     const tags = _extractTagsFromText(text);
                     _diaryState.notes.unshift({
                         id: Math.random().toString(36).slice(2, 10),
-                        title: text.slice(0, 70),
                         text,
                         tags,
                         createdAt: new Date().toISOString(),
