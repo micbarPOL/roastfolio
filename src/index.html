@@ -1745,6 +1745,8 @@
                     <label for="diary-filter-input" style="font-size:12px;color:#8aa0ba;">Filter notes by tag</label>
                     <input id="diary-filter-input" type="text" list="diary-filter-options" placeholder="Type tag, e.g. #CRI.WA" style="width:100%;border:1px solid rgba(127,143,164,0.45);border-radius:8px;padding:8px;background:transparent;color:inherit;">
                     <datalist id="diary-filter-options"></datalist>
+                    <label for="diary-text-filter-input" style="font-size:12px;color:#8aa0ba;">Secondary: search in note text</label>
+                    <input id="diary-text-filter-input" type="text" placeholder="Type word or phrase (case-insensitive)" style="width:100%;border:1px solid rgba(127,143,164,0.45);border-radius:8px;padding:8px;background:transparent;color:inherit;">
                     <div id="diary-filter-quick" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
                 </div>
                 <button id="diary-apply-filter-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Apply</button>
@@ -1909,7 +1911,7 @@
 
         const DIARY_STORAGE_KEY = 'roastfolio-coping-diary-notes-v2';
         let _diaryState = { notes: [], customTags: [] };
-        let _diaryUi = { activeTagFilter: '' };
+        let _diaryUi = { activeTagFilter: '', textQuery: '', editingNoteId: '' };
 
         function _escapeHtml(value) {
             return String(value || '')
@@ -2040,9 +2042,13 @@
             const allNotes = Array.isArray(_diaryState.notes) ? _diaryState.notes : [];
             _renderDiaryFilterTools(allNotes);
             const normalizedFilter = _sanitizeTag(_diaryUi.activeTagFilter);
-            const notes = normalizedFilter
+            const normalizedTextQuery = String(_diaryUi.textQuery || '').trim().toLocaleLowerCase();
+            let notes = normalizedFilter
                 ? allNotes.filter((note) => Array.isArray(note.tags) && note.tags.includes(normalizedFilter))
                 : allNotes;
+            if (normalizedTextQuery) {
+                notes = notes.filter((note) => String(note.text || '').toLocaleLowerCase().includes(normalizedTextQuery));
+            }
 
             if (normalizedFilter) {
                 activeFilterWrap.style.display = 'flex';
@@ -2066,7 +2072,7 @@
             fallback.style.display = 'none';
 
             if (!notes.length) {
-                list.innerHTML = '<article class="dash-card" style="padding:12px;color:#7f8c8d;">No notes for this tag filter.</article>';
+                list.innerHTML = '<article class="dash-card" style="padding:12px;color:#7f8c8d;">No notes matching current filters.</article>';
                 return;
             }
 
@@ -2077,7 +2083,10 @@
                 return `<article class="dash-card" style="padding:12px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
                         <strong style="font-size:14px;">Note</strong>
-                        <span style="font-size:12px;color:#7f8c8d;">${createdAt}</span>
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                            <span style="font-size:12px;color:#7f8c8d;">${createdAt}</span>
+                            <button type="button" class="mgmt-btn mgmt-btn-secondary" data-diary-edit-note="${_escapeHtml(note.id)}" style="padding:2px 8px;font-size:12px;">Edit</button>
+                        </div>
                     </div>
                     <p style="margin:8px 0 6px;white-space:pre-wrap;">${body}</p>
                     <div style="display:flex;gap:6px;flex-wrap:wrap;">${tags}</div>
@@ -2098,6 +2107,10 @@
                         showTab('analysis');
                     }
                 });
+            });
+
+            list.querySelectorAll('[data-diary-edit-note]').forEach((btn) => {
+                btn.addEventListener('click', () => _startDiaryEdit(btn.dataset.diaryEditNote));
             });
         }
 
@@ -2123,16 +2136,18 @@
         function _renderDiaryFilterTools(allNotes) {
             const toolbar = document.getElementById('diary-filter-toolbar');
             const input = document.getElementById('diary-filter-input');
+            const textInput = document.getElementById('diary-text-filter-input');
             const options = document.getElementById('diary-filter-options');
             const quick = document.getElementById('diary-filter-quick');
             const count = document.getElementById('diary-filter-count');
-            if (!toolbar || !input || !options || !quick || !count) return;
+            if (!toolbar || !input || !textInput || !options || !quick || !count) return;
 
             if (!allNotes.length) {
                 toolbar.style.display = 'none';
                 options.innerHTML = '';
                 quick.innerHTML = '';
                 count.textContent = '';
+                textInput.value = '';
                 return;
             }
 
@@ -2142,8 +2157,9 @@
             quick.innerHTML = stats.slice(0, 12).map((item) => (
                 `<button type="button" class="mgmt-btn mgmt-btn-secondary" data-diary-quick-filter="${_escapeHtml(item.tag)}" style="padding:4px 8px;font-size:12px;">${_escapeHtml(item.tag)} (${item.count})</button>`
             )).join('');
-            count.textContent = `${stats.length} unique tags`;
+            count.textContent = `${stats.length} unique tags • ${allNotes.length} notes`;
             input.value = _diaryUi.activeTagFilter || '';
+            textInput.value = _diaryUi.textQuery || '';
 
             quick.querySelectorAll('[data-diary-quick-filter]').forEach((btn) => {
                 btn.addEventListener('click', () => _setDiaryTagFilter(btn.dataset.diaryQuickFilter));
@@ -2180,6 +2196,36 @@
             _renderDiaryNotes();
         }
 
+        function _setDiaryTextFilter(nextText) {
+            _diaryUi.textQuery = String(nextText || '').trim();
+            const textInput = document.getElementById('diary-text-filter-input');
+            if (textInput) textInput.value = _diaryUi.textQuery;
+            _renderDiaryNotes();
+        }
+
+        function _refreshDiaryComposerMode() {
+            const saveBtn = document.getElementById('diary-save-note-btn');
+            const cancelBtn = document.getElementById('diary-cancel-note-btn');
+            if (saveBtn) {
+                saveBtn.textContent = _diaryUi.editingNoteId ? 'Update Note' : 'Save Note';
+            }
+            if (cancelBtn) {
+                cancelBtn.textContent = _diaryUi.editingNoteId ? 'Cancel Edit' : 'Cancel';
+            }
+        }
+
+        function _startDiaryEdit(noteId) {
+            const editor = document.getElementById('diary-note-editor');
+            const notes = Array.isArray(_diaryState.notes) ? _diaryState.notes : [];
+            const note = notes.find((item) => String(item.id) === String(noteId));
+            if (!editor || !note) return;
+            _diaryUi.editingNoteId = String(note.id);
+            _refreshDiaryComposerMode();
+            _toggleDiaryComposer(true);
+            editor.value = String(note.text || '');
+            editor.focus();
+        }
+
         function _toggleDiaryComposer(show) {
             const composer = document.getElementById('diary-composer');
             const editor = document.getElementById('diary-note-editor');
@@ -2187,6 +2233,7 @@
             composer.style.display = show ? 'block' : 'none';
             if (show) {
                 _renderDiaryTagPalette();
+                _refreshDiaryComposerMode();
                 setTimeout(() => editor.focus(), 10);
             }
         }
@@ -2198,17 +2245,25 @@
             const addCustomTagBtn = document.getElementById('diary-add-custom-tag-btn');
             const customTagInput = document.getElementById('diary-custom-tag-input');
             const filterInput = document.getElementById('diary-filter-input');
+            const textFilterInput = document.getElementById('diary-text-filter-input');
             const applyFilterBtn = document.getElementById('diary-apply-filter-btn');
             const clearFilterBtn = document.getElementById('diary-clear-filter-btn');
             const editor = document.getElementById('diary-note-editor');
 
             if (addNoteBtn) {
-                addNoteBtn.addEventListener('click', () => _toggleDiaryComposer(true));
+                addNoteBtn.addEventListener('click', () => {
+                    _diaryUi.editingNoteId = '';
+                    _refreshDiaryComposerMode();
+                    if (editor) editor.value = '';
+                    _toggleDiaryComposer(true);
+                });
             }
 
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', () => {
                     if (editor) editor.value = '';
+                    _diaryUi.editingNoteId = '';
+                    _refreshDiaryComposerMode();
                     _toggleDiaryComposer(false);
                 });
             }
@@ -2238,7 +2293,9 @@
             if (clearFilterBtn) {
                 clearFilterBtn.addEventListener('click', () => {
                     _diaryUi.activeTagFilter = '';
+                    _diaryUi.textQuery = '';
                     if (filterInput) filterInput.value = '';
+                    if (textFilterInput) textFilterInput.value = '';
                     _renderDiaryNotes();
                 });
             }
@@ -2246,6 +2303,7 @@
             if (applyFilterBtn) {
                 applyFilterBtn.addEventListener('click', () => {
                     _setDiaryTagFilter(filterInput && filterInput.value);
+                    _setDiaryTextFilter(textFilterInput && textFilterInput.value);
                 });
             }
 
@@ -2257,19 +2315,41 @@
                 });
             }
 
+            if (textFilterInput) {
+                textFilterInput.addEventListener('keydown', (event) => {
+                    if (event.key !== 'Enter') return;
+                    event.preventDefault();
+                    _setDiaryTextFilter(textFilterInput.value);
+                });
+            }
+
             if (saveBtn) {
                 saveBtn.addEventListener('click', () => {
                     const text = String(editor && editor.value || '').trim();
                     if (!text) return;
                     const tags = _extractTagsFromText(text);
-                    _diaryState.notes.unshift({
-                        id: Math.random().toString(36).slice(2, 10),
-                        text,
-                        tags,
-                        createdAt: new Date().toISOString(),
-                    });
+                    if (_diaryUi.editingNoteId) {
+                        _diaryState.notes = (_diaryState.notes || []).map((note) => {
+                            if (String(note.id) !== String(_diaryUi.editingNoteId)) return note;
+                            return {
+                                ...note,
+                                text,
+                                tags,
+                                updatedAt: new Date().toISOString(),
+                            };
+                        });
+                    } else {
+                        _diaryState.notes.unshift({
+                            id: Math.random().toString(36).slice(2, 10),
+                            text,
+                            tags,
+                            createdAt: new Date().toISOString(),
+                        });
+                    }
                     _saveDiaryState();
                     if (editor) editor.value = '';
+                    _diaryUi.editingNoteId = '';
+                    _refreshDiaryComposerMode();
                     _toggleDiaryComposer(false);
                     _renderDiaryNotes();
                 });
@@ -2278,6 +2358,7 @@
 
         function initCopingDiary() {
             _loadDiaryState();
+            _refreshDiaryComposerMode();
             _bindDiaryUI();
             _renderDiaryTagPalette();
             _renderDiaryNotes();
