@@ -307,7 +307,7 @@
 
     const arrow = (_cemeterySort.dir === 'desc') ? ' ↓' : ' ↑';
     dateBtn.textContent = `Holding lifespan${_cemeterySort.key === 'date' ? arrow : ''}`;
-    returnBtn.textContent = `Realized Return${_cemeterySort.key === 'return' ? arrow : ''}`;
+    returnBtn.textContent = `Total (Realized) Return${_cemeterySort.key === 'return' ? arrow : ''}`;
   }
 
   function _bindCemeteryFilterHandler() {
@@ -1385,6 +1385,9 @@
       })
       .sort((a, b) => {
         if (_cemeterySort.key === 'return') {
+          const aTot = Number(a.totalReturn ?? a.realized ?? 0);
+          const bTot = Number(b.totalReturn ?? b.realized ?? 0);
+          if (aTot !== bTot) return (aTot - bTot) * direction;
           return (Number(a.realized || 0) - Number(b.realized || 0)) * direction;
         }
         const aDate = String(a.lastSellDate || a.firstBuyDate || '');
@@ -1411,11 +1414,20 @@
     }
 
     const resolvedPortfolioId = isSummary ? '' : (portfolioId || _activePortId || '');
-    tbody.innerHTML = closed.map(row => `<tr class="cemetery-row">
+    tbody.innerHTML = closed.map(row => {
+      const totRet = Number(row.totalReturn ?? row.realized ?? 0);
+      const realRet = Number(row.realized ?? 0);
+      const totClass = _dailyChangeClass(totRet);
+      const realClass = _dailyChangeClass(realRet);
+      return `<tr class="cemetery-row">
       <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="${_esc(row.ticker || row.name || '')}" data-portfolio-id="${_esc(resolvedPortfolioId)}"><span class="cemetery-ticker">${_esc(row.ticker || '—')}</span><span class="cemetery-name">${_esc(row.name)}</span></button></div></td>
       <td class="cemetery-lifespan">${_esc(_positionLifespanLabel(row.firstBuyDate, row.lastSellDate))}</td>
-      <td class="cemetery-return ${_dailyChangeClass(row.realized)}">${_fmtSignedMoney(row.realized)}</td>
-    </tr>`).join('');
+      <td class="cemetery-return">
+        <span class="${totClass}">${_fmtSignedMoney(totRet)}</span>
+        <span class="cemetery-realized-sub ${realClass}">(${_fmtSignedMoney(realRet)})</span>
+      </td>
+    </tr>`;
+    }).join('');
 
     tbody.querySelectorAll('.cemetery-asset-link').forEach((button) => {
       button.addEventListener('click', (event) => {

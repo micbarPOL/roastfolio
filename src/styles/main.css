@@ -5880,6 +5880,16 @@ section.wallet-screen {
 .cemetery-return.is-negative { color: var(--fintech-danger); }
 .cemetery-return.is-neutral { color: var(--fintech-text-muted); }
 
+.cemetery-realized-sub {
+    font-size: 0.85em;
+    opacity: 0.85;
+    margin-left: 3px;
+    font-weight: 600;
+}
+.cemetery-realized-sub.is-positive { color: var(--fintech-success); }
+.cemetery-realized-sub.is-negative { color: var(--fintech-danger); }
+.cemetery-realized-sub.is-neutral { color: var(--fintech-text-muted); }
+
 .cemetery-unrealized {
     color: var(--fintech-text-muted);
     font-weight: 600;
