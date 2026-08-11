@@ -161,18 +161,6 @@ function getRecordedSnapshotAth(baseAthInfo) {
         athSource = 'AUTO';
     }
 
-    // Override with live current portfolio value ONLY if it strictly exceeds recorded peak
-    const currentVal = Number(window.PORTFOLIO_TOTAL_VALUE || 0);
-    if (currentVal > recAth + 0.01) {
-        recAth = currentVal;
-        try {
-            recDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
-        } catch (e) {
-            recDate = new Date().toISOString().slice(0, 10);
-        }
-        athSource = 'AUTO';
-    }
-
     if (!recAth) return baseAthInfo || null;
     return { athValue: recAth, athDate: recDate, athSource: athSource };
 }
@@ -408,7 +396,14 @@ function renderSummaryCards() {
             const athFormatted = recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const dateStr = athDate ? ` (${athDate})` : '';
 
-            if (diffPLN >= -0.01) {
+            if (diffPLN > 0.01) {
+                const gainSign = diffPLN > 0 ? '+' : '';
+                drawdownEl.innerHTML =
+                    `<div class="ath-title">From All-Time High</div>` +
+                    `<span class="ath-pct" style="color:#27ae60;">+${diffPct}%</span>` +
+                    `<span class="ath-pln" style="color:#27ae60;">(${gainSign}${diffPLN.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN above ATH)</span>` +
+                    `<div class="ath-date">Last recorded ATH: ${athFormatted} PLN${dateStr}</div>`;
+            } else if (diffPLN >= -0.01) {
                 drawdownEl.innerHTML =
                     `<div class="ath-title">From All-Time High</div>` +
                     `<span class="ath-pct" style="color:#27ae60;">At All-Time High!</span>` +
