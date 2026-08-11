@@ -161,9 +161,9 @@ function getRecordedSnapshotAth(baseAthInfo) {
         athSource = 'AUTO';
     }
 
-    // Override with live current portfolio value if it's higher
+    // Override with live current portfolio value ONLY if it strictly exceeds recorded peak
     const currentVal = Number(window.PORTFOLIO_TOTAL_VALUE || 0);
-    if (currentVal > recAth) {
+    if (currentVal > recAth + 0.01) {
         recAth = currentVal;
         try {
             recDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
@@ -178,30 +178,15 @@ function getRecordedSnapshotAth(baseAthInfo) {
 }
 
 function isPortfolioAtNewAth() {
-    const baseAth = window.PORTFOLIO_ATH;
-    const snapAth = window._SNAPSHOT_ATH;
+    const recordedInfo = getRecordedSnapshotAth(window.PORTFOLIO_ATH);
     const current = Number(window.PORTFOLIO_TOTAL_VALUE || 0);
     const dailyPct = Number(window.PORTFOLIO_DAILY_CHANGE_PCT || 0);
 
-    if (!current || dailyPct < 0) return false;
+    if (!current || dailyPct < 0 || !recordedInfo || !recordedInfo.athValue) return false;
 
-    let baseAthVal = baseAth && baseAth.athValue != null ? Number(baseAth.athValue) : 0;
-    let baseAthDate = baseAth && baseAth.athDate ? baseAth.athDate : '';
-
-    if (snapAth && Number(snapAth.athValue) > baseAthVal) {
-        baseAthVal = Number(snapAth.athValue);
-        baseAthDate = snapAth.athDate || baseAthDate;
-    }
-
-    let todayDate = '';
-    try {
-        todayDate = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Warsaw' });
-    } catch (e) {
-        todayDate = new Date().toISOString().slice(0, 10);
-    }
-
-    // Portfolio is at new ATH if today's date matches ATH date or current value meets/exceeds base ATH
-    return Boolean(baseAthVal > 0 && (baseAthDate === todayDate || current >= baseAthVal - 10));
+    const baseAthVal = Number(recordedInfo.athValue);
+    // Portfolio is at new ATH only if current live value meets/exceeds recorded ATH peak
+    return current >= baseAthVal - 0.05;
 }
 
 function fireworkBurstMarkup(prefix, burstIndex) {

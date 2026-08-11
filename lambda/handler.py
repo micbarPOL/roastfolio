@@ -2365,14 +2365,14 @@ def handler(event, context):
         if user_id:
             try:
                 today_date = snapshots.warsaw_snapshot_date()
-                summary_val = summary.get("totalValuePLN")
+                summary_val = summary.get("total")
                 portfolio_ath = snapshots.get_portfolio_ath(user_id, "summary", current_value=summary_val, current_date=today_date)
                 for wallet_name in wallet_summaries:
                     pid = "summary" if wallet_name == "Summary" else portfolio_id_by_name.get(wallet_name)
                     if not pid:
                         continue
 
-                    w_val = wallet_summaries[wallet_name].get("totalValuePLN") if isinstance(wallet_summaries.get(wallet_name), dict) else None
+                    w_val = wallet_summaries[wallet_name].get("total") if isinstance(wallet_summaries.get(wallet_name), dict) else None
                     if wallet_name != "Summary":
                         wallet_aths[wallet_name] = snapshots.get_portfolio_ath(user_id, pid, current_value=w_val, current_date=today_date)
             except Exception as err:
