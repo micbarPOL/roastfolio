@@ -322,9 +322,10 @@
             '.diary-glass-slider:before{content:"";position:absolute;height:24px;width:24px;left:3px;top:3px;border-radius:50%;background:#eef2ff;transition:all .25s ease;box-shadow:0 4px 14px rgba(0,0,0,.35);}' +
             '.diary-glass-toggle input:checked + .diary-glass-slider{background:#A855F7;box-shadow:0 0 14px rgba(168,85,247,.7);}' +
             '.diary-glass-toggle input:checked + .diary-glass-slider:before{transform:translateX(26px);}' +
-            '.coping-chat-container{border:1px solid rgba(168,85,247,.35);border-radius:12px;padding:10px;background:rgba(168,85,247,.05);max-height:240px;overflow:auto;display:grid;gap:8px;}' +
-            '.coping-chat-bubble{justify-self:end;max-width:90%;padding:8px 10px;border-radius:12px 12px 4px 12px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.6);}' +
-            '.coping-chat-date{display:block;margin-top:4px;text-align:right;font-size:11px;color:#8ea1bb;}' +
+            '.coping-chat-container{max-height:240px;overflow:auto;display:grid;gap:8px;padding:2px 0;}' +
+            '.coping-chat-entry{display:grid;gap:2px;}' +
+            '.coping-chat-date{display:block;font-size:11px;color:#8ea1bb;}' +
+            '.coping-chat-text{margin:0;font-size:14px;line-height:1.4;}' +
             '.diary-chat-compose{display:flex;gap:8px;}' +
             '.diary-chat-compose input{flex:1;min-width:0;}' +
             '.diary-amber-pulse{box-shadow:0 0 0 rgba(245,158,11,.15);animation:diaryPulse 1.6s ease-in-out infinite;}' +
@@ -534,7 +535,7 @@
 
         const chat = (note.comments || []).map((c) => {
             const date = String(c.created_at || '').slice(0, 16).replace('T', ' ');
-            return '<article class="coping-chat-bubble"><div>' + escapeHtml(c.text || '') + '</div><span class="coping-chat-date">' + escapeHtml(date) + '</span></article>';
+            return '<article class="coping-chat-entry"><span class="coping-chat-date">' + escapeHtml(date) + '</span><p class="coping-chat-text">' + escapeHtml(c.text || '') + '</p></article>';
         }).join('');
 
         const checklist = (note.hypothesis_checkpoints || []).map((cp) => {
@@ -595,6 +596,7 @@
             '      <input id="diary-new-check-date" type="date" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;min-width:0;">' +
             '      <button id="diary-add-check" type="button" class="mgmt-btn mgmt-btn-secondary">Add</button>' +
             '    </div>' +
+            '    <div id="diary-checklist-add-error" style="display:none;color:#fca5a5;font-size:12px;line-height:1.4;"></div>' +
             '  </div>' +
             '</div>';
 
@@ -734,6 +736,14 @@
         return out;
     }
 
+    function setChecklistAddError(message) {
+        const errorEl = document.getElementById('diary-checklist-add-error');
+        if (!errorEl) return;
+        const text = String(message || '').trim();
+        errorEl.textContent = text;
+        errorEl.style.display = text ? 'block' : 'none';
+    }
+
     function bindDetailEvents(note) {
         const toggle = document.getElementById('diary-active-toggle');
         if (toggle) {
@@ -764,7 +774,22 @@
                 const dateEl = document.getElementById('diary-new-check-date');
                 const text = textEl ? String(textEl.value || '').trim() : '';
                 const dueDate = dateEl ? String(dateEl.value || '').trim() : '';
-                if (!text || !dueDate) return;
+                if (!text && !dueDate) {
+                    setChecklistAddError('Please add comment and date.');
+                    if (textEl) textEl.focus();
+                    return;
+                }
+                if (!text) {
+                    setChecklistAddError('Comment is required.');
+                    if (textEl) textEl.focus();
+                    return;
+                }
+                if (!dueDate) {
+                    setChecklistAddError('Date is required.');
+                    if (dateEl) dateEl.focus();
+                    return;
+                }
+                setChecklistAddError('');
                 const next = (note.hypothesis_checkpoints || []).slice();
                 next.push({
                     checkpoint_id: Math.random().toString(36).slice(2, 10),
@@ -773,6 +798,8 @@
                     status: dueDate < todayYmd() ? 'OVERDUE' : 'PENDING',
                     resolved_at: null,
                 });
+                if (textEl) textEl.value = '';
+                if (dateEl) dateEl.value = '';
                 saveChecklist(note, next);
             });
         }
