@@ -25,6 +25,7 @@ from boto3.dynamodb.conditions import Key
 _DIARY_TABLE_NAME = os.environ.get("DIARY_TABLE", os.environ.get("DATA_TABLE", "roastfolio-data"))
 _diary_table_ref = None
 _CHECKPOINT_STATUSES = {"PENDING", "TRUE", "FALSE", "OVERDUE"}
+_TICKER_ID_RE = re.compile(r"^[A-Z][A-Z0-9]*(?:\.[A-Z0-9]+)?$")
 
 _MENTION_RE = re.compile(r"(?<![A-Za-z0-9_])@([A-Za-z][A-Za-z0-9.]*)")
 _TAG_RE = re.compile(r"(?<![A-Za-z0-9_])#([A-Za-z][A-Za-z0-9_-]*)(?=$|[^A-Za-z0-9_-])")
@@ -147,6 +148,35 @@ def normalize_hypothesis_checkpoints(raw_list: list[dict] | None) -> list[dict]:
     return checkpoints
 
 
+def normalize_comments(raw_list: list[dict] | None) -> list[dict]:
+    comments = []
+    for raw in raw_list or []:
+        if not isinstance(raw, dict):
+            continue
+
+        text = str(raw.get("text") or "").strip()
+        if not text:
+            continue
+
+        created_at = str(raw.get("created_at") or _now_iso())
+        parent_comment_id = raw.get("parent_comment_id")
+        if parent_comment_id in (None, ""):
+            parent_comment_id = None
+        else:
+            parent_comment_id = str(parent_comment_id)
+
+        comments.append({
+            "comment_id": str(raw.get("comment_id") or str(uuid.uuid4())),
+            "text": text,
+            "created_at": created_at,
+            "author": str(raw.get("author") or "self"),
+            "parent_comment_id": parent_comment_id,
+        })
+
+    comments.sort(key=lambda item: str(item.get("created_at") or ""))
+    return comments
+
+
 def _note_public(item: dict | None) -> dict | None:
     if not item:
         return None
@@ -176,6 +206,16 @@ def _candidate_ticker_note_id(payload: dict, linked_assets: list[str]) -> str | 
     return None
 
 
+def _normalize_note_id(raw: str) -> str:
+    note_id = str(raw or "").strip()
+    if not note_id:
+        return note_id
+    upper = note_id.upper()
+    if _TICKER_ID_RE.match(upper):
+        return upper
+    return note_id
+
+
 def create_note(user_id: str, payload: dict) -> dict:
     note_text = str(payload.get("note_text") or "")
     parsed_assets, parsed_tags = parse_mentions_and_tags(note_text)
@@ -186,13 +226,18 @@ def create_note(user_id: str, payload: dict) -> dict:
     user_tags = _uniq_keep_order([*(payload.get("user_tags") or []), *parsed_tags])
 
     ticker_note_id = _candidate_ticker_note_id(payload, linked_assets)
-    note_id = str(payload.get("note_id") or ticker_note_id or str(uuid.uuid4())).strip()
+    note_id = _normalize_note_id(payload.get("note_id") or ticker_note_id or str(uuid.uuid4()))
     if not note_id:
         note_id = str(uuid.uuid4())
 
     timestamp = str(payload.get("timestamp") or _now_iso())
     hypothesis = _normalize_hypothesis(payload.get("hypothesis"))
     checkpoints = normalize_hypothesis_checkpoints(payload.get("hypothesis_checkpoints") or [])
+    comments = normalize_comments(payload.get("comments") or [])
+
+    default_active = bool(linked_assets)
+    is_active = _coerce_bool(payload.get("is_active"), default=default_active)
+    user_override_active = _coerce_bool(payload.get("user_override_active"), default=False)
 
     item = {
         "PK": _pk(user_id),
@@ -205,8 +250,11 @@ def create_note(user_id: str, payload: dict) -> dict:
         "linked_assets_index": [f"TICKER#{ticker}" for ticker in linked_assets],
         "hypothesis": hypothesis,
         "hypothesis_checkpoints": checkpoints,
+        "comments": comments,
         "user_tags": user_tags,
         "user_tags_index": [tag.upper() for tag in user_tags],
+        "is_active": is_active,
+        "user_override_active": user_override_active,
         "is_closed": _coerce_bool(payload.get("is_closed"), default=False),
         "goalpost_change_count": 0,
         "goalpost_change_events": [],
@@ -271,6 +319,12 @@ def update_note(user_id: str, note_id: str, updates: dict) -> dict:
     if "is_closed" in updates:
         item["is_closed"] = _coerce_bool(updates.get("is_closed"), default=False)
 
+    if "is_active" in updates:
+        item["is_active"] = _coerce_bool(updates.get("is_active"), default=False)
+
+    if "user_override_active" in updates:
+        item["user_override_active"] = _coerce_bool(updates.get("user_override_active"), default=False)
+
     if "timestamp" in updates:
         item["timestamp"] = str(updates.get("timestamp") or item.get("timestamp") or now)
 
@@ -296,6 +350,9 @@ def update_note(user_id: str, note_id: str, updates: dict) -> dict:
     if "hypothesis_checkpoints" in updates:
         item["hypothesis_checkpoints"] = normalize_hypothesis_checkpoints(updates.get("hypothesis_checkpoints") or [])
 
+    if "comments" in updates:
+        item["comments"] = normalize_comments(updates.get("comments") or [])
+
     # Keep the first linked ticker as GSI sorting key for active-note scans.
     linked_assets = item.get("linked_assets") or []
     item["GSI1_SK"] = f"TICKER#{(linked_assets[0] if linked_assets else 'NONE')}"
@@ -320,6 +377,48 @@ def append_tag_to_note(user_id: str, note_id: str, tag: str) -> dict:
         raise ValueError("Note not found")
     tags = _uniq_keep_order([*(note.get("user_tags") or []), tag])
     return update_note(user_id, note_id, {"user_tags": tags})
+
+
+def append_comment_to_note(
+    user_id: str,
+    note_id: str,
+    text: str,
+    parent_comment_id: str | None = None,
+    author: str | None = None,
+) -> dict:
+    note = get_note(user_id, note_id)
+    if not note:
+        raise ValueError("Note not found")
+
+    clean_text = str(text or "").strip()
+    if not clean_text:
+        raise ValueError("Comment text is required")
+
+    comments = normalize_comments(note.get("comments") or [])
+    comments.append({
+        "comment_id": str(uuid.uuid4()),
+        "text": clean_text,
+        "created_at": _now_iso(),
+        "author": str(author or "self"),
+        "parent_comment_id": (str(parent_comment_id) if parent_comment_id else None),
+    })
+    comments = normalize_comments(comments)
+
+    return update_note(user_id, note_id, {"comments": comments})
+
+
+def toggle_note_active(user_id: str, note_id: str, is_active: bool) -> dict:
+    note = get_note(user_id, note_id)
+    if not note:
+        raise ValueError("Note not found")
+    return update_note(
+        user_id,
+        note_id,
+        {
+            "is_active": _coerce_bool(is_active, default=False),
+            "user_override_active": True,
+        },
+    )
 
 
 def set_goalpost_mover_badge(user_id: str, note_id: str) -> dict:
@@ -432,7 +531,10 @@ def lambda_handler(event, _context):
         return _response(401, {"error": "Missing user id"})
 
     path_params = event.get("pathParameters") or {}
-    note_id = path_params.get("noteId")
+    raw_note_id = path_params.get("noteId") or path_params.get("ticker")
+    note_id = _normalize_note_id(raw_note_id) if raw_note_id else None
+    path_lower = str(event.get("resource") or event.get("path") or "").lower()
+    action = str(path_params.get("action") or path_params.get("subresource") or "").lower()
 
     if method == "OPTIONS":
         return _response(200, {"ok": True})
@@ -444,6 +546,25 @@ def lambda_handler(event, _context):
         return _response(400, {"error": "Invalid JSON body"})
 
     try:
+        is_comment_endpoint = action == "comment" or path_lower.endswith("/comment")
+        is_toggle_endpoint = action == "toggle-active" or path_lower.endswith("/toggle-active")
+
+        if method == "POST" and is_comment_endpoint and note_id:
+            updated = append_comment_to_note(
+                user_id=user_id,
+                note_id=note_id,
+                text=payload.get("text") or payload.get("comment") or "",
+                parent_comment_id=payload.get("parent_comment_id"),
+                author=payload.get("author"),
+            )
+            return _response(200, {"note": updated})
+
+        if method == "POST" and is_toggle_endpoint and note_id:
+            if "is_active" not in payload:
+                raise ValueError("is_active is required")
+            updated = toggle_note_active(user_id, note_id, payload.get("is_active"))
+            return _response(200, {"note": updated})
+
         if method == "POST":
             created = create_note(user_id, payload)
             return _response(201, {"note": created})

@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 from datetime import datetime, timezone
 from decimal import Decimal
+import re
 
 import boto3
 
@@ -26,6 +27,8 @@ os.environ.setdefault("DATA_TABLE", "roastfolio-data")
 os.environ.setdefault("TRANSACTIONS_TABLE", "roastfolio-transactions")
 os.environ.setdefault("SNAPSHOTS_TABLE", "roastfolio-snapshots")
 os.environ.setdefault("USERS_TABLE", "roastfolio-users")
+
+_TICKER_NOTE_ID_RE = re.compile(r"^[A-Z][A-Z0-9]*(?:\.[A-Z0-9]+)?$")
 
 
 def _now_iso() -> str:
@@ -203,6 +206,52 @@ def apply_goalpost_mover_badge(user_id: str) -> int:
     return flagged
 
 
+def _ticker_balances_from_holdings(user_id: str) -> dict[str, Decimal]:
+    balances: dict[str, Decimal] = {}
+    for portfolio in portfolios.list_portfolios(user_id):
+        portfolio_id = portfolio.get("portfolioId")
+        if not portfolio_id or portfolio_id == "summary":
+            continue
+        for holding in portfolios.list_holdings(user_id, portfolio_id):
+            ticker = str(holding.get("ticker") or "").strip().upper()
+            if not ticker:
+                continue
+            units = _to_decimal(holding.get("units", 0))
+            balances[ticker] = balances.get(ticker, Decimal("0")) + units
+    return balances
+
+
+def sync_diary_active_flags_with_holdings(user_id: str) -> int:
+    balances = _ticker_balances_from_holdings(user_id)
+    updated = 0
+
+    for note in diary_handler.list_notes(user_id, include_closed=True):
+        note_id = str(note.get("note_id") or "").strip().upper()
+        if not note_id or not _TICKER_NOTE_ID_RE.match(note_id):
+            continue
+
+        user_override = bool(note.get("user_override_active", False))
+        if user_override:
+            continue
+
+        should_be_active = balances.get(note_id, Decimal("0")) > Decimal("0")
+        current_active = bool(note.get("is_active", should_be_active))
+        if current_active == should_be_active:
+            continue
+
+        diary_handler.update_note(
+            user_id,
+            note_id,
+            {
+                "is_active": should_be_active,
+                "user_override_active": False,
+            },
+        )
+        updated += 1
+
+    return updated
+
+
 def sweep_user(user_id: str) -> dict:
     user_portfolios = portfolios.list_portfolios(user_id)
 
@@ -210,6 +259,7 @@ def sweep_user(user_id: str) -> dict:
     portfolios_recalculated = 0
     summary_recalculated = 0
     overdue_checkpoints_marked = diary_handler.sweep_overdue_checkpoints(user_id)
+    active_flags_synced = sync_diary_active_flags_with_holdings(user_id)
 
     for portfolio in user_portfolios:
         portfolio_id = portfolio.get("portfolioId")
@@ -241,6 +291,7 @@ def sweep_user(user_id: str) -> dict:
         "unjustifiedTradesFlagged": unjustified_total,
         "copingTagsAdded": coping_tagged,
         "goalpostBadgesActivated": goalpost_badges,
+        "activeFlagsSynced": active_flags_synced,
     }
 
 

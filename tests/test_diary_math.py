@@ -134,3 +134,129 @@ def test_goalpost_mover_badge_activated_after_multiple_edits_in_drawdown(monkeyp
     flagged = trigger_recalc.apply_goalpost_mover_badge(user_id)
     assert flagged == 1
     assert calls == [(user_id, note_id)]
+
+
+def test_toggle_active_sets_user_override(monkeypatch):
+    user_id = "user-toggle"
+    note_id = "CRI.WA"
+
+    monkeypatch.setattr(
+        diary_handler,
+        "get_note",
+        lambda uid, nid: {"PK": f"USER#{uid}", "SK": f"NOTE#{nid}", "note_id": nid} if uid == user_id and nid == note_id else None,
+    )
+
+    captured = {}
+
+    def _capture_update(uid, nid, updates):
+        captured["uid"] = uid
+        captured["nid"] = nid
+        captured["updates"] = dict(updates)
+        return {"note_id": nid, **updates}
+
+    monkeypatch.setattr(diary_handler, "update_note", _capture_update)
+
+    updated = diary_handler.toggle_note_active(user_id, note_id, False)
+    assert updated["note_id"] == note_id
+    assert captured["uid"] == user_id
+    assert captured["nid"] == note_id
+    assert captured["updates"] == {
+        "is_active": False,
+        "user_override_active": True,
+    }
+
+
+def test_sync_active_flags_respects_manual_override_and_zero_balance(monkeypatch):
+    user_id = "user-sweep"
+
+    monkeypatch.setattr(
+        trigger_recalc.portfolios,
+        "list_portfolios",
+        lambda _uid: [{"portfolioId": "p1"}],
+    )
+    monkeypatch.setattr(
+        trigger_recalc.portfolios,
+        "list_holdings",
+        lambda _uid, _pid: [{"ticker": "AAPL", "units": 3}],
+    )
+
+    monkeypatch.setattr(
+        trigger_recalc.diary_handler,
+        "list_notes",
+        lambda *_args, **_kwargs: [
+            {
+                "note_id": "AAPL",
+                "is_active": False,
+                "user_override_active": False,
+            },
+            {
+                "note_id": "MSFT",
+                "is_active": True,
+                "user_override_active": False,
+            },
+            {
+                "note_id": "TSLA",
+                "is_active": True,
+                "user_override_active": True,
+            },
+        ],
+    )
+
+    updates = []
+
+    def _capture_update(uid, note_id, payload):
+        updates.append((uid, note_id, dict(payload)))
+        return {"note_id": note_id, **payload}
+
+    monkeypatch.setattr(trigger_recalc.diary_handler, "update_note", _capture_update)
+
+    changed = trigger_recalc.sync_diary_active_flags_with_holdings(user_id)
+
+    assert changed == 2
+    assert (user_id, "AAPL", {"is_active": True, "user_override_active": False}) in updates
+    assert (user_id, "MSFT", {"is_active": False, "user_override_active": False}) in updates
+    assert all(item[1] != "TSLA" for item in updates)
+
+
+def test_append_comment_keeps_chronological_order(monkeypatch):
+    user_id = "user-comments"
+    note_id = "XTB.WA"
+    state = {
+        "note": {
+            "PK": f"USER#{user_id}",
+            "SK": f"NOTE#{note_id}",
+            "note_id": note_id,
+            "comments": [
+                {
+                    "comment_id": "c0",
+                    "text": "earliest",
+                    "created_at": "2026-08-01T00:00:00Z",
+                    "author": "self",
+                    "parent_comment_id": None,
+                }
+            ],
+        }
+    }
+
+    monkeypatch.setattr(diary_handler, "get_note", lambda _uid, _nid: dict(state["note"]))
+    monkeypatch.setattr(diary_handler, "_now_iso", lambda: "2026-08-02T00:00:00Z")
+
+    def _capture_update(_uid, _nid, updates):
+        merged = dict(state["note"])
+        merged["comments"] = updates["comments"]
+        state["note"] = merged
+        return merged
+
+    monkeypatch.setattr(diary_handler, "update_note", _capture_update)
+
+    diary_handler.append_comment_to_note(user_id, note_id, "second")
+    monkeypatch.setattr(diary_handler, "_now_iso", lambda: "2026-08-03T00:00:00Z")
+    diary_handler.append_comment_to_note(user_id, note_id, "third")
+
+    comments = state["note"]["comments"]
+    assert [c["text"] for c in comments] == ["earliest", "second", "third"]
+    assert [c["created_at"] for c in comments] == [
+        "2026-08-01T00:00:00Z",
+        "2026-08-02T00:00:00Z",
+        "2026-08-03T00:00:00Z",
+    ]
