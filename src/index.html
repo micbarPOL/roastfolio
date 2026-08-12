@@ -1740,16 +1740,12 @@
                 It feels empty here. Create your first note.
             </p>
 
-            <div id="diary-filter-toolbar" style="display:none;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-top:10px;padding:10px;border:1px solid rgba(127,143,164,0.4);border-radius:10px;">
+            <div id="diary-filter-toolbar" style="display:none;grid-template-columns:1fr auto;gap:8px;align-items:start;margin-top:10px;padding:10px;border:1px solid rgba(127,143,164,0.4);border-radius:10px;">
                 <div style="display:grid;gap:6px;">
-                    <label for="diary-filter-input" style="font-size:12px;color:#8aa0ba;">Filter notes by tag</label>
-                    <input id="diary-filter-input" type="text" list="diary-filter-options" placeholder="Type tag, e.g. #CRI.WA" style="width:100%;border:1px solid rgba(127,143,164,0.45);border-radius:8px;padding:8px;background:transparent;color:inherit;">
-                    <datalist id="diary-filter-options"></datalist>
-                    <label for="diary-text-filter-input" style="font-size:12px;color:#8aa0ba;">Secondary: search in note text</label>
-                    <input id="diary-text-filter-input" type="text" placeholder="Type word or phrase (case-insensitive)" style="width:100%;border:1px solid rgba(127,143,164,0.45);border-radius:8px;padding:8px;background:transparent;color:inherit;">
-                    <div id="diary-filter-quick" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+                    <label for="diary-filter-input" style="font-size:12px;color:#8aa0ba;">Filter by tag or text</label>
+                    <input id="diary-filter-input" type="text" placeholder="Type tag fragment (e.g. CRI) or any note text" style="width:100%;border:1px solid rgba(127,143,164,0.45);border-radius:8px;padding:8px;background:transparent;color:inherit;">
+                    <div id="diary-filter-quick" style="display:flex;gap:6px;flex-wrap:wrap;max-height:170px;overflow:auto;padding-right:4px;"></div>
                 </div>
-                <button id="diary-apply-filter-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Apply</button>
                 <span id="diary-filter-count" style="font-size:12px;color:#7f8c8d;justify-self:end;"></span>
             </div>
 
@@ -1911,7 +1907,7 @@
 
         const DIARY_STORAGE_KEY = 'roastfolio-coping-diary-notes-v2';
         let _diaryState = { notes: [], customTags: [] };
-        let _diaryUi = { activeTagFilter: '', textQuery: '', editingNoteId: '' };
+        let _diaryUi = { activeTagFilter: '', filterQuery: '', editingNoteId: '' };
 
         function _escapeHtml(value) {
             return String(value || '')
@@ -2040,14 +2036,19 @@
             if (!list || !emptyWrap || !fallback || !filterToolbar || !activeFilterWrap || !activeFilterTag) return;
 
             const allNotes = Array.isArray(_diaryState.notes) ? _diaryState.notes : [];
-            _renderDiaryFilterTools(allNotes);
             const normalizedFilter = _sanitizeTag(_diaryUi.activeTagFilter);
-            const normalizedTextQuery = String(_diaryUi.textQuery || '').trim().toLocaleLowerCase();
+            const normalizedQuery = String(_diaryUi.filterQuery || '').trim().toLocaleLowerCase();
+            const tagStats = _collectDiaryTagStats(allNotes);
+            _renderDiaryFilterTools(allNotes, tagStats, normalizedQuery);
             let notes = normalizedFilter
                 ? allNotes.filter((note) => Array.isArray(note.tags) && note.tags.includes(normalizedFilter))
                 : allNotes;
-            if (normalizedTextQuery) {
-                notes = notes.filter((note) => String(note.text || '').toLocaleLowerCase().includes(normalizedTextQuery));
+
+            if (!normalizedFilter && normalizedQuery) {
+                const hasTagMatches = tagStats.some((item) => _doesTagMatchQuery(item.tag, normalizedQuery));
+                if (!hasTagMatches) {
+                    notes = notes.filter((note) => String(note.text || '').toLocaleLowerCase().includes(normalizedQuery));
+                }
             }
 
             if (normalizedFilter) {
@@ -2133,36 +2134,57 @@
                 .sort((a, b) => (b.count - a.count) || a.tag.localeCompare(b.tag));
         }
 
-        function _renderDiaryFilterTools(allNotes) {
+        function _doesTagMatchQuery(tag, query) {
+            const q = String(query || '').trim().toLocaleLowerCase();
+            if (!q) return false;
+            const rawTag = String(tag || '').toLocaleLowerCase();
+            const noHash = rawTag.startsWith('#') ? rawTag.slice(1) : rawTag;
+            return rawTag.includes(q) || noHash.includes(q);
+        }
+
+        function _renderDiaryFilterTools(allNotes, stats, normalizedQuery) {
             const toolbar = document.getElementById('diary-filter-toolbar');
             const input = document.getElementById('diary-filter-input');
-            const textInput = document.getElementById('diary-text-filter-input');
-            const options = document.getElementById('diary-filter-options');
             const quick = document.getElementById('diary-filter-quick');
             const count = document.getElementById('diary-filter-count');
-            if (!toolbar || !input || !textInput || !options || !quick || !count) return;
+            if (!toolbar || !input || !quick || !count) return;
 
             if (!allNotes.length) {
                 toolbar.style.display = 'none';
-                options.innerHTML = '';
                 quick.innerHTML = '';
                 count.textContent = '';
-                textInput.value = '';
+                input.value = '';
                 return;
             }
 
-            const stats = _collectDiaryTagStats(allNotes);
+            const query = String(normalizedQuery || '').trim();
+            const sorted = Array.from(stats || []).sort((a, b) => {
+                const aMatch = _doesTagMatchQuery(a.tag, query);
+                const bMatch = _doesTagMatchQuery(b.tag, query);
+                if (aMatch !== bMatch) return aMatch ? -1 : 1;
+                return (b.count - a.count) || a.tag.localeCompare(b.tag);
+            });
+
             toolbar.style.display = 'grid';
-            options.innerHTML = stats.map((item) => (`<option value="${_escapeHtml(item.tag)}">${_escapeHtml(item.tag)} (${item.count})</option>`)).join('');
-            quick.innerHTML = stats.slice(0, 12).map((item) => (
-                `<button type="button" class="mgmt-btn mgmt-btn-secondary" data-diary-quick-filter="${_escapeHtml(item.tag)}" style="padding:4px 8px;font-size:12px;">${_escapeHtml(item.tag)} (${item.count})</button>`
-            )).join('');
-            count.textContent = `${stats.length} unique tags • ${allNotes.length} notes`;
-            input.value = _diaryUi.activeTagFilter || '';
-            textInput.value = _diaryUi.textQuery || '';
+            quick.innerHTML = sorted.map((item) => {
+                const isMatch = _doesTagMatchQuery(item.tag, query);
+                const extraStyle = isMatch
+                    ? 'background:rgba(90,160,255,0.18);border-color:rgba(90,160,255,0.8);color:#5aa0ff;font-weight:700;'
+                    : '';
+                return `<button type="button" class="mgmt-btn mgmt-btn-secondary" data-diary-quick-filter="${_escapeHtml(item.tag)}" style="padding:4px 8px;font-size:12px;${extraStyle}">${_escapeHtml(item.tag)} (${item.count})</button>`;
+            }).join('');
+
+            const matchingCount = sorted.filter((item) => _doesTagMatchQuery(item.tag, query)).length;
+            count.textContent = query
+                ? `${sorted.length} tags • ${matchingCount} matching`
+                : `${sorted.length} tags • ${allNotes.length} notes`;
+            input.value = _diaryUi.filterQuery || '';
 
             quick.querySelectorAll('[data-diary-quick-filter]').forEach((btn) => {
-                btn.addEventListener('click', () => _setDiaryTagFilter(btn.dataset.diaryQuickFilter));
+                btn.addEventListener('click', () => {
+                    const tag = btn.dataset.diaryQuickFilter;
+                    _setDiaryTagFilter(tag);
+                });
             });
         }
 
@@ -2178,10 +2200,7 @@
                 const end = mentionRegex.lastIndex;
                 const ticker = (match[1] || '').toUpperCase();
                 out += _escapeHtml(raw.slice(cursor, start));
-                out += `<button type="button" data-diary-mention="${_escapeHtml(ticker)}" style="display:inline-flex;align-items:center;gap:4px;padding:0 2px;border:none;background:transparent;color:#5aa0ff;text-decoration:underline;cursor:pointer;font-size:13px;font-weight:700;line-height:18px;vertical-align:baseline;">
-                    @${_escapeHtml(ticker)}
-                    <span aria-hidden="true" style="font-size:11px;opacity:0.9;">↗ chart</span>
-                </button>`;
+                out += `<button type="button" data-diary-mention="${_escapeHtml(ticker)}" style="display:inline;padding:0;border:none;background:transparent;color:#5aa0ff;text-decoration:underline;cursor:pointer;font-size:13px;font-weight:700;line-height:18px;vertical-align:baseline;white-space:nowrap;">@${_escapeHtml(ticker)}</button>`;
                 cursor = end;
             }
 
@@ -2192,14 +2211,14 @@
         function _setDiaryTagFilter(nextTag) {
             _diaryUi.activeTagFilter = _sanitizeTag(nextTag);
             const filterInput = document.getElementById('diary-filter-input');
-            if (filterInput) filterInput.value = _diaryUi.activeTagFilter;
+            if (filterInput) filterInput.value = '';
+            _diaryUi.filterQuery = '';
             _renderDiaryNotes();
         }
 
-        function _setDiaryTextFilter(nextText) {
-            _diaryUi.textQuery = String(nextText || '').trim();
-            const textInput = document.getElementById('diary-text-filter-input');
-            if (textInput) textInput.value = _diaryUi.textQuery;
+        function _setDiaryFilterQuery(nextText) {
+            _diaryUi.filterQuery = String(nextText || '').trim();
+            _diaryUi.activeTagFilter = '';
             _renderDiaryNotes();
         }
 
@@ -2245,8 +2264,6 @@
             const addCustomTagBtn = document.getElementById('diary-add-custom-tag-btn');
             const customTagInput = document.getElementById('diary-custom-tag-input');
             const filterInput = document.getElementById('diary-filter-input');
-            const textFilterInput = document.getElementById('diary-text-filter-input');
-            const applyFilterBtn = document.getElementById('diary-apply-filter-btn');
             const clearFilterBtn = document.getElementById('diary-clear-filter-btn');
             const editor = document.getElementById('diary-note-editor');
 
@@ -2293,33 +2310,20 @@
             if (clearFilterBtn) {
                 clearFilterBtn.addEventListener('click', () => {
                     _diaryUi.activeTagFilter = '';
-                    _diaryUi.textQuery = '';
+                    _diaryUi.filterQuery = '';
                     if (filterInput) filterInput.value = '';
-                    if (textFilterInput) textFilterInput.value = '';
                     _renderDiaryNotes();
                 });
             }
 
-            if (applyFilterBtn) {
-                applyFilterBtn.addEventListener('click', () => {
-                    _setDiaryTagFilter(filterInput && filterInput.value);
-                    _setDiaryTextFilter(textFilterInput && textFilterInput.value);
-                });
-            }
-
             if (filterInput) {
+                filterInput.addEventListener('input', () => {
+                    _setDiaryFilterQuery(filterInput.value);
+                });
                 filterInput.addEventListener('keydown', (event) => {
                     if (event.key !== 'Enter') return;
                     event.preventDefault();
-                    _setDiaryTagFilter(filterInput.value);
-                });
-            }
-
-            if (textFilterInput) {
-                textFilterInput.addEventListener('keydown', (event) => {
-                    if (event.key !== 'Enter') return;
-                    event.preventDefault();
-                    _setDiaryTextFilter(textFilterInput.value);
+                    _setDiaryFilterQuery(filterInput.value);
                 });
             }
 
