@@ -3,6 +3,7 @@ import sys
 import base64
 import json
 from pathlib import Path
+from decimal import Decimal
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -337,3 +338,16 @@ def test_create_note_prefers_more_specific_market_ticker(monkeypatch):
 
     assert note["title"] == "CRI"
     assert saved["item"]["linked_assets"] == ["CRI.WA"]
+
+
+def test_response_serializes_decimal_values():
+    response = diary_handler._response(200, {
+        "count": Decimal("3"),
+        "ratio": Decimal("1.25"),
+        "items": [{"value": Decimal("2")}],
+    })
+    payload = json.loads(response["body"])
+
+    assert payload["count"] == 3
+    assert payload["ratio"] == 1.25
+    assert payload["items"][0]["value"] == 2

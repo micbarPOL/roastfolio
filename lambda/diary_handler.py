@@ -18,6 +18,7 @@ import os
 import re
 import uuid
 from datetime import datetime, timezone
+from decimal import Decimal
 
 import boto3
 from boto3.dynamodb.conditions import Key
@@ -562,6 +563,15 @@ def _extract_user_id(event: dict) -> str | None:
 
 
 def _response(status: int, payload: dict) -> dict:
+    def _sanitize(value):
+        if isinstance(value, Decimal):
+            return int(value) if value == value.to_integral_value() else float(value)
+        if isinstance(value, dict):
+            return {k: _sanitize(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [_sanitize(v) for v in value]
+        return value
+
     return {
         "statusCode": status,
         "headers": {
@@ -570,7 +580,7 @@ def _response(status: int, payload: dict) -> dict:
             "Access-Control-Allow-Headers": "Content-Type,Authorization",
             "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
         },
-        "body": json.dumps(payload),
+        "body": json.dumps(_sanitize(payload)),
     }
 
 

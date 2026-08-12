@@ -104,6 +104,19 @@
         return out;
     }
 
+    function parseMentionTickers(text) {
+        const matches = String(text || '').match(/@([A-Za-z][A-Za-z0-9.]*)/g) || [];
+        const out = [];
+        const seen = new Set();
+        for (const raw of matches) {
+            const ticker = normalizeTicker(raw.slice(1));
+            if (!ticker || seen.has(ticker)) continue;
+            seen.add(ticker);
+            out.push(ticker);
+        }
+        return out;
+    }
+
     function resolvePrimaryAsset(note) {
         const firstLinked = Array.isArray(note.linked_assets) ? normalizeTicker(note.linked_assets[0]) : '';
         return firstLinked;
@@ -245,6 +258,17 @@
         }
     }
 
+    async function deleteNoteById(noteId) {
+        try {
+            await apiFetch('/diary/' + encodeURIComponent(noteId), {
+                method: 'DELETE',
+            });
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     function collectActiveHoldings() {
         const set = new Set();
         const source = window.WALLET_HOLDINGS || {};
@@ -311,7 +335,8 @@
             '.diary-mention{color:#5aa0ff;font-weight:700;text-decoration:underline;cursor:pointer;white-space:nowrap;background:none;border:none;padding:0;}' +
             '@keyframes diaryPulse{0%,100%{box-shadow:0 0 0 rgba(245,158,11,.15)}50%{box-shadow:0 0 20px rgba(245,158,11,.45)}}' +
             '@keyframes diaryCardIn{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}' +
-            '@media (max-width: 980px){.diary-split{grid-template-columns:1fr}.diary-ledger-list{max-height:42vh}}';
+            '@media (max-width: 980px){.diary-split{grid-template-columns:1fr}.diary-ledger-list{max-height:42vh}}' +
+            '@media (max-width: 760px){.diary-check-add-row{grid-template-columns:1fr !important}.diary-check-add-row input,.diary-check-add-row button{width:100%}}';
         document.head.appendChild(style);
     }
 
@@ -524,19 +549,30 @@
                 '</label>';
         }).join('');
 
+        const mentionButtons = parseMentionTickers(note.note_text)
+            .map((ticker) => '<button type="button" class="diary-mention" data-mention="' + escapeHtml(ticker) + '">@' + escapeHtml(ticker) + '</button>')
+            .join(' ');
+        const mentionsBlock = mentionButtons
+            ? '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><span style="font-size:12px;color:#8ea1bb;">Linked holdings:</span>' + mentionButtons + '</div>'
+            : '';
+
         root.innerHTML = '' +
             '<div class="diary-pane-head">' +
             '  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
             '    <strong>Focus Sheet</strong>' +
             '    <span class="diary-badge" id="diary-detail-ticker">' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</span>' +
             '  </div>' +
-            '  <label class="diary-glass-toggle" title="Toggle active hypothesis">' +
-            '    <input id="diary-active-toggle" type="checkbox" ' + (note.is_active ? 'checked' : '') + '>' +
-            '    <span class="diary-glass-slider"></span>' +
-            '  </label>' +
+            '  <div style="display:flex;align-items:center;gap:8px;">' +
+            '    <label class="diary-glass-toggle" title="Toggle active hypothesis">' +
+            '      <input id="diary-active-toggle" type="checkbox" ' + (note.is_active ? 'checked' : '') + '>' +
+            '      <span class="diary-glass-slider"></span>' +
+            '    </label>' +
+            '    <button id="diary-delete-note" type="button" class="mgmt-btn mgmt-btn-secondary" style="border-color:rgba(239,68,68,.6);color:#fecaca;">Delete</button>' +
+            '  </div>' +
             '</div>' +
             '<div class="diary-detail-body">' +
             '  <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Diary note</span><textarea id="diary-focus-note" style="min-height:90px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.note_text || '') + '</textarea></label>' +
+            mentionsBlock +
             '  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">' +
             '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Why buy</span><textarea id="diary-why-buy" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.why_buy || '') + '</textarea></label>' +
             '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Exit plan</span><textarea id="diary-exit-plan" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.exit_plan || '') + '</textarea></label>' +
@@ -554,9 +590,9 @@
             '  <div style="display:grid;gap:8px;">' +
             '    <strong>Checklist</strong>' +
             '    <div id="diary-checklist">' + checklist + '</div>' +
-            '    <div style="display:grid;grid-template-columns:1fr 160px auto;gap:8px;">' +
-            '      <input id="diary-new-check-text" type="text" placeholder="Check Q3 reports" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;">' +
-            '      <input id="diary-new-check-date" type="date" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;">' +
+            '    <div class="diary-check-add-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,180px) auto;gap:8px;">' +
+            '      <input id="diary-new-check-text" type="text" placeholder="Check Q3 reports" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;min-width:0;">' +
+            '      <input id="diary-new-check-date" type="date" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;min-width:0;">' +
             '      <button id="diary-add-check" type="button" class="mgmt-btn mgmt-btn-secondary">Add</button>' +
             '    </div>' +
             '  </div>' +
@@ -619,6 +655,19 @@
             replaceNote(note);
         }
         state.saving = false;
+        rerender();
+    }
+
+    async function onDeleteNote(note) {
+        if (!note || !note.note_id) return;
+        if (!window.confirm('Delete this note permanently?')) return;
+        const ok = await deleteNoteById(note.note_id);
+        if (!ok) return;
+
+        state.notes = state.notes.filter((n) => String(n.note_id) !== String(note.note_id));
+        const next = state.notes[0] || null;
+        state.selectedNoteId = next ? next.note_id : '';
+        setLocalNotes(state.notes);
         rerender();
     }
 
@@ -693,6 +742,9 @@
 
         const saveFocusBtn = document.getElementById('diary-save-focus');
         if (saveFocusBtn) saveFocusBtn.addEventListener('click', () => onSaveFocus(note));
+
+        const deleteBtn = document.getElementById('diary-delete-note');
+        if (deleteBtn) deleteBtn.addEventListener('click', () => onDeleteNote(note));
 
         const sendBtn = document.getElementById('diary-chat-send');
         const chatInput = document.getElementById('diary-chat-input');
