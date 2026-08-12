@@ -535,15 +535,19 @@ def import_wallet_value_history(user_id: str, portfolio_id: str, csv_path: str) 
     }
 
 
-def _get_close_pair(symbol: str, cache: dict[str, tuple[Decimal, Decimal]]) -> tuple[Decimal, Decimal]:
-    if symbol in cache:
-        return cache[symbol]
+def _get_close_pair(symbol: str, cache: dict[str, tuple[Decimal, Decimal]], as_of_date: str | None = None) -> tuple[Decimal, Decimal]:
+    cache_key = f"{symbol}@{as_of_date}" if as_of_date else symbol
+    if cache_key in cache:
+        return cache[cache_key]
 
     last_close = None
     prev_close = None
     try:
-        history = yf.Ticker(symbol).history(period="7d", interval="1d", auto_adjust=False)
-        closes = [row["Close"] for _, row in history.iterrows() if row["Close"] == row["Close"]]
+        history = yf.Ticker(symbol).history(period="14d", interval="1d", auto_adjust=False)
+        rows = [(idx.strftime("%Y-%m-%d"), row["Close"]) for idx, row in history.iterrows() if row["Close"] == row["Close"]]
+        if as_of_date:
+            rows = [(dt, c) for dt, c in rows if dt <= as_of_date]
+        closes = [c for _, c in rows]
         if closes:
             last_close = _to_decimal(float(closes[-1]))
             prev_close = _to_decimal(float(closes[-2] if len(closes) >= 2 else closes[-1]))
@@ -557,14 +561,14 @@ def _get_close_pair(symbol: str, cache: dict[str, tuple[Decimal, Decimal]]) -> t
         last_close = _to_decimal(info.last_price)
         prev_close = _to_decimal(info.previous_close or info.last_price)
 
-    cache[symbol] = (last_close, prev_close)
-    return cache[symbol]
+    cache[cache_key] = (last_close, prev_close)
+    return cache[cache_key]
 
 
-def _get_fx_close_pair(currency: str, cache: dict[str, tuple[Decimal, Decimal]]) -> tuple[Decimal, Decimal]:
+def _get_fx_close_pair(currency: str, cache: dict[str, tuple[Decimal, Decimal]], as_of_date: str | None = None) -> tuple[Decimal, Decimal]:
     if currency == "PLN":
         return Decimal("1"), Decimal("1")
-    return _get_close_pair(f"{currency}PLN=X", cache)
+    return _get_close_pair(f"{currency}PLN=X", cache, as_of_date=as_of_date)
 
 
 def _market_currency_for_asset(ticker: str | None, currency: str | None = "PLN") -> str:
@@ -583,7 +587,7 @@ def _market_currency_for_asset(ticker: str | None, currency: str | None = "PLN")
     return currency or "PLN"
 
 
-def calculate_portfolio_snapshot(holdings: list[dict]) -> dict:
+def calculate_portfolio_snapshot(holdings: list[dict], snapshot_date: str | None = None) -> dict:
     price_cache: dict[str, tuple[Decimal, Decimal]] = {}
     fx_cache: dict[str, tuple[Decimal, Decimal]] = {}
 
@@ -598,13 +602,13 @@ def calculate_portfolio_snapshot(holdings: list[dict]) -> dict:
         market_currency = _market_currency_for_asset(ticker, holding_currency)
 
         if not ticker:
-            close_fx, prev_fx = (Decimal("1"), Decimal("1")) if holding_currency == "PLN" else _get_fx_close_pair(holding_currency, fx_cache)
+            close_fx, prev_fx = (Decimal("1"), Decimal("1")) if holding_currency == "PLN" else _get_fx_close_pair(holding_currency, fx_cache, as_of_date=snapshot_date)
             total_value += purchase_value * close_fx
             total_prev += purchase_value * prev_fx
             continue
 
-        close_price, prev_close = _get_close_pair(ticker, price_cache)
-        close_fx, prev_fx = (Decimal("1"), Decimal("1")) if market_currency == "PLN" else _get_fx_close_pair(market_currency, fx_cache)
+        close_price, prev_close = _get_close_pair(ticker, price_cache, as_of_date=snapshot_date)
+        close_fx, prev_fx = (Decimal("1"), Decimal("1")) if market_currency == "PLN" else _get_fx_close_pair(market_currency, fx_cache, as_of_date=snapshot_date)
 
         current_value = units * close_price * close_fx
         previous_value = units * prev_close * prev_fx
@@ -625,9 +629,9 @@ def calculate_portfolio_snapshot(holdings: list[dict]) -> dict:
 
 
 
-def calculate_benchmark_close(benchmark_id: str) -> Decimal:
+def calculate_benchmark_close(benchmark_id: str, snapshot_date: str | None = None) -> Decimal:
     meta = db.BENCHMARKS.get(benchmark_id) or db.BENCHMARKS[db.DEFAULT_BENCHMARK]
-    close_price, _ = _get_close_pair(meta["ticker"], {})
+    close_price, _ = _get_close_pair(meta["ticker"], {}, as_of_date=snapshot_date)
     return _quantize_money(close_price)
 
 
@@ -638,7 +642,7 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
     if benchmark_id not in db.BENCHMARKS:
         benchmark_id = db.DEFAULT_BENCHMARK
 
-    benchmark_value = calculate_benchmark_close(benchmark_id)
+    benchmark_value = calculate_benchmark_close(benchmark_id, snapshot_date=snapshot_date)
     created = 0
     skipped = 0
     portfolios_out = []
@@ -651,7 +655,7 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
         portfolio_id = portfolio["portfolioId"]
         holdings = portfolios.list_holdings(user_id, portfolio_id)
         summary_holdings.extend(holdings)
-        snapshot = calculate_portfolio_snapshot(holdings)
+        snapshot = calculate_portfolio_snapshot(holdings, snapshot_date=snapshot_date)
         investment_value = _quantize_money(portfolios.calculate_investment_total(user_id, portfolio_id))
         summary_investment += investment_value
 
@@ -721,7 +725,7 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
         })
 
     if portfolios_out:
-        summary_snapshot = calculate_portfolio_snapshot(summary_holdings)
+        summary_snapshot = calculate_portfolio_snapshot(summary_holdings, snapshot_date=snapshot_date)
         summary_net_cash_flow = _quantize_money(sum((_to_decimal(p.get("netCashFlow", 0)) for p in portfolios_out), Decimal("0")))
         summary_history_all = list_snapshots(user_id, "summary")
         xirr_history = [s for s in summary_history_all if str(s.get("snapshotDate", "")) < snapshot_date]
