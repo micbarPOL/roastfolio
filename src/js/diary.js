@@ -1,5 +1,5 @@
 (function () {
-    const DIARY_LOCAL_KEY = 'roastfolio-coping-diary-notes-v3';
+    const DIARY_LOCAL_KEY = 'roastfolio-coping-diary-notes-v4';
     const OVERDUE_STATUSES = new Set(['PENDING', 'OVERDUE']);
 
     const state = {
@@ -104,19 +104,33 @@
         return out;
     }
 
-    function resolveTicker(note) {
-        const idTicker = normalizeTicker(note.note_id || note.id || '');
-        if (idTicker) return idTicker;
+    function resolvePrimaryAsset(note) {
         const firstLinked = Array.isArray(note.linked_assets) ? normalizeTicker(note.linked_assets[0]) : '';
         return firstLinked;
     }
 
+    function resolveTitle(note, primaryAsset) {
+        const rawTitle = String(note.title || note.topic || note.ticker || '').trim();
+        if (!rawTitle) return primaryAsset || 'Untitled note';
+        if (primaryAsset) {
+            const normalizedTitle = normalizeTicker(rawTitle);
+            const titleBase = normalizedTitle.split('.', 1)[0];
+            const assetBase = primaryAsset.split('.', 1)[0];
+            if (titleBase && titleBase === assetBase) {
+                return primaryAsset;
+            }
+        }
+        return rawTitle;
+    }
+
     function normalizeNote(raw) {
-        const ticker = resolveTicker(raw);
+        const ticker = resolvePrimaryAsset(raw);
         const now = toIsoNow();
         const hypothesis = raw.hypothesis || {};
+        const title = resolveTitle(raw, ticker);
         return {
-            note_id: String(raw.note_id || raw.id || ticker || Math.random().toString(36).slice(2, 10)),
+            note_id: String(raw.note_id || raw.id || Math.random().toString(36).slice(2, 10)),
+            title: title,
             ticker: ticker,
             note_text: String(raw.note_text || raw.text || ''),
             linked_assets: Array.isArray(raw.linked_assets) ? raw.linked_assets : (ticker ? [ticker] : []),
@@ -310,8 +324,8 @@
             '    <div class="diary-pane-head"><strong>Conviction Ledger</strong><button id="diary-new-note" class="mgmt-btn mgmt-btn-primary" type="button">+ Note</button></div>' +
             '    <div id="diary-compose" style="display:none;padding:10px;border-bottom:1px solid rgba(127,143,164,.2);background:rgba(8,18,31,.22);">' +
             '      <div style="display:grid;gap:8px;">' +
-            '        <input id="diary-new-ticker" type="text" placeholder="Ticker is required (e.g. CRI.WA)" aria-required="true" style="border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;">' +
-            '        <div id="diary-compose-error" style="display:none;color:#fca5a5;font-size:12px;line-height:1.4;">Ticker is required.</div>' +
+            '        <input id="diary-new-ticker" type="text" placeholder="Topic or ticker (required)" aria-required="true" style="border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;">' +
+            '        <div id="diary-compose-error" style="display:none;color:#fca5a5;font-size:12px;line-height:1.4;">Topic is required.</div>' +
             '        <textarea id="diary-new-text" placeholder="Write quick note and add #tags..." style="min-height:80px;border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;resize:vertical;"></textarea>' +
             '        <div id="diary-compose-tags" style="display:flex;gap:6px;flex-wrap:wrap;max-height:120px;overflow:auto;"></div>' +
             '        <div style="display:flex;justify-content:flex-end;gap:8px;">' +
@@ -341,6 +355,7 @@
         if (hasTagMatch) return notes;
         return notes.filter((n) => {
             return String(n.note_text || '').toLowerCase().includes(q)
+                || String(n.title || '').toLowerCase().includes(q)
                 || String(n.ticker || '').toLowerCase().includes(q);
         });
     }
@@ -413,7 +428,7 @@
             return '' +
                 '<article class="' + classes + '" data-note-id="' + escapeHtml(note.note_id) + '">' +
                 '  <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
-                '    <strong>' + escapeHtml(note.ticker || note.note_id) + '</strong>' +
+                '    <strong>' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</strong>' +
                 '    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' + inactivePill + activePill + '</div>' +
                 '  </div>' +
                 '  <p style="margin:7px 0 6px;color:#8ea1bb;font-size:13px;">' + preview + '</p>' +
@@ -513,7 +528,7 @@
             '<div class="diary-pane-head">' +
             '  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
             '    <strong>Focus Sheet</strong>' +
-            '    <span class="diary-badge" id="diary-detail-ticker">' + escapeHtml(note.ticker || note.note_id) + '</span>' +
+            '    <span class="diary-badge" id="diary-detail-ticker">' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</span>' +
             '  </div>' +
             '  <label class="diary-glass-toggle" title="Toggle active hypothesis">' +
             '    <input id="diary-active-toggle" type="checkbox" ' + (note.is_active ? 'checked' : '') + '>' +
@@ -835,10 +850,11 @@
     async function createNewTickerNoteFromComposer() {
         const tickerEl = document.getElementById('diary-new-ticker');
         const textEl = document.getElementById('diary-new-text');
-        const ticker = normalizeTicker(tickerEl && tickerEl.value);
+        const title = String(tickerEl && tickerEl.value || '').trim();
+        const ticker = normalizeTicker(title);
         const noteText = String(textEl && textEl.value || '').trim();
-        if (!ticker) {
-            setComposerError('Ticker is required.');
+        if (!title) {
+            setComposerError('Topic is required.');
             if (tickerEl) tickerEl.focus();
             return;
         }
@@ -847,11 +863,11 @@
 
         const mergedTags = parseTagsFromText(noteText);
         const payload = {
-            ticker: ticker,
+            title: title,
             note_text: noteText,
-            linked_assets: [ticker],
+            linked_assets: ticker ? [ticker] : [],
             user_tags: mergedTags,
-            is_active: true,
+            is_active: Boolean(ticker),
             user_override_active: false,
             hypothesis: {
                 why_buy: '',
@@ -862,7 +878,11 @@
             comments: [],
         };
         const created = await createNote(payload);
-        const note = created || normalizeNote(payload);
+        if (!created) {
+            setComposerError('Could not save note. Try again.');
+            return;
+        }
+        const note = created;
         replaceNote(note);
         state.selectedNoteId = note.note_id;
         if (tickerEl) tickerEl.value = '';

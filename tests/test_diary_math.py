@@ -292,6 +292,7 @@ def test_create_note_uses_generated_id_for_regular_ticker_notes(monkeypatch):
     })
 
     assert note["note_id"] == "generated-note-id"
+    assert note["title"] == "CRI"
     assert saved["item"]["SK"] == "NOTE#generated-note-id"
     assert saved["item"]["linked_assets"] == ["CRI"]
 
@@ -315,3 +316,24 @@ def test_create_note_keeps_ticker_id_for_dedicated_holding_notes(monkeypatch):
 
     assert note["note_id"] == "CRI"
     assert saved["item"]["SK"] == "NOTE#CRI"
+
+
+def test_create_note_prefers_more_specific_market_ticker(monkeypatch):
+    saved = {}
+
+    class _FakeTable:
+        def put_item(self, Item):
+            saved["item"] = dict(Item)
+
+    monkeypatch.setattr(diary_handler, "_table", lambda: _FakeTable())
+    monkeypatch.setattr(diary_handler.uuid, "uuid4", lambda: "generated-note-id")
+    monkeypatch.setattr(diary_handler, "_now_iso", lambda: "2026-08-12T00:00:00Z")
+
+    note = diary_handler.create_note("user-1", {
+        "title": "CRI",
+        "linked_assets": ["CRI"],
+        "note_text": "Watching @CRI.WA closely",
+    })
+
+    assert note["title"] == "CRI"
+    assert saved["item"]["linked_assets"] == ["CRI.WA"]

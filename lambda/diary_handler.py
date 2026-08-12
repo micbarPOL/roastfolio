@@ -72,6 +72,40 @@ def _uniq_keep_order(values: list[str]) -> list[str]:
     return out
 
 
+def _canonicalize_linked_assets(values: list[str]) -> list[str]:
+    out: list[str] = []
+    for raw in _uniq_keep_order(values):
+        ticker = str(raw or "").strip().upper()
+        if not ticker:
+            continue
+        base = ticker.split(".", 1)[0]
+        replaced = False
+        for idx, existing in enumerate(out):
+            existing_base = existing.split(".", 1)[0]
+            if existing_base != base:
+                continue
+            preferred = existing
+            if "." in ticker and "." not in existing:
+                preferred = ticker
+            elif len(ticker) > len(existing):
+                preferred = ticker
+            out[idx] = preferred
+            replaced = True
+            break
+        if not replaced:
+            out.append(ticker)
+    return out
+
+
+def _normalize_title(payload: dict, linked_assets: list[str]) -> str:
+    title = str(payload.get("title") or payload.get("topic") or payload.get("ticker") or "").strip()
+    if title:
+        return title
+    if linked_assets:
+        return linked_assets[0]
+    return "Untitled note"
+
+
 def parse_mentions_and_tags(text: str) -> tuple[list[str], list[str]]:
     """Extract upper-cased @ticker mentions and #hashtags from arbitrary text."""
     text = str(text or "")
@@ -218,8 +252,7 @@ def create_note(user_id: str, payload: dict) -> dict:
     note_text = str(payload.get("note_text") or "")
     parsed_assets, parsed_tags = parse_mentions_and_tags(note_text)
 
-    linked_assets = _uniq_keep_order([*(payload.get("linked_assets") or []), *parsed_assets])
-    linked_assets = [a.upper() for a in linked_assets]
+    linked_assets = _canonicalize_linked_assets([*(payload.get("linked_assets") or []), *parsed_assets])
 
     user_tags = _uniq_keep_order([*(payload.get("user_tags") or []), *parsed_tags])
 
@@ -232,6 +265,7 @@ def create_note(user_id: str, payload: dict) -> dict:
     hypothesis = _normalize_hypothesis(payload.get("hypothesis"))
     checkpoints = normalize_hypothesis_checkpoints(payload.get("hypothesis_checkpoints") or [])
     comments = normalize_comments(payload.get("comments") or [])
+    title = _normalize_title(payload, linked_assets)
 
     default_active = bool(linked_assets)
     is_active = _coerce_bool(payload.get("is_active"), default=default_active)
@@ -243,6 +277,7 @@ def create_note(user_id: str, payload: dict) -> dict:
         "GSI1_PK": "ACTIVE_NOTE",
         "GSI1_SK": f"TICKER#{(linked_assets[0] if linked_assets else 'NONE')}",
         "item_type": "DIARY_NOTE",
+        "title": title,
         "note_text": note_text,
         "linked_assets": linked_assets,
         "linked_assets_index": [f"TICKER#{ticker}" for ticker in linked_assets],
@@ -296,8 +331,8 @@ def update_note(user_id: str, note_id: str, updates: dict) -> dict:
         new_text = str(updates.get("note_text") or "")
         item["note_text"] = new_text
         parsed_assets, parsed_tags = parse_mentions_and_tags(new_text)
-        merged_assets = _uniq_keep_order([*(updates.get("linked_assets") or item.get("linked_assets") or []), *parsed_assets])
-        item["linked_assets"] = [a.upper() for a in merged_assets]
+        merged_assets = _canonicalize_linked_assets([*(updates.get("linked_assets") or item.get("linked_assets") or []), *parsed_assets])
+        item["linked_assets"] = merged_assets
         item["linked_assets_index"] = [f"TICKER#{ticker}" for ticker in item["linked_assets"]]
 
         merged_tags = _uniq_keep_order([*(updates.get("user_tags") or item.get("user_tags") or []), *parsed_tags])
@@ -305,9 +340,12 @@ def update_note(user_id: str, note_id: str, updates: dict) -> dict:
         item["user_tags_index"] = [tag.upper() for tag in merged_tags]
 
     if "linked_assets" in updates and "note_text" not in updates:
-        merged_assets = _uniq_keep_order(updates.get("linked_assets") or [])
-        item["linked_assets"] = [a.upper() for a in merged_assets]
+        merged_assets = _canonicalize_linked_assets(updates.get("linked_assets") or [])
+        item["linked_assets"] = merged_assets
         item["linked_assets_index"] = [f"TICKER#{ticker}" for ticker in item["linked_assets"]]
+
+    if "title" in updates or "topic" in updates or "ticker" in updates:
+        item["title"] = _normalize_title(updates, item.get("linked_assets") or [])
 
     if "user_tags" in updates and "note_text" not in updates:
         merged_tags = _uniq_keep_order(updates.get("user_tags") or [])
