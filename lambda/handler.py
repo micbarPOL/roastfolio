@@ -915,7 +915,12 @@ def benchmark_returns_handler(event: dict) -> dict:
     if bid not in db.BENCHMARKS:
         bid = db.DEFAULT_BENCHMARK
 
-    items = br.list_monthly_returns(bid, from_ym=from_m)
+    try:
+        items = br.list_monthly_returns(bid, from_ym=from_m)
+    except Exception as exc:
+        # Keep dashboard flows alive even if benchmark storage is unavailable.
+        print(f"benchmark_returns_handler fallback for {bid}: {exc}")
+        items = []
     out = [
         {
             "month":      i.get("month"),
