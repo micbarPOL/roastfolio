@@ -310,7 +310,8 @@
             '    <div class="diary-pane-head"><strong>Conviction Ledger</strong><button id="diary-new-note" class="mgmt-btn mgmt-btn-primary" type="button">+ Note</button></div>' +
             '    <div id="diary-compose" style="display:none;padding:10px;border-bottom:1px solid rgba(127,143,164,.2);background:rgba(8,18,31,.22);">' +
             '      <div style="display:grid;gap:8px;">' +
-            '        <input id="diary-new-ticker" type="text" placeholder="Ticker (e.g. CRI.WA)" style="border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;">' +
+            '        <input id="diary-new-ticker" type="text" placeholder="Ticker is required (e.g. CRI.WA)" aria-required="true" style="border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;">' +
+            '        <div id="diary-compose-error" style="display:none;color:#fca5a5;font-size:12px;line-height:1.4;">Ticker is required.</div>' +
             '        <textarea id="diary-new-text" placeholder="Write quick note and add #tags..." style="min-height:80px;border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;resize:vertical;"></textarea>' +
             '        <div id="diary-compose-tags" style="display:flex;gap:6px;flex-wrap:wrap;max-height:120px;overflow:auto;"></div>' +
             '        <div style="display:flex;justify-content:flex-end;gap:8px;">' +
@@ -804,10 +805,25 @@
         const btn = document.getElementById('diary-new-note');
         if (box) box.style.display = state.composeOpen ? 'block' : 'none';
         if (btn) btn.textContent = state.composeOpen ? 'Close' : '+ Note';
+        setComposerError('');
         if (state.composeOpen) {
             renderComposerTags();
             const tickerInput = document.getElementById('diary-new-ticker');
             if (tickerInput) tickerInput.focus();
+        }
+    }
+
+    function setComposerError(message) {
+        const errorEl = document.getElementById('diary-compose-error');
+        const tickerEl = document.getElementById('diary-new-ticker');
+        const hasError = Boolean(message);
+        if (errorEl) {
+            errorEl.textContent = message || '';
+            errorEl.style.display = hasError ? 'block' : 'none';
+        }
+        if (tickerEl) {
+            tickerEl.setAttribute('aria-invalid', hasError ? 'true' : 'false');
+            tickerEl.style.borderColor = hasError ? 'rgba(239,68,68,.95)' : 'rgba(127,143,164,.4)';
         }
     }
 
@@ -821,11 +837,16 @@
         const textEl = document.getElementById('diary-new-text');
         const ticker = normalizeTicker(tickerEl && tickerEl.value);
         const noteText = String(textEl && textEl.value || '').trim();
-        if (!ticker) return;
+        if (!ticker) {
+            setComposerError('Ticker is required.');
+            if (tickerEl) tickerEl.focus();
+            return;
+        }
+
+        setComposerError('');
 
         const mergedTags = parseTagsFromText(noteText);
         const payload = {
-            note_id: ticker,
             ticker: ticker,
             note_text: noteText,
             linked_assets: [ticker],

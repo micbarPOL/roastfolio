@@ -199,9 +199,6 @@ def _extract_note_id_from_sk(sk: str) -> str:
 
 
 def _candidate_ticker_note_id(payload: dict, linked_assets: list[str]) -> str | None:
-    explicit = str(payload.get("ticker") or "").strip().upper()
-    if explicit:
-        return explicit
     if payload.get("dedicated_holding_note") and linked_assets:
         return linked_assets[0].upper()
     return None

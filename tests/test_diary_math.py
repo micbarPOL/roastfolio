@@ -272,3 +272,46 @@ def test_extract_user_id_from_authorization_header():
     user_id = diary_handler._extract_user_id({"headers": {"Authorization": f"Bearer {token}"}})
 
     assert user_id == "user-from-jwt"
+
+
+def test_create_note_uses_generated_id_for_regular_ticker_notes(monkeypatch):
+    saved = {}
+
+    class _FakeTable:
+        def put_item(self, Item):
+            saved["item"] = dict(Item)
+
+    monkeypatch.setattr(diary_handler, "_table", lambda: _FakeTable())
+    monkeypatch.setattr(diary_handler.uuid, "uuid4", lambda: "generated-note-id")
+    monkeypatch.setattr(diary_handler, "_now_iso", lambda: "2026-08-12T00:00:00Z")
+
+    note = diary_handler.create_note("user-1", {
+        "ticker": "CRI",
+        "linked_assets": ["CRI"],
+        "note_text": "First thesis",
+    })
+
+    assert note["note_id"] == "generated-note-id"
+    assert saved["item"]["SK"] == "NOTE#generated-note-id"
+    assert saved["item"]["linked_assets"] == ["CRI"]
+
+
+def test_create_note_keeps_ticker_id_for_dedicated_holding_notes(monkeypatch):
+    saved = {}
+
+    class _FakeTable:
+        def put_item(self, Item):
+            saved["item"] = dict(Item)
+
+    monkeypatch.setattr(diary_handler, "_table", lambda: _FakeTable())
+    monkeypatch.setattr(diary_handler, "_now_iso", lambda: "2026-08-12T00:00:00Z")
+
+    note = diary_handler.create_note("user-1", {
+        "ticker": "CRI",
+        "linked_assets": ["CRI"],
+        "note_text": "Single holding note",
+        "dedicated_holding_note": True,
+    })
+
+    assert note["note_id"] == "CRI"
+    assert saved["item"]["SK"] == "NOTE#CRI"
