@@ -247,6 +247,32 @@ Resources:
         - AttributeName: sk
           KeyType: RANGE
 
+  # ── DynamoDB: Coping Diary ───────────────────────────────────
+  #
+  # Separate table so diary notes do not share the portfolio schema.
+  #
+  #  PK          SK
+  #  ─────────── ───────────────────────────────────────────────
+  #  USER#<id>   NOTE#<noteId>
+  #  USER#<id>   UNJUSTIFIED_TRADE#<timestamp>#<transactionId>
+  DiaryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !If [IsDev, dev-roastfolio-diary, roastfolio-diary]
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+
   # ── DynamoDB: Portfolio Transactions Ledger ──────────────────
   #
   # Source-of-truth trade ledger for each user's portfolio activity.
@@ -385,6 +411,7 @@ Resources:
           CACHE_BUCKET: !If [IsDev, !Ref DevStaticBucket, !Ref BucketName]
           USERS_TABLE:  !Ref UsersTable
           DATA_TABLE:   !Ref DataTable
+          DIARY_TABLE:  !Ref DiaryTable
           TRANSACTIONS_TABLE: !Ref TransactionsTable
           SNAPSHOTS_TABLE: !Ref SnapshotsTable
           RETIREMENT_TABLE: !Ref RetirementPlansTable
@@ -416,6 +443,18 @@ Resources:
               Resource:
                 - !GetAtt UsersTable.Arn
                 - !Sub "${UsersTable.Arn}/index/email-index"
+            # DynamoDB: Coping Diary
+            - Effect: Allow
+              Action:
+                - dynamodb:BatchWriteItem
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+                - dynamodb:Scan
+              Resource:
+                - !GetAtt DiaryTable.Arn
             # DynamoDB: portfolios + holdings
             - Effect: Allow
               Action:
@@ -970,6 +1009,10 @@ Outputs:
   DataTableName:
     Description: DynamoDB portfolios + holdings table name
     Value: !Ref DataTable
+
+  DiaryTableName:
+    Description: DynamoDB Coping Diary table name
+    Value: !Ref DiaryTable
 
   TransactionsTableName:
     Description: DynamoDB portfolio transactions table name
