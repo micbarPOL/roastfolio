@@ -20,6 +20,7 @@ import boto3
 import yfinance as yf
 
 import db          # DynamoDB user-profile helpers
+import diary_handler
 import portfolio_avco
 import portfolios  # DynamoDB portfolios + holdings helpers
 import retirement_plans
@@ -2028,6 +2029,10 @@ def handler(event, context):
     path = event.get("path", "/prices")
 
     try:
+        # Route diary subresources through the dedicated diary handler.
+        if path == "/diary" or path.startswith("/diary/"):
+            return diary_handler.lambda_handler(event, context)
+
         # Route /profile
         if path.endswith("/profile"):
             return profile_handler(event)

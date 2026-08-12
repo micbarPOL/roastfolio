@@ -504,6 +504,49 @@ Resources:
             Path: /widget
             Method: GET
             RestApiId: !Ref PricesApi
+        # Coping Diary
+        DiaryGet:
+          Type: Api
+          Properties:
+            Path: /diary
+            Method: GET
+            RestApiId: !Ref PricesApi
+        DiaryPost:
+          Type: Api
+          Properties:
+            Path: /diary
+            Method: POST
+            RestApiId: !Ref PricesApi
+        DiaryNoteGet:
+          Type: Api
+          Properties:
+            Path: /diary/{ticker}
+            Method: GET
+            RestApiId: !Ref PricesApi
+        DiaryNotePut:
+          Type: Api
+          Properties:
+            Path: /diary/{ticker}
+            Method: PUT
+            RestApiId: !Ref PricesApi
+        DiaryNoteDelete:
+          Type: Api
+          Properties:
+            Path: /diary/{ticker}
+            Method: DELETE
+            RestApiId: !Ref PricesApi
+        DiaryCommentPost:
+          Type: Api
+          Properties:
+            Path: /diary/{ticker}/comment
+            Method: POST
+            RestApiId: !Ref PricesApi
+        DiaryToggleActivePost:
+          Type: Api
+          Properties:
+            Path: /diary/{ticker}/toggle-active
+            Method: POST
+            RestApiId: !Ref PricesApi
         ProfileGet:
           Type: Api
           Properties:
