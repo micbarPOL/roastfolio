@@ -1,0 +1,778 @@
+(function () {
+    const DIARY_LOCAL_KEY = 'roastfolio-coping-diary-notes-v3';
+    const OVERDUE_STATUSES = new Set(['PENDING', 'OVERDUE']);
+
+    const state = {
+        notes: [],
+        selectedNoteId: '',
+        holdings: new Set(),
+        loaded: false,
+        filterQuery: '',
+        saving: false,
+    };
+
+    function apiBase() {
+        const cfg = window.__CONFIG__ || window.APP_CONFIG || {};
+        return String(cfg.apiUrl || '').replace(/\/prices$/, '');
+    }
+
+    function authHeaders(extra) {
+        const token = window.AuthGuard && typeof window.AuthGuard.getIdToken === 'function'
+            ? window.AuthGuard.getIdToken()
+            : null;
+        const headers = Object.assign({}, extra || {});
+        if (token) headers.Authorization = 'Bearer ' + token;
+        return headers;
+    }
+
+    function todayYmd() {
+        return new Date().toISOString().slice(0, 10);
+    }
+
+    function toIsoNow() {
+        return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+    }
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function normalizeTicker(raw) {
+        const t = String(raw || '').trim().toUpperCase();
+        if (!t) return '';
+        return t.replace(/[^A-Z0-9.]/g, '');
+    }
+
+    function sanitizeTag(raw) {
+        const cleaned = String(raw || '')
+            .trim()
+            .replace(/\s+/g, '_')
+            .replace(/[^A-Za-z0-9_#.$:-]/g, '');
+        if (!cleaned) return '';
+        return cleaned.startsWith('#') ? cleaned : ('#' + cleaned);
+    }
+
+    function parseTagsFromText(text) {
+        const matches = String(text || '').match(/#[A-Za-z0-9_.$:-]+/g) || [];
+        const out = [];
+        const seen = new Set();
+        for (const m of matches) {
+            const t = sanitizeTag(m);
+            if (!t || seen.has(t)) continue;
+            seen.add(t);
+            out.push(t);
+        }
+        return out;
+    }
+
+    function resolveTicker(note) {
+        const idTicker = normalizeTicker(note.note_id || note.id || '');
+        if (idTicker) return idTicker;
+        const firstLinked = Array.isArray(note.linked_assets) ? normalizeTicker(note.linked_assets[0]) : '';
+        return firstLinked;
+    }
+
+    function normalizeNote(raw) {
+        const ticker = resolveTicker(raw);
+        const now = toIsoNow();
+        const hypothesis = raw.hypothesis || {};
+        return {
+            note_id: String(raw.note_id || raw.id || ticker || Math.random().toString(36).slice(2, 10)),
+            ticker: ticker,
+            note_text: String(raw.note_text || raw.text || ''),
+            linked_assets: Array.isArray(raw.linked_assets) ? raw.linked_assets : (ticker ? [ticker] : []),
+            user_tags: Array.isArray(raw.user_tags) ? raw.user_tags : parseTagsFromText(raw.note_text || raw.text || ''),
+            hypothesis: {
+                why_buy: String(hypothesis.why_buy || ''),
+                exit_plan: String(hypothesis.exit_plan || ''),
+                risk_factors: String(hypothesis.risk_factors || ''),
+            },
+            hypothesis_checkpoints: Array.isArray(raw.hypothesis_checkpoints) ? raw.hypothesis_checkpoints : [],
+            comments: Array.isArray(raw.comments) ? raw.comments.slice().sort((a, b) => String(a.created_at || '').localeCompare(String(b.created_at || ''))) : [],
+            is_active: Boolean(raw.is_active !== undefined ? raw.is_active : ticker),
+            user_override_active: Boolean(raw.user_override_active),
+            createdAt: String(raw.createdAt || now),
+            updatedAt: String(raw.updatedAt || raw.createdAt || now),
+        };
+    }
+
+    function setLocalNotes(notes) {
+        try {
+            localStorage.setItem(DIARY_LOCAL_KEY, JSON.stringify(notes));
+        } catch (e) {}
+    }
+
+    function getLocalNotes() {
+        try {
+            const raw = localStorage.getItem(DIARY_LOCAL_KEY);
+            if (!raw) return [];
+            const parsed = JSON.parse(raw);
+            return Array.isArray(parsed) ? parsed.map(normalizeNote) : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async function apiFetch(path, options) {
+        const base = apiBase();
+        if (!base) throw new Error('Missing API base');
+        const req = Object.assign({ method: 'GET' }, options || {});
+        req.headers = authHeaders(req.headers || {});
+        const res = await fetch(base + path, req);
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || ('HTTP ' + res.status));
+        }
+        return res.json();
+    }
+
+    async function fetchNotes() {
+        try {
+            const data = await apiFetch('/diary?includeClosed=true', { method: 'GET' });
+            const notes = Array.isArray(data.notes) ? data.notes.map(normalizeNote) : [];
+            setLocalNotes(notes);
+            return notes;
+        } catch (e) {
+            return getLocalNotes();
+        }
+    }
+
+    async function saveNotePatch(noteId, patch) {
+        const payload = Object.assign({}, patch || {});
+        try {
+            const data = await apiFetch('/diary/' + encodeURIComponent(noteId), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            return data && data.note ? normalizeNote(data.note) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function createNote(payload) {
+        try {
+            const data = await apiFetch('/diary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            return data && data.note ? normalizeNote(data.note) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function appendComment(note, text) {
+        const noteId = note.note_id;
+        try {
+            const data = await apiFetch('/diary/' + encodeURIComponent(noteId) + '/comment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text }),
+            });
+            return data && data.note ? normalizeNote(data.note) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function toggleActive(note, isActive) {
+        const noteId = note.note_id;
+        try {
+            const data = await apiFetch('/diary/' + encodeURIComponent(noteId) + '/toggle-active', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ is_active: Boolean(isActive) }),
+            });
+            return data && data.note ? normalizeNote(data.note) : null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function collectActiveHoldings() {
+        const set = new Set();
+        const source = window.WALLET_HOLDINGS || {};
+        for (const rows of Object.values(source)) {
+            for (const h of (rows || [])) {
+                const ticker = normalizeTicker(h && h.ticker);
+                if (!ticker) continue;
+                const units = Number(h && h.units);
+                if (Number.isFinite(units) && units <= 0) continue;
+                set.add(ticker);
+            }
+        }
+        return set;
+    }
+
+    function sortForLedger(notes) {
+        const held = state.holdings;
+        return notes.slice().sort((a, b) => {
+            const aHeldActive = a.is_active && held.has(a.ticker);
+            const bHeldActive = b.is_active && held.has(b.ticker);
+            const aInactive = !a.is_active;
+            const bInactive = !b.is_active;
+
+            const aTier = aHeldActive ? 0 : (aInactive ? 2 : 1);
+            const bTier = bHeldActive ? 0 : (bInactive ? 2 : 1);
+            if (aTier !== bTier) return aTier - bTier;
+
+            return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+        });
+    }
+
+    function ensureStyles() {
+        if (document.getElementById('diary-v2-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'diary-v2-styles';
+        style.textContent = '' +
+            '.diary-split{display:grid;grid-template-columns:minmax(310px,36%) minmax(0,64%);gap:14px;min-height:520px;}' +
+            '.diary-pane{border:1px solid rgba(127,143,164,.35);border-radius:14px;background:rgba(9,20,35,.28);backdrop-filter:blur(8px);}' +
+            '.diary-pane-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(127,143,164,.25);}' +
+            '.diary-ledger-list{padding:10px;display:grid;gap:8px;max-height:70vh;overflow:auto;}' +
+            '.diary-ledger-card{border:1px solid rgba(127,143,164,.35);border-radius:12px;background:rgba(10,22,38,.45);padding:10px;cursor:pointer;transition:transform .22s ease,opacity .22s ease,filter .22s ease,border-color .22s ease;animation:diaryCardIn .24s ease;}' +
+            '.diary-ledger-card:hover{transform:translateY(-2px);border-color:rgba(168,85,247,.7);}' +
+            '.diary-ledger-card.is-selected{border-color:rgba(168,85,247,.95);box-shadow:0 0 0 1px rgba(168,85,247,.35) inset;}' +
+            '.diary-ledger-card.is-inactive{filter:grayscale(.6) opacity(.7);}' +
+            '.diary-inactive-pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:#2c2f33;color:#d2d5d9;border:1px solid #43474d;}' +
+            '.diary-badge{display:inline-block;border:1px solid rgba(127,143,164,.45);border-radius:999px;padding:2px 8px;font-size:12px;}' +
+            '.diary-detail-body{padding:12px 14px;display:grid;gap:12px;}' +
+            '.diary-glass-toggle{position:relative;width:56px;height:30px;display:inline-block;}' +
+            '.diary-glass-toggle input{opacity:0;width:0;height:0;}' +
+            '.diary-glass-slider{position:absolute;inset:0;border-radius:999px;background:#1f2937;transition:all .25s ease;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}' +
+            '.diary-glass-slider:before{content:"";position:absolute;height:24px;width:24px;left:3px;top:3px;border-radius:50%;background:#eef2ff;transition:all .25s ease;box-shadow:0 4px 14px rgba(0,0,0,.35);}' +
+            '.diary-glass-toggle input:checked + .diary-glass-slider{background:#A855F7;box-shadow:0 0 14px rgba(168,85,247,.7);}' +
+            '.diary-glass-toggle input:checked + .diary-glass-slider:before{transform:translateX(26px);}' +
+            '.coping-chat-container{border:1px solid rgba(168,85,247,.35);border-radius:12px;padding:10px;background:rgba(168,85,247,.05);max-height:240px;overflow:auto;display:grid;gap:8px;}' +
+            '.coping-chat-bubble{justify-self:end;max-width:90%;padding:8px 10px;border-radius:12px 12px 4px 12px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.6);}' +
+            '.coping-chat-date{display:block;margin-top:4px;text-align:right;font-size:11px;color:#8ea1bb;}' +
+            '.diary-chat-compose{display:flex;gap:8px;}' +
+            '.diary-chat-compose input{flex:1;min-width:0;}' +
+            '.diary-amber-pulse{box-shadow:0 0 0 rgba(245,158,11,.15);animation:diaryPulse 1.6s ease-in-out infinite;}' +
+            '.diary-check-item{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:rgba(8,20,33,.2);}' +
+            '.diary-ledger-filter{width:100%;border:1px solid rgba(127,143,164,.45);border-radius:8px;padding:8px;background:transparent;color:inherit;}' +
+            '.diary-tags-cloud{display:flex;gap:6px;flex-wrap:wrap;max-height:120px;overflow:auto;padding-right:4px;}' +
+            '.diary-tags-cloud .match{background:rgba(168,85,247,.18);border-color:rgba(168,85,247,.85);color:#d9b8ff;}' +
+            '.diary-mention{color:#5aa0ff;font-weight:700;text-decoration:underline;cursor:pointer;white-space:nowrap;background:none;border:none;padding:0;}' +
+            '@keyframes diaryPulse{0%,100%{box-shadow:0 0 0 rgba(245,158,11,.15)}50%{box-shadow:0 0 20px rgba(245,158,11,.45)}}' +
+            '@keyframes diaryCardIn{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}' +
+            '@media (max-width: 980px){.diary-split{grid-template-columns:1fr}.diary-ledger-list{max-height:42vh}}';
+        document.head.appendChild(style);
+    }
+
+    function mountShell() {
+        const root = document.getElementById('diary-app-root');
+        if (!root) return null;
+        root.innerHTML = '' +
+            '<div class="diary-split">' +
+            '  <aside class="diary-pane">' +
+            '    <div class="diary-pane-head"><strong>Conviction Ledger</strong><button id="diary-new-note" class="mgmt-btn mgmt-btn-primary" type="button">+ Note</button></div>' +
+            '    <div style="padding:10px;display:grid;gap:8px;">' +
+            '      <input id="diary-ledger-filter" class="diary-ledger-filter" type="text" placeholder="Filter by tag or free text">' +
+            '      <div id="diary-tags-cloud" class="diary-tags-cloud"></div>' +
+            '    </div>' +
+            '    <div id="diary-ledger-list" class="diary-ledger-list"></div>' +
+            '  </aside>' +
+            '  <section class="diary-pane">' +
+            '    <div id="diary-detail"></div>' +
+            '  </section>' +
+            '</div>';
+        return root;
+    }
+
+    function filteredNotes(notes) {
+        const q = String(state.filterQuery || '').trim().toLowerCase();
+        if (!q) return notes;
+        const tags = collectTagStats(notes);
+        const hasTagMatch = tags.some((t) => t.tag.toLowerCase().includes(q) || t.tag.replace(/^#/, '').toLowerCase().includes(q));
+        if (hasTagMatch) return notes;
+        return notes.filter((n) => {
+            return String(n.note_text || '').toLowerCase().includes(q)
+                || String(n.ticker || '').toLowerCase().includes(q);
+        });
+    }
+
+    function collectTagStats(notes) {
+        const counts = new Map();
+        for (const n of notes) {
+            for (const tagRaw of (n.user_tags || [])) {
+                const tag = sanitizeTag(tagRaw);
+                if (!tag) continue;
+                counts.set(tag, (counts.get(tag) || 0) + 1);
+            }
+        }
+        return Array.from(counts.entries())
+            .map(([tag, count]) => ({ tag, count }))
+            .sort((a, b) => (b.count - a.count) || a.tag.localeCompare(b.tag));
+    }
+
+    function renderTagCloud(notes) {
+        const root = document.getElementById('diary-tags-cloud');
+        if (!root) return;
+        const stats = collectTagStats(notes);
+        const q = String(state.filterQuery || '').trim().toLowerCase();
+        const sorted = stats.slice().sort((a, b) => {
+            const am = q && a.tag.toLowerCase().includes(q);
+            const bm = q && b.tag.toLowerCase().includes(q);
+            if (am !== bm) return am ? -1 : 1;
+            return (b.count - a.count) || a.tag.localeCompare(b.tag);
+        });
+        root.innerHTML = sorted.map((it) => {
+            const match = q && it.tag.toLowerCase().includes(q) ? 'match' : '';
+            return '<button type="button" class="mgmt-btn mgmt-btn-secondary ' + match + '" data-filter-tag="' + escapeHtml(it.tag) + '" style="padding:3px 8px;font-size:12px;">' + escapeHtml(it.tag) + ' (' + it.count + ')</button>';
+        }).join('');
+        root.querySelectorAll('[data-filter-tag]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                state.filterQuery = '';
+                const input = document.getElementById('diary-ledger-filter');
+                if (input) input.value = '';
+                const tag = btn.getAttribute('data-filter-tag');
+                const notesByTag = state.notes.filter((n) => (n.user_tags || []).includes(tag));
+                const sortedNotes = sortForLedger(notesByTag);
+                renderNoteCards(sortedNotes);
+                if (sortedNotes.length) selectNote(sortedNotes[0].note_id);
+            });
+        });
+    }
+
+    function renderNoteCards(notes) {
+        const list = document.getElementById('diary-ledger-list');
+        if (!list) return;
+        const previous = new Map();
+        Array.from(list.children).forEach((el) => {
+            const id = el.getAttribute('data-note-id');
+            if (!id) return;
+            previous.set(id, el.getBoundingClientRect().top);
+        });
+
+        const sorted = sortForLedger(filteredNotes(notes));
+        list.innerHTML = sorted.map((note) => {
+            const held = state.holdings.has(note.ticker);
+            const isInactive = !note.is_active;
+            const classes = [
+                'diary-ledger-card',
+                state.selectedNoteId === note.note_id ? 'is-selected' : '',
+                isInactive ? 'is-inactive' : '',
+            ].filter(Boolean).join(' ');
+            const preview = escapeHtml(String(note.note_text || '').slice(0, 110) || 'No summary yet');
+            const inactivePill = isInactive ? '<span class="diary-inactive-pill">Nieaktywna hipoteza</span>' : '';
+            const activePill = note.is_active && held ? '<span class="diary-badge" style="border-color:rgba(34,197,94,.5);color:#86efac;">Active conviction</span>' : '';
+            return '' +
+                '<article class="' + classes + '" data-note-id="' + escapeHtml(note.note_id) + '">' +
+                '  <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
+                '    <strong>' + escapeHtml(note.ticker || note.note_id) + '</strong>' +
+                '    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' + inactivePill + activePill + '</div>' +
+                '  </div>' +
+                '  <p style="margin:7px 0 6px;color:#8ea1bb;font-size:13px;">' + preview + '</p>' +
+                '  <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+                (note.user_tags || []).slice(0, 4).map((t) => '<span class="diary-badge">' + escapeHtml(t) + '</span>').join(' ') +
+                '  </div>' +
+                '</article>';
+        }).join('');
+
+        list.querySelectorAll('[data-note-id]').forEach((card) => {
+            card.addEventListener('click', () => selectNote(card.getAttribute('data-note-id')));
+        });
+
+        requestAnimationFrame(() => {
+            Array.from(list.children).forEach((el) => {
+                const id = el.getAttribute('data-note-id');
+                const oldTop = previous.get(id);
+                if (oldTop === undefined) return;
+                const newTop = el.getBoundingClientRect().top;
+                const delta = oldTop - newTop;
+                if (!delta) return;
+                el.style.transform = 'translateY(' + delta + 'px)';
+                el.style.transition = 'transform 0s';
+                requestAnimationFrame(() => {
+                    el.style.transform = '';
+                    el.style.transition = 'transform .24s ease';
+                });
+            });
+        });
+    }
+
+    function renderMentions(text) {
+        const raw = String(text || '');
+        return raw.replace(/@([A-Za-z0-9][A-Za-z0-9._-]{0,19})/g, function (_m, t) {
+            const ticker = normalizeTicker(t);
+            return '<button type="button" class="diary-mention" data-mention="' + escapeHtml(ticker) + '">@' + escapeHtml(ticker) + '</button>';
+        }).replace(/\n/g, '<br>');
+    }
+
+    function checkpointState(item) {
+        const due = String(item.due_date || '');
+        const now = todayYmd();
+        const status = String(item.status || 'PENDING').toUpperCase();
+        if (OVERDUE_STATUSES.has(status) && due && due < now) return 'OVERDUE';
+        return status;
+    }
+
+    function renderDetail(note) {
+        const root = document.getElementById('diary-detail');
+        if (!root) return;
+        if (!note) {
+            root.innerHTML = '<div style="padding:18px;color:#8ea1bb;">Select a ledger card to open Focus Sheet.</div>';
+            return;
+        }
+
+        const chat = (note.comments || []).map((c) => {
+            const date = String(c.created_at || '').slice(0, 16).replace('T', ' ');
+            return '<article class="coping-chat-bubble"><div>' + escapeHtml(c.text || '') + '</div><span class="coping-chat-date">' + escapeHtml(date) + '</span></article>';
+        }).join('');
+
+        const checklist = (note.hypothesis_checkpoints || []).map((cp) => {
+            const cpStatus = checkpointState(cp);
+            const checked = cpStatus === 'TRUE' ? 'checked' : '';
+            const overdueCls = cpStatus === 'OVERDUE' ? 'diary-amber-pulse' : '';
+            return '' +
+                '<label class="diary-check-item ' + overdueCls + '" data-check-id="' + escapeHtml(cp.checkpoint_id) + '">' +
+                '  <input type="checkbox" data-check-toggle="' + escapeHtml(cp.checkpoint_id) + '" ' + checked + '>' +
+                '  <span>' + escapeHtml(cp.text || '') + '</span>' +
+                '  <input type="date" data-check-due="' + escapeHtml(cp.checkpoint_id) + '" value="' + escapeHtml(cp.due_date || '') + '" style="background:transparent;color:inherit;border:1px solid rgba(127,143,164,.35);border-radius:7px;padding:4px 6px;">' +
+                '</label>';
+        }).join('');
+
+        root.innerHTML = '' +
+            '<div class="diary-pane-head">' +
+            '  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
+            '    <strong>Focus Sheet</strong>' +
+            '    <span class="diary-badge" id="diary-detail-ticker">' + escapeHtml(note.ticker || note.note_id) + '</span>' +
+            '  </div>' +
+            '  <label class="diary-glass-toggle" title="Toggle active hypothesis">' +
+            '    <input id="diary-active-toggle" type="checkbox" ' + (note.is_active ? 'checked' : '') + '>' +
+            '    <span class="diary-glass-slider"></span>' +
+            '  </label>' +
+            '</div>' +
+            '<div class="diary-detail-body">' +
+            '  <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Diary note</span><textarea id="diary-focus-note" style="min-height:90px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.note_text || '') + '</textarea></label>' +
+            '  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">' +
+            '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Why buy</span><textarea id="diary-why-buy" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.why_buy || '') + '</textarea></label>' +
+            '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Exit plan</span><textarea id="diary-exit-plan" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.exit_plan || '') + '</textarea></label>' +
+            '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Risk factors</span><textarea id="diary-risk-factors" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.risk_factors || '') + '</textarea></label>' +
+            '  </div>' +
+            '  <div style="display:flex;justify-content:flex-end;"><button id="diary-save-focus" type="button" class="mgmt-btn mgmt-btn-primary">Save Focus Sheet</button></div>' +
+            '  <div style="display:grid;gap:8px;">' +
+            '    <strong>Coping Chat Thread</strong>' +
+            '    <div id="coping-chat-log" class="coping-chat-container">' + chat + '</div>' +
+            '    <div class="diary-chat-compose">' +
+            '      <input id="diary-chat-input" type="text" placeholder="+ Add updates / thoughts..." style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;">' +
+            '      <button id="diary-chat-send" type="button" class="mgmt-btn mgmt-btn-secondary" aria-label="Send">Send</button>' +
+            '    </div>' +
+            '  </div>' +
+            '  <div style="display:grid;gap:8px;">' +
+            '    <strong>Checklist</strong>' +
+            '    <div id="diary-checklist">' + checklist + '</div>' +
+            '    <div style="display:grid;grid-template-columns:1fr 160px auto;gap:8px;">' +
+            '      <input id="diary-new-check-text" type="text" placeholder="Check Q3 reports" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;">' +
+            '      <input id="diary-new-check-date" type="date" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;">' +
+            '      <button id="diary-add-check" type="button" class="mgmt-btn mgmt-btn-secondary">Add</button>' +
+            '    </div>' +
+            '  </div>' +
+            '</div>';
+
+        bindDetailEvents(note);
+
+        const log = document.getElementById('coping-chat-log');
+        if (log) log.scrollTo({ top: log.scrollHeight });
+    }
+
+    function replaceNote(updated) {
+        const next = normalizeNote(updated);
+        const idx = state.notes.findIndex((n) => String(n.note_id) === String(next.note_id));
+        if (idx >= 0) state.notes[idx] = next;
+        else state.notes.unshift(next);
+        state.selectedNoteId = next.note_id;
+        setLocalNotes(state.notes);
+    }
+
+    async function onToggleActive(note, targetChecked) {
+        if (state.saving) return;
+        state.saving = true;
+        const updated = await toggleActive(note, targetChecked);
+        if (updated) {
+            replaceNote(updated);
+            rerender();
+        } else {
+            note.is_active = targetChecked;
+            replaceNote(note);
+            rerender();
+        }
+        state.saving = false;
+    }
+
+    async function onSaveFocus(note) {
+        if (state.saving) return;
+        const noteTextEl = document.getElementById('diary-focus-note');
+        const whyEl = document.getElementById('diary-why-buy');
+        const exitEl = document.getElementById('diary-exit-plan');
+        const riskEl = document.getElementById('diary-risk-factors');
+        const patch = {
+            note_text: noteTextEl ? noteTextEl.value : note.note_text,
+            user_tags: parseTagsFromText(noteTextEl ? noteTextEl.value : note.note_text),
+            hypothesis: {
+                why_buy: whyEl ? whyEl.value : note.hypothesis.why_buy,
+                exit_plan: exitEl ? exitEl.value : note.hypothesis.exit_plan,
+                risk_factors: riskEl ? riskEl.value : note.hypothesis.risk_factors,
+            },
+        };
+        state.saving = true;
+        const updated = await saveNotePatch(note.note_id, patch);
+        if (updated) {
+            replaceNote(updated);
+        } else {
+            note.note_text = patch.note_text;
+            note.user_tags = patch.user_tags;
+            note.hypothesis = patch.hypothesis;
+            note.updatedAt = toIsoNow();
+            replaceNote(note);
+        }
+        state.saving = false;
+        rerender();
+    }
+
+    async function onSendComment(note) {
+        const input = document.getElementById('diary-chat-input');
+        if (!input) return;
+        const text = String(input.value || '').trim();
+        if (!text) return;
+        input.value = '';
+
+        const updated = await appendComment(note, text);
+        if (updated) {
+            replaceNote(updated);
+        } else {
+            note.comments = (note.comments || []).concat([{
+                comment_id: Math.random().toString(36).slice(2, 10),
+                text: text,
+                created_at: toIsoNow(),
+                author: 'self',
+                parent_comment_id: null,
+            }]);
+            note.updatedAt = toIsoNow();
+            replaceNote(note);
+        }
+        rerender();
+        const log = document.getElementById('coping-chat-log');
+        if (log) {
+            log.scrollTo({ top: log.scrollHeight, behavior: 'smooth' });
+        }
+    }
+
+    async function saveChecklist(note, list) {
+        const updated = await saveNotePatch(note.note_id, { hypothesis_checkpoints: list });
+        if (updated) {
+            replaceNote(updated);
+        } else {
+            note.hypothesis_checkpoints = list;
+            note.updatedAt = toIsoNow();
+            replaceNote(note);
+        }
+        rerender();
+    }
+
+    function collectChecklistFromDom(note) {
+        const out = [];
+        const root = document.getElementById('diary-checklist');
+        if (!root) return out;
+        root.querySelectorAll('[data-check-id]').forEach((row) => {
+            const id = row.getAttribute('data-check-id');
+            const base = (note.hypothesis_checkpoints || []).find((c) => String(c.checkpoint_id) === String(id)) || {};
+            const checked = row.querySelector('[data-check-toggle]');
+            const due = row.querySelector('[data-check-due]');
+            const dueDate = due ? String(due.value || '').trim() : String(base.due_date || '');
+            let status = checked && checked.checked ? 'TRUE' : 'PENDING';
+            if (status === 'PENDING' && dueDate && dueDate < todayYmd()) status = 'OVERDUE';
+            out.push({
+                checkpoint_id: id,
+                text: String(base.text || '').trim(),
+                due_date: dueDate,
+                status: status,
+                resolved_at: status === 'TRUE' ? toIsoNow() : null,
+            });
+        });
+        return out;
+    }
+
+    function bindDetailEvents(note) {
+        const toggle = document.getElementById('diary-active-toggle');
+        if (toggle) {
+            toggle.addEventListener('change', () => onToggleActive(note, toggle.checked));
+        }
+
+        const saveFocusBtn = document.getElementById('diary-save-focus');
+        if (saveFocusBtn) saveFocusBtn.addEventListener('click', () => onSaveFocus(note));
+
+        const sendBtn = document.getElementById('diary-chat-send');
+        const chatInput = document.getElementById('diary-chat-input');
+        if (sendBtn) sendBtn.addEventListener('click', () => onSendComment(note));
+        if (chatInput) {
+            chatInput.addEventListener('keydown', (event) => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                onSendComment(note);
+            });
+        }
+
+        const addCheckBtn = document.getElementById('diary-add-check');
+        if (addCheckBtn) {
+            addCheckBtn.addEventListener('click', () => {
+                const textEl = document.getElementById('diary-new-check-text');
+                const dateEl = document.getElementById('diary-new-check-date');
+                const text = textEl ? String(textEl.value || '').trim() : '';
+                const dueDate = dateEl ? String(dateEl.value || '').trim() : '';
+                if (!text || !dueDate) return;
+                const next = (note.hypothesis_checkpoints || []).slice();
+                next.push({
+                    checkpoint_id: Math.random().toString(36).slice(2, 10),
+                    text: text,
+                    due_date: dueDate,
+                    status: dueDate < todayYmd() ? 'OVERDUE' : 'PENDING',
+                    resolved_at: null,
+                });
+                saveChecklist(note, next);
+            });
+        }
+
+        const checklistRoot = document.getElementById('diary-checklist');
+        if (checklistRoot) {
+            checklistRoot.querySelectorAll('[data-check-toggle], [data-check-due]').forEach((el) => {
+                el.addEventListener('change', () => {
+                    const next = collectChecklistFromDom(note);
+                    saveChecklist(note, next);
+                });
+            });
+        }
+
+        const focusNote = document.getElementById('diary-focus-note');
+        if (focusNote) {
+            focusNote.addEventListener('blur', () => {
+                if (!focusNote.value) return;
+                // Keep tags in sync with free-text note body.
+                note.user_tags = parseTagsFromText(focusNote.value);
+            });
+        }
+
+        document.querySelectorAll('[data-mention]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const ticker = normalizeTicker(btn.getAttribute('data-mention'));
+                if (!ticker) return;
+                if (typeof window.openAnalysisForTicker === 'function') {
+                    window.openAnalysisForTicker(ticker);
+                } else if (typeof window.showTab === 'function') {
+                    window.showTab('analysis');
+                }
+            });
+        });
+    }
+
+    function findSelectedNote() {
+        if (!state.notes.length) return null;
+        const found = state.notes.find((n) => String(n.note_id) === String(state.selectedNoteId));
+        return found || state.notes[0];
+    }
+
+    function selectNote(noteId) {
+        state.selectedNoteId = String(noteId || '');
+        rerender();
+    }
+
+    async function createNewTickerNote() {
+        const raw = window.prompt('Ticker for new hypothesis (e.g. CRI.WA):', '');
+        const ticker = normalizeTicker(raw);
+        if (!ticker) return;
+        const payload = {
+            note_id: ticker,
+            ticker: ticker,
+            note_text: '',
+            linked_assets: [ticker],
+            is_active: true,
+            user_override_active: false,
+            hypothesis: {
+                why_buy: '',
+                exit_plan: '',
+                risk_factors: '',
+            },
+            hypothesis_checkpoints: [],
+            comments: [],
+        };
+        const created = await createNote(payload);
+        const note = created || normalizeNote(payload);
+        replaceNote(note);
+        state.selectedNoteId = note.note_id;
+        rerender();
+    }
+
+    function rerender() {
+        const all = state.notes;
+        renderTagCloud(all);
+        renderNoteCards(all);
+        const selected = findSelectedNote();
+        if (selected) state.selectedNoteId = selected.note_id;
+        renderDetail(selected);
+
+        const list = document.getElementById('diary-ledger-list');
+        if (list && !all.length) {
+            list.innerHTML = '<article style="padding:10px;color:#8ea1bb;">No diary notes yet. Use + Note.</article>';
+        }
+    }
+
+    async function init() {
+        const root = document.getElementById('diary-app-root');
+        if (!root) return;
+        if (state.loaded) return;
+        state.loaded = true;
+
+        ensureStyles();
+        mountShell();
+
+        const notes = await fetchNotes();
+        state.notes = notes;
+        state.holdings = collectActiveHoldings();
+        if (!state.selectedNoteId && notes.length) state.selectedNoteId = notes[0].note_id;
+
+        const filterInput = document.getElementById('diary-ledger-filter');
+        if (filterInput) {
+            filterInput.addEventListener('input', () => {
+                state.filterQuery = String(filterInput.value || '').trim();
+                rerender();
+            });
+        }
+
+        const addBtn = document.getElementById('diary-new-note');
+        if (addBtn) addBtn.addEventListener('click', createNewTickerNote);
+
+        window.addEventListener('roastfolio:wallets-updated', () => {
+            state.holdings = collectActiveHoldings();
+            rerender();
+        });
+
+        rerender();
+    }
+
+    // Public overrides used by existing inline wiring.
+    window.renderNoteCards = function (notes) {
+        renderNoteCards((notes || []).map(normalizeNote));
+    };
+    window._renderDiaryNotes = function () {
+        if (!state.loaded) return;
+        rerender();
+    };
+    window._renderDiaryTagPalette = function () {
+        // Legacy hook kept for compatibility with showTab lazy refresh.
+    };
+    window.initCopingDiary = init;
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

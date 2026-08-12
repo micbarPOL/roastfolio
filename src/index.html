@@ -1704,58 +1704,7 @@
     <!-- Tab: Coping Diary -->
     <main id="tab-diary" class="tab-content">
         <section class="dash-card" style="margin: 14px 10px; padding: 18px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
-                <div>
-                    <h2 style="margin:0;font-size:20px;">Coping Diary</h2>
-                    <p style="margin:4px 0 0;color:#7f8c8d;">Capture conviction before the market captures your confidence.</p>
-                </div>
-                <button id="diary-add-note-btn" type="button" class="mgmt-btn mgmt-btn-primary">+ Add Note</button>
-            </div>
-
-            <div id="diary-composer" style="display:none;border:1px solid rgba(127,143,164,0.35);border-radius:12px;padding:12px;background:rgba(8,19,33,0.2);margin-bottom:12px;">
-                <label for="diary-note-editor" style="display:block;font-size:13px;font-weight:700;margin-bottom:8px;color:#8aa0ba;">New note</label>
-                <textarea id="diary-note-editor" placeholder="Write what happened, why you acted, and what would invalidate your thesis..." style="width:100%;min-height:120px;border:1px solid rgba(127,143,164,0.45);border-radius:10px;padding:10px;background:transparent;color:inherit;resize:vertical;"></textarea>
-
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;">
-                    <input id="diary-custom-tag-input" type="text" placeholder="Create custom tag (e.g. #FedWatch)" style="flex:1;min-width:220px;border:1px solid rgba(127,143,164,0.45);border-radius:8px;padding:8px;background:transparent;color:inherit;">
-                    <button id="diary-add-custom-tag-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Add Tag</button>
-                </div>
-
-                <div id="diary-tag-palette" style="margin-top:10px;display:grid;gap:8px;"></div>
-
-                <div style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px;">
-                    <button id="diary-cancel-note-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Cancel</button>
-                    <button id="diary-save-note-btn" type="button" class="mgmt-btn mgmt-btn-primary">Save Note</button>
-                </div>
-            </div>
-
-            <div id="diary-empty-graphic-wrap" style="display:flex;justify-content:center;align-items:center;min-height:320px;">
-                <img id="diary-empty-graphic"
-                     alt="Coping Diary empty state"
-                     style="display:block;width:min(100%,1100px);height:auto;border-radius:14px;"
-                     loading="lazy">
-            </div>
-            <p id="diary-empty-fallback"
-               style="display:none;margin:0;text-align:center;color:#7f8c8d;font-size:14px;">
-                It feels empty here. Create your first note.
-            </p>
-
-            <div id="diary-filter-toolbar" style="display:none;grid-template-columns:1fr auto;gap:8px;align-items:start;margin-top:10px;padding:10px;border:1px solid rgba(127,143,164,0.4);border-radius:10px;">
-                <div style="display:grid;gap:6px;">
-                    <label for="diary-filter-input" style="font-size:12px;color:#8aa0ba;">Filter by tag or text</label>
-                    <input id="diary-filter-input" type="text" placeholder="Type tag fragment (e.g. CRI) or any note text" style="width:100%;border:1px solid rgba(127,143,164,0.45);border-radius:8px;padding:8px;background:transparent;color:inherit;">
-                    <div id="diary-filter-quick" style="display:flex;gap:6px;flex-wrap:wrap;max-height:170px;overflow:auto;padding-right:4px;"></div>
-                </div>
-                <span id="diary-filter-count" style="font-size:12px;color:#7f8c8d;justify-self:end;"></span>
-            </div>
-
-            <div id="diary-active-filter" style="display:none;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border:1px dashed rgba(127,143,164,0.45);border-radius:10px;">
-                <span style="font-size:12px;color:#8aa0ba;">Filter:</span>
-                <span id="diary-active-filter-tag" style="display:inline-block;border:1px solid rgba(127,143,164,0.45);border-radius:999px;padding:2px 8px;font-size:12px;"></span>
-                <button id="diary-clear-filter-btn" type="button" class="mgmt-btn mgmt-btn-secondary" style="padding:4px 8px;font-size:12px;">Clear Filter</button>
-            </div>
-
-            <div id="diary-notes-list" style="display:grid;gap:10px;margin-top:12px;"></div>
+            <div id="diary-app-root" data-diary-root style="min-height:420px;"></div>
         </section>
     </main>
 
@@ -2509,6 +2458,7 @@
         setTimeout(_updateHeaderHeightVar, 2000);
 
     </script>
+<script src="js/diary.js?v=20260812a"></script>
 <!-- Day transactions modal -->
 <div id="cal-modal-overlay" class="cal-modal-overlay" style="display:none;">
     <div class="cal-modal">
