@@ -9,7 +9,41 @@
         loaded: false,
         filterQuery: '',
         saving: false,
+        composeOpen: false,
     };
+
+    function chooseDiaryEmptyGraphic(theme) {
+        const darkCandidates = [
+            'data/diary/coping-diary-empty.png',
+            'data/diary/coping-diary-empty-dark.png',
+            'data/diary/diary-empty.png',
+            'data/diary/empty-diary.png',
+            'data/diary-empty.png'
+        ];
+        const lightCandidates = [
+            'data/diary/coping-diary-empty-light.png',
+            'data/diary/diary-empty-light.png',
+            'data/diary/empty-diary-light.png',
+            'data/diary-empty-light.png'
+        ];
+        return theme === 'light' ? lightCandidates : darkCandidates;
+    }
+
+    function loadFirstExistingImage(candidates, onSuccess, onFail) {
+        const queue = Array.from(candidates || []);
+        function tryNext() {
+            const next = queue.shift();
+            if (!next) {
+                onFail();
+                return;
+            }
+            const probe = new Image();
+            probe.onload = () => onSuccess(next);
+            probe.onerror = () => tryNext();
+            probe.src = next;
+        }
+        tryNext();
+    }
 
     function apiBase() {
         const cfg = window.__CONFIG__ || window.APP_CONFIG || {};
@@ -274,6 +308,17 @@
             '<div class="diary-split">' +
             '  <aside class="diary-pane">' +
             '    <div class="diary-pane-head"><strong>Conviction Ledger</strong><button id="diary-new-note" class="mgmt-btn mgmt-btn-primary" type="button">+ Note</button></div>' +
+            '    <div id="diary-compose" style="display:none;padding:10px;border-bottom:1px solid rgba(127,143,164,.2);background:rgba(8,18,31,.22);">' +
+            '      <div style="display:grid;gap:8px;">' +
+            '        <input id="diary-new-ticker" type="text" placeholder="Ticker (e.g. CRI.WA)" style="border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;">' +
+            '        <textarea id="diary-new-text" placeholder="Write quick note and add #tags..." style="min-height:80px;border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;resize:vertical;"></textarea>' +
+            '        <div id="diary-compose-tags" style="display:flex;gap:6px;flex-wrap:wrap;max-height:120px;overflow:auto;"></div>' +
+            '        <div style="display:flex;justify-content:flex-end;gap:8px;">' +
+            '          <button id="diary-compose-cancel" type="button" class="mgmt-btn mgmt-btn-secondary">Cancel</button>' +
+            '          <button id="diary-compose-save" type="button" class="mgmt-btn mgmt-btn-primary">Create</button>' +
+            '        </div>' +
+            '      </div>' +
+            '    </div>' +
             '    <div style="padding:10px;display:grid;gap:8px;">' +
             '      <input id="diary-ledger-filter" class="diary-ledger-filter" type="text" placeholder="Filter by tag or free text">' +
             '      <div id="diary-tags-cloud" class="diary-tags-cloud"></div>' +
@@ -419,7 +464,30 @@
         const root = document.getElementById('diary-detail');
         if (!root) return;
         if (!note) {
-            root.innerHTML = '<div style="padding:18px;color:#8ea1bb;">Select a ledger card to open Focus Sheet.</div>';
+            root.innerHTML = '' +
+                '<div style="padding:12px;display:flex;justify-content:center;align-items:center;min-height:420px;">' +
+                '  <img id="diary-empty-right-graphic" alt="Coping Diary empty state" style="display:none;width:min(100%,960px);height:auto;border-radius:12px;">' +
+                '  <p id="diary-empty-right-fallback" style="display:none;margin:0;color:#7f8c8d;">Select a ledger card to open Focus Sheet.</p>' +
+                '</div>';
+
+            const img = document.getElementById('diary-empty-right-graphic');
+            const fallback = document.getElementById('diary-empty-right-fallback');
+            if (img && fallback) {
+                const theme = (document.documentElement.dataset.theme || 'dark') === 'light' ? 'light' : 'dark';
+                const candidates = chooseDiaryEmptyGraphic(theme);
+                loadFirstExistingImage(
+                    candidates,
+                    (resolved) => {
+                        img.src = resolved;
+                        img.style.display = 'block';
+                        fallback.style.display = 'none';
+                    },
+                    () => {
+                        img.style.display = 'none';
+                        fallback.style.display = 'block';
+                    }
+                );
+            }
             return;
         }
 
@@ -679,20 +747,89 @@
         return found || state.notes[0];
     }
 
+    function collectPredefinedComposerTags() {
+        const tags = [];
+        const seen = new Set();
+
+        const holdingsByWallet = window.WALLET_HOLDINGS || {};
+        Object.values(holdingsByWallet).forEach((rows) => {
+            (rows || []).forEach((h) => {
+                const ticker = normalizeTicker(h && h.ticker);
+                if (!ticker || ticker === 'CASH') return;
+                const tag = sanitizeTag('#' + ticker);
+                if (!tag || seen.has(tag)) return;
+                seen.add(tag);
+                tags.push(tag);
+            });
+        });
+
+        const wallets = window.WALLET_SUMMARIES || {};
+        Object.keys(wallets).forEach((name) => {
+            if (String(name).toLowerCase() === 'summary') return;
+            const tag = sanitizeTag('#WALLET_' + name);
+            if (!tag || seen.has(tag)) return;
+            seen.add(tag);
+            tags.push(tag);
+        });
+
+        const globalMarket = '#GLOBAL_MARKET';
+        if (!seen.has(globalMarket)) tags.push(globalMarket);
+        return tags;
+    }
+
+    function appendTagToNewNote(tag) {
+        const area = document.getElementById('diary-new-text');
+        if (!area || !tag) return;
+        const current = String(area.value || '');
+        const spacer = current.length && !current.endsWith(' ') && !current.endsWith('\n') ? ' ' : '';
+        area.value = current + spacer + tag + ' ';
+        area.focus();
+    }
+
+    function renderComposerTags() {
+        const root = document.getElementById('diary-compose-tags');
+        if (!root) return;
+        const tags = collectPredefinedComposerTags();
+        root.innerHTML = tags.map((tag) =>
+            '<button type="button" class="mgmt-btn mgmt-btn-secondary" data-compose-tag="' + escapeHtml(tag) + '" style="padding:4px 8px;font-size:12px;">' + escapeHtml(tag) + '</button>'
+        ).join('');
+        root.querySelectorAll('[data-compose-tag]').forEach((btn) => {
+            btn.addEventListener('click', () => appendTagToNewNote(btn.getAttribute('data-compose-tag')));
+        });
+    }
+
+    function toggleComposer(show) {
+        state.composeOpen = Boolean(show);
+        const box = document.getElementById('diary-compose');
+        const btn = document.getElementById('diary-new-note');
+        if (box) box.style.display = state.composeOpen ? 'block' : 'none';
+        if (btn) btn.textContent = state.composeOpen ? 'Close' : '+ Note';
+        if (state.composeOpen) {
+            renderComposerTags();
+            const tickerInput = document.getElementById('diary-new-ticker');
+            if (tickerInput) tickerInput.focus();
+        }
+    }
+
     function selectNote(noteId) {
         state.selectedNoteId = String(noteId || '');
         rerender();
     }
 
-    async function createNewTickerNote() {
-        const raw = window.prompt('Ticker for new hypothesis (e.g. CRI.WA):', '');
-        const ticker = normalizeTicker(raw);
+    async function createNewTickerNoteFromComposer() {
+        const tickerEl = document.getElementById('diary-new-ticker');
+        const textEl = document.getElementById('diary-new-text');
+        const ticker = normalizeTicker(tickerEl && tickerEl.value);
+        const noteText = String(textEl && textEl.value || '').trim();
         if (!ticker) return;
+
+        const mergedTags = parseTagsFromText(noteText);
         const payload = {
             note_id: ticker,
             ticker: ticker,
-            note_text: '',
+            note_text: noteText,
             linked_assets: [ticker],
+            user_tags: mergedTags,
             is_active: true,
             user_override_active: false,
             hypothesis: {
@@ -707,6 +844,9 @@
         const note = created || normalizeNote(payload);
         replaceNote(note);
         state.selectedNoteId = note.note_id;
+        if (tickerEl) tickerEl.value = '';
+        if (textEl) textEl.value = '';
+        toggleComposer(false);
         rerender();
     }
 
@@ -747,7 +887,37 @@
         }
 
         const addBtn = document.getElementById('diary-new-note');
-        if (addBtn) addBtn.addEventListener('click', createNewTickerNote);
+        if (addBtn) {
+            addBtn.addEventListener('click', () => toggleComposer(!state.composeOpen));
+        }
+
+        const saveComposeBtn = document.getElementById('diary-compose-save');
+        if (saveComposeBtn) {
+            saveComposeBtn.addEventListener('click', createNewTickerNoteFromComposer);
+        }
+
+        const cancelComposeBtn = document.getElementById('diary-compose-cancel');
+        if (cancelComposeBtn) {
+            cancelComposeBtn.addEventListener('click', () => toggleComposer(false));
+        }
+
+        const tickerInput = document.getElementById('diary-new-ticker');
+        const noteInput = document.getElementById('diary-new-text');
+        if (noteInput) {
+            noteInput.addEventListener('keydown', (event) => {
+                if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+                    event.preventDefault();
+                    createNewTickerNoteFromComposer();
+                }
+            });
+        }
+        if (tickerInput) {
+            tickerInput.addEventListener('keydown', (event) => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                if (noteInput) noteInput.focus();
+            });
+        }
 
         window.addEventListener('roastfolio:wallets-updated', () => {
             state.holdings = collectActiveHoldings();
