@@ -1,5 +1,7 @@
 import os
 import sys
+import base64
+import json
 from pathlib import Path
 
 
@@ -260,3 +262,13 @@ def test_append_comment_keeps_chronological_order(monkeypatch):
         "2026-08-02T00:00:00Z",
         "2026-08-03T00:00:00Z",
     ]
+
+
+def test_extract_user_id_from_authorization_header():
+    payload = {"sub": "user-from-jwt", "email": "demo@example.com"}
+    encoded = base64.urlsafe_b64encode(json.dumps(payload).encode("utf-8")).decode("ascii").rstrip("=")
+    token = f"header.{encoded}.signature"
+
+    user_id = diary_handler._extract_user_id({"headers": {"Authorization": f"Bearer {token}"}})
+
+    assert user_id == "user-from-jwt"

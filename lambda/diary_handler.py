@@ -12,6 +12,7 @@ The module exposes CRUD helpers plus a small Lambda routing layer.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -507,6 +508,20 @@ def _extract_user_id(event: dict) -> str | None:
     params = event.get("queryStringParameters") or {}
     if params.get("userId"):
         return str(params.get("userId"))
+
+    auth_header = (event.get("headers") or {}).get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+        try:
+            parts = token.split(".")
+            if len(parts) == 3:
+                padded = parts[1] + "=" * (-len(parts[1]) % 4)
+                payload = json.loads(base64.urlsafe_b64decode(padded))
+                user_id = payload.get("sub")
+                if user_id:
+                    return str(user_id)
+        except Exception:
+            pass
 
     return None
 
