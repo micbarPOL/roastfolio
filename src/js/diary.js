@@ -8,6 +8,8 @@
         holdings: new Set(),
         loaded: false,
         filterQuery: '',
+        activeTagFilter: '',
+        filterUncheckedOnly: false,
         saving: false,
         composeOpen: false,
     };
@@ -326,6 +328,9 @@
             '.coping-chat-entry{display:grid;gap:2px;}' +
             '.coping-chat-date{display:block;font-size:11px;color:#8ea1bb;}' +
             '.coping-chat-text{margin:0;font-size:14px;line-height:1.4;}' +
+            '.coping-chat-actions{display:flex;gap:8px;align-items:center;}' +
+            '.coping-chat-edit-row{display:flex;gap:8px;align-items:center;}' +
+            '.diary-toggle-status{font-size:12px;color:#cbd5e1;min-width:66px;text-align:right;}' +
             '.diary-chat-compose{display:flex;gap:8px;}' +
             '.diary-chat-compose input{flex:1;min-width:0;}' +
             '.diary-amber-pulse{box-shadow:0 0 0 rgba(245,158,11,.15);animation:diaryPulse 1.6s ease-in-out infinite;}' +
@@ -362,6 +367,10 @@
             '    </div>' +
             '    <div style="padding:10px;display:grid;gap:8px;">' +
             '      <input id="diary-ledger-filter" class="diary-ledger-filter" type="text" placeholder="Filter by tag or free text">' +
+            '      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#cbd5e1;">' +
+            '        <input id="diary-filter-unchecked" type="checkbox">' +
+            '        <span>Only open checklist items</span>' +
+            '      </label>' +
             '      <div id="diary-tags-cloud" class="diary-tags-cloud"></div>' +
             '    </div>' +
             '    <div id="diary-ledger-list" class="diary-ledger-list"></div>' +
@@ -375,14 +384,20 @@
 
     function filteredNotes(notes) {
         const q = String(state.filterQuery || '').trim().toLowerCase();
-        if (!q) return notes;
-        const tags = collectTagStats(notes);
-        const hasTagMatch = tags.some((t) => t.tag.toLowerCase().includes(q) || t.tag.replace(/^#/, '').toLowerCase().includes(q));
-        if (hasTagMatch) return notes;
+        const activeTag = String(state.activeTagFilter || '').trim().toLowerCase();
         return notes.filter((n) => {
-            return String(n.note_text || '').toLowerCase().includes(q)
+            const tags = (n.user_tags || []).map((t) => sanitizeTag(t).toLowerCase()).filter(Boolean);
+            const hasSelectedTag = !activeTag || tags.includes(activeTag);
+            const hasOpenChecklist = countUncheckedChecklistItems(n) > 0;
+            const matchesChecklistFilter = !state.filterUncheckedOnly || hasOpenChecklist;
+            if (!q) return hasSelectedTag && matchesChecklistFilter;
+
+            const byText = String(n.note_text || '').toLowerCase().includes(q)
                 || String(n.title || '').toLowerCase().includes(q)
                 || String(n.ticker || '').toLowerCase().includes(q);
+            const byTagText = tags.some((tag) => tag.includes(q) || tag.replace(/^#/, '').includes(q));
+
+            return hasSelectedTag && matchesChecklistFilter && (byText || byTagText);
         });
     }
 
@@ -413,18 +428,20 @@
         });
         root.innerHTML = sorted.map((it) => {
             const match = q && it.tag.toLowerCase().includes(q) ? 'match' : '';
-            return '<button type="button" class="mgmt-btn mgmt-btn-secondary ' + match + '" data-filter-tag="' + escapeHtml(it.tag) + '" style="padding:3px 8px;font-size:12px;">' + escapeHtml(it.tag) + ' (' + it.count + ')</button>';
+            const isActive = String(state.activeTagFilter || '').toLowerCase() === it.tag.toLowerCase();
+            const activeClass = isActive ? 'match' : '';
+            return '<button type="button" class="mgmt-btn mgmt-btn-secondary ' + match + ' ' + activeClass + '" data-filter-tag="' + escapeHtml(it.tag) + '" style="padding:3px 8px;font-size:12px;">' + escapeHtml(it.tag) + ' (' + it.count + ')</button>';
         }).join('');
         root.querySelectorAll('[data-filter-tag]').forEach((btn) => {
             btn.addEventListener('click', () => {
-                state.filterQuery = '';
-                const input = document.getElementById('diary-ledger-filter');
-                if (input) input.value = '';
                 const tag = btn.getAttribute('data-filter-tag');
-                const notesByTag = state.notes.filter((n) => (n.user_tags || []).includes(tag));
-                const sortedNotes = sortForLedger(notesByTag);
-                renderNoteCards(sortedNotes);
-                if (sortedNotes.length) selectNote(sortedNotes[0].note_id);
+                const normalizedTag = sanitizeTag(tag);
+                if (String(state.activeTagFilter || '').toLowerCase() === String(normalizedTag || '').toLowerCase()) {
+                    state.activeTagFilter = '';
+                } else {
+                    state.activeTagFilter = normalizedTag;
+                }
+                rerender();
             });
         });
     }
@@ -443,19 +460,23 @@
         list.innerHTML = sorted.map((note) => {
             const held = state.holdings.has(note.ticker);
             const isInactive = !note.is_active;
+            const uncheckedCount = countUncheckedChecklistItems(note);
             const classes = [
                 'diary-ledger-card',
                 state.selectedNoteId === note.note_id ? 'is-selected' : '',
                 isInactive ? 'is-inactive' : '',
             ].filter(Boolean).join(' ');
             const preview = escapeHtml(String(note.note_text || '').slice(0, 110) || 'No summary yet');
-            const inactivePill = isInactive ? '<span class="diary-inactive-pill">Nieaktywna hipoteza</span>' : '';
+            const inactivePill = isInactive ? '<span class="diary-inactive-pill">Inactive hypothesis</span>' : '';
             const activePill = note.is_active && held ? '<span class="diary-badge" style="border-color:rgba(34,197,94,.5);color:#86efac;">Active conviction</span>' : '';
+            const checklistPill = uncheckedCount > 0
+                ? '<span class="diary-badge" style="border-color:rgba(245,158,11,.6);color:#fcd34d;">Open checklist: ' + uncheckedCount + '</span>'
+                : '';
             return '' +
                 '<article class="' + classes + '" data-note-id="' + escapeHtml(note.note_id) + '">' +
                 '  <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
                 '    <strong>' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</strong>' +
-                '    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' + inactivePill + activePill + '</div>' +
+                '    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' + inactivePill + activePill + checklistPill + '</div>' +
                 '  </div>' +
                 '  <p style="margin:7px 0 6px;color:#8ea1bb;font-size:13px;">' + preview + '</p>' +
                 '  <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
@@ -502,6 +523,15 @@
         return status;
     }
 
+    function countUncheckedChecklistItems(note) {
+        const list = Array.isArray(note && note.hypothesis_checkpoints) ? note.hypothesis_checkpoints : [];
+        let count = 0;
+        for (const item of list) {
+            if (checkpointState(item) !== 'TRUE') count += 1;
+        }
+        return count;
+    }
+
     function renderDetail(note) {
         const root = document.getElementById('diary-detail');
         if (!root) return;
@@ -535,7 +565,20 @@
 
         const chat = (note.comments || []).map((c) => {
             const date = String(c.created_at || '').slice(0, 16).replace('T', ' ');
-            return '<article class="coping-chat-entry"><span class="coping-chat-date">' + escapeHtml(date) + '</span><p class="coping-chat-text">' + escapeHtml(c.text || '') + '</p></article>';
+            const cid = escapeHtml(c.comment_id || '');
+            return '' +
+                '<article class="coping-chat-entry" data-comment-id="' + cid + '">' +
+                '  <span class="coping-chat-date">' + escapeHtml(date) + '</span>' +
+                '  <p class="coping-chat-text" data-comment-text="' + cid + '">' + escapeHtml(c.text || '') + '</p>' +
+                '  <div class="coping-chat-actions">' +
+                '    <button type="button" class="mgmt-btn mgmt-btn-secondary" data-comment-edit="' + cid + '" style="padding:2px 8px;font-size:12px;">Edit</button>' +
+                '  </div>' +
+                '  <div class="coping-chat-edit-row" data-comment-edit-row="' + cid + '" style="display:none;">' +
+                '    <input type="text" data-comment-edit-input="' + cid + '" value="' + escapeHtml(c.text || '') + '" style="flex:1;min-width:0;border:1px solid rgba(127,143,164,.35);border-radius:8px;background:transparent;color:inherit;padding:6px;">' +
+                '    <button type="button" class="mgmt-btn mgmt-btn-primary" data-comment-edit-save="' + cid + '" style="padding:2px 8px;font-size:12px;">Save</button>' +
+                '    <button type="button" class="mgmt-btn mgmt-btn-secondary" data-comment-edit-cancel="' + cid + '" style="padding:2px 8px;font-size:12px;">Cancel</button>' +
+                '  </div>' +
+                '</article>';
         }).join('');
 
         const checklist = (note.hypothesis_checkpoints || []).map((cp) => {
@@ -564,6 +607,7 @@
             '    <span class="diary-badge" id="diary-detail-ticker">' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</span>' +
             '  </div>' +
             '  <div style="display:flex;align-items:center;gap:8px;">' +
+            '    <span class="diary-toggle-status">' + (note.is_active ? 'Active' : 'Inactive') + '</span>' +
             '    <label class="diary-glass-toggle" title="Toggle active hypothesis">' +
             '      <input id="diary-active-toggle" type="checkbox" ' + (note.is_active ? 'checked' : '') + '>' +
             '      <span class="diary-glass-slider"></span>' +
@@ -701,6 +745,26 @@
         }
     }
 
+    async function onEditComment(note, commentId, nextText) {
+        const cleanText = String(nextText || '').trim();
+        if (!cleanText || !commentId) return;
+
+        const comments = (note.comments || []).map((c) => {
+            if (String(c.comment_id) !== String(commentId)) return c;
+            return Object.assign({}, c, { text: cleanText });
+        });
+
+        const updated = await saveNotePatch(note.note_id, { comments: comments });
+        if (updated) {
+            replaceNote(updated);
+        } else {
+            note.comments = comments;
+            note.updatedAt = toIsoNow();
+            replaceNote(note);
+        }
+        rerender();
+    }
+
     async function saveChecklist(note, list) {
         const updated = await saveNotePatch(note.note_id, { hypothesis_checkpoints: list });
         if (updated) {
@@ -766,6 +830,52 @@
                 onSendComment(note);
             });
         }
+
+        const setCommentEditMode = (commentId, editing) => {
+            const row = document.querySelector('[data-comment-edit-row="' + String(commentId) + '"]');
+            const actions = document.querySelector('[data-comment-edit="' + String(commentId) + '"]');
+            if (row) row.style.display = editing ? 'flex' : 'none';
+            if (actions) actions.style.display = editing ? 'none' : 'inline-block';
+            if (editing) {
+                const input = document.querySelector('[data-comment-edit-input="' + String(commentId) + '"]');
+                if (input) input.focus();
+            }
+        };
+
+        document.querySelectorAll('[data-comment-edit]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const commentId = btn.getAttribute('data-comment-edit');
+                setCommentEditMode(commentId, true);
+            });
+        });
+
+        document.querySelectorAll('[data-comment-edit-cancel]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const commentId = btn.getAttribute('data-comment-edit-cancel');
+                const source = (note.comments || []).find((c) => String(c.comment_id) === String(commentId));
+                const input = document.querySelector('[data-comment-edit-input="' + String(commentId) + '"]');
+                if (input && source) input.value = String(source.text || '');
+                setCommentEditMode(commentId, false);
+            });
+        });
+
+        document.querySelectorAll('[data-comment-edit-save]').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                const commentId = btn.getAttribute('data-comment-edit-save');
+                const input = document.querySelector('[data-comment-edit-input="' + String(commentId) + '"]');
+                const nextText = input ? input.value : '';
+                await onEditComment(note, commentId, nextText);
+            });
+        });
+
+        document.querySelectorAll('[data-comment-edit-input]').forEach((input) => {
+            input.addEventListener('keydown', async (event) => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                const commentId = input.getAttribute('data-comment-edit-input');
+                await onEditComment(note, commentId, input.value);
+            });
+        });
 
         const addCheckBtn = document.getElementById('diary-add-check');
         if (addCheckBtn) {
@@ -1002,6 +1112,15 @@
         if (filterInput) {
             filterInput.addEventListener('input', () => {
                 state.filterQuery = String(filterInput.value || '').trim();
+                rerender();
+            });
+        }
+
+        const uncheckedToggle = document.getElementById('diary-filter-unchecked');
+        if (uncheckedToggle) {
+            uncheckedToggle.checked = Boolean(state.filterUncheckedOnly);
+            uncheckedToggle.addEventListener('change', () => {
+                state.filterUncheckedOnly = Boolean(uncheckedToggle.checked);
                 rerender();
             });
         }
