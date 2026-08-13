@@ -544,7 +544,19 @@ def _get_close_pair(symbol: str, cache: dict[str, tuple[Decimal, Decimal]], as_o
     prev_close = None
     try:
         history = yf.Ticker(symbol).history(period="14d", interval="1d", auto_adjust=False)
-        rows = [(idx.strftime("%Y-%m-%d"), row["Close"]) for idx, row in history.iterrows() if row["Close"] == row["Close"]]
+        rows_dict = {idx.strftime("%Y-%m-%d"): row["Close"] for idx, row in history.iterrows() if row["Close"] == row["Close"]}
+
+        if as_of_date and as_of_date not in rows_dict:
+            try:
+                hist_1h = yf.Ticker(symbol).history(period="7d", interval="1h", auto_adjust=False)
+                for idx, row in hist_1h.iterrows():
+                    if row["Close"] == row["Close"]:
+                        dt_str = idx.strftime("%Y-%m-%d")
+                        rows_dict[dt_str] = row["Close"]
+            except Exception:
+                pass
+
+        rows = [(dt, rows_dict[dt]) for dt in sorted(rows_dict.keys())]
         if as_of_date:
             rows = [(dt, c) for dt, c in rows if dt <= as_of_date]
         closes = [c for _, c in rows]
