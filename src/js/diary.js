@@ -69,6 +69,23 @@
         return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
     }
 
+    function formatShortDate(value) {
+        const raw = String(value || '').trim();
+        if (!raw) return '';
+        const parsed = new Date(raw);
+        if (!Number.isNaN(parsed.getTime())) {
+            return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(parsed);
+        }
+        const ymd = raw.slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(ymd)) {
+            const fallback = new Date(ymd + 'T00:00:00Z');
+            if (!Number.isNaN(fallback.getTime())) {
+                return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(fallback);
+            }
+        }
+        return '';
+    }
+
     function escapeHtml(value) {
         return String(value || '')
             .replace(/&/g, '&amp;')
@@ -325,7 +342,8 @@
             '.diary-glass-toggle input:checked + .diary-glass-slider{background:#A855F7;box-shadow:0 0 14px rgba(168,85,247,.7);}' +
             '.diary-glass-toggle input:checked + .diary-glass-slider:before{transform:translateX(26px);}' +
             '.coping-chat-container{max-height:240px;overflow:auto;display:grid;gap:8px;padding:2px 0;}' +
-            '.coping-chat-entry{display:grid;gap:2px;}' +
+            '.coping-chat-entry{display:grid;gap:4px;}' +
+            '.coping-chat-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}' +
             '.coping-chat-date{display:block;font-size:11px;color:#8ea1bb;}' +
             '.coping-chat-text{margin:0;font-size:14px;line-height:1.4;}' +
             '.coping-chat-actions{display:flex;gap:8px;align-items:center;}' +
@@ -461,6 +479,7 @@
             const held = state.holdings.has(note.ticker);
             const isInactive = !note.is_active;
             const uncheckedCount = countUncheckedChecklistItems(note);
+            const shortUpdated = formatShortDate(note.updatedAt || note.createdAt);
             const classes = [
                 'diary-ledger-card',
                 state.selectedNoteId === note.note_id ? 'is-selected' : '',
@@ -482,6 +501,7 @@
                 '  <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
                 (note.user_tags || []).slice(0, 4).map((t) => '<span class="diary-badge">' + escapeHtml(t) + '</span>').join(' ') +
                 '  </div>' +
+                '  <div style="margin-top:6px;font-size:11px;color:#8ea1bb;">' + (shortUpdated ? ('Last updated: ' + escapeHtml(shortUpdated)) : '') + '</div>' +
                 '</article>';
         }).join('');
 
@@ -568,15 +588,18 @@
             const cid = escapeHtml(c.comment_id || '');
             return '' +
                 '<article class="coping-chat-entry" data-comment-id="' + cid + '">' +
-                '  <span class="coping-chat-date">' + escapeHtml(date) + '</span>' +
-                '  <p class="coping-chat-text" data-comment-text="' + cid + '">' + escapeHtml(c.text || '') + '</p>' +
-                '  <div class="coping-chat-actions">' +
-                '    <button type="button" class="mgmt-btn mgmt-btn-secondary" data-comment-edit="' + cid + '" style="padding:2px 8px;font-size:12px;">Edit</button>' +
+                '  <div class="coping-chat-head">' +
+                '    <span class="coping-chat-date">' + escapeHtml(date) + '</span>' +
+                '    <div class="coping-chat-actions">' +
+                '      <button type="button" class="mgmt-btn mgmt-btn-secondary" data-comment-edit="' + cid + '" style="padding:2px 8px;font-size:12px;">Edit</button>' +
+                '    </div>' +
                 '  </div>' +
+                '  <p class="coping-chat-text" data-comment-text="' + cid + '">' + escapeHtml(c.text || '') + '</p>' +
                 '  <div class="coping-chat-edit-row" data-comment-edit-row="' + cid + '" style="display:none;">' +
                 '    <input type="text" data-comment-edit-input="' + cid + '" value="' + escapeHtml(c.text || '') + '" style="flex:1;min-width:0;border:1px solid rgba(127,143,164,.35);border-radius:8px;background:transparent;color:inherit;padding:6px;">' +
                 '    <button type="button" class="mgmt-btn mgmt-btn-primary" data-comment-edit-save="' + cid + '" style="padding:2px 8px;font-size:12px;">Save</button>' +
                 '    <button type="button" class="mgmt-btn mgmt-btn-secondary" data-comment-edit-cancel="' + cid + '" style="padding:2px 8px;font-size:12px;">Cancel</button>' +
+                '    <button type="button" class="mgmt-btn mgmt-btn-secondary" data-comment-edit-delete="' + cid + '" style="padding:2px 8px;font-size:12px;border-color:rgba(239,68,68,.6);color:#fecaca;">Delete</button>' +
                 '  </div>' +
                 '</article>';
         }).join('');
@@ -668,6 +691,7 @@
             rerender();
         } else {
             note.is_active = targetChecked;
+            note.updatedAt = toIsoNow();
             replaceNote(note);
             rerender();
         }
@@ -754,6 +778,22 @@
             return Object.assign({}, c, { text: cleanText });
         });
 
+        const updated = await saveNotePatch(note.note_id, { comments: comments });
+        if (updated) {
+            replaceNote(updated);
+        } else {
+            note.comments = comments;
+            note.updatedAt = toIsoNow();
+            replaceNote(note);
+        }
+        rerender();
+    }
+
+    async function onDeleteComment(note, commentId) {
+        if (!commentId) return;
+        if (!window.confirm('Delete this comment?')) return;
+
+        const comments = (note.comments || []).filter((c) => String(c.comment_id) !== String(commentId));
         const updated = await saveNotePatch(note.note_id, { comments: comments });
         if (updated) {
             replaceNote(updated);
@@ -865,6 +905,13 @@
                 const input = document.querySelector('[data-comment-edit-input="' + String(commentId) + '"]');
                 const nextText = input ? input.value : '';
                 await onEditComment(note, commentId, nextText);
+            });
+        });
+
+        document.querySelectorAll('[data-comment-edit-delete]').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                const commentId = btn.getAttribute('data-comment-edit-delete');
+                await onDeleteComment(note, commentId);
             });
         });
 
