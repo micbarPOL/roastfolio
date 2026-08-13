@@ -2476,8 +2476,7 @@ def handler(event, context):
                 ath_val = float(portfolio_ath.get("athValue", 0)) if portfolio_ath else 0.0
                 dd_pct = ((summary["total"] - ath_val) / ath_val * 100) if ath_val > 0 and summary["total"] < ath_val else 0.0
 
-                ath_threshold = max(ath_val * 0.0005, 50.0) if ath_val > 0 else 0.0
-                is_new_ath = (summary["total"] > ath_val + ath_threshold) and (summary.get("dailyPct", 0.0) > 0) if ath_val > 0 else False
+                is_new_ath = (summary["total"] >= ath_val - 0.50) and (summary.get("dailyPct", 0.0) >= 0) if ath_val > 0 else False
 
                 curr_snap = {
                     "totalPortfolioValue": summary["total"],

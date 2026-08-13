@@ -94,6 +94,22 @@ const ATH_CELEBRATION_NOTES = [
     "Fresh all-time high. Somewhere a benchmark just muttered, 'well, that's rude.'",
     "ATH achieved. Please accept this totally serious institutional confetti.",
     "Another record high. The portfolio has entered its main-character era.",
+    "New All-Time High. Don't get overly excited — even a blind squirrel occasionally stumbles across a golden acorn.",
+    "Fresh record high. Now brace yourself for the inevitable 40% plummet that always follows your unearned confidence.",
+    "You've hit an all-time high. Do try not to celebrate by immediately buying something speculative and utterly stupid.",
+    "Record portfolio value achieved. Enjoy the view from the top before gravity remembers you're the one steering this ship.",
+    "An all-time high! Astonishing what market inflation and sheer dumb luck can accomplish when left unattended.",
+    "Portfolio at record peak. Please resist the urge to quit your day job; this was pure market momentum, not financial genius.",
+    "New ATH reached. A triumph of passive waiting over active incompetence.",
+    "You're officially richer than ever. Statistically speaking, your downfall begins precisely now.",
+    "Peak portfolio value. Somewhere, a hedge fund manager is weeping into their silk handkerchief at your fluke success.",
+    "All-Time High unlocked. Try not to brag at dinner — nobody likes a smug amateur whose luck is about to run out.",
+    "Record portfolio level. It’s magnificent, really — like a house of cards built on a bouncy castle.",
+    "New ATH. Nature is beautiful: even a portfolio managed with zero strategy eventually accidentally hits the ceiling.",
+    "You've reached the summit. Do hold onto something solid — the drop back to reality is usually quite steep.",
+    "All-time high confirmed. Enjoy the champagne today, because tomorrow the taxman and mean-reversion are coming for you.",
+    "Peak net worth recorded. Take a screenshot now so you have something to cry over during the next bear market.",
+    "New ATH achieved. The market gave you a gift today — try not to return it tomorrow with interest."
 ];
 
 // Cached ATH derived from actual daily snapshots (set by loadSnapshotAth)
