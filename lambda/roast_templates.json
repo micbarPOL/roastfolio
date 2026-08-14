@@ -3548,36 +3548,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_BOTH_NEGATIVE_USER_BETTER_sarcastic_45_24ce96ac",
-    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
-    "tone": "praise",
-    "intensity": "sarcastic",
-    "messageAngle": "ABSOLUTE_RETURN",
-    "structureFamily": "FAKE_AWARD",
-    "metaphorCategory": "REALITY_TV",
-    "cooldownDays": 14,
-    "titleTemplate": "And The Award Goes To...  ",
-    "messageTemplate": "Drumroll please, you got voted off the island when you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). Frame this immediately.",
-    "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
-    "suggestedFocusTemplate": "Review your absolute return",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_NEGATIVE_USER_BETTER_sarcastic_1_6de74045",
-    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
-    "tone": "praise",
-    "intensity": "sarcastic",
-    "messageAngle": "ABSOLUTE_RETURN",
-    "structureFamily": "FAKE_AWARD",
-    "metaphorCategory": "WEATHER",
-    "cooldownDays": 14,
-    "titleTemplate": "Winner Winner   ",
-    "messageTemplate": "A round of applause, the climate is shifting because you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). What a legacy.",
-    "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
-    "suggestedFocusTemplate": "Review your absolute return",
-    "enabled": true
-  },
-  {
     "templateId": "sc2_both_neg_better_geralt_03",
     "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
     "tone": "mixed",
@@ -3721,21 +3691,6 @@
     "messageTemplate": "Order in the court, you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). No appeal possible.",
     "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
     "suggestedFocusTemplate": "Review your ath status",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_NEGATIVE_USER_BETTER_sarcastic_33_a6cd7247",
-    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
-    "tone": "praise",
-    "intensity": "sarcastic",
-    "messageAngle": "BENCHMARK_COMPARISON",
-    "structureFamily": "DIRECT_COMPARISON",
-    "metaphorCategory": "REALITY_TV",
-    "cooldownDays": 14,
-    "titleTemplate": "A Direct Look  ",
-    "messageTemplate": "Analyzing the numbers, you got voted off the island when you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). The truth hurts.",
-    "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
-    "suggestedFocusTemplate": "Review your benchmark comparison",
     "enabled": true
   },
   {
@@ -3990,21 +3945,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_BOTH_NEGATIVE_USER_BETTER_sarcastic_21_7bf6db41",
-    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
-    "tone": "praise",
-    "intensity": "sarcastic",
-    "messageAngle": "NO_CHANGE",
-    "structureFamily": "ACHIEVEMENT_UNLOCKED",
-    "metaphorCategory": "REALITY_TV",
-    "cooldownDays": 14,
-    "titleTemplate": "New High Score  ",
-    "messageTemplate": "Milestone reached: you got voted off the island when you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). Playtime wasted.",
-    "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
-    "suggestedFocusTemplate": "Review your no change",
-    "enabled": true
-  },
-  {
     "templateId": "gen_BOTH_NEGATIVE_USER_BETTER_sarcastic_57_cc192ac7",
     "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
     "tone": "mixed",
@@ -4220,21 +4160,6 @@
     "cooldownDays": 14,
     "titleTemplate": "Routine Sync ",
     "messageTemplate": "Just checking in, the boss phase started and you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). Moving on.",
-    "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
-    "suggestedFocusTemplate": "Review your volatility",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_NEGATIVE_USER_BETTER_sarcastic_9_c8be6ddc",
-    "scenarioKey": "BOTH_NEGATIVE_USER_BETTER",
-    "tone": "mixed",
-    "intensity": "sarcastic",
-    "messageAngle": "VOLATILITY",
-    "structureFamily": "STATUS_UPDATE",
-    "metaphorCategory": "REALITY_TV",
-    "cooldownDays": 14,
-    "titleTemplate": "Where We Stand ",
-    "messageTemplate": "Quick update: you lost money ({{portfolioReturnPercent}}%), but less than the market ({{benchmarkReturnPercent}}%). Please advise.",
     "mainReasonTemplate": "You lost money ({{portfolioreturnpercent}}%), but less than the market ({{benchmarkreturnpercent}}%)",
     "suggestedFocusTemplate": "Review your volatility",
     "enabled": true
@@ -5571,21 +5496,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_BOTH_NEGATIVE_USER_WORSE_sarcastic_5_34bee985",
-    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "ATH_STATUS",
-    "structureFamily": "COURTROOM_VERDICT",
-    "metaphorCategory": "GAMING",
-    "cooldownDays": 14,
-    "titleTemplate": "Evidence Presented ",
-    "messageTemplate": "The jury has decided: the boss phase started and you lost {{portfolioReturnPercent}}%, completely trailing the {{benchmarkReturnPercent}}% market drop. Bail denied.",
-    "mainReasonTemplate": "You lost {{portfolioreturnpercent}}%, completely trailing the {{benchmarkreturnpercent}}% market drop",
-    "suggestedFocusTemplate": "Review your ath status",
-    "enabled": true
-  },
-  {
     "templateId": "gen_BOTH_NEGATIVE_USER_WORSE_sarcastic_49_333f2b00",
     "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
     "tone": "mixed",
@@ -5673,21 +5583,6 @@
     ],
     "cooldownDays": 14,
     "weight": 1,
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_NEGATIVE_USER_WORSE_sarcastic_25_6d0ff512",
-    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "BEST_ASSET",
-    "structureFamily": "EMERGENCY_BROADCAST",
-    "metaphorCategory": "WEATHER",
-    "cooldownDays": 14,
-    "titleTemplate": "System Failure  ",
-    "messageTemplate": "ALERT: the climate is shifting because you lost {{portfolioReturnPercent}}%, completely trailing the {{benchmarkReturnPercent}}% market drop. Mayday.",
-    "mainReasonTemplate": "You lost {{portfolioreturnpercent}}%, completely trailing the {{benchmarkreturnpercent}}% market drop",
-    "suggestedFocusTemplate": "Review your best asset",
     "enabled": true
   },
   {
@@ -6093,21 +5988,6 @@
     "messageTemplate": "Daily standup: you lost {{portfolioReturnPercent}}%, completely trailing the {{benchmarkReturnPercent}}% market drop. End of report.",
     "mainReasonTemplate": "You lost {{portfolioreturnpercent}}%, completely trailing the {{benchmarkreturnpercent}}% market drop",
     "suggestedFocusTemplate": "Review your volatility",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_NEGATIVE_USER_WORSE_sarcastic_41_49d99a5c",
-    "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "WITHDRAWAL_BEHAVIOR",
-    "structureFamily": "BUG_REPORT",
-    "metaphorCategory": "GAMING",
-    "cooldownDays": 14,
-    "titleTemplate": "Fatal Exception  ",
-    "messageTemplate": "Debugging session: you lost {{portfolioReturnPercent}}%, completely trailing the {{benchmarkReturnPercent}}% market drop. Working as intended?",
-    "mainReasonTemplate": "You lost {{portfolioreturnpercent}}%, completely trailing the {{benchmarkreturnpercent}}% market drop",
-    "suggestedFocusTemplate": "Review your withdrawal behavior",
     "enabled": true
   },
   {
@@ -8036,21 +7916,6 @@
     ],
     "cooldownDays": 14,
     "weight": 1,
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_POSITIVE_USER_BETTER_sarcastic_5_881f81ad",
-    "scenarioKey": "BOTH_POSITIVE_USER_BETTER",
-    "tone": "praise",
-    "intensity": "sarcastic",
-    "messageAngle": "ATH_STATUS",
-    "structureFamily": "COURTROOM_VERDICT",
-    "metaphorCategory": "GAMING",
-    "cooldownDays": 14,
-    "titleTemplate": "Objection Overruled   ",
-    "messageTemplate": "Order in the court, you gained {{portfolioReturnPercent}}%, beating the {{benchmarkReturnPercent}}% market. Case closed.",
-    "mainReasonTemplate": "You gained {{portfolioreturnpercent}}%, beating the {{benchmarkreturnpercent}}% market",
-    "suggestedFocusTemplate": "Review your ath status",
     "enabled": true
   },
   {
@@ -10112,21 +9977,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_BOTH_POSITIVE_USER_WORSE_degen_51_74e4c31a",
-    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
-    "tone": "roast",
-    "intensity": "degen",
-    "messageAngle": "DEPOSIT_DISCIPLINE",
-    "structureFamily": "PERFORMANCE_REVIEW",
-    "metaphorCategory": "OFFICE",
-    "cooldownDays": 14,
-    "titleTemplate": "Below Standards  ",
-    "messageTemplate": "Manager notes state, management is furious because the market gained {{benchmarkReturnPercent}}% but you only managed {{portfolioReturnPercent}}%. We need to talk.",
-    "mainReasonTemplate": "The market gained {{benchmarkreturnpercent}}% but you only managed {{portfolioreturnpercent}}%",
-    "suggestedFocusTemplate": "Review your deposit discipline",
-    "enabled": true
-  },
-  {
     "templateId": "gen_BOTH_POSITIVE_USER_WORSE_degen_7_3880ea1b",
     "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
     "tone": "roast",
@@ -10305,36 +10155,6 @@
     "messageTemplate": "Looking at the replay, the market gained {{benchmarkReturnPercent}}% but you only managed {{portfolioReturnPercent}}%. They fumbled it.",
     "mainReasonTemplate": "The market gained {{benchmarkreturnpercent}}% but you only managed {{portfolioreturnpercent}}%",
     "suggestedFocusTemplate": "Review your worst asset",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_POSITIVE_USER_WORSE_degen_59_e84a63af",
-    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
-    "tone": "roast",
-    "intensity": "degen",
-    "messageAngle": "WORST_ASSET",
-    "structureFamily": "SPORTS_COMMENTARY",
-    "metaphorCategory": "SOFTWARE",
-    "cooldownDays": 14,
-    "titleTemplate": "Halftime Report  ",
-    "messageTemplate": "Down on the field, the code threw an exception since the market gained {{benchmarkReturnPercent}}% but you only managed {{portfolioReturnPercent}}%. Better luck next season.",
-    "mainReasonTemplate": "The market gained {{benchmarkreturnpercent}}% but you only managed {{portfolioreturnpercent}}%",
-    "suggestedFocusTemplate": "Review your worst asset",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_POSITIVE_USER_WORSE_gentle_56_4a3d0dff",
-    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
-    "tone": "mixed",
-    "intensity": "gentle",
-    "messageAngle": "ABSOLUTE_RETURN",
-    "structureFamily": "FAKE_AWARD",
-    "metaphorCategory": "BUREAUCRACY",
-    "cooldownDays": 14,
-    "titleTemplate": "Gold Star Effort  ",
-    "messageTemplate": "Drumroll please, the paperwork was rejected as the market gained {{benchmarkReturnPercent}}% but you only managed {{portfolioReturnPercent}}%. Frame this immediately.",
-    "mainReasonTemplate": "The market gained {{benchmarkreturnpercent}}% but you only managed {{portfolioreturnpercent}}%",
-    "suggestedFocusTemplate": "Review your absolute return",
     "enabled": true
   },
   {
@@ -11209,21 +11029,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_BOTH_POSITIVE_USER_WORSE_sarcastic_49_52e73ecb",
-    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "ATH_STATUS",
-    "structureFamily": "COURTROOM_VERDICT",
-    "metaphorCategory": "WEATHER",
-    "cooldownDays": 14,
-    "titleTemplate": "Final Judgment   ",
-    "messageTemplate": "Cross-examination reveals, the market gained {{benchmarkReturnPercent}}% but you only managed {{portfolioReturnPercent}}%. Bail denied.",
-    "mainReasonTemplate": "The market gained {{benchmarkreturnpercent}}% but you only managed {{portfolioreturnpercent}}%",
-    "suggestedFocusTemplate": "Review your ath status",
-    "enabled": true
-  },
-  {
     "templateId": "both_positive_user_worse_sarcastic_BENCHMARK_COMPARISON_033",
     "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
     "tone": "roast",
@@ -11336,21 +11141,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_BOTH_POSITIVE_USER_WORSE_sarcastic_25_88ad4323",
-    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "BEST_ASSET",
-    "structureFamily": "EMERGENCY_BROADCAST",
-    "metaphorCategory": "WEATHER",
-    "cooldownDays": 14,
-    "titleTemplate": "Warning Issued ",
-    "messageTemplate": "This is not a drill: the market gained {{benchmarkReturnPercent}}% but you only managed {{portfolioReturnPercent}}%. Stay indoors.",
-    "mainReasonTemplate": "The market gained {{benchmarkreturnpercent}}% but you only managed {{portfolioreturnpercent}}%",
-    "suggestedFocusTemplate": "Review your best asset",
-    "enabled": true
-  },
-  {
     "templateId": "both_positive_user_worse_sarcastic_BEST_ASSET_024",
     "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
     "tone": "mixed",
@@ -11367,21 +11157,6 @@
     ],
     "cooldownDays": 14,
     "weight": 1,
-    "enabled": true
-  },
-  {
-    "templateId": "gen_BOTH_POSITIVE_USER_WORSE_sarcastic_29_77649a32",
-    "scenarioKey": "BOTH_POSITIVE_USER_WORSE",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "DEPOSIT_DISCIPLINE",
-    "structureFamily": "PERFORMANCE_REVIEW",
-    "metaphorCategory": "GAMING",
-    "cooldownDays": 14,
-    "titleTemplate": "Needs Improvement  ",
-    "messageTemplate": "In your quarterly review, the boss phase started and the market gained {{benchmarkReturnPercent}}% but you only managed {{portfolioReturnPercent}}%. We need to talk.",
-    "mainReasonTemplate": "The market gained {{benchmarkreturnpercent}}% but you only managed {{portfolioreturnpercent}}%",
-    "suggestedFocusTemplate": "Review your deposit discipline",
     "enabled": true
   },
   {
@@ -16680,21 +16455,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_NEAR_ATH_degen_15_18eb1454",
-    "scenarioKey": "NEAR_ATH",
-    "tone": "roast",
-    "intensity": "degen",
-    "messageAngle": "WORST_ASSET",
-    "structureFamily": "SPORTS_COMMENTARY",
-    "metaphorCategory": "OFFICE",
-    "cooldownDays": 14,
-    "titleTemplate": "Fumbled The Bag ",
-    "messageTemplate": "In the post-game, management is furious because you are hovering right near your all-time high. Sent to the minors.",
-    "mainReasonTemplate": "You are hovering right near your all-time high",
-    "suggestedFocusTemplate": "Review your worst asset",
-    "enabled": true
-  },
-  {
     "templateId": "gen_NEAR_ATH_gentle_12_d9449d16",
     "scenarioKey": "NEAR_ATH",
     "tone": "roast",
@@ -16707,21 +16467,6 @@
     "messageTemplate": "Congratulations, you are hovering right near your all-time high. Put it on your fridge.",
     "mainReasonTemplate": "You are hovering right near your all-time high",
     "suggestedFocusTemplate": "Review your absolute return",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_NEAR_ATH_gentle_16_80a13c26",
-    "scenarioKey": "NEAR_ATH",
-    "tone": "roast",
-    "intensity": "gentle",
-    "messageAngle": "ATH_STATUS",
-    "structureFamily": "COURTROOM_VERDICT",
-    "metaphorCategory": "SCHOOL",
-    "cooldownDays": 14,
-    "titleTemplate": "Court Is In Session ",
-    "messageTemplate": "Your honor, you are hovering right near your all-time high. Guilty as charged.",
-    "mainReasonTemplate": "You are hovering right near your all-time high",
-    "suggestedFocusTemplate": "Review your ath status",
     "enabled": true
   },
   {
@@ -17899,21 +17644,6 @@
     "cooldownDays": 14,
     "titleTemplate": "Dropped The Ball  ",
     "messageTemplate": "Looking at the replay, the grades are failing since you hit a new all-time high. A terrible play.",
-    "mainReasonTemplate": "You hit a new all-time high",
-    "suggestedFocusTemplate": "Review your worst asset",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_NEW_ATH_DAY_gentle_48_5cc6a41d",
-    "scenarioKey": "NEW_ATH_DAY",
-    "tone": "praise",
-    "intensity": "gentle",
-    "messageAngle": "WORST_ASSET",
-    "structureFamily": "SPORTS_COMMENTARY",
-    "metaphorCategory": "SPREADSHEET",
-    "cooldownDays": 14,
-    "titleTemplate": "A Swing And A Miss   ",
-    "messageTemplate": "Back in the studio, you hit a new all-time high. Better luck next season.",
     "mainReasonTemplate": "You hit a new all-time high",
     "suggestedFocusTemplate": "Review your worst asset",
     "enabled": true
@@ -20265,23 +19995,6 @@
     "enabled": true
   },
   {
-    "templateId": "no_meaningful_change_sarcastic_NO_CHANGE_083",
-    "scenarioKey": "NO_MEANINGFUL_CHANGE",
-    "tone": "neutral",
-    "intensity": "sarcastic",
-    "messageAngle": "NO_CHANGE",
-    "structureFamily": "ANALYST_NOTE",
-    "metaphorCategory": "SPREADSHEET",
-    "titleTemplate": "Cells Remain Unimpressed",
-    "messageTemplate": "The cells remain unimpressed by repeated attention. They are numbers, not performers.",
-    "mainReasonTemplate": "No meaningful change since your last check.",
-    "suggestedFocusTemplate": null,
-    "requiredData": [],
-    "cooldownDays": 3,
-    "weight": 1,
-    "enabled": true
-  },
-  {
     "templateId": "no_meaningful_change_sarcastic_NO_CHANGE_037",
     "scenarioKey": "NO_MEANINGFUL_CHANGE",
     "tone": "neutral",
@@ -22054,21 +21767,6 @@
     "messageTemplate": "Cross-examination reveals, the climate is shifting because you lost {{portfolioReturnPercent}}% while the market handed out a {{benchmarkReturnPercent}}% gain. Bail denied.",
     "mainReasonTemplate": "You lost {{portfolioreturnpercent}}% while the market handed out a {{benchmarkreturnpercent}}% gain",
     "suggestedFocusTemplate": "Review your ath status",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_USER_NEGATIVE_BENCHMARK_POSITIVE_sarcastic_33_0b14dcee",
-    "scenarioKey": "USER_NEGATIVE_BENCHMARK_POSITIVE",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "BENCHMARK_COMPARISON",
-    "structureFamily": "DIRECT_COMPARISON",
-    "metaphorCategory": "REALITY_TV",
-    "cooldownDays": 14,
-    "titleTemplate": "Head To Head  ",
-    "messageTemplate": "Looking closely, you lost {{portfolioReturnPercent}}% while the market handed out a {{benchmarkReturnPercent}}% gain. Do better.",
-    "mainReasonTemplate": "You lost {{portfolioreturnpercent}}% while the market handed out a {{benchmarkreturnpercent}}% gain",
-    "suggestedFocusTemplate": "Review your benchmark comparison",
     "enabled": true
   },
   {
@@ -27229,21 +26927,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_USER_UNDERPERFORMED_BY_LARGE_MARGIN_sarcastic_29_4fcfef0c",
-    "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "DEPOSIT_DISCIPLINE",
-    "structureFamily": "PERFORMANCE_REVIEW",
-    "metaphorCategory": "GAMING",
-    "cooldownDays": 14,
-    "titleTemplate": "Final Warning   ",
-    "messageTemplate": "During the 1-on-1, the boss phase started and you vastly underperformed the market by {{relativePerformancePercent}}%. PIP initiated.",
-    "mainReasonTemplate": "You vastly underperformed the market by {{relativeperformancepercent}}%",
-    "suggestedFocusTemplate": "Review your deposit discipline",
-    "enabled": true
-  },
-  {
     "templateId": "user_underperformed_by_large_margin_sarcastic_DRAWDOWN_STATUS_037",
     "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
     "tone": "mixed",
@@ -27401,21 +27084,6 @@
     "_editor_comments": [
       "Highly repeated opening phrase"
     ]
-  },
-  {
-    "templateId": "gen_USER_UNDERPERFORMED_BY_LARGE_MARGIN_sarcastic_57_970ba728",
-    "scenarioKey": "USER_UNDERPERFORMED_BY_LARGE_MARGIN",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "RELATIVE_RETURN",
-    "structureFamily": "ANALYST_NOTE",
-    "metaphorCategory": "REALITY_TV",
-    "cooldownDays": 14,
-    "titleTemplate": "Financial Review  ",
-    "messageTemplate": "Analyst downgrade: you vastly underperformed the market by {{relativePerformancePercent}}%. Client advised to exit.",
-    "mainReasonTemplate": "You vastly underperformed the market by {{relativeperformancepercent}}%",
-    "suggestedFocusTemplate": "Review your relative return",
-    "enabled": true
   },
   {
     "templateId": "gen_USER_UNDERPERFORMED_BY_LARGE_MARGIN_sarcastic_13_45a61a9c",
@@ -27722,21 +27390,6 @@
     "enabled": true
   },
   {
-    "templateId": "gen_USER_UNDERPERFORMED_BY_MEDIUM_MARGIN_degen_11_88f80603",
-    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
-    "tone": "roast",
-    "intensity": "degen",
-    "messageAngle": "BENCHMARK_COMPARISON",
-    "structureFamily": "DIRECT_COMPARISON",
-    "metaphorCategory": "SOFTWARE",
-    "cooldownDays": 14,
-    "titleTemplate": "The Numbers Don't Lie ",
-    "messageTemplate": "Comparing the data, you trailed the benchmark by {{relativePerformancePercent}}%. Math is unforgiving.",
-    "mainReasonTemplate": "You trailed the benchmark by {{relativeperformancepercent}}%",
-    "suggestedFocusTemplate": "Review your benchmark comparison",
-    "enabled": true
-  },
-  {
     "templateId": "gen_USER_UNDERPERFORMED_BY_MEDIUM_MARGIN_degen_3_82d0ceec",
     "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
     "tone": "roast",
@@ -27749,21 +27402,6 @@
     "messageTemplate": "Warning: you trailed the benchmark by {{relativePerformancePercent}}%. Evacuate immediately.",
     "mainReasonTemplate": "You trailed the benchmark by {{relativeperformancepercent}}%",
     "suggestedFocusTemplate": "Review your best asset",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_USER_UNDERPERFORMED_BY_MEDIUM_MARGIN_degen_7_a5758bda",
-    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
-    "tone": "roast",
-    "intensity": "degen",
-    "messageAngle": "DEPOSIT_DISCIPLINE",
-    "structureFamily": "PERFORMANCE_REVIEW",
-    "metaphorCategory": "TRANSPORT",
-    "cooldownDays": 14,
-    "titleTemplate": "Quarterly Review   ",
-    "messageTemplate": "During the 1-on-1, you trailed the benchmark by {{relativePerformancePercent}}%. No bonus this year.",
-    "mainReasonTemplate": "You trailed the benchmark by {{relativeperformancepercent}}%",
-    "suggestedFocusTemplate": "Review your deposit discipline",
     "enabled": true
   },
   {
@@ -27884,21 +27522,6 @@
     "messageTemplate": "Here is your trophy: the climate is shifting because you trailed the benchmark by {{relativePerformancePercent}}%. Be proud of this.",
     "mainReasonTemplate": "You trailed the benchmark by {{relativeperformancepercent}}%",
     "suggestedFocusTemplate": "Review your absolute return",
-    "enabled": true
-  },
-  {
-    "templateId": "gen_USER_UNDERPERFORMED_BY_MEDIUM_MARGIN_sarcastic_5_897ec206",
-    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "ATH_STATUS",
-    "structureFamily": "COURTROOM_VERDICT",
-    "metaphorCategory": "GAMING",
-    "cooldownDays": 14,
-    "titleTemplate": "Without Parole ",
-    "messageTemplate": "Order in the court, you trailed the benchmark by {{relativePerformancePercent}}%. Guilty as charged.",
-    "mainReasonTemplate": "You trailed the benchmark by {{relativeperformancepercent}}%",
-    "suggestedFocusTemplate": "Review your ath status",
     "enabled": true
   },
   {
@@ -28024,21 +27647,6 @@
     ],
     "cooldownDays": 14,
     "weight": 1,
-    "enabled": true
-  },
-  {
-    "templateId": "gen_USER_UNDERPERFORMED_BY_MEDIUM_MARGIN_sarcastic_9_bff02573",
-    "scenarioKey": "USER_UNDERPERFORMED_BY_MEDIUM_MARGIN",
-    "tone": "roast",
-    "intensity": "sarcastic",
-    "messageAngle": "VOLATILITY",
-    "structureFamily": "STATUS_UPDATE",
-    "metaphorCategory": "REALITY_TV",
-    "cooldownDays": 14,
-    "titleTemplate": "Routine Sync  ",
-    "messageTemplate": "Quick update: you trailed the benchmark by {{relativePerformancePercent}}%. Moving on.",
-    "mainReasonTemplate": "You trailed the benchmark by {{relativeperformancepercent}}%",
-    "suggestedFocusTemplate": "Review your volatility",
     "enabled": true
   },
   {
