@@ -38,7 +38,7 @@ from datetime import datetime, date, timedelta, timezone
 from threading import Thread, Lock
 from urllib.parse import urlparse, parse_qs
 
-PORT = 8080
+PORT = int(sys.argv[1]) if len(sys.argv) > 1 and sys.argv[1].isdigit() else 8080
 ROOT   = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src')
 SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'update-prices.py')
 UPDATE_ALL = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'update-all.sh')
@@ -120,11 +120,11 @@ def _xirr(cashflows):
 # ── Mock prices helpers ────────────────────────────────────────────────────
 
 _MOCK_PRICES = [
-    {'name': 'CD Projekt',  'ticker': 'CDR.WA', 'currency': 'PLN', 'units': 10,  'purchaseValue': 1350.00, 'price': 148.5,  'dailyPct':  0.81, 'portfolioId': 'demo', 'walletName': 'Demo Portfolio'},
-    {'name': 'XTB',         'ticker': 'XTB.WA', 'currency': 'PLN', 'units': 25,  'purchaseValue': 3250.00, 'price': 142.2,  'dailyPct':  1.14, 'portfolioId': 'demo', 'walletName': 'Demo Portfolio'},
-    {'name': 'Cash',        'ticker': None,      'currency': 'PLN', 'units': 1,   'purchaseValue': 5000.00, 'price': 5000.0, 'dailyPct':  0.0,  'portfolioId': 'demo', 'walletName': 'Demo Portfolio'},
-    {'name': 'KGHM',        'ticker': 'KGH.WA', 'currency': 'PLN', 'units': 20,  'purchaseValue': 3200.00, 'price': 173.4,  'dailyPct': -0.34, 'portfolioId': 'ike',  'walletName': 'IKE'},
-    {'name': 'Cash IKE',    'ticker': None,      'currency': 'PLN', 'units': 1,   'purchaseValue': 1800.00, 'price': 1800.0, 'dailyPct':  0.0,  'portfolioId': 'ike',  'walletName': 'IKE'},
+    {'name': 'CD Projekt',  'ticker': 'CDR.WA', 'currency': 'PLN', 'units': 10,  'purchaseValue': 1350.00, 'price': 148.5,  'dailyPct':  0.81, 'portfolioId': 'demo', 'walletName': 'Demo Portfolio', 'volume': 185000, 'avgVolume': 312000, 'volumeTz': 'Europe/Warsaw'},
+    {'name': 'XTB',         'ticker': 'XTB.WA', 'currency': 'PLN', 'units': 25,  'purchaseValue': 3250.00, 'price': 142.2,  'dailyPct':  1.14, 'portfolioId': 'demo', 'walletName': 'Demo Portfolio', 'volume': 420000, 'avgVolume': 540000, 'volumeTz': 'Europe/Warsaw'},
+    {'name': 'Cash',        'ticker': None,      'currency': 'PLN', 'units': 1,   'purchaseValue': 5000.00, 'price': 5000.0, 'dailyPct':  0.0,  'portfolioId': 'demo', 'walletName': 'Demo Portfolio', 'volume': 0, 'avgVolume': 0, 'volumeTz': None},
+    {'name': 'KGHM',        'ticker': 'KGH.WA', 'currency': 'PLN', 'units': 20,  'purchaseValue': 3200.00, 'price': 173.4,  'dailyPct': -0.34, 'portfolioId': 'ike',  'walletName': 'IKE', 'volume': 650000, 'avgVolume': 800000, 'volumeTz': 'Europe/Warsaw'},
+    {'name': 'Cash IKE',    'ticker': None,      'currency': 'PLN', 'units': 1,   'purchaseValue': 1800.00, 'price': 1800.0, 'dailyPct':  0.0,  'portfolioId': 'ike',  'walletName': 'IKE', 'volume': 0, 'avgVolume': 0, 'volumeTz': None},
 ]
 
 def _enrich(row):
@@ -147,6 +147,9 @@ def _enrich(row):
         row['returnPct']         = 0.0
     row['todayBars']             = []
     row['yearBars']              = []
+    row['volume']                = row.get('volume', 0)
+    row['avgVolume']             = row.get('avgVolume', 0)
+    row['volumeTz']              = row.get('volumeTz', 'Europe/Warsaw' if row.get('ticker') else None)
     return row
 
 def _fake_wig_data():
@@ -952,7 +955,7 @@ class InvestmentHandler(http.server.SimpleHTTPRequestHandler):
             # cognitoClientId is empty so auth-guard stays disabled.
             body = (
                 'window.__CONFIG__ = {\n'
-                '  apiUrl:            "http://localhost:8080/prices",\n'
+                f'  apiUrl:            "http://localhost:{PORT}/prices",\n'
                 '  cognitoClientId:   "",\n'
                 '  cognitoUserPoolId: "",\n'
                 '  cognitoRegion:     "us-east-1"\n'

@@ -5,11 +5,11 @@ const WIG_DATA = {"version":2,"updated":"2026-05-07","daily":[{"t":"2024-05-20",
 
 // --- Mock data for local testing of wallets & portfolio ---
 window.PORTFOLIO_DATA = [
-    { name: 'Apple Inc.', ticker: 'AAPL', currency: 'USD', units: 10, purchaseValue: 1500, price: 175.5, dailyPct: 1.2, portfolioId: 'demo', walletName: 'Demo Portfolio' },
-    { name: 'CD Projekt', ticker: 'CDR.WA', currency: 'PLN', units: 50, purchaseValue: 6000, price: 142.2, dailyPct: 2.1, portfolioId: 'demo', walletName: 'Demo Portfolio' },
-    { name: 'XTB', ticker: 'XTB.WA', currency: 'PLN', units: 100, purchaseValue: 3000, price: 41.5, dailyPct: -0.5, portfolioId: 'demo', walletName: 'Demo Portfolio' },
-    { name: 'KGHM', ticker: 'KGH.WA', currency: 'PLN', units: 20, purchaseValue: 3200, price: 173.4, dailyPct: -0.34, portfolioId: 'ike', walletName: 'IKE' },
-    { name: 'Cash', ticker: null, currency: 'PLN', units: 1, purchaseValue: 5000, price: 5000, dailyPct: 0.0, portfolioId: 'demo', walletName: 'Demo Portfolio' }
+    { name: 'Apple Inc.', ticker: 'AAPL', currency: 'USD', units: 10, purchaseValue: 1500, price: 175.5, dailyPct: 1.2, portfolioId: 'demo', walletName: 'Demo Portfolio', volume: 28500000, avgVolume: 46500000, volumeTz: 'America/New_York' },
+    { name: 'CD Projekt', ticker: 'CDR.WA', currency: 'PLN', units: 50, purchaseValue: 6000, price: 142.2, dailyPct: 2.1, portfolioId: 'demo', walletName: 'Demo Portfolio', volume: 185000, avgVolume: 312000, volumeTz: 'Europe/Warsaw' },
+    { name: 'XTB', ticker: 'XTB.WA', currency: 'PLN', units: 100, purchaseValue: 3000, price: 41.5, dailyPct: -0.5, portfolioId: 'demo', walletName: 'Demo Portfolio', volume: 420000, avgVolume: 540000, volumeTz: 'Europe/Warsaw' },
+    { name: 'KGHM', ticker: 'KGH.WA', currency: 'PLN', units: 20, purchaseValue: 3200, price: 173.4, dailyPct: -0.34, portfolioId: 'ike', walletName: 'IKE', volume: 650000, avgVolume: 800000, volumeTz: 'Europe/Warsaw' },
+    { name: 'Cash', ticker: null, currency: 'PLN', units: 1, purchaseValue: 5000, price: 5000, dailyPct: 0.0, portfolioId: 'demo', walletName: 'Demo Portfolio', volume: 0, avgVolume: 0, volumeTz: null }
 ];
 
 window.PORTFOLIO_DATA.forEach(r => {

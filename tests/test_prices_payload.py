@@ -30,6 +30,9 @@ class PricesPayloadTests(unittest.TestCase):
                     "ytdChangePct": 10.0,
                     "todayBars": [],
                     "yearBars": [],
+                    "volume": 20000,
+                    "avgVolume": 50000,
+                    "volumeTz": "America/New_York",
                 }],
                 "total": 100.0,
                 "dailyPLN": 5.0,
@@ -49,6 +52,9 @@ class PricesPayloadTests(unittest.TestCase):
                     "ytdChangePct": 12.0,
                     "todayBars": [1],
                     "yearBars": [2],
+                    "volume": 20000,
+                    "avgVolume": 50000,
+                    "volumeTz": "America/New_York",
                 }, {
                     "name": "Cash",
                     "ticker": None,
@@ -62,6 +68,9 @@ class PricesPayloadTests(unittest.TestCase):
                     "ytdChangePct": 0.0,
                     "todayBars": [],
                     "yearBars": [],
+                    "volume": 0,
+                    "avgVolume": 0,
+                    "volumeTz": None,
                 }],
                 "total": 300.0,
                 "dailyPLN": 12.0,
@@ -84,6 +93,9 @@ class PricesPayloadTests(unittest.TestCase):
         self.assertEqual(apple["pricePLN"], 120.0)
         self.assertEqual(apple["todayBars"], [1])
         self.assertEqual(apple["pct"], 85.0)
+        self.assertEqual(apple["volume"], 20000)
+        self.assertEqual(apple["avgVolume"], 50000)
+        self.assertEqual(apple["volumeTz"], "America/New_York")
 
     def test_prices_handler_returns_benchmark_ath_and_total_value(self):
         xtb_holdings = [{
@@ -140,7 +152,7 @@ class PricesPayloadTests(unittest.TestCase):
                  (ike_holdings, 300.0, 0.0, 0.0),
              ]), \
              patch.object(handler.db, "get_user", return_value={"settings": {"benchmark": "SP500"}}), \
-             patch.object(handler, "load_benchmark_cache", return_value={}), \
+             patch.object(handler, "load_benchmark_cache", return_value={"intraday": [{"o": 100.0, "c": 101.0}, {"o": 101.0, "c": 102.0}]}), \
              patch.object(handler, "fetch_benchmark_history", return_value={
                  "daily": [],
                  "weekly": [],

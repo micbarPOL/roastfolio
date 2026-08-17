@@ -594,7 +594,23 @@ def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
         else:
             year_bars.append([now_ms, round(price, 4)])
 
-    return price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars
+    vol = getattr(info, 'last_volume', None)
+    avg_vol = getattr(info, 'ten_day_average_volume', None) or getattr(info, 'three_month_average_volume', None)
+    tz = getattr(info, 'timezone', None)
+
+    # Fallback volume from history if fast_info missing volume
+    if (vol is None or vol <= 0) and not h5d.empty and 'Volume' in h5d:
+        try:
+            vols = h5d['Volume'].dropna().tolist()
+            if vols:
+                vol = int(vols[-1])
+        except Exception:
+            pass
+
+    vol_val = int(vol) if (vol is not None and vol == vol and not math.isnan(vol)) else 0
+    avg_vol_val = int(avg_vol) if (avg_vol is not None and avg_vol == avg_vol and not math.isnan(avg_vol)) else 0
+
+    return price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz
 
 
 def _prefetch_prices_parallel(
@@ -623,7 +639,10 @@ def _prefetch_prices_parallel(
         # Fall back to S3 price cache
         if ticker in s3_cache:
             c = s3_cache[ticker]
-            return ticker, (c[0], c[1], c[1], c[2], [], [])  # (price, daily, intraday=daily, ytd, [], [])
+            v = c[5] if len(c) > 5 else 0
+            av = c[6] if len(c) > 6 else 0
+            tz = c[7] if len(c) > 7 else None
+            return ticker, (c[0], c[1], c[1], c[2], [], [], v, av, tz)  # (price, daily, intraday=daily, ytd, [], [], vol, avgVol, tz)
         return ticker, None
 
     workers = min(len(needed), 10)
@@ -632,7 +651,7 @@ def _prefetch_prices_parallel(
         for ticker, result in pool.map(_fetch_one, needed):
             if result:
                 price_cache[ticker] = result
-                s3_cache[ticker]    = [result[0], result[1], result[3], [], []]
+                s3_cache[ticker]    = [result[0], result[1], result[3], [], [], result[6], result[7], result[8]]
 
 
 def _compute_benchmark_intraday_pct(ticker: str) -> float | None:
@@ -660,28 +679,32 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
             entry.update({"currentValue": h["purchaseValue"], "pricePLN": 1.0,
                           "priceOriginal": 1.0, "priceOriginalCurrency": "PLN",
                           "dailyChangePct": 0.0, "ytdChangePct": 0.0,
-                          "profit": 0.0, "returnPct": 0.0, "dailyChangePLN": 0.0, "pct": 0})
+                          "profit": 0.0, "returnPct": 0.0, "dailyChangePLN": 0.0, "pct": 0,
+                          "volume": 0, "avgVolume": 0, "volumeTz": None})
             results.append(entry)
             continue
         try:
             if h["ticker"] not in price_cache:
                 try:
-                    price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars = fetch_ticker_data(
+                    price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz = fetch_ticker_data(
                         h["ticker"],
                         include_bars=include_bars,
                         bars_cache=bars_cache
                     )
                     if price and price > 0:
-                        price_cache[h["ticker"]] = (price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars)
-                        s3_cache[h["ticker"]] = [price, daily_pct, ytd_pct, [], []]  # don't cache bar data in S3
-                        print(f"  {h['name']:40} {price:.2f} {h['currency']}  {daily_pct:+.2f}% daily  {intraday_pct:+.2f}% intraday")
+                        price_cache[h["ticker"]] = (price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz)
+                        s3_cache[h["ticker"]] = [price, daily_pct, ytd_pct, [], [], vol_val, avg_vol_val, tz]  # don't cache bar data in S3
+                        print(f"  {h['name']:40} {price:.2f} {h['currency']}  {daily_pct:+.2f}% daily  {intraday_pct:+.2f}% intraday  vol={vol_val}")
                     else:
                         raise ValueError("zero/null price")
                 except Exception as fetch_err:
                     if h["ticker"] in s3_cache:
                         cached = s3_cache[h["ticker"]]
+                        v = cached[5] if len(cached) > 5 else 0
+                        av = cached[6] if len(cached) > 6 else 0
+                        tz = cached[7] if len(cached) > 7 else None
                         # Use daily_pct as intraday fallback when coming from S3 cache
-                        price_cache[h["ticker"]] = (cached[0], cached[1], cached[1], cached[2], [], [])
+                        price_cache[h["ticker"]] = (cached[0], cached[1], cached[1], cached[2], [], [], v, av, tz)
                         print(f"  {h['name']}: cached price {cached[0]:.2f} (live fetch failed: {fetch_err})")
                     else:
                         fb_price = 1.0
@@ -690,10 +713,10 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                                 fb_price = float(h["purchaseValue"]) / float(h["units"])
                             except Exception:
                                 fb_price = 1.0
-                        price_cache[h["ticker"]] = (fb_price, 0.0, 0.0, 0.0, [], [])
+                        price_cache[h["ticker"]] = (fb_price, 0.0, 0.0, 0.0, [], [], 0, 0, None)
                         print(f"  {h['name']}: no price available, using fallback {fb_price:.2f} ({fetch_err})")
 
-            price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars = price_cache[h["ticker"]]
+            price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz = price_cache[h["ticker"]]
             if not include_bars:
                 today_bars = []
                 year_bars = []
@@ -720,7 +743,8 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                           "priceOriginalCurrency": h["currency"],
                           "dailyChangePct": gauge_pct, "ytdChangePct": ytd_pct,
                           "dailyChangePLN": daily_pln, "pct": 0,
-                          "todayBars": today_bars, "yearBars": year_bars})
+                          "todayBars": today_bars, "yearBars": year_bars,
+                          "volume": vol_val, "avgVolume": avg_vol_val, "volumeTz": tz})
             results.append(entry)
         except Exception as e:
             print(f"ERROR {h['name']}: {e}")
@@ -1980,6 +2004,12 @@ def _build_summary_wallet(wallets_out: dict) -> dict:
                 existing["profit"]        = round(existing["currentValue"] - existing["purchaseValue"], 2)
                 pv = existing["purchaseValue"]
                 existing["returnPct"]     = round((existing["profit"] / pv) * 100, 2) if pv else 0.0
+                if h.get("volume") is not None:
+                    existing["volume"]    = h.get("volume", existing.get("volume", 0))
+                if h.get("avgVolume") is not None:
+                    existing["avgVolume"] = h.get("avgVolume", existing.get("avgVolume", 0))
+                if h.get("volumeTz") is not None:
+                    existing["volumeTz"]  = h.get("volumeTz", existing.get("volumeTz"))
 
     all_holdings = list(consolidated.values())
 

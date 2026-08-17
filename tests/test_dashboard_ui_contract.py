@@ -177,6 +177,16 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("function isCashHoldingItem(item)", self.dashboard_js)
         self.assertIn("filter(d => !isCashHoldingItem(d))", self.dashboard_js)
 
+    def test_todays_movers_volume_pace_contract(self):
+        self.assertIn("function computeHoldingVolumePace(holding", self.dashboard_js)
+        self.assertIn("function renderVolumePaceBadge(holding)", self.dashboard_js)
+        self.assertIn("renderVolumePaceBadge(d)", self.dashboard_js)
+        self.assertIn(".dash-mover-vol-badge", self.main_css)
+        self.assertIn(".vol-surge", self.main_css)
+        self.assertIn(".vol-elevated", self.main_css)
+        self.assertIn(".vol-normal", self.main_css)
+        self.assertIn(".vol-light", self.main_css)
+
 
 if __name__ == "__main__":
     unittest.main()

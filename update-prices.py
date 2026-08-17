@@ -149,7 +149,13 @@ def fetch_ticker_data(ticker_sym):
     except Exception:
         ytd_pct = 0.0
 
-    return price, daily_pct, ytd_pct, today_bars, year_bars
+    vol = getattr(info, 'last_volume', None)
+    avg_vol = getattr(info, 'ten_day_average_volume', None) or getattr(info, 'three_month_average_volume', None)
+    tz = getattr(info, 'timezone', None)
+    vol_val = int(vol) if (vol is not None and vol == vol and not math.isnan(vol)) else 0
+    avg_vol_val = int(avg_vol) if (avg_vol is not None and avg_vol == avg_vol and not math.isnan(avg_vol)) else 0
+
+    return price, daily_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz
 
 def compute_wallet(wallet_name, holdings, price_cache, rates_cache):
     """Compute all metrics for a wallet's holdings. price_cache is shared across wallets."""
@@ -160,7 +166,8 @@ def compute_wallet(wallet_name, holdings, price_cache, rates_cache):
             entry.update({"currentValue": h["purchaseValue"], "pricePLN": 1.0,
                           "priceOriginal": 1.0, "priceOriginalCurrency": "PLN",
                           "dailyChangePct": 0.0, "ytdChangePct": 0.0,
-                          "profit": 0.0, "returnPct": 0.0, "dailyChangePLN": 0.0, "pct": 0})
+                          "profit": 0.0, "returnPct": 0.0, "dailyChangePLN": 0.0, "pct": 0,
+                          "volume": 0, "avgVolume": 0, "volumeTz": None})
             results.append(entry)
             continue
 
@@ -183,17 +190,18 @@ def compute_wallet(wallet_name, holdings, price_cache, rates_cache):
                           "priceOriginalCurrency": "PLN",
                           "dailyChangePct": 0.0, "ytdChangePct": 0.0,
                           "dailyChangePLN": 0.0, "pct": 0,
-                          "todayBars": [], "yearBars": []})
+                          "todayBars": [], "yearBars": [],
+                          "volume": 0, "avgVolume": 0, "volumeTz": None})
             results.append(entry)
             continue
 
         try:
             # Fetch from cache or live
             if h["ticker"] not in price_cache:
-                price, daily_pct, ytd_pct, today_bars, year_bars = fetch_ticker_data(h["ticker"])
-                price_cache[h["ticker"]] = (price, daily_pct, ytd_pct, today_bars, year_bars)
+                price, daily_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz = fetch_ticker_data(h["ticker"])
+                price_cache[h["ticker"]] = (price, daily_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz)
                 print(f"  {h['name']:40} {price:.2f} {h['currency']}  Daily: {daily_pct:+.2f}%  YTD: {ytd_pct:+.2f}%")
-            price, daily_pct, ytd_pct, today_bars, year_bars = price_cache[h["ticker"]]
+            price, daily_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz = price_cache[h["ticker"]]
 
             rate = get_pln_rate(h["currency"], rates_cache)
             if rate is None:
@@ -211,7 +219,8 @@ def compute_wallet(wallet_name, holdings, price_cache, rates_cache):
                           "priceOriginalCurrency": h["currency"],
                           "dailyChangePct": daily_pct, "ytdChangePct": ytd_pct,
                           "dailyChangePLN": daily_pln, "pct": 0,
-                          "todayBars": today_bars, "yearBars": year_bars})
+                          "todayBars": today_bars, "yearBars": year_bars,
+                          "volume": vol_val, "avgVolume": avg_vol_val, "volumeTz": tz})
             results.append(entry)
 
         except Exception as e:

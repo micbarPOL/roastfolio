@@ -1143,6 +1143,134 @@ function getSparkTooltip() {
     return el;
 }
 
+// ── Volume Pace & Relative Volume (RVOL) Helpers ────────────────
+function computeHoldingVolumePace(holding, nowDate = new Date()) {
+    if (!holding) return null;
+    const vol = Number(holding.volume);
+    const avgVol = Number(holding.avgVolume);
+    if (!Number.isFinite(vol) || !Number.isFinite(avgVol) || avgVol <= 0 || vol < 0) {
+        return null;
+    }
+
+    const tz = holding.volumeTz || (holding.ticker && String(holding.ticker).endsWith('.WA') ? 'Europe/Warsaw' : 'Europe/Warsaw');
+    const ticker = String(holding.ticker || '');
+
+    let weekday = 'Mon';
+    let hour = 12;
+    let minute = 0;
+
+    try {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: tz,
+            weekday: 'short',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+        });
+        const parts = formatter.formatToParts(nowDate);
+        const map = {};
+        parts.forEach(p => { map[p.type] = p.value; });
+        if (map.weekday) weekday = map.weekday;
+        if (map.hour != null) hour = parseInt(map.hour, 10);
+        if (map.minute != null) minute = parseInt(map.minute, 10);
+    } catch (_) {
+        weekday = 'Mon';
+        hour = 12;
+        minute = 0;
+    }
+
+    const currentMin = hour * 60 + minute;
+
+    let openMin = 9 * 60; // 09:00 Warsaw
+    let closeMin = 17 * 60; // 17:00 Warsaw
+    if (tz === 'America/New_York' || (!ticker.endsWith('.WA') && (tz.includes('New_York') || tz.includes('America')))) {
+        openMin = 9 * 60 + 30; // 09:30 US
+        closeMin = 16 * 60; // 16:00 US
+    } else if (tz === 'Europe/London') {
+        openMin = 8 * 60; // 08:00 London
+        closeMin = 16 * 60 + 30; // 16:30 London
+    }
+
+    const isWeekend = (weekday === 'Sat' || weekday === 'Sun');
+    let sessionProgress = 1.0;
+    let isSessionOpen = false;
+
+    if (isWeekend) {
+        sessionProgress = 1.0;
+        isSessionOpen = false;
+    } else if (currentMin < openMin) {
+        sessionProgress = 1.0;
+        isSessionOpen = false;
+    } else if (currentMin >= closeMin) {
+        sessionProgress = 1.0;
+        isSessionOpen = false;
+    } else {
+        const elapsed = currentMin - openMin;
+        const total = closeMin - openMin;
+        const rawProgress = elapsed / total;
+        // Clamp to at least 5% (to prevent dividing by near-zero at session start)
+        sessionProgress = Math.min(1.0, Math.max(0.05, rawProgress));
+        isSessionOpen = true;
+    }
+
+    const expectedVol = avgVol * sessionProgress;
+    const rvolRatio = expectedVol > 0 ? vol / expectedVol : 0;
+    const rvolPct = Math.round(rvolRatio * 100);
+
+    let tier = 'normal';
+    let icon = '📊';
+    let label = `${rvolPct}% vol`;
+
+    if (rvolPct >= 150) {
+        tier = 'surge';
+        icon = '🔥';
+    } else if (rvolPct >= 110) {
+        tier = 'elevated';
+        icon = '⚡';
+    } else if (rvolPct < 80) {
+        tier = 'light';
+        icon = '❄️';
+    }
+
+    return {
+        vol,
+        avgVol,
+        expectedVol: Math.round(expectedVol),
+        sessionProgressPct: Math.round(sessionProgress * 100),
+        rvolRatio,
+        rvolPct,
+        tier,
+        icon,
+        label,
+        isSessionOpen,
+    };
+}
+
+function formatVolumeCompact(num) {
+    if (!Number.isFinite(num) || num <= 0) return '0';
+    if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return String(num);
+}
+
+function renderVolumePaceBadge(holding) {
+    const pace = computeHoldingVolumePace(holding);
+    if (!pace) return '';
+
+    const title = pace.isSessionOpen
+        ? `Volume: ${formatVolumeCompact(pace.vol)} / Avg: ${formatVolumeCompact(pace.avgVol)} (Session: ${pace.sessionProgressPct}% elapsed, expected: ${formatVolumeCompact(pace.expectedVol)}, pace: ${pace.rvolPct}%)`
+        : `Volume: ${formatVolumeCompact(pace.vol)} / Avg: ${formatVolumeCompact(pace.avgVol)} (${pace.rvolPct}% of daily average volume)`;
+
+    return `<span class="dash-mover-vol-badge vol-${pace.tier}" title="${title}" aria-label="${pace.label}">` +
+        `<span class="vol-icon">${pace.icon}</span>` +
+        `<span class="vol-text">${pace.label}</span>` +
+    `</span>`;
+}
+
+window.computeHoldingVolumePace = computeHoldingVolumePace;
+window.renderVolumePaceBadge = renderVolumePaceBadge;
+
 function renderDailyBreakdown() {
     const container = document.getElementById('dash-breakdown');
     if (!container) return;
@@ -1188,7 +1316,7 @@ function renderDailyBreakdown() {
         // Always use daily change for text, regardless of sparkline mode
         const changePct  = d.dailyChangePctSafe;
         const pctColor = changePct >= 0 ? '#27ae60' : '#c0392b';
-        const pctSign  = changePct > 0 ? '+' : '';
+        const pctSign  = changePct > 0 ? '+' : (changePct < 0 ? '-' : '');
         const logoHtml = companyLogoHtml(d.name);
         const isUp = changePct >= 0;
 
@@ -1207,6 +1335,7 @@ function renderDailyBreakdown() {
 
         const isCash = isCashHoldingItem(d);
         const ticker = d.ticker || d.name;
+        const volBadge = renderVolumePaceBadge(d);
 
         // Normalise bar data — support both [[ts,close],...] (new) and [close,...] (old recentBars)
         let rawBars = mode === 'year' ? (d.yearBars || []) : (d.todayBars || d.recentBars || []);
@@ -1238,7 +1367,10 @@ function renderDailyBreakdown() {
                         <div class="dash-mover-spark">${spark}</div>
                         <div class="dash-mover-meta">
                             <div class="dash-mover-price" style="color:#94a3b8;font-family:monospace;">${priceStr}</div>
-                            <div class="dash-mover-pct" style="color:${pctColor};font-family:monospace;text-shadow:0 0 5px currentColor;">${pctSign}${pctFormatted}%</div>
+                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:2px;">
+                                <div class="dash-mover-pct" style="color:${pctColor};font-family:monospace;text-shadow:0 0 5px currentColor;">${pctSign}${pctFormatted}%</div>
+                                ${volBadge}
+                            </div>
                         </div>
                     </div>
                 </article>`;
@@ -1253,7 +1385,10 @@ function renderDailyBreakdown() {
                     ${spark}
                     <div>
                         <div style="font-size:12px;color:#94a3b8;font-family:monospace;">${priceStr}</div>
-                        <div style="font-size:12px;font-weight:700;color:${pctColor};font-family:monospace;text-shadow:0 0 5px currentColor;">${pctSign}${pctFormatted}%</div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
+                            <span style="font-size:12px;font-weight:700;color:${pctColor};font-family:monospace;text-shadow:0 0 5px currentColor;">${pctSign}${pctFormatted}%</span>
+                            ${volBadge}
+                        </div>
                     </div>
                 </div>
             </td>

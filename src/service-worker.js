@@ -45,7 +45,7 @@ const NEVER_CACHE = [
     /lambda/, /amazonaws\.com/, /cloudfront\.net/,
     /cdn\.jsdelivr\.net/, /unpkg\.com/,
     /cognito-idp\./, /cognito\.amazonaws\.com/,
-    /localhost:808\d/,
+    /localhost/, /127\.0\.0\.1/,
 ];
 
 function isNeverCached(url) {

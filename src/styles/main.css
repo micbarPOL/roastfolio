@@ -2385,6 +2385,88 @@ section {
     background: rgba(255, 255, 255, 0.02);
 }
 
+/* ── Today's Movers Volume Pace Badges ── */
+.dash-mover-vol-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    white-space: nowrap;
+    line-height: 1.3;
+    letter-spacing: 0.2px;
+    transition: all 0.2s ease;
+    cursor: default;
+    user-select: none;
+}
+
+.dash-mover-vol-badge .vol-icon {
+    font-size: 9px;
+    line-height: 1;
+}
+
+/* Surge volume (>= 150% expected pace) */
+.dash-mover-vol-badge.vol-surge {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+    text-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
+}
+
+/* Elevated volume (110% - 149%) */
+.dash-mover-vol-badge.vol-elevated {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);
+}
+
+/* Normal volume (80% - 109%) */
+.dash-mover-vol-badge.vol-normal {
+    background: rgba(148, 163, 184, 0.1);
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+/* Light / Slow volume (< 80%) */
+.dash-mover-vol-badge.vol-light {
+    background: rgba(56, 189, 248, 0.08);
+    color: #7dd3fc;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+}
+
+/* Light theme overrides for volume badges */
+:root[data-theme="light"] .dash-mover-vol-badge.vol-surge {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fcd34d;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+:root[data-theme="light"] .dash-mover-vol-badge.vol-elevated {
+    background: #d1fae5;
+    color: #047857;
+    border-color: #6ee7b7;
+    box-shadow: none;
+}
+
+:root[data-theme="light"] .dash-mover-vol-badge.vol-normal {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #cbd5e1;
+}
+
+:root[data-theme="light"] .dash-mover-vol-badge.vol-light {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #bae6fd;
+}
+
 .dash-label {
     font-size: 12px;
     text-transform: uppercase;
