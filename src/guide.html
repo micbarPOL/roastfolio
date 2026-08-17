@@ -1109,7 +1109,23 @@
     <p>The <strong>Dashboard</strong> provides a high-level overview of your entire portfolio. The top section features the <strong>Control Room</strong>, where you can see the aggregated value, daily returns, and performance of each individual wallet at a glance.</p>
     <ul>
       <li><strong>Wallet navigation:</strong> Clicking on any wallet in the Control Room will automatically take you to the History screen, pre-filtered for that specific wallet.</li>
-      <li><strong>Daily Movers:</strong> Below the Control Room, the dashboard highlights your best and worst performing assets for the day.</li>
+      <li><strong>Today's Movers:</strong> Ranks your active equity positions by absolute PLN daily move, displaying sparklines, live prices, percentage change, and session-adjusted volume pace.</li>
+    </ul>
+
+    <h4 id="todays-movers-volume" style="margin-top: 18px; margin-bottom: 8px; color: var(--accent, #38bdf8); font-size: 15px;">📊 Today's Movers &amp; Time-Adjusted Volume (RVOL)</h4>
+    <p>In addition to intraday price changes, the Today's Movers table displays a <strong>Time-Adjusted Relative Volume (RVOL %) badge</strong> for each equity holding. Rather than comparing intraday volume against 100% of a full day's average, Roastfolio dynamically scales expected volume to the current trading session progress:</p>
+    <ul>
+      <li><strong>Session-Progress Adjusted:</strong> If the Warsaw exchange (GPW, 09:00–17:00) is 1 hour in (12.5% of session time), today's volume is compared against 12.5% of the 3-month daily average. This prevents morning trading from appearing artificially low.</li>
+      <li><strong>Multi-Market Awareness:</strong> Automatically recognizes market hours by exchange timezone (e.g. GPW 09:00–17:00 Warsaw, US markets 09:30–16:00 ET, London 08:00–16:30 London). Outside trading hours or on weekends, the baseline defaults to 100% of daily volume.</li>
+      <li><strong>Pace Status Badges:</strong>
+        <ul>
+          <li>🔥 <strong>Surge (&ge; 150% expected volume):</strong> Amber badge indicating abnormal volume spike or heavy market participation.</li>
+          <li>⚡ <strong>Elevated (110% – 149%):</strong> Emerald badge indicating above-average trading interest.</li>
+          <li>📊 <strong>Normal (80% – 109%):</strong> Slate badge representing typical trading volume.</li>
+          <li>❄️ <strong>Light (&lt; 80%):</strong> Sky blue badge indicating quiet or low liquidity trading.</li>
+        </ul>
+      </li>
+      <li><strong>Detailed Tooltip:</strong> Hover over any volume badge to inspect exact metrics: current volume, 3-month daily average, session elapsed percentage, and expected volume pace.</li>
     </ul>
 
     <h3 id="holdings">Holdings</h3>
