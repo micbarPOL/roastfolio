@@ -1097,6 +1097,16 @@ function makeSparkline(barPairs, isUp, width, height) {
     const step = Math.max(1, Math.floor(coords.length / 30));
     const hits = coords.filter((_, i) => i % step === 0 || i === coords.length - 1);
     const hitLabels = hits.map(c => labels[coords.indexOf(c)]);
+    const hitMeta = hits.map((c) => {
+        const sourceIndex = coords.indexOf(c);
+        const sourceTs = barPairs[sourceIndex]?.[0];
+        return {
+            x: c.x,
+            v: c.v,
+            label: hitLabels[coords.indexOf(c)],
+            date: sourceTs ? new Date(sourceTs).toISOString().slice(0, 10) : null,
+        };
+    });
 
     const dots = hits.map(c =>
         `<circle class="sp-dot" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="2.5"
@@ -1104,7 +1114,7 @@ function makeSparkline(barPairs, isUp, width, height) {
     ).join('');
 
     // Full-width transparent overlay — tracks mouse X to find nearest point
-    const coordsJson = JSON.stringify(hits.map((c, i) => ({ x: c.x, v: c.v, label: hitLabels[i] })));
+    const coordsJson = JSON.stringify(hitMeta);
 
     return `<svg class="sparkline-svg" width="${width}" height="${height}"
             style="display:block;overflow:visible;flex-shrink:0;min-width:${width}px;" data-coords='${coordsJson}'>

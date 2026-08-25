@@ -1014,11 +1014,39 @@
       ? makeSparkline(series, isUp, 520, 170)
       : '';
 
-    const eventMarkers = (txs || [])
+    const axisDates = [
+      new Date(series[0][0]),
+      new Date(series[Math.floor((series.length - 1) / 2)][0]),
+      new Date(series[series.length - 1][0]),
+    ].filter((value, index, arr) => value && arr.findIndex((other) => other.getTime() === value.getTime()) === index);
+
+    const axisLabels = axisDates.map((date) => {
+      const pct = axisDates.length === 1 ? 50 : ((axisDates.indexOf(date) / (axisDates.length - 1)) * 100);
+      const year = date.getFullYear();
+      return `
+        <span class="wallet-summary-axis-label" style="left:${Math.min(96, Math.max(4, pct))}%">${year}</span>
+      `;
+    }).join('');
+
+    const txMap = new Map();
+    (txs || [])
       .filter((tx) => ['DEPOSIT', 'WITHDRAWAL'].includes(String(tx && tx.type || '').toUpperCase()))
-      .map((tx) => {
+      .forEach((tx) => {
         const dateKey = String(tx.transactionDate || tx.date || '').slice(0, 10);
-        const idx = (snapshots || []).findIndex((snapshot) => String(snapshot && snapshot.snapshotDate || '').slice(0, 10) === dateKey);
+        const amount = Math.abs(Number(tx.value ?? tx.amount ?? tx.total ?? 0) || 0);
+        if (!dateKey || !amount) return;
+        const prior = txMap.get(dateKey) || { dateKey, total: 0, isDeposit: true };
+        const isDeposit = String(tx.type || '').toUpperCase() === 'DEPOSIT';
+        prior.total += isDeposit ? amount : -amount;
+        prior.isDeposit = prior.total >= 0;
+        prior.label = isDeposit ? 'Deposit' : 'Withdrawal';
+        txMap.set(dateKey, prior);
+      });
+
+    const eventMarkers = Array.from(txMap.values())
+      .sort((a, b) => a.dateKey.localeCompare(b.dateKey))
+      .map((tx) => {
+        const idx = (snapshots || []).findIndex((snapshot) => String(snapshot && snapshot.snapshotDate || '').slice(0, 10) === tx.dateKey);
         if (idx < 0) return null;
 
         const values = series.map(([_, value]) => value);
@@ -1029,20 +1057,29 @@
         const pct = (currentValue - min) / range;
         const left = (((idx || 0) / Math.max(series.length - 1, 1)) * 100);
         const top = 100 - (pct * 100);
-        const isDeposit = String(tx.type || '').toUpperCase() === 'DEPOSIT';
         return {
           left: Math.min(96, Math.max(4, left)),
           top: Math.min(92, Math.max(12, top)),
-          label: isDeposit ? 'Deposit' : 'Withdrawal',
-          isDeposit,
+          label: tx.label || 'Cash flow',
+          isDeposit: tx.total >= 0,
+          total: Math.abs(tx.total),
+          dateLabel: tx.dateKey,
         };
       })
       .filter(Boolean);
 
-    const markers = eventMarkers.map((marker) => `
+    const visibleMarkers = eventMarkers.length > 6
+      ? eventMarkers
+          .slice()
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 6)
+      : eventMarkers;
+
+    const markers = visibleMarkers.map((marker) => `
       <span class="wallet-summary-event-marker ${marker.isDeposit ? 'is-deposit' : 'is-withdrawal'}"
         style="left:${marker.left}%; top:${marker.top}%;"
-        title="${marker.label}">
+        title="${marker.dateLabel} · ${marker.isDeposit ? '+' : '-'}${marker.total.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN"
+        aria-label="${marker.dateLabel} · ${marker.isDeposit ? '+' : '-'}${marker.total.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN">
         <span>${marker.isDeposit ? '+' : '−'}</span>
       </span>
     `).join('');
@@ -1051,10 +1088,10 @@
       <div class="wallet-summary-mini-card wallet-summary-chart-card">
         <div class="wallet-summary-mini-header">
           <span>Value history</span>
-          <span class="wallet-summary-mini-pill">${series.length} points</span>
         </div>
         <div class="wallet-summary-spark-wrap">
           ${sparkSVG || '<div class="wallet-summary-empty-mini">No value history yet</div>'}
+          ${axisLabels}
           ${markers}
         </div>
       </div>
@@ -1155,7 +1192,13 @@
           });
 
           dots.forEach((dot, index) => dot.setAttribute('opacity', index === bestIdx ? '1' : '0'));
-          tip.textContent = `${best.label}: ${best.v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+
+          const datePart = best.date
+            ? new Date(best.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            : best.label || 'Date';
+          const valuePart = Number(best.v || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
+
+          tip.textContent = `${datePart} · ${valuePart}`;
           tip.style.display = 'block';
           tip.style.left = `${event.clientX + 12}px`;
           tip.style.top = `${event.clientY - 18}px`;
