@@ -606,26 +606,31 @@
                     <svg class="wallet-qe-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                         <path d="M3 6h14M3 10h10M3 14h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                     </svg>
-                    <span class="wallet-qe-title">Quick Entry</span>
-                    <span class="wallet-qe-subtitle">Type a transaction in plain text, press Enter to confirm</span>
+                    <span class="wallet-qe-title">Quick entry</span>
+                    <span class="wallet-qe-subtitle">Add a transaction in plain English</span>
                 </div>
                 <div class="wallet-qe-body">
+                    <div class="wallet-qe-inline-copy">Use this to record buys, sells, deposits, and withdrawals without filling a long form.</div>
                     <div class="wallet-qe-input-row">
                         <textarea id="mgmt-quick-entry-input"
                             class="wallet-qe-input"
                             rows="1"
-                            placeholder="e.g. Buy 10 AAPL for 185.50"
+                            placeholder="e.g. Buy 10 AAPL for 185.50 to XTB on 2025-06-01"
                             autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                             oninput="window._mgmt.onQuickEntryInput(event)"
                             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._mgmt.parseQuickEntry();}"></textarea>
                     </div>
-                    <div class="wallet-qe-action-row" style="display: flex; justify-content: flex-end; margin-top: 8px;">
+                    <div class="wallet-qe-action-row" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                        <button type="button" id="mgmt-qe-open-trade-btn" class="wallet-qe-btn wallet-qe-btn-secondary"
+                                onclick="window._mgmt.openTransactionsPanel('trade')">
+                            Full form
+                        </button>
                         <button type="button" id="mgmt-qe-parse-btn" class="wallet-qe-btn"
                                 onclick="window._mgmt.parseQuickEntry()">
                             <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" style="width: 16px; height: 16px; margin-right: 6px;">
                                 <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            Process
+                            Save entry
                         </button>
                     </div>
                     <div class="wallet-qe-examples">
@@ -653,6 +658,21 @@
                     <div id="mgmt-settings-actions" class="wallet-settings-actions wob-settings-actions"></div>
                 </div>
                 <div id="mgmt-settings-summary" class="wallet-settings-summary wob-summary">Summary stays pinned first. Select a wallet to manage it.</div>
+                <div class="wob-kpi-strip" aria-label="Wallet summary metrics">
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Total value</span>
+                        <strong id="wob-kpi-total">—</strong>
+                    </div>
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Today</span>
+                        <strong id="wob-kpi-day">—</strong>
+                    </div>
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Annual return</span>
+                        <strong id="wob-kpi-return">—</strong>
+                    </div>
+                </div>
+                <div class="wob-hint">Holdings show your current allocation. You can add transactions in plain English — for example: “Buy 10 AAPL for 185.50” or “Deposit 1,000 to IKZE”.</div>
                 <div id="wallet-summary-visuals" class="wallet-summary-visuals"></div>
                 <div id="mgmt-benchmark-setting" style="display:none"></div>
                 <!-- ── ATH management ────────────────────────────────── -->
@@ -665,11 +685,7 @@
                     <span class="wallet-setting-label">Average Yearly Return</span>
                     <div id="mgmt-annual-return-content" class="wob-value-bold">--</div>
                 </div>
-                <div class="wob-actions">
-                    <button id="mgmt-open-trade-btn" class="mgmt-btn mgmt-btn-primary wallet-quick-action"
-                            onclick="window._mgmt.openTransactionsPanel('trade')">New transaction</button>
-                    <span id="mgmt-inline-status" class="wallet-settings-pill wallet-settings-pill-muted">Stable holdings layout</span>
-                </div>
+                <div class="wob-actions"></div>
             </div>
 
             <!-- ── Inline Transaction Form ─────────────────── -->

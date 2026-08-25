@@ -831,8 +831,7 @@
     const overlay = document.getElementById('mgmt-transaction-overlay');
     const tradeView = document.getElementById('mgmt-overlay-trade');
     const overlayTitle = document.getElementById('mgmt-overlay-title');
-    const openTradeBtn = document.getElementById('mgmt-open-trade-btn');
-    const inlineStatus = document.getElementById('mgmt-inline-status');
+    const openTradeBtn = document.getElementById('mgmt-qe-open-trade-btn');
     const portfolio = _activePortfolio();
     const isSummary = _isSummaryPortfolio(_activePortId);
 
@@ -844,15 +843,6 @@
       openTradeBtn.disabled = isSummary;
       openTradeBtn.classList.toggle('is-disabled', isSummary);
       openTradeBtn.textContent = isSummary ? 'Summary is read only' : 'New transaction';
-    }
-    if (inlineStatus) {
-      if (isSummary) {
-        _setPillState(inlineStatus, 'Summary stays stable and read only', '');
-      } else if (_isTransactionsPanelOpen()) {
-        _setPillState(inlineStatus, 'Trading in focused panel', '');
-      } else {
-        _setPillState(inlineStatus, 'Stable holdings layout', '');
-      }
     }
     if (overlay) overlay.dataset.mode = 'trade';
   }
@@ -953,27 +943,25 @@
   }
 
   function _buildSummarySparkline(snapshots, txs) {
-    const values = (snapshots || [])
-      .map((snapshot) => Number(snapshot && snapshot.portfolioValue))
-      .filter((value) => Number.isFinite(value));
+    const series = (snapshots || [])
+      .map((snapshot) => {
+        const value = Number(snapshot && snapshot.portfolioValue);
+        const tsRaw = String(snapshot && snapshot.snapshotDate || '').slice(0, 10);
+        const ts = tsRaw ? new Date(`${tsRaw}T00:00:00Z`).getTime() : null;
+        return Number.isFinite(value) && Number.isFinite(ts) ? [ts, value] : null;
+      })
+      .filter(Boolean);
 
-    if (values.length < 2) {
+    if (series.length < 2) {
       return '<div class="wallet-summary-empty-mini">No value history yet</div>';
     }
 
-    const min = Math.min(...values);
-    const max = Math.max(...values) || 1;
-    const range = max - min || 1;
-    const width = 220;
-    const height = 72;
-    const pad = 6;
-    const list = values.map((value, idx) => {
-      const x = pad + (idx / Math.max(values.length - 1, 1)) * (width - pad * 2);
-      const y = height - pad - ((value - min) / range) * (height - pad * 2);
-      return { x, y, value };
-    });
-    const line = list.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
-    const last = list[list.length - 1];
+    const valueNow = series[series.length - 1][1];
+    const valueStart = series[0][1];
+    const isUp = valueNow >= valueStart;
+    const sparkSVG = typeof makeSparkline === 'function'
+      ? makeSparkline(series, isUp, 520, 170)
+      : '';
 
     const eventMarkers = (txs || [])
       .filter((tx) => ['DEPOSIT', 'WITHDRAWAL'].includes(String(tx && tx.type || '').toUpperCase()))
@@ -981,45 +969,43 @@
         const dateKey = String(tx.transactionDate || tx.date || '').slice(0, 10);
         const idx = (snapshots || []).findIndex((snapshot) => String(snapshot && snapshot.snapshotDate || '').slice(0, 10) === dateKey);
         if (idx < 0) return null;
-        const ratio = ((snapshots || []).length > 1) ? idx / (snapshots.length - 1) : 0;
-        const x = pad + ratio * (width - pad * 2);
-        const y = height - pad - ((Number(snapshots[idx].portfolioValue) - min) / range) * (height - pad * 2);
+
+        const values = series.map(([_, value]) => value);
+        const min = Math.min(...values);
+        const max = Math.max(...values) || 1;
+        const range = max - min || 1;
+        const currentValue = Number((snapshots || [])[idx] && (snapshots || [])[idx].portfolioValue || 0);
+        const pct = (currentValue - min) / range;
+        const left = (((idx || 0) / Math.max(series.length - 1, 1)) * 100);
+        const top = 100 - (pct * 100);
         const isDeposit = String(tx.type || '').toUpperCase() === 'DEPOSIT';
         return {
-          x,
-          y,
-          isDeposit,
+          left: Math.min(96, Math.max(4, left)),
+          top: Math.min(92, Math.max(12, top)),
           label: isDeposit ? 'Deposit' : 'Withdrawal',
+          isDeposit,
         };
       })
       .filter(Boolean);
 
     const markers = eventMarkers.map((marker) => `
-      <g class="wallet-spark-marker" transform="translate(${marker.x}, ${marker.y})">
-        <circle r="7" fill="${marker.isDeposit ? '#22c55e' : '#f59e0b'}" opacity="0.2"></circle>
-        <circle r="4" fill="${marker.isDeposit ? '#22c55e' : '#f59e0b'}"></circle>
-        <text x="0" y="2.5" text-anchor="middle" font-size="7" font-weight="700" fill="#062033" font-family="Arial, sans-serif">${marker.isDeposit ? '+' : '-'}</text>
-        <title>${marker.label}</title>
-      </g>
+      <span class="wallet-summary-event-marker ${marker.isDeposit ? 'is-deposit' : 'is-withdrawal'}"
+        style="left:${marker.left}%; top:${marker.top}%;"
+        title="${marker.label}">
+        <span>${marker.isDeposit ? '+' : '−'}</span>
+      </span>
     `).join('');
 
     return `
-      <div class="wallet-summary-mini-card">
+      <div class="wallet-summary-mini-card wallet-summary-chart-card">
         <div class="wallet-summary-mini-header">
           <span>Value history</span>
-          <span class="wallet-summary-mini-pill">${values.length} points</span>
+          <span class="wallet-summary-mini-pill">${series.length} points</span>
         </div>
-        <svg viewBox="0 0 ${width} ${height}" width="100%" height="72" role="img" aria-label="Wallet value history">
-          <defs>
-            <linearGradient id="wallet-summary-sparkfill" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="#4cc9f0" stop-opacity="0.35"></stop>
-              <stop offset="100%" stop-color="#4cc9f0" stop-opacity="0.02"></stop>
-            </linearGradient>
-          </defs>
-          <polyline points="${line}" fill="none" stroke="#4cc9f0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
-          <polygon points="${line} ${last.x.toFixed(2)},${height - pad} ${pad},${height - pad}" fill="url(#wallet-summary-sparkfill)"></polygon>
+        <div class="wallet-summary-spark-wrap">
+          ${sparkSVG || '<div class="wallet-summary-empty-mini">No value history yet</div>'}
           ${markers}
-        </svg>
+        </div>
       </div>
     `;
   }
@@ -1029,6 +1015,7 @@
       .filter((holding) => Number(holding && holding.currentValue || 0) > 0)
       .map((holding) => ({
         name: String(holding.name || holding.ticker || 'Unknown'),
+        ticker: String(holding.ticker || '').trim(),
         value: Number(holding.currentValue || holding.purchaseValue || 0),
       }))
       .sort((a, b) => b.value - a.value);
@@ -1039,32 +1026,39 @@
 
     const total = active.reduce((sum, item) => sum + item.value, 0) || 1;
     let start = 0;
-    const segments = active.map((item) => {
+    const segments = active.map((item, index) => {
       const share = item.value / total;
       const end = start + share * 360;
-      const color = `hsl(${(start / 360) * 240 + 190} 70% 58%)`;
+      const color = getColor(item.name, index);
       const segment = `${color} ${start}deg ${end}deg`;
       start = end;
       return segment;
     }).join(', ');
 
+    const legend = active.slice(0, 5).map((item, index) => {
+      const share = (item.value / total) * 100;
+      const color = getColor(item.name, index);
+      return `
+        <div class="wallet-summary-legend-item">
+          <span class="wallet-summary-legend-swatch" style="background:${color};"></span>
+          <span class="wallet-summary-legend-name">${_esc(item.ticker || item.name.slice(0, 12))}</span>
+          <span class="wallet-summary-legend-value">${share.toFixed(1)}%</span>
+        </div>
+      `;
+    }).join('');
+
     return `
-      <div class="wallet-summary-mini-card">
+      <div class="wallet-summary-mini-card wallet-summary-pie-card">
         <div class="wallet-summary-mini-header">
           <span>Holdings</span>
           <span class="wallet-summary-mini-pill">${active.length} assets</span>
         </div>
         <div class="wallet-summary-pie-wrapper">
-          <div class="wallet-summary-pie" style="background: conic-gradient(${segments});">
+          <div class="wallet-summary-pie" style="background: conic-gradient(${segments});" aria-label="Portfolio allocation chart">
             <div class="wallet-summary-pie-center">${active.length}</div>
           </div>
           <div class="wallet-summary-pie-legend">
-            ${active.slice(0, 4).map((item) => `
-              <div class="wallet-summary-legend-item">
-                <span class="wallet-summary-legend-dot" style="background:${item.value >= active[0].value ? '#4cc9f0' : '#7dd3fc'}"></span>
-                <span>${_esc(item.name.slice(0, 12))}</span>
-              </div>
-            `).join('')}
+            ${legend}
           </div>
         </div>
       </div>
@@ -1084,19 +1078,63 @@
         ${pie}
       </div>
     `;
+
+    if (typeof getSparkTooltip === 'function') {
+      wrap.querySelectorAll('.wallet-summary-spark-wrap .sparkline-svg').forEach((svg) => {
+        const tip = getSparkTooltip();
+        const rect = svg && svg.querySelector('rect[data-color]');
+        if (!rect || !svg.dataset.coords) return;
+        const coords = JSON.parse(svg.dataset.coords);
+        const dots = [...svg.querySelectorAll('.sp-dot')];
+
+        rect.addEventListener('mousemove', (event) => {
+          const svgRect = svg.getBoundingClientRect();
+          const mouseX = event.clientX - svgRect.left;
+          let best = coords[0];
+          let bestDist = Infinity;
+          let bestIdx = 0;
+
+          coords.forEach((point, index) => {
+            const diff = Math.abs(point.x - mouseX);
+            if (diff < bestDist) {
+              bestDist = diff;
+              best = point;
+              bestIdx = index;
+            }
+          });
+
+          dots.forEach((dot, index) => dot.setAttribute('opacity', index === bestIdx ? '1' : '0'));
+          tip.textContent = `${best.label}: ${best.v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+          tip.style.display = 'block';
+          tip.style.left = `${event.clientX + 12}px`;
+          tip.style.top = `${event.clientY - 18}px`;
+        });
+
+        rect.addEventListener('mouseleave', () => {
+          dots.forEach((dot) => dot.setAttribute('opacity', '0'));
+          tip.style.display = 'none';
+        });
+      });
+    }
   }
 
   function _renderSettings(portfolio, holdingsCount, txCount) {
     const titleEl = document.getElementById('mgmt-holdings-title');
     const summaryEl = document.getElementById('mgmt-settings-summary');
+    const totalKpiEl = document.getElementById('wob-kpi-total');
+    const dayKpiEl = document.getElementById('wob-kpi-day');
+    const returnKpiEl = document.getElementById('wob-kpi-return');
     const actionsEl = document.getElementById('mgmt-settings-actions');
     const subtitleEl = document.getElementById('mgmt-holdings-subtitle');
-    const inlineStatus = document.getElementById('mgmt-inline-status');
     const tradeCard = document.querySelector('.wallet-card-trade');
     const benchmarkSettingEl = document.getElementById('mgmt-benchmark-setting');
     const annualReturnContentEl = document.getElementById('mgmt-annual-return-content');
     const summary = _walletSummaryFor(portfolio) || { total: 0, dailyPLN: 0, dailyPct: 0, annualReturn: 0 };
     const isSummary = _isSummaryPortfolio(portfolio && portfolio.portfolioId);
+    const totalText = Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
+    const dailyText = `${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
+    const dailyPctText = `${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%`;
+    const annualReturnText = typeof summary.annualReturn === 'number' ? `${summary.annualReturn > 0 ? '+' : ''}${(summary.annualReturn * 100).toFixed(2)}%` : '—';
 
     if (titleEl) titleEl.textContent = portfolio ? portfolio.name : 'Select a portfolio';
     if (subtitleEl) subtitleEl.textContent = isSummary
@@ -1107,6 +1145,9 @@
         ? `Summary is auto-calculated from all wallets. Current total: <strong>${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN</strong>.`
         : `Live total: <strong>${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN</strong> · Daily <strong>${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN (${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%)</strong> · ${holdingsCount} holdings · ${txCount} transactions.`;
     }
+    if (totalKpiEl) totalKpiEl.textContent = totalText;
+    if (dayKpiEl) dayKpiEl.textContent = `${dailyText} / ${dailyPctText}`;
+    if (returnKpiEl) returnKpiEl.textContent = annualReturnText;
     if (actionsEl) {
         actionsEl.innerHTML = isSummary ? `
         <span class="wallet-settings-pill">Summary pinned first</span>
@@ -1118,10 +1159,6 @@
       `;
     }
     if (tradeCard) tradeCard.style.display = isSummary && _transactionsPanelMode === 'trade' ? 'none' : '';
-    // Quick Entry is now always visible
-    if (inlineStatus && !isSummary && !_isTransactionsPanelOpen()) {
-      _setPillState(inlineStatus, `Stable holdings · ${holdingsCount} positions · ${txCount} entries`, '');
-    }
     _syncTransactionsPanel();
     _renderWalletSummaryVisuals();
     // Render ATH section for the selected wallet
