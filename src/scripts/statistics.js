@@ -1086,10 +1086,7 @@ function _buildUnderwaterLakeCatalog(metrics) {
 function _selectedUnderwaterLake(catalog) {
     if (!catalog.length) return null;
     const current = catalog.find(lake => Number(lake.lakeId) === Number(_underwaterSelectedLakeId));
-    if (current) return current;
-    const widest = catalog.reduce((acc, lake) => (!acc || lake.durationDays > acc.durationDays ? lake : acc), null);
-    _underwaterSelectedLakeId = widest ? widest.lakeId : catalog[0].lakeId;
-    return catalog.find(lake => Number(lake.lakeId) === Number(_underwaterSelectedLakeId)) || catalog[0];
+    return current || null;
 }
 
 function _underwaterRangeStartDate(endDate, range) {
@@ -1154,16 +1151,16 @@ function _ensureUnderwaterPlugin() {
             ctx.save();
 
             if (mode === 'path' && lakeCatalog.length) {
-                lakeCatalog.forEach((lake) => {
-                    if (!points[lake.startIndex] || !points[lake.endIndex]) return;
-                    const left = points[lake.startIndex].x;
-                    const right = points[lake.endIndex].x;
-                    const width = Math.max(1, right - left);
-                    const selected = Number(lake.lakeId) === Number(selectedLakeId);
-                    ctx.fillStyle = selected ? 'rgba(0, 150, 255, 0.20)' : 'rgba(0, 150, 255, 0.07)';
-                    ctx.fillRect(left, area.top, width, area.bottom - area.top);
-                    if (selected) {
-                        const label = selectedLakeLabel || `Lake ${lake.lakeId}`;
+                if (selectedLakeId) {
+                    const selectedLake = lakeCatalog.find(lake => Number(lake.lakeId) === Number(selectedLakeId));
+                    if (selectedLake && points[selectedLake.startIndex] && points[selectedLake.endIndex]) {
+                        const left = points[selectedLake.startIndex].x;
+                        const right = points[selectedLake.endIndex].x;
+                        const width = Math.max(1, right - left);
+                        ctx.fillStyle = 'rgba(0, 150, 255, 0.20)';
+                        ctx.fillRect(left, area.top, width, area.bottom - area.top);
+
+                        const label = selectedLakeLabel || `Lake ${selectedLake.lakeId}`;
                         const cx = left + width / 2;
                         const labelY = Math.max(area.top + 10, area.top + 12);
                         const padX = 8;
@@ -1186,9 +1183,18 @@ function _ensureUnderwaterPlugin() {
                         ctx.fillStyle = '#d8eeff';
                         ctx.fillText(label, boxX + padX, boxY + boxH - padY - 3);
                     }
-                });
+                } else {
+                    lakeCatalog.forEach((lake) => {
+                        if (!points[lake.startIndex] || !points[lake.endIndex]) return;
+                        const left = points[lake.startIndex].x;
+                        const right = points[lake.endIndex].x;
+                        const width = Math.max(1, right - left);
+                        ctx.fillStyle = 'rgba(0, 150, 255, 0.07)';
+                        ctx.fillRect(left, area.top, width, area.bottom - area.top);
+                    });
+                }
 
-                if (Number.isInteger(widestStartIndex) && Number.isInteger(widestEndIndex) && points[widestStartIndex] && points[widestEndIndex]) {
+                if (!selectedLakeId && Number.isInteger(widestStartIndex) && Number.isInteger(widestEndIndex) && points[widestStartIndex] && points[widestEndIndex]) {
                     const left = points[widestStartIndex].x;
                     const right = points[widestEndIndex].x;
                     const width = Math.max(1, right - left);
@@ -1220,7 +1226,7 @@ function _ensureUnderwaterPlugin() {
                     }
                 }
 
-                if (Number.isInteger(deepestIndex) && points[deepestIndex]) {
+                if (!selectedLakeId && Number.isInteger(deepestIndex) && points[deepestIndex]) {
                     const x = points[deepestIndex].x;
                     ctx.strokeStyle = 'rgba(56, 189, 248, 0.95)';
                     ctx.setLineDash([4, 4]);
@@ -1432,6 +1438,36 @@ function _selectedLakeSpan(catalog, selectedLake) {
     };
 }
 
+function _selectedLakeDetailMetrics(metrics, selectedLake) {
+    if (!selectedLake || !Array.isArray(metrics) || !metrics.length) return metrics;
+
+    const padBefore = 2;
+    const padAfter = 2;
+    const start = Math.max(0, selectedLake.startIndex - padBefore);
+    const end = Math.min(metrics.length - 1, selectedLake.endIndex + padAfter);
+    const slice = metrics.slice(start, end + 1);
+    if (!slice.length) return metrics;
+
+    const lakeId = Number(selectedLake.lakeId);
+    const firstSelectedIndex = slice.findIndex(row => Number(row.lake_id) === lakeId);
+    const lastSelectedIndex = slice.length - 1 - [...slice].reverse().findIndex(row => Number(row.lake_id) === lakeId);
+
+    return slice.map((row, idx) => {
+        const rowLakeId = Number(row.lake_id);
+        if (rowLakeId !== lakeId) return { ...row, drawdown: 0, lake_id: null };
+
+        let drawdown = Number(row.drawdown || 0);
+        const isFirstSelected = idx === firstSelectedIndex;
+        const isLastSelected = idx === lastSelectedIndex;
+
+        if (isFirstSelected || (!selectedLake.isOpen && isLastSelected)) {
+            drawdown = 0;
+        }
+
+        return { ...row, drawdown };
+    });
+}
+
 function _pickLakeFromChart(chart, event) {
     if (!chart || !chart.data || !chart.data.labels) return null;
     const points = chart.getElementsAtEventForMode(event, 'nearest', { intersect: false }, true) || [];
@@ -1482,9 +1518,20 @@ function _renderUnderwaterCharts(metrics, extremes) {
     const lakeCatalog = _underwaterLakeCatalog;
     const selectedLake = _selectedUnderwaterLake(lakeCatalog);
     const spans = _lakeIndexSpans(metrics, extremes);
-    const selectedLakeMetrics = selectedLake ? selectedLake.rows : metrics;
+    const deepestLabel = extremes?.deepest
+        ? `Deepest ${_fmtUwlPct(extremes.deepest.drawdown)} · ${fmtDate(extremes.deepest.date)}`
+        : '';
+    const widestLabel = extremes?.widest
+        ? `Widest ${extremes.widest.duration}d · ${fmtDate(extremes.widest.start)} → ${fmtDate(extremes.widest.end)}`
+        : '';
+    const selectedLakeMetrics = selectedLake ? _selectedLakeDetailMetrics(metrics, selectedLake) : metrics;
     const selectedLakeLabels = selectedLakeMetrics.map(row => row.date);
-    const selectedLakeDrawdowns = selectedLakeMetrics.map(row => Math.min(0, Number(row.drawdown || 0)));
+    const selectedLakeDrawdowns = selectedLakeMetrics.map(row => {
+        const lakeId = Number(row.lake_id);
+        if (selectedLake && lakeId === Number(selectedLake.lakeId)) return Math.min(0, Number(row.drawdown || 0));
+        if (selectedLake) return 0;
+        return Math.min(0, Number(row.drawdown || 0));
+    });
     const selectedLakeLabel = selectedLake
         ? `Lake ${selectedLake.lakeId} · ${selectedLake.durationDays}d · ${selectedLake.isOpen ? 'Open' : `${selectedLake.startDate} → ${selectedLake.endDate}`}`
         : '';
@@ -1691,7 +1738,7 @@ async function refreshUnderwaterLakes() {
         if (_underwaterLakeCatalog.length) {
             const stillExists = _underwaterLakeCatalog.some(lake => Number(lake.lakeId) === Number(_underwaterSelectedLakeId));
             if (!stillExists) {
-                _underwaterSelectedLakeId = _selectedUnderwaterLake(_underwaterLakeCatalog)?.lakeId || null;
+                _underwaterSelectedLakeId = null;
             }
         } else {
             _underwaterSelectedLakeId = null;
@@ -1766,7 +1813,7 @@ window.updateUnderwaterLakesVisualizer = function(metricsPayload) {
     _underwaterDisplayedMetrics = metrics;
     _underwaterLakeCatalog = _buildUnderwaterLakeCatalog(metrics);
     if (!_underwaterLakeCatalog.some(lake => Number(lake.lakeId) === Number(_underwaterSelectedLakeId))) {
-        _underwaterSelectedLakeId = _selectedUnderwaterLake(_underwaterLakeCatalog)?.lakeId || null;
+        _underwaterSelectedLakeId = null;
     }
     const extremes = _extractUnderwaterExtremes(metrics);
     _setUnderwaterCards(extremes);

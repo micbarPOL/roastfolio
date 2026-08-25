@@ -359,7 +359,8 @@
             '.diary-mention{color:#5aa0ff;font-weight:700;text-decoration:underline;cursor:pointer;white-space:nowrap;background:none;border:none;padding:0;}' +
             '@keyframes diaryPulse{0%,100%{box-shadow:0 0 0 rgba(245,158,11,.15)}50%{box-shadow:0 0 20px rgba(245,158,11,.45)}}' +
             '@keyframes diaryCardIn{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}' +
-            '@media (max-width: 980px){.diary-split{grid-template-columns:1fr}.diary-ledger-list{max-height:42vh}}' +
+            '@media (max-width: 980px){.diary-split{grid-template-columns:1fr;gap:10px;min-height:auto}.diary-ledger-list{max-height:42vh}.diary-pane-head{padding:10px 12px}.diary-detail-body{padding:10px 12px}}' +
+            '@media (max-width: 640px){.diary-split{gap:8px}.diary-pane{border-radius:12px}.diary-pane-head{flex-wrap:wrap}.diary-pane-head strong{font-size:15px}.diary-ledger-list{padding:8px;max-height:36vh}.diary-ledger-card{padding:8px;border-radius:10px}.diary-detail-body{gap:10px}.diary-glass-toggle{width:52px;height:28px}.diary-toggle-status{min-width:0;font-size:11px}.diary-chat-compose{flex-direction:column}.diary-chat-compose input,.diary-chat-compose button{width:100%}.diary-check-item{grid-template-columns:auto 1fr;gap:6px}.diary-check-item input[type="date"]{grid-column:2 / -1;width:100%}.diary-check-add-row{grid-template-columns:1fr !important}.diary-check-add-row input,.diary-check-add-row button{width:100%}}' +
             '@media (max-width: 760px){.diary-check-add-row{grid-template-columns:1fr !important}.diary-check-add-row input,.diary-check-add-row button{width:100%}}';
         document.head.appendChild(style);
     }
@@ -641,7 +642,7 @@
             '<div class="diary-detail-body">' +
             '  <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Diary note</span><textarea id="diary-focus-note" style="min-height:90px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.note_text || '') + '</textarea></label>' +
             mentionsBlock +
-            '  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">' +
+            '  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">' +
             '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Why buy</span><textarea id="diary-why-buy" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.why_buy || '') + '</textarea></label>' +
             '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Exit plan</span><textarea id="diary-exit-plan" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.exit_plan || '') + '</textarea></label>' +
             '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Risk factors</span><textarea id="diary-risk-factors" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.risk_factors || '') + '</textarea></label>' +

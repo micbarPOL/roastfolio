@@ -145,12 +145,12 @@ class DrawdownLakeAnalyzer:
         frame = frame[~frame.index.duplicated(keep="last")]
         frame[self.value_col] = pd.to_numeric(frame[self.value_col], errors="coerce")
         frame = frame.dropna(subset=[self.value_col])
-
         if frame.empty:
             return frame
 
-        if (frame[self.value_col] <= 0).any():
-            raise ValueError("Portfolio values must be strictly positive for drawdown math")
+        frame = frame[frame[self.value_col] > 0].copy()
+        if frame.empty:
+            return frame
 
         return frame
 

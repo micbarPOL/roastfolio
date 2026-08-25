@@ -524,37 +524,81 @@
                 </div>
             </div>
 
-            <!-- ── Compact overview bar ─────────────────────────
-                 Always visible. Replaces the old wallet-card-overview.
-                 Shows wallet name, rename/delete actions, benchmark
-                 (Summary only), and quick-action buttons on desktop.
+            <!-- ── Holdings — always visible ───────────────────
+                 No display:none. Skeleton shows while loading.
+                 Transactions open in overlay without touching this.
             ── -->
-            <div class="wallet-overview-bar wallet-card">
-                <div class="wob-head">
-                    <div class="wob-name-group">
-                        <span class="mgmt-section-title">Selected wallet</span>
-                        <h3 id="mgmt-holdings-title" class="wob-wallet-name">Select a wallet</h3>
+            <div id="mgmt-holdings-panel" class="wallet-screen-content wallet-holdings-shell">
+                    <div class="wallet-card wallet-card-holdings">
+                        <div class="wallet-table-header">
+                            <div>
+                                <div class="mgmt-section-title">Holdings</div>
+                                <div id="mgmt-holdings-subtitle" class="wallet-table-subtitle">Live value, allocation, and quick trade actions.</div>
+                            </div>
+                            <div id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading holdings…</div>
+                        </div>
+                        <div class="holdings-view-toggle" role="tablist" aria-label="Holdings view">
+                            <button type="button" class="holdings-view-btn is-active" data-holdings-view="active" role="tab" aria-selected="true" onclick="window._mgmt.setHoldingsView('active')">Active Holdings</button>
+                            <button type="button" class="holdings-view-btn" data-holdings-view="cemetery" role="tab" aria-selected="false" onclick="window._mgmt.setHoldingsView('cemetery')">The Cemetery</button>
+                        </div>
+                        <div data-holdings-view-panel="active">
+                        <div class="wallet-table-wrap wallet-table-wrap-stable wallet-desktop-only">
+                                <table class="wallet-holdings-table">
+                                    <colgroup>
+                                        <col class="wht-col-company">
+                                        <col class="wht-col-shares">
+                                        <col class="wht-col-value">
+                                        <col class="wht-col-today">
+                                        <col class="wht-col-alloc">
+                                        <col class="wht-col-actions">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th class="wht-th">Company</th>
+                                            <th class="wht-th wht-th-r">Shares</th>
+                                            <th class="wht-th wht-th-r">Value</th>
+                                            <th class="wht-th wht-th-r">Today</th>
+                                            <th class="wht-th wht-th-r">Alloc</th>
+                                            <th class="wht-th"></th>
+                                        </tr>
+                                    </thead>
+                                <tbody id="mgmt-holdings-body"></tbody>
+                            </table>
+                        </div>
+                        <!-- Mobile: holdings as stacked cards -->
+                        <div id="mgmt-holdings-cards" class="wallet-holdings-cards"></div>
+                        </div>
+                        <div data-holdings-view-panel="cemetery" hidden>
+                            <div class="cemetery-header">
+                                <div>
+                                    <div class="cemetery-title">Closed Positions</div>
+                                    <div class="wallet-table-subtitle">Closed positions with lifecycle and total return.</div>
+                                </div>
+                                <div class="cemetery-controls">
+                                    <label for="cemetery-filter" class="cemetery-filter-label">View</label>
+                                    <select id="cemetery-filter" class="cemetery-filter-select">
+                                        <option value="all">All</option>
+                                        <option value="active">Active</option>
+                                        <option value="closed">Closed</option>
+                                    </select>
+                                    <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
+                                </div>
+                            </div>
+                            <div class="wallet-table-wrap cemetery-table-wrap">
+                                <table class="wallet-holdings-table cemetery-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th><button type="button" id="cemetery-sort-date" class="cemetery-sort-btn" aria-label="Sort by close date">Holding lifespan</button></th>
+                                            <th><button type="button" id="cemetery-sort-return" class="cemetery-sort-btn" aria-label="Sort by return">Total (Realized) Return</button></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mgmt-cemetery-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
-                    <div id="mgmt-settings-actions" class="wallet-settings-actions wob-settings-actions"></div>
                 </div>
-                <div id="mgmt-settings-summary" class="wallet-settings-summary wob-summary">Summary stays pinned first. Select a wallet to manage it.</div>
-                <div id="mgmt-benchmark-setting" style="display:none"></div>
-                <!-- ── ATH management ────────────────────────────────── -->
-                <div id="mgmt-ath-setting" class="wallet-setting-item" style="display:none">
-                    <span class="wallet-setting-label">All-Time High (ATH)</span>
-                    <div id="mgmt-ath-content"></div>
-                    <div id="mgmt-ath-status" class="portfolio-ath-status" aria-live="polite"></div>
-                </div>
-                <div id="mgmt-annual-return-setting" class="wallet-setting-item">
-                    <span class="wallet-setting-label">Average Yearly Return</span>
-                    <div id="mgmt-annual-return-content" class="wob-value-bold">--</div>
-                </div>
-                <div class="wob-actions">
-                    <button id="mgmt-open-trade-btn" class="mgmt-btn mgmt-btn-primary wallet-quick-action"
-                            onclick="window._mgmt.openTransactionsPanel('trade')">New transaction</button>
-                    <span id="mgmt-inline-status" class="wallet-settings-pill wallet-settings-pill-muted">Stable holdings layout</span>
-                </div>
-            </div>
 
             <!-- ── Quick Entry — always visible on wallet screen ── -->
             <div id="wallet-quick-entry-card" class="wallet-card wallet-qe-card">
@@ -592,6 +636,39 @@
                         <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('deposit')">💰 Deposit 5000 to IKZE</span>
                     </div>
                     <div id="mgmt-qe-status" class="wallet-qe-status"></div>
+                </div>
+            </div>
+
+            <!-- ── Compact overview bar ─────────────────────────
+                 Always visible. Replaces the old wallet-card-overview.
+                 Shows wallet name, rename/delete actions, benchmark
+                 (Summary only), and quick-action buttons on desktop.
+            ── -->
+            <div class="wallet-overview-bar wallet-card">
+                <div class="wob-head">
+                    <div class="wob-name-group">
+                        <span class="mgmt-section-title">Selected wallet</span>
+                        <h3 id="mgmt-holdings-title" class="wob-wallet-name">Select a wallet</h3>
+                    </div>
+                    <div id="mgmt-settings-actions" class="wallet-settings-actions wob-settings-actions"></div>
+                </div>
+                <div id="mgmt-settings-summary" class="wallet-settings-summary wob-summary">Summary stays pinned first. Select a wallet to manage it.</div>
+                <div id="wallet-summary-visuals" class="wallet-summary-visuals"></div>
+                <div id="mgmt-benchmark-setting" style="display:none"></div>
+                <!-- ── ATH management ────────────────────────────────── -->
+                <div id="mgmt-ath-setting" class="wallet-setting-item" style="display:none">
+                    <span class="wallet-setting-label">All-Time High (ATH)</span>
+                    <div id="mgmt-ath-content"></div>
+                    <div id="mgmt-ath-status" class="portfolio-ath-status" aria-live="polite"></div>
+                </div>
+                <div id="mgmt-annual-return-setting" class="wallet-setting-item">
+                    <span class="wallet-setting-label">Average Yearly Return</span>
+                    <div id="mgmt-annual-return-content" class="wob-value-bold">--</div>
+                </div>
+                <div class="wob-actions">
+                    <button id="mgmt-open-trade-btn" class="mgmt-btn mgmt-btn-primary wallet-quick-action"
+                            onclick="window._mgmt.openTransactionsPanel('trade')">New transaction</button>
+                    <span id="mgmt-inline-status" class="wallet-settings-pill wallet-settings-pill-muted">Stable holdings layout</span>
                 </div>
             </div>
 
@@ -802,82 +879,6 @@
                     </div>
 
             </div><!-- /#wallet-transaction-card -->
-
-            <!-- ── Holdings — always visible ───────────────────
-                 No display:none. Skeleton shows while loading.
-                 Transactions open in overlay without touching this.
-            ── -->
-            <div id="mgmt-holdings-panel" class="wallet-screen-content wallet-holdings-shell">
-                    <div class="wallet-card wallet-card-holdings">
-                        <div class="wallet-table-header">
-                            <div>
-                                <div class="mgmt-section-title">Holdings</div>
-                                <div id="mgmt-holdings-subtitle" class="wallet-table-subtitle">Live value, allocation, and quick trade actions.</div>
-                            </div>
-                            <div id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading holdings…</div>
-                        </div>
-                        <div class="holdings-view-toggle" role="tablist" aria-label="Holdings view">
-                            <button type="button" class="holdings-view-btn is-active" data-holdings-view="active" role="tab" aria-selected="true" onclick="window._mgmt.setHoldingsView('active')">Active Holdings</button>
-                            <button type="button" class="holdings-view-btn" data-holdings-view="cemetery" role="tab" aria-selected="false" onclick="window._mgmt.setHoldingsView('cemetery')">The Cemetery</button>
-                        </div>
-                        <div data-holdings-view-panel="active">
-                        <div class="wallet-table-wrap wallet-table-wrap-stable wallet-desktop-only">
-                                <table class="wallet-holdings-table">
-                                    <colgroup>
-                                        <col class="wht-col-company">
-                                        <col class="wht-col-shares">
-                                        <col class="wht-col-value">
-                                        <col class="wht-col-today">
-                                        <col class="wht-col-alloc">
-                                        <col class="wht-col-actions">
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <th class="wht-th">Company</th>
-                                            <th class="wht-th wht-th-r">Shares</th>
-                                            <th class="wht-th wht-th-r">Value</th>
-                                            <th class="wht-th wht-th-r">Today</th>
-                                            <th class="wht-th wht-th-r">Alloc</th>
-                                            <th class="wht-th"></th>
-                                        </tr>
-                                    </thead>
-                                <tbody id="mgmt-holdings-body"></tbody>
-                            </table>
-                        </div>
-                        <!-- Mobile: holdings as stacked cards -->
-                        <div id="mgmt-holdings-cards" class="wallet-holdings-cards"></div>
-                        </div>
-                        <div data-holdings-view-panel="cemetery" hidden>
-                            <div class="cemetery-header">
-                                <div>
-                                    <div class="cemetery-title">Closed Positions</div>
-                                    <div class="wallet-table-subtitle">Closed positions with lifecycle and total return.</div>
-                                </div>
-                                <div class="cemetery-controls">
-                                    <label for="cemetery-filter" class="cemetery-filter-label">View</label>
-                                    <select id="cemetery-filter" class="cemetery-filter-select">
-                                        <option value="all">All</option>
-                                        <option value="active">Active</option>
-                                        <option value="closed">Closed</option>
-                                    </select>
-                                    <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
-                                </div>
-                            </div>
-                            <div class="wallet-table-wrap cemetery-table-wrap">
-                                <table class="wallet-holdings-table cemetery-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th><button type="button" id="cemetery-sort-date" class="cemetery-sort-btn" aria-label="Sort by close date">Holding lifespan</button></th>
-                                            <th><button type="button" id="cemetery-sort-return" class="cemetery-sort-btn" aria-label="Sort by return">Total (Realized) Return</button></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="mgmt-cemetery-body"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
             <!-- Mobile FAB: quick new transaction -->
             <button class="wallet-fab" id="mgmt-wallet-fab" type="button" aria-label="New transaction"

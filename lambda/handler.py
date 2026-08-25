@@ -1709,19 +1709,35 @@ def portfolios_handler(event: dict) -> dict:
                 rows = []
                 for s in snaps:
                     d = str(s.get("snapshotDate") or s.get("date") or "")[:10]
-                    val = float(s.get("portfolioValue", s.get("value", 0)))
+                    raw_val = s.get("portfolioValue", s.get("value", 0))
+                    try:
+                        val = float(raw_val)
+                    except (TypeError, ValueError):
+                        continue
                     if d and val > 0:
                         rows.append({"date": d, "value": val})
-                
+
+                empty_payload = {
+                    "daily": [],
+                    "lakes": [],
+                    "deepestLake": None,
+                    "widestLake": None,
+                    "extremes": {"deepest": None, "widest": None},
+                }
+
                 if not rows:
-                    return _resp(200, {"daily": [], "lakes": [], "extremes": {}})
-                
+                    return _resp(200, empty_payload)
+
                 df = pd.DataFrame(rows).drop_duplicates("date").sort_values("date")
                 df["date"] = pd.to_datetime(df["date"])
                 df = df.set_index("date")
 
                 analyzer = drawdown_lakes.DrawdownLakeAnalyzer(value_col="value")
                 result = analyzer.analyze(df)
+                result["extremes"] = {
+                    "deepest": result.get("deepestLake"),
+                    "widest": result.get("widestLake"),
+                }
                 return _resp(200, result)
             except Exception as e:
                 import traceback

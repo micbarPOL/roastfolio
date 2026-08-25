@@ -33,6 +33,7 @@
   let _walletStickyBound = false;
   let _walletStickyLastScrollY = 0;
   let _walletStickyCondensed = false;
+  let _walletScreenInitPromise = null;
   const _companyLogos = {
     'XTB': 'data/logos/xtb.png',
     'RAINBOW (RBW)': 'data/logos/RAINBOW.png',
@@ -951,6 +952,140 @@
     _syncTransactionsPanel();
   }
 
+  function _buildSummarySparkline(snapshots, txs) {
+    const values = (snapshots || [])
+      .map((snapshot) => Number(snapshot && snapshot.portfolioValue))
+      .filter((value) => Number.isFinite(value));
+
+    if (values.length < 2) {
+      return '<div class="wallet-summary-empty-mini">No value history yet</div>';
+    }
+
+    const min = Math.min(...values);
+    const max = Math.max(...values) || 1;
+    const range = max - min || 1;
+    const width = 220;
+    const height = 72;
+    const pad = 6;
+    const list = values.map((value, idx) => {
+      const x = pad + (idx / Math.max(values.length - 1, 1)) * (width - pad * 2);
+      const y = height - pad - ((value - min) / range) * (height - pad * 2);
+      return { x, y, value };
+    });
+    const line = list.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
+    const last = list[list.length - 1];
+
+    const eventMarkers = (txs || [])
+      .filter((tx) => ['DEPOSIT', 'WITHDRAWAL'].includes(String(tx && tx.type || '').toUpperCase()))
+      .map((tx) => {
+        const dateKey = String(tx.transactionDate || tx.date || '').slice(0, 10);
+        const idx = (snapshots || []).findIndex((snapshot) => String(snapshot && snapshot.snapshotDate || '').slice(0, 10) === dateKey);
+        if (idx < 0) return null;
+        const ratio = ((snapshots || []).length > 1) ? idx / (snapshots.length - 1) : 0;
+        const x = pad + ratio * (width - pad * 2);
+        const y = height - pad - ((Number(snapshots[idx].portfolioValue) - min) / range) * (height - pad * 2);
+        const isDeposit = String(tx.type || '').toUpperCase() === 'DEPOSIT';
+        return {
+          x,
+          y,
+          isDeposit,
+          label: isDeposit ? 'Deposit' : 'Withdrawal',
+        };
+      })
+      .filter(Boolean);
+
+    const markers = eventMarkers.map((marker) => `
+      <g class="wallet-spark-marker" transform="translate(${marker.x}, ${marker.y})">
+        <circle r="7" fill="${marker.isDeposit ? '#22c55e' : '#f59e0b'}" opacity="0.2"></circle>
+        <circle r="4" fill="${marker.isDeposit ? '#22c55e' : '#f59e0b'}"></circle>
+        <text x="0" y="2.5" text-anchor="middle" font-size="7" font-weight="700" fill="#062033" font-family="Arial, sans-serif">${marker.isDeposit ? '+' : '-'}</text>
+        <title>${marker.label}</title>
+      </g>
+    `).join('');
+
+    return `
+      <div class="wallet-summary-mini-card">
+        <div class="wallet-summary-mini-header">
+          <span>Value history</span>
+          <span class="wallet-summary-mini-pill">${values.length} points</span>
+        </div>
+        <svg viewBox="0 0 ${width} ${height}" width="100%" height="72" role="img" aria-label="Wallet value history">
+          <defs>
+            <linearGradient id="wallet-summary-sparkfill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stop-color="#4cc9f0" stop-opacity="0.35"></stop>
+              <stop offset="100%" stop-color="#4cc9f0" stop-opacity="0.02"></stop>
+            </linearGradient>
+          </defs>
+          <polyline points="${line}" fill="none" stroke="#4cc9f0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          <polygon points="${line} ${last.x.toFixed(2)},${height - pad} ${pad},${height - pad}" fill="url(#wallet-summary-sparkfill)"></polygon>
+          ${markers}
+        </svg>
+      </div>
+    `;
+  }
+
+  function _buildHoldingPieChart(holdings) {
+    const active = (holdings || [])
+      .filter((holding) => Number(holding && holding.currentValue || 0) > 0)
+      .map((holding) => ({
+        name: String(holding.name || holding.ticker || 'Unknown'),
+        value: Number(holding.currentValue || holding.purchaseValue || 0),
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    if (!active.length) {
+      return '<div class="wallet-summary-empty-mini">No holdings yet</div>';
+    }
+
+    const total = active.reduce((sum, item) => sum + item.value, 0) || 1;
+    let start = 0;
+    const segments = active.map((item) => {
+      const share = item.value / total;
+      const end = start + share * 360;
+      const color = `hsl(${(start / 360) * 240 + 190} 70% 58%)`;
+      const segment = `${color} ${start}deg ${end}deg`;
+      start = end;
+      return segment;
+    }).join(', ');
+
+    return `
+      <div class="wallet-summary-mini-card">
+        <div class="wallet-summary-mini-header">
+          <span>Holdings</span>
+          <span class="wallet-summary-mini-pill">${active.length} assets</span>
+        </div>
+        <div class="wallet-summary-pie-wrapper">
+          <div class="wallet-summary-pie" style="background: conic-gradient(${segments});">
+            <div class="wallet-summary-pie-center">${active.length}</div>
+          </div>
+          <div class="wallet-summary-pie-legend">
+            ${active.slice(0, 4).map((item) => `
+              <div class="wallet-summary-legend-item">
+                <span class="wallet-summary-legend-dot" style="background:${item.value >= active[0].value ? '#4cc9f0' : '#7dd3fc'}"></span>
+                <span>${_esc(item.name.slice(0, 12))}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function _renderWalletSummaryVisuals() {
+    const wrap = document.getElementById('wallet-summary-visuals');
+    if (!wrap) return;
+
+    const sparkline = _buildSummarySparkline(_currentSnapshots || [], _currentTransactions || []);
+    const pie = _buildHoldingPieChart(_currentHoldings || []);
+
+    wrap.innerHTML = `
+      <div class="wallet-summary-visual-grid">
+        ${sparkline}
+        ${pie}
+      </div>
+    `;
+  }
+
   function _renderSettings(portfolio, holdingsCount, txCount) {
     const titleEl = document.getElementById('mgmt-holdings-title');
     const summaryEl = document.getElementById('mgmt-settings-summary');
@@ -988,6 +1123,7 @@
       _setPillState(inlineStatus, `Stable holdings · ${holdingsCount} positions · ${txCount} entries`, '');
     }
     _syncTransactionsPanel();
+    _renderWalletSummaryVisuals();
     // Render ATH section for the selected wallet
     if (typeof window.renderWalletAthSection === 'function') {
       const athKey = portfolio ? (isSummary ? 'Summary' : portfolio.name) : null;
@@ -2905,16 +3041,25 @@
 
   // ── Wallet screen entry point ─────────────────────────────────
   async function initWalletScreen() {
-    const dateEl = document.getElementById('mgmt-transaction-date');
-    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
-    _bindWalletStickyBehavior();
-    _setCreateComposerOpen(false);
-    _setWalletStickyCondensed(false);
-    _resetTransactionForm({ keepType: false });
-    await _loadPortfolios();
-    _loadBenchmarkSetting();
-    _syncTransactionsPanel();
-    _syncWalletStickyCondensed(true);
+    if (_walletScreenInitPromise) return _walletScreenInitPromise;
+    _walletScreenInitPromise = (async () => {
+      const dateEl = document.getElementById('mgmt-transaction-date');
+      if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+      _bindWalletStickyBehavior();
+      _setCreateComposerOpen(false);
+      _setWalletStickyCondensed(false);
+      _resetTransactionForm({ keepType: false });
+      await _loadPortfolios();
+      _loadBenchmarkSetting();
+      _syncTransactionsPanel();
+      _syncWalletStickyCondensed(true);
+    })();
+
+    try {
+      return await _walletScreenInitPromise;
+    } finally {
+      _walletScreenInitPromise = null;
+    }
   }
 
   function openManageModal() {
@@ -3057,9 +3202,17 @@
     applyQeTemplate,
     parseQuickEntry,
   };
-  document.addEventListener('liveDataReady', () => {
-    if (document.getElementById('tab-wallets') && document.getElementById('tab-wallets').classList.contains('active')) {
-      initWalletScreen();
+  document.addEventListener('liveDataReady', async () => {
+    const walletsTab = document.getElementById('tab-wallets');
+    if (!walletsTab || !walletsTab.classList.contains('active')) return;
+
+    if (_activePortId) {
+      try {
+        await selectPortfolio(_activePortId);
+      } catch (_) {}
+      return;
     }
+
+    await initWalletScreen();
   });
 })();
