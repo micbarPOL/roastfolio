@@ -994,30 +994,36 @@
   }
 
   function _buildSummarySparkline(snapshots, txs) {
-    const series = (snapshots || [])
+    const allSeries = (snapshots || [])
       .map((snapshot) => {
         const value = Number(snapshot && snapshot.portfolioValue);
         const tsRaw = String(snapshot && snapshot.snapshotDate || '').slice(0, 10);
         const ts = tsRaw ? new Date(`${tsRaw}T00:00:00Z`).getTime() : null;
         return Number.isFinite(value) && Number.isFinite(ts) ? [ts, value] : null;
       })
-      .filter(Boolean);
+      .filter(Boolean)
+      .sort((a, b) => a[0] - b[0]);
 
-    if (series.length < 2) {
+    const now = Date.now();
+    const threeYearsAgo = now - (3 * 365.25 * 24 * 60 * 60 * 1000);
+    const series = allSeries.filter(([ts]) => ts >= threeYearsAgo);
+    const displaySeries = series.length >= 2 ? series : allSeries;
+
+    if (displaySeries.length < 2) {
       return '<div class="wallet-summary-empty-mini">No value history yet</div>';
     }
 
-    const valueNow = series[series.length - 1][1];
-    const valueStart = series[0][1];
+    const valueNow = displaySeries[displaySeries.length - 1][1];
+    const valueStart = displaySeries[0][1];
     const isUp = valueNow >= valueStart;
     const sparkSVG = typeof makeSparkline === 'function'
-      ? makeSparkline(series, isUp, 520, 170)
+      ? makeSparkline(displaySeries, isUp, 520, 170)
       : '';
 
     const axisDates = [
-      new Date(series[0][0]),
-      new Date(series[Math.floor((series.length - 1) / 2)][0]),
-      new Date(series[series.length - 1][0]),
+      new Date(displaySeries[0][0]),
+      new Date(displaySeries[Math.floor((displaySeries.length - 1) / 2)][0]),
+      new Date(displaySeries[displaySeries.length - 1][0]),
     ].filter((value, index, arr) => value && arr.findIndex((other) => other.getTime() === value.getTime()) === index);
 
     const axisLabels = axisDates.map((date) => {
@@ -1049,13 +1055,13 @@
         const idx = (snapshots || []).findIndex((snapshot) => String(snapshot && snapshot.snapshotDate || '').slice(0, 10) === tx.dateKey);
         if (idx < 0) return null;
 
-        const values = series.map(([_, value]) => value);
+        const values = displaySeries.map(([_, value]) => value);
         const min = Math.min(...values);
         const max = Math.max(...values) || 1;
         const range = max - min || 1;
         const currentValue = Number((snapshots || [])[idx] && (snapshots || [])[idx].portfolioValue || 0);
         const pct = (currentValue - min) / range;
-        const left = (((idx || 0) / Math.max(series.length - 1, 1)) * 100);
+        const left = (((idx || 0) / Math.max(displaySeries.length - 1, 1)) * 100);
         const top = 100 - (pct * 100);
         return {
           left: Math.min(96, Math.max(4, left)),
