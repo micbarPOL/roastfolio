@@ -88,10 +88,37 @@
     return _portfolios.find(x => x.portfolioId === _activePortId) || null;
   }
 
+  function _walletLookupKeysFor(portfolio) {
+    const keys = [];
+    if (!portfolio) return keys;
+    if (portfolio.name) keys.push(String(portfolio.name));
+    if (portfolio.portfolioId) keys.push(String(portfolio.portfolioId));
+    if (portfolio.name) keys.push(String(portfolio.name).trim().toLowerCase());
+    if (portfolio.portfolioId) keys.push(String(portfolio.portfolioId).trim().toLowerCase());
+
+    const nameKey = String(portfolio.name || '').trim();
+    const idKey = String(portfolio.portfolioId || '').trim();
+    if (typeof window !== 'undefined' && window.WALLET_PORTFOLIO_IDS) {
+      if (nameKey && window.WALLET_PORTFOLIO_IDS[nameKey]) keys.push(String(window.WALLET_PORTFOLIO_IDS[nameKey]));
+      if (idKey && window.WALLET_PORTFOLIO_IDS[idKey]) keys.push(String(window.WALLET_PORTFOLIO_IDS[idKey]));
+    }
+
+    return [...new Set(keys.filter(Boolean))];
+  }
+
   function _walletSummaryFor(portfolio) {
     if (!portfolio || typeof WALLET_SUMMARIES === 'undefined' || !WALLET_SUMMARIES) return null;
     if (_isSummaryPortfolio(portfolio.portfolioId)) return WALLET_SUMMARIES.Summary || null;
-    return WALLET_SUMMARIES[portfolio.name] || null;
+
+    const candidates = _walletLookupKeysFor(portfolio);
+    for (const candidate of candidates) {
+      if (WALLET_SUMMARIES[candidate]) return WALLET_SUMMARIES[candidate];
+    }
+    const lower = new Map(Object.entries(WALLET_SUMMARIES || {}).map(([key, value]) => [String(key).toLowerCase(), value]));
+    for (const candidate of candidates.map((key) => String(key).toLowerCase())) {
+      if (lower.has(candidate)) return lower.get(candidate);
+    }
+    return null;
   }
 
   function _effectiveWalletSummary(portfolio) {
@@ -112,7 +139,16 @@
     if (!portfolio) return [];
     if (_isSummaryPortfolio(portfolio.portfolioId)) return (typeof window !== 'undefined' && window.PORTFOLIO_DATA) || [];
     if (typeof WALLET_HOLDINGS === 'undefined' || !WALLET_HOLDINGS) return [];
-    return WALLET_HOLDINGS[portfolio.name] || [];
+
+    const candidates = _walletLookupKeysFor(portfolio);
+    for (const candidate of candidates) {
+      if (WALLET_HOLDINGS[candidate]) return WALLET_HOLDINGS[candidate];
+    }
+    const lower = new Map(Object.entries(WALLET_HOLDINGS || {}).map(([key, value]) => [String(key).toLowerCase(), value]));
+    for (const candidate of candidates.map((key) => String(key).toLowerCase())) {
+      if (lower.has(candidate)) return lower.get(candidate);
+    }
+    return [];
   }
 
   function _holdingKey(item) {
