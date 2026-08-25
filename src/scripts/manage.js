@@ -34,6 +34,7 @@
   let _walletStickyLastScrollY = 0;
   let _walletStickyCondensed = false;
   let _walletScreenInitPromise = null;
+  let _walletSelectionPromise = null;
   const _companyLogos = {
     'XTB': 'data/logos/xtb.png',
     'RAINBOW (RBW)': 'data/logos/RAINBOW.png',
@@ -91,6 +92,20 @@
     if (!portfolio || typeof WALLET_SUMMARIES === 'undefined' || !WALLET_SUMMARIES) return null;
     if (_isSummaryPortfolio(portfolio.portfolioId)) return WALLET_SUMMARIES.Summary || null;
     return WALLET_SUMMARIES[portfolio.name] || null;
+  }
+
+  function _effectiveWalletSummary(portfolio) {
+    const summary = _walletSummaryFor(portfolio) || {};
+    const isSummary = !!(portfolio && _isSummaryPortfolio(portfolio.portfolioId));
+    const fallbackTotal = Number(window.PORTFOLIO_TOTAL_VALUE || summary.total || 0);
+    const fallbackDailyPLN = Number(window.PORTFOLIO_DAILY_CHANGE_PLN || summary.dailyPLN || 0);
+    const fallbackDailyPct = Number(window.PORTFOLIO_DAILY_CHANGE_PCT || summary.dailyPct || 0);
+    return {
+      total: Number(summary.total ?? (isSummary ? fallbackTotal : 0) ?? 0),
+      dailyPLN: Number(summary.dailyPLN ?? (isSummary ? fallbackDailyPLN : 0) ?? 0),
+      dailyPct: Number(summary.dailyPct ?? (isSummary ? fallbackDailyPct : 0) ?? 0),
+      annualReturn: Number(summary.annualReturn ?? 0),
+    };
   }
 
   function _liveHoldingsFor(portfolio) {
@@ -1129,31 +1144,29 @@
     const tradeCard = document.querySelector('.wallet-card-trade');
     const benchmarkSettingEl = document.getElementById('mgmt-benchmark-setting');
     const annualReturnContentEl = document.getElementById('mgmt-annual-return-content');
-    const summary = _walletSummaryFor(portfolio) || { total: 0, dailyPLN: 0, dailyPct: 0, annualReturn: 0 };
-    const isSummary = _isSummaryPortfolio(portfolio && portfolio.portfolioId);
-    const totalText = Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
+    const summary = _effectiveWalletSummary(portfolio);
+    const isSummary = !!(portfolio && _isSummaryPortfolio(portfolio.portfolioId));
+
+    const totalText = `${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
     const dailyText = `${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
     const dailyPctText = `${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%`;
-    const annualReturnText = typeof summary.annualReturn === 'number' ? `${summary.annualReturn > 0 ? '+' : ''}${(summary.annualReturn * 100).toFixed(2)}%` : '—';
+    const annualNumber = Number(summary.annualReturn || 0);
+    const annualReturnText = Number.isFinite(annualNumber) && annualNumber !== 0 ? `${annualNumber > 0 ? '+' : ''}${(annualNumber * 100).toFixed(2)}%` : '—';
 
     if (titleEl) titleEl.textContent = portfolio ? portfolio.name : 'Select a portfolio';
     if (subtitleEl) subtitleEl.textContent = isSummary
-      ? 'Aggregated holdings across all wallets. Summary is pinned and read-only.'
+      ? 'All wallets combined. Your aggregate balance and performance across every wallet.'
       : 'Live value, allocation, and quick trade actions.';
     if (summaryEl) {
       summaryEl.innerHTML = isSummary
-        ? `Summary is auto-calculated from all wallets. Current total: <strong>${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN</strong>.`
+        ? `All wallets combined. Current total: <strong>${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN</strong> · Daily <strong>${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN (${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%)</strong>.`
         : `Live total: <strong>${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN</strong> · Daily <strong>${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN (${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%)</strong> · ${holdingsCount} holdings · ${txCount} transactions.`;
     }
     if (totalKpiEl) totalKpiEl.textContent = totalText;
     if (dayKpiEl) dayKpiEl.textContent = `${dailyText} / ${dailyPctText}`;
     if (returnKpiEl) returnKpiEl.textContent = annualReturnText;
     if (actionsEl) {
-        actionsEl.innerHTML = isSummary ? `
-        <span class="wallet-settings-pill">Summary pinned first</span>
-        <button class="mgmt-icon-btn wallet-settings-btn" title="Wallet Settings"
-          onclick="window._mgmt.openWalletSettingsModal()">⚙️ Settings</button>
-      ` : `
+        actionsEl.innerHTML = `
         <button class="mgmt-icon-btn wallet-settings-btn" title="Wallet Settings"
           onclick="window._mgmt.openWalletSettingsModal()">⚙️ Settings</button>
       `;
@@ -1275,96 +1288,109 @@
 
   // ── Select portfolio → show its holdings ─────────────────────
   async function selectPortfolio(portfolioId) {
-    _activePortId = portfolioId;
-    _renderPortfolioList();
-    _syncWalletSelectorChrome();
-    if (_isCompactWalletSelector()) _setWalletSelectorOpen(false, { force: true });
-
-    const panel = document.getElementById('mgmt-holdings-panel');
-    // Panel is always in-flow (no display:none). Just ensure it's visible.
-    if (panel && panel.style.display === 'none') panel.style.display = '';
-
-    const p = _portfolios.find(x => x.portfolioId === portfolioId);
-    const tbody = document.getElementById('mgmt-holdings-body');
-    const holdingsMeta = document.getElementById('mgmt-holdings-meta');
-    const cemeteryBody = document.getElementById('mgmt-cemetery-body');
-    const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
-    const valueHistoryBody = document.getElementById('mgmt-value-history-body');
-    const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
-    _renderHoldingsSkeleton();
-    if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
-    if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
-    if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
-    const txBody = document.getElementById('mgmt-transactions-body');
-    if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
-    if (valueHistoryBody) valueHistoryBody.innerHTML = '<tr><td colspan="3" class="mgmt-loading" style="text-align:center;padding:20px;">Loading…</td></tr>';
-    if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Loading snapshots…', 'syncing');
-
-    if (!p) return;
-
-    if (_isSummaryPortfolio(portfolioId)) {
-      const holdings = _mergeHoldings([], _liveHoldingsFor(p));
-      _currentHoldings = holdings;
-      const sourcePortfolioIds = (_portfolios || [])
-        .filter((port) => !_isSummaryPortfolio(port.portfolioId))
-        .map((port) => port.portfolioId);
-      const summaryTxResponses = await Promise.all(
-        sourcePortfolioIds.map((pid) => PortfolioClient.listTransactions(pid, 5000).catch(() => ({ transactions: [] })))
-      );
-      _currentTransactions = summaryTxResponses.flatMap((response, idx) => {
-        const pid = sourcePortfolioIds[idx];
-        const rows = (response && response.transactions) || [];
-        return rows.map((tx) => ({ ...tx, portfolioId: tx.portfolioId || pid }));
-      });
-      _currentClosedHoldings = [];
-      try {
-        const snapshotData = await PortfolioClient.listSnapshots(portfolioId);
-        _currentSnapshots = snapshotData.snapshots || [];
-      } catch (_) {
-        _currentSnapshots = [];
-      }
-      _renderSettings(p, holdings.length, _currentTransactions.length);
-      _renderHoldings(portfolioId, holdings, true);
-      if (txBody) {
-        txBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">Summary is aggregated across wallets. Open an individual wallet to inspect its transactions.</td></tr>';
-      }
-      _renderValueHistory(_currentSnapshots);
-      _resetTransactionForm({ keepType: false });
-      _syncTransactionsPanel();
-      return;
+    const lockKey = portfolioId || 'none';
+    if (_activePortId === lockKey && _walletSelectionPromise) {
+      return _walletSelectionPromise;
     }
+    _activePortId = lockKey;
+    _walletSelectionPromise = (async () => {
+      _renderPortfolioList();
+      _syncWalletSelectorChrome();
+      if (_isCompactWalletSelector()) _setWalletSelectorOpen(false, { force: true });
+
+      const panel = document.getElementById('mgmt-holdings-panel');
+      if (panel && panel.style.display === 'none') panel.style.display = '';
+
+      const p = _portfolios.find(x => x.portfolioId === portfolioId);
+      const tbody = document.getElementById('mgmt-holdings-body');
+      const holdingsMeta = document.getElementById('mgmt-holdings-meta');
+      const cemeteryBody = document.getElementById('mgmt-cemetery-body');
+      const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
+      const valueHistoryBody = document.getElementById('mgmt-value-history-body');
+      const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
+      _renderHoldingsSkeleton();
+      if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
+      if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
+      if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
+      const txBody = document.getElementById('mgmt-transactions-body');
+      if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
+      if (valueHistoryBody) valueHistoryBody.innerHTML = '<tr><td colspan="3" class="mgmt-loading" style="text-align:center;padding:20px;">Loading…</td></tr>';
+      if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Loading snapshots…', 'syncing');
+
+      if (!p) return;
+
+      if (_isSummaryPortfolio(portfolioId)) {
+        const holdings = _mergeHoldings([], _liveHoldingsFor(p));
+        _currentHoldings = holdings;
+        const sourcePortfolioIds = (_portfolios || [])
+          .filter((port) => !_isSummaryPortfolio(port.portfolioId))
+          .map((port) => port.portfolioId);
+        const summaryTxResponses = await Promise.all(
+          sourcePortfolioIds.map((pid) => PortfolioClient.listTransactions(pid, 5000).catch(() => ({ transactions: [] })))
+        );
+        _currentTransactions = summaryTxResponses.flatMap((response, idx) => {
+          const pid = sourcePortfolioIds[idx];
+          const rows = (response && response.transactions) || [];
+          return rows.map((tx) => ({ ...tx, portfolioId: tx.portfolioId || pid }));
+        });
+        _currentClosedHoldings = [];
+        try {
+          const snapshotData = await PortfolioClient.listSnapshots(portfolioId);
+          _currentSnapshots = snapshotData.snapshots || [];
+        } catch (_) {
+          _currentSnapshots = [];
+        }
+        _renderSettings(p, holdings.length, _currentTransactions.length);
+        _renderHoldings(portfolioId, holdings, true);
+        if (txBody) {
+          txBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">Summary is aggregated across wallets. Open an individual wallet to inspect its transactions.</td></tr>';
+        }
+        _renderValueHistory(_currentSnapshots);
+        _resetTransactionForm({ keepType: false });
+        _syncTransactionsPanel();
+        return;
+      }
+
+      try {
+        const [data, snapshotData] = await Promise.all([
+          PortfolioClient.getPortfolio(portfolioId),
+          PortfolioClient.listSnapshots(portfolioId),
+        ]);
+        const holdings = _mergeHoldings(data.holdings || [], _liveHoldingsFor(p));
+        const transactions = data.transactions || [];
+        const closedHoldings = data.closedHoldings || [];
+        const snapshots = snapshotData.snapshots || [];
+        _currentHoldings = holdings;
+        _currentTransactions = transactions;
+        _currentClosedHoldings = closedHoldings;
+        _currentSnapshots = snapshots;
+        _renderSettings(p, holdings.length, transactions.length);
+        _renderHoldings(portfolioId, holdings, false);
+        _renderTransactions(transactions);
+        _renderValueHistory(snapshots);
+        _resetTransactionForm({ keepType: false });
+        _syncTransactionsPanel();
+      } catch(e) {
+        _currentHoldings = [];
+        _currentTransactions = [];
+        _currentClosedHoldings = [];
+        _currentSnapshots = [];
+        _renderSettings(p, 0, 0);
+        tbody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
+        if (txBody) txBody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
+        if (valueHistoryBody) valueHistoryBody.innerHTML = `<tr><td colspan="3" class="mgmt-error" style="text-align:center;padding:20px;">Error: ${_esc(e.message)}</td></tr>`;
+        if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Unable to load snapshots', 'error');
+        if (holdingsMeta) _setPillState(holdingsMeta, 'Unable to load holdings', 'error');
+        _syncTransactionsPanel();
+      }
+    })();
 
     try {
-      const [data, snapshotData] = await Promise.all([
-        PortfolioClient.getPortfolio(portfolioId),
-        PortfolioClient.listSnapshots(portfolioId),
-      ]);
-      const holdings = _mergeHoldings(data.holdings || [], _liveHoldingsFor(p));
-      const transactions = data.transactions || [];
-      const closedHoldings = data.closedHoldings || [];
-      const snapshots = snapshotData.snapshots || [];
-      _currentHoldings = holdings;
-      _currentTransactions = transactions;
-      _currentClosedHoldings = closedHoldings;
-      _currentSnapshots = snapshots;
-      _renderSettings(p, holdings.length, transactions.length);
-      _renderHoldings(portfolioId, holdings, false);
-      _renderTransactions(transactions);
-      _renderValueHistory(snapshots);
-      _resetTransactionForm({ keepType: false });
-      _syncTransactionsPanel();
-    } catch(e) {
-      _currentHoldings = [];
-      _currentTransactions = [];
-      _currentClosedHoldings = [];
-      _currentSnapshots = [];
-      _renderSettings(p, 0, 0);
-      tbody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
-      if (txBody) txBody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
-      if (valueHistoryBody) valueHistoryBody.innerHTML = `<tr><td colspan="3" class="mgmt-error" style="text-align:center;padding:20px;">Error: ${_esc(e.message)}</td></tr>`;
-      if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Unable to load snapshots', 'error');
-      if (holdingsMeta) _setPillState(holdingsMeta, 'Unable to load holdings', 'error');
-      _syncTransactionsPanel();
+      return await _walletSelectionPromise;
+    } finally {
+      if (_activePortId === lockKey) {
+        _walletSelectionPromise = null;
+      }
     }
   }
 
