@@ -140,7 +140,7 @@
     <header>
         <div class="brand-header">
             <!-- Hamburger menu button -->
-            <button type="button" class="sidenav-toggle-btn" id="sidenav-toggle" onclick="openSidenav()" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidenav">
+            <button type="button" class="sidenav-toggle-btn" id="sidenav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidenav">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <button type="button" class="brand-logo-btn" onclick="toggleBrandModal(true)" aria-label="Open Roastfolio logo">
@@ -157,7 +157,7 @@
     </header>
 
     <!-- ── Sidebar navigation ────────────────────────────────── -->
-    <div id="sidenav-backdrop" class="sidenav-backdrop" onclick="closeSidenav()" aria-hidden="true"></div>
+    <div id="sidenav-backdrop" class="sidenav-backdrop" aria-hidden="true"></div>
     <aside id="sidenav" class="sidenav" role="navigation" aria-label="Main navigation">
         <div class="sidenav-header">
             <img src="data/logos/icon-512.png" alt="" class="sidenav-logo">
@@ -165,7 +165,7 @@
                 <div class="sidenav-app-name">Roastfolio</div>
                 <div class="sidenav-app-sub" id="sidenav-user-name"></div>
             </div>
-            <button type="button" class="sidenav-close-btn" onclick="closeSidenav()" aria-label="Close menu">
+            <button type="button" class="sidenav-close-btn" aria-label="Close menu">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
@@ -1781,7 +1781,8 @@
                 toggleBtn.addEventListener('click', function (event) {
                     event.preventDefault();
                     event.stopPropagation();
-                    const isOpen = document.getElementById('sidenav')?.classList.contains('is-open');
+                    const nav = document.getElementById('sidenav');
+                    const isOpen = nav && nav.classList.contains('is-open');
                     if (isOpen) {
                         closeSidenav();
                     } else {
@@ -1793,6 +1794,15 @@
             const closeBtn = document.querySelector('.sidenav-close-btn');
             if (closeBtn) {
                 closeBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closeSidenav();
+                });
+            }
+
+            const backdrop = document.getElementById('sidenav-backdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', function (event) {
                     event.preventDefault();
                     event.stopPropagation();
                     closeSidenav();
