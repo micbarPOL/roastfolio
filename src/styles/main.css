@@ -116,6 +116,8 @@ header {
     color: var(--brand-sky);
     transition: background .18s, border-color .18s;
     flex-shrink: 0;
+    pointer-events: auto;
+    touch-action: manipulation;
 }
 .sidenav-toggle-btn:hover {
     background: rgba(0, 242, 254, 0.14);

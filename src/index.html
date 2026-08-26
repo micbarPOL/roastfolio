@@ -680,10 +680,6 @@
                     <div id="mgmt-ath-content"></div>
                     <div id="mgmt-ath-status" class="portfolio-ath-status" aria-live="polite"></div>
                 </div>
-                <div id="mgmt-annual-return-setting" class="wallet-setting-item">
-                    <span class="wallet-setting-label">Average Yearly Return</span>
-                    <div id="mgmt-annual-return-content" class="wob-value-bold">--</div>
-                </div>
                 <div class="wob-actions"></div>
             </div>
 
@@ -1748,8 +1744,9 @@
             const backdrop = document.getElementById('sidenav-backdrop');
             const toggle = document.getElementById('sidenav-toggle');
             if (!nav) return;
+            if (nav.classList.contains('is-open')) return;
             nav.classList.add('is-open');
-            backdrop.classList.add('is-visible');
+            if (backdrop) backdrop.classList.add('is-visible');
             document.body.classList.add('sidenav-open');
             if (toggle) toggle.setAttribute('aria-expanded', 'true');
             // Populate user info
@@ -1771,11 +1768,37 @@
             const backdrop = document.getElementById('sidenav-backdrop');
             const toggle = document.getElementById('sidenav-toggle');
             if (!nav) return;
+            if (!nav.classList.contains('is-open')) return;
             nav.classList.remove('is-open');
-            backdrop.classList.remove('is-visible');
+            if (backdrop) backdrop.classList.remove('is-visible');
             document.body.classList.remove('sidenav-open');
             if (toggle) toggle.setAttribute('aria-expanded', 'false');
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('sidenav-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const isOpen = document.getElementById('sidenav')?.classList.contains('is-open');
+                    if (isOpen) {
+                        closeSidenav();
+                    } else {
+                        openSidenav();
+                    }
+                });
+            }
+
+            const closeBtn = document.querySelector('.sidenav-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closeSidenav();
+                });
+            }
+        });
 
         function showTab(name) {
             // Check role restriction

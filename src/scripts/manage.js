@@ -1243,7 +1243,6 @@
     const subtitleEl = document.getElementById('mgmt-holdings-subtitle');
     const tradeCard = document.querySelector('.wallet-card-trade');
     const benchmarkSettingEl = document.getElementById('mgmt-benchmark-setting');
-    const annualReturnContentEl = document.getElementById('mgmt-annual-return-content');
     const summary = _effectiveWalletSummary(portfolio);
     const isSummary = !!(portfolio && _isSummaryPortfolio(portfolio.portfolioId));
 
@@ -1284,15 +1283,6 @@
         benchmarkSettingEl.style.display = isSummary ? '' : 'none';
     }
 
-    if (annualReturnContentEl) {
-        if (typeof summary.annualReturn === 'number') {
-            annualReturnContentEl.textContent = `${summary.annualReturn > 0 ? '+' : ''}${(summary.annualReturn * 100).toFixed(2)}% / yr`;
-            annualReturnContentEl.className = `wob-value-bold ${_dailyChangeClass(summary.annualReturn)}`;
-        } else {
-            annualReturnContentEl.textContent = '--';
-            annualReturnContentEl.className = 'wob-value-bold';
-        }
-    }
   }
 
   // ── Load portfolios from DynamoDB ────────────────────────────
