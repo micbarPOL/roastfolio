@@ -490,7 +490,7 @@
             const preview = escapeHtml(String(note.note_text || '').slice(0, 110) || 'No summary yet');
             const inactivePill = isInactive ? '<span class="diary-inactive-pill">Inactive hypothesis</span>' : '';
             const activePill = note.is_active && held ? '<span class="diary-badge" style="border-color:rgba(34,197,94,.5);color:#86efac;">Active conviction</span>' : '';
-            const commentsPill = '<span class="diary-badge" style="border-color:rgba(96,165,250,.45);color:#bfdbfe;">Comments: ' + commentCount + '</span>';
+            const commentsPill = commentCount > 0 ? '<span class="diary-badge" style="border-color:rgba(96,165,250,.45);color:#bfdbfe;">Comments: ' + commentCount + '</span>' : '';
             const checklistPill = uncheckedCount > 0
                 ? '<span class="diary-badge" style="border-color:rgba(245,158,11,.6);color:#fcd34d;">Open checklist: ' + uncheckedCount + '</span>'
                 : '';
@@ -626,13 +626,14 @@
             ? '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><span style="font-size:12px;color:#8ea1bb;">Linked holdings:</span>' + mentionButtons + '</div>'
             : '';
         const commentCount = Array.isArray(note.comments) ? note.comments.length : 0;
+        const commentPill = commentCount > 0 ? '<span class="diary-badge" style="border-color:rgba(96,165,250,.45);color:#bfdbfe;">Comments: ' + commentCount + '</span>' : '';
 
         root.innerHTML = '' +
             '<div class="diary-pane-head">' +
             '  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
             '    <strong>Focus Sheet</strong>' +
             '    <span class="diary-badge" id="diary-detail-ticker">' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</span>' +
-            '    <span class="diary-badge" style="border-color:rgba(96,165,250,.45);color:#bfdbfe;">Comments: ' + commentCount + '</span>' +
+            '    ' + commentPill +
             '  </div>' +
             '  <div style="display:flex;align-items:center;gap:8px;">' +
             '    <span class="diary-toggle-status">' + (note.is_active ? 'Active' : 'Inactive') + '</span>' +
