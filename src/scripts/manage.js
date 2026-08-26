@@ -1028,7 +1028,7 @@
       : '';
 
     const firstTs = displaySeries[0][0];
-    const lastTs = displaySeries[displaySeries.length - 1][0];
+    const lastTs = Math.max(displaySeries[displaySeries.length - 1][0], rightEdge);
     const firstYear = new Date(firstTs).getFullYear();
     const lastYear = new Date(lastTs).getFullYear();
     const axisDates = [];
@@ -1039,6 +1039,10 @@
       if (yearEndTs >= firstTs && yearEndTs <= lastTs) {
         axisDates.push(yearEnd);
       }
+    }
+
+    if (!axisDates.length || axisDates[axisDates.length - 1].getTime() < lastTs) {
+      axisDates.push(new Date(lastTs));
     }
 
     const axisLabels = axisDates.map((date) => {
