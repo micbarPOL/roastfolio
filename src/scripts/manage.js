@@ -1004,10 +1004,17 @@
       .filter(Boolean)
       .sort((a, b) => a[0] - b[0]);
 
-    const now = Date.now();
-    const threeYearsAgo = now - (3 * 365.25 * 24 * 60 * 60 * 1000);
-    const series = allSeries.filter(([ts]) => ts >= threeYearsAgo);
-    const displaySeries = series.length >= 2 ? series : allSeries;
+    const now = new Date();
+    const rightEdge = now.getTime();
+    const threeYearsAgo = new Date(now.getTime());
+    threeYearsAgo.setFullYear(now.getFullYear() - 3);
+
+    const recentSeries = allSeries.filter(([ts]) => ts >= threeYearsAgo.getTime() && ts <= rightEdge);
+    const baseSeries = recentSeries.length >= 2 ? recentSeries : allSeries;
+    const lastPoint = baseSeries[baseSeries.length - 1];
+    const displaySeries = lastPoint && lastPoint[0] < rightEdge
+      ? [...baseSeries, [rightEdge, lastPoint[1]]]
+      : baseSeries;
 
     if (displaySeries.length < 2) {
       return '<div class="wallet-summary-empty-mini">No value history yet</div>';
@@ -1020,14 +1027,22 @@
       ? makeSparkline(displaySeries, isUp, 520, 170)
       : '';
 
-    const axisDates = [
-      new Date(displaySeries[0][0]),
-      new Date(displaySeries[Math.floor((displaySeries.length - 1) / 2)][0]),
-      new Date(displaySeries[displaySeries.length - 1][0]),
-    ].filter((value, index, arr) => value && arr.findIndex((other) => other.getTime() === value.getTime()) === index);
+    const firstTs = displaySeries[0][0];
+    const lastTs = displaySeries[displaySeries.length - 1][0];
+    const firstYear = new Date(firstTs).getFullYear();
+    const lastYear = new Date(lastTs).getFullYear();
+    const axisDates = [];
+
+    for (let year = firstYear; year <= lastYear; year += 1) {
+      const yearEnd = new Date(Date.UTC(year, 11, 31, 12, 0, 0));
+      const yearEndTs = yearEnd.getTime();
+      if (yearEndTs >= firstTs && yearEndTs <= lastTs) {
+        axisDates.push(yearEnd);
+      }
+    }
 
     const axisLabels = axisDates.map((date) => {
-      const pct = axisDates.length === 1 ? 50 : ((axisDates.indexOf(date) / (axisDates.length - 1)) * 100);
+      const pct = ((date.getTime() - firstTs) / Math.max(lastTs - firstTs, 1)) * 100;
       const year = date.getFullYear();
       return `
         <span class="wallet-summary-axis-label" style="left:${Math.min(96, Math.max(4, pct))}%">${year}</span>
