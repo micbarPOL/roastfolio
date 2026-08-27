@@ -1009,12 +1009,17 @@
     const threeYearsAgo = new Date(now.getTime());
     threeYearsAgo.setFullYear(now.getFullYear() - 3);
 
-    const recentSeries = allSeries.filter(([ts]) => ts >= threeYearsAgo.getTime() && ts <= rightEdge);
-    const baseSeries = recentSeries.length >= 2 ? recentSeries : allSeries;
-    const lastPoint = baseSeries[baseSeries.length - 1];
+    const oldestTs = allSeries.length ? allSeries[0][0] : rightEdge;
+    const startBound = Math.max(oldestTs, threeYearsAgo.getTime());
+    const trimmedSeries = allSeries.filter(([ts]) => ts >= startBound && ts <= rightEdge);
+    const fallbackBeforeStart = [...allSeries].reverse().find(([ts]) => ts < startBound);
+    const fallbackSeries = fallbackBeforeStart ? [[startBound, fallbackBeforeStart[1]], [rightEdge, fallbackBeforeStart[1]]] : [];
+    const baseSeries = trimmedSeries.length ? trimmedSeries : fallbackSeries;
+    const safeBaseSeries = baseSeries.length ? baseSeries : [[startBound, allSeries[allSeries.length - 1][1]], [rightEdge, allSeries[allSeries.length - 1][1]]];
+    const lastPoint = safeBaseSeries[safeBaseSeries.length - 1];
     const displaySeries = lastPoint && lastPoint[0] < rightEdge
-      ? [...baseSeries, [rightEdge, lastPoint[1]]]
-      : baseSeries;
+      ? [...safeBaseSeries, [rightEdge, lastPoint[1]]]
+      : safeBaseSeries;
 
     if (displaySeries.length < 2) {
       return '<div class="wallet-summary-empty-mini">No value history yet</div>';

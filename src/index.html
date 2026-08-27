@@ -949,7 +949,22 @@
         </section>
 
         <section class="chart-container">
-            <div class="chart-wrapper" style="height:360px;"><canvas id="investmentChart"></canvas></div>
+            <div class="chart-wrapper" style="height:360px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
+                <canvas id="investmentChart"></canvas>
+            </div>
         </section>
 
         <section class="chart-container">
@@ -960,7 +975,20 @@
                     <button class="wig-type-btn" data-history-monthly-metric="deposit" onclick="setHistoryMonthlyMetric('deposit')">Monthly Net Deposits</button>
                 </div>
             </div>
-            <div class="chart-wrapper" style="height:280px;">
+            <div class="chart-wrapper" style="height:280px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
                 <canvas id="monthlyReturnsChart"></canvas>
             </div>
         </section>
@@ -972,19 +1000,58 @@
                     <button class="wig-type-btn" data-history-return-mode="pln" onclick="setHistoryReturnMode('pln')">PLN Return</button>
                 </div>
             </div>
-            <div class="chart-wrapper" style="height:360px;">
+            <div class="chart-wrapper" style="height:360px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
                 <canvas id="returnsChart"></canvas>
             </div>
         </section>
         <section class="chart-container">
             <h2 class="tx-section-title">Daily % Change</h2>
-            <div class="chart-wrapper" style="height:560px;">
+            <div class="chart-wrapper" style="height:560px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
                 <canvas id="dailyChangeChart"></canvas>
             </div>
         </section>
         <section class="chart-container">
             <h2 class="tx-section-title">Daily PLN Change</h2>
-            <div class="chart-wrapper" style="height:560px;">
+            <div class="chart-wrapper" style="height:560px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
                 <canvas id="dailyPLNChart"></canvas>
             </div>
         </section>

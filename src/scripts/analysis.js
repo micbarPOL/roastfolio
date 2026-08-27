@@ -672,6 +672,63 @@
                 if (key !== 'date') metricNames.add(key);
             });
         });
+
+        const FIN_METRIC_PRIORITY = {
+            'Net Income': 100,
+            'Net income': 100,
+            'Ebitda': 95,
+            'EBITDA': 95,
+            'Operating Cash Flow': 90,
+            'Operating cash flow': 90,
+            'Free Cash Flow': 85,
+            'Free cash flow': 85,
+            'Operating Income': 80,
+            'Operating income': 80,
+            'Total Revenue': 75,
+            'Total revenue': 75,
+            'Operating Revenue': 70,
+            'Operating revenue': 70,
+            'Gross Profit': 65,
+            'Gross profit': 65,
+            'Diluted Eps': 30,
+            'Diluted EPS': 30,
+            'Basic Eps': 25,
+            'Basic EPS': 25,
+            'Total Debt': 20,
+            'Total debt': 20,
+            'Net Debt': 15,
+            'Net debt': 15,
+            'Working Capital': 10,
+            'Working capital': 10,
+            'Total Assets': 5,
+            'Total assets': 5,
+            'Total Liabilities Net Minority Interest': 1,
+            'Total liabilities net minority interest': 1,
+            'Total Equity Gross Minority Interest': 0,
+            'Total equity gross minority interest': 0,
+            'Capital Expenditure': -5,
+            'Capital expenditure': -5,
+            'Reconciled Cost Of Revenue': -10,
+            'Reconciled cost of revenue': -10,
+            'Reconciled Depreciation': -20,
+            'Reconciled depreciation': -20,
+        };
+
+        function normalizeMetricKey(metric) {
+            const readable = String(metric)
+                .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+                .replace(/[_-]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return readable.charAt(0).toUpperCase() + readable.slice(1);
+        }
+
+        const orderedMetricNames = Array.from(metricNames).sort((a, b) => {
+            const pa = FIN_METRIC_PRIORITY[normalizeMetricKey(a)] ?? Number.MIN_SAFE_INTEGER;
+            const pb = FIN_METRIC_PRIORITY[normalizeMetricKey(b)] ?? Number.MIN_SAFE_INTEGER;
+            if (pa !== pb) return pb - pa;
+            return normalizeMetricKey(a).localeCompare(normalizeMetricKey(b));
+        });
         
         // Build table header with bar chart column
         const thead = table.querySelector('thead tr');
@@ -681,9 +738,11 @@
         
         // Build table body with bar charts
         const tbody = table.querySelector('tbody');
-        const rows = Array.from(metricNames).map(metric => {
+        const rows = orderedMetricNames.map(metric => {
             // Collect values for this metric
             const values = periodData.map(pd => pd[metric]);
+            const priority = FIN_METRIC_PRIORITY[normalizeMetricKey(metric)] ?? Number.MIN_SAFE_INTEGER;
+            const isPriorityMetric = priority >= 70;
             
             // Generate cells
             const cells = periodData.map(pd => {
@@ -696,8 +755,8 @@
             // Generate bar chart
             const chartCell = generateMetricBarChart(values);
             
-            return `<tr>
-                <td style="font-weight:600;color:var(--text);">${formatMetricName(metric)}</td>
+            return `<tr class="${isPriorityMetric ? 'analysis-financial-priority-row' : ''}">
+                <td style="font-weight:${isPriorityMetric ? 700 : 600};color:var(--text);">${formatMetricName(metric)}</td>
                 ${cells.join('')}
                 ${chartCell}
             </tr>`;
