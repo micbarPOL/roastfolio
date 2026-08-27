@@ -994,29 +994,43 @@ function _normalizeUnderwaterMetrics(payload) {
 }
 
 function _buildUnderwaterMetricsFromSnapshots(data) {
-    const sorted = [...(data || [])].sort((a, b) => a.date.localeCompare(b.date));
+    const sorted = [...(data || [])]
+        .filter(row => row && String(row.date || '').trim())
+        .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+
     let hwm = 0;
     let lakeId = 0;
     let underwater = false;
 
-    return sorted.map(row => {
-        const value = Number(row.value || 0);
-        const unitBase = row.unitPrice ?? row.unit_price ?? value ?? 0;
-        const unitPrice = Number(unitBase);
-        hwm = Math.max(hwm, unitPrice);
-        const drawdown = hwm > 0 ? ((unitPrice - hwm) / hwm) * 100 : 0;
-        const isLakeDay = drawdown < 0;
-        if (isLakeDay && !underwater) lakeId += 1;
-        underwater = isLakeDay;
-        return {
-            date: row.date,
-            value,
-            unit_price: unitPrice,
-            hwm,
-            drawdown,
-            lake_id: isLakeDay ? lakeId : null,
-        };
-    });
+    return sorted
+        .map(row => {
+            const rawValue = Number(row.value ?? 0);
+            if (!Number.isFinite(rawValue) || rawValue <= 0) {
+                return null;
+            }
+
+            const value = rawValue;
+            const unitBase = row.unitPrice ?? row.unit_price ?? value ?? 0;
+            const unitPrice = Number(unitBase);
+            if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+                return null;
+            }
+
+            hwm = Math.max(hwm, unitPrice);
+            const drawdown = hwm > 0 ? ((unitPrice - hwm) / hwm) * 100 : 0;
+            const isLakeDay = drawdown < 0;
+            if (isLakeDay && !underwater) lakeId += 1;
+            underwater = isLakeDay;
+            return {
+                date: row.date,
+                value,
+                unit_price: unitPrice,
+                hwm,
+                drawdown,
+                lake_id: isLakeDay ? lakeId : null,
+            };
+        })
+        .filter(Boolean);
 }
 
 function _extractUnderwaterExtremes(metrics) {
