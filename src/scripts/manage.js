@@ -33,6 +33,8 @@
   let _walletStickyBound = false;
   let _walletStickyLastScrollY = 0;
   let _walletStickyCondensed = false;
+  let _walletScreenInitPromise = null;
+  let _walletSelectionPromise = null;
   const _companyLogos = {
     'XTB': 'data/logos/xtb.png',
     'RAINBOW (RBW)': 'data/logos/RAINBOW.png',
@@ -86,17 +88,67 @@
     return _portfolios.find(x => x.portfolioId === _activePortId) || null;
   }
 
+  function _walletLookupKeysFor(portfolio) {
+    const keys = [];
+    if (!portfolio) return keys;
+    if (portfolio.name) keys.push(String(portfolio.name));
+    if (portfolio.portfolioId) keys.push(String(portfolio.portfolioId));
+    if (portfolio.name) keys.push(String(portfolio.name).trim().toLowerCase());
+    if (portfolio.portfolioId) keys.push(String(portfolio.portfolioId).trim().toLowerCase());
+
+    const nameKey = String(portfolio.name || '').trim();
+    const idKey = String(portfolio.portfolioId || '').trim();
+    if (typeof window !== 'undefined' && window.WALLET_PORTFOLIO_IDS) {
+      if (nameKey && window.WALLET_PORTFOLIO_IDS[nameKey]) keys.push(String(window.WALLET_PORTFOLIO_IDS[nameKey]));
+      if (idKey && window.WALLET_PORTFOLIO_IDS[idKey]) keys.push(String(window.WALLET_PORTFOLIO_IDS[idKey]));
+    }
+
+    return [...new Set(keys.filter(Boolean))];
+  }
+
   function _walletSummaryFor(portfolio) {
     if (!portfolio || typeof WALLET_SUMMARIES === 'undefined' || !WALLET_SUMMARIES) return null;
     if (_isSummaryPortfolio(portfolio.portfolioId)) return WALLET_SUMMARIES.Summary || null;
-    return WALLET_SUMMARIES[portfolio.name] || null;
+
+    const candidates = _walletLookupKeysFor(portfolio);
+    for (const candidate of candidates) {
+      if (WALLET_SUMMARIES[candidate]) return WALLET_SUMMARIES[candidate];
+    }
+    const lower = new Map(Object.entries(WALLET_SUMMARIES || {}).map(([key, value]) => [String(key).toLowerCase(), value]));
+    for (const candidate of candidates.map((key) => String(key).toLowerCase())) {
+      if (lower.has(candidate)) return lower.get(candidate);
+    }
+    return null;
+  }
+
+  function _effectiveWalletSummary(portfolio) {
+    const summary = _walletSummaryFor(portfolio) || {};
+    const isSummary = !!(portfolio && _isSummaryPortfolio(portfolio.portfolioId));
+    const fallbackTotal = Number(window.PORTFOLIO_TOTAL_VALUE || summary.total || 0);
+    const fallbackDailyPLN = Number(window.PORTFOLIO_DAILY_CHANGE_PLN || summary.dailyPLN || 0);
+    const fallbackDailyPct = Number(window.PORTFOLIO_DAILY_CHANGE_PCT || summary.dailyPct || 0);
+    return {
+      total: Number(summary.total ?? (isSummary ? fallbackTotal : 0) ?? 0),
+      dailyPLN: Number(summary.dailyPLN ?? (isSummary ? fallbackDailyPLN : 0) ?? 0),
+      dailyPct: Number(summary.dailyPct ?? (isSummary ? fallbackDailyPct : 0) ?? 0),
+      annualReturn: Number(summary.annualReturn ?? 0),
+    };
   }
 
   function _liveHoldingsFor(portfolio) {
     if (!portfolio) return [];
     if (_isSummaryPortfolio(portfolio.portfolioId)) return (typeof window !== 'undefined' && window.PORTFOLIO_DATA) || [];
     if (typeof WALLET_HOLDINGS === 'undefined' || !WALLET_HOLDINGS) return [];
-    return WALLET_HOLDINGS[portfolio.name] || [];
+
+    const candidates = _walletLookupKeysFor(portfolio);
+    for (const candidate of candidates) {
+      if (WALLET_HOLDINGS[candidate]) return WALLET_HOLDINGS[candidate];
+    }
+    const lower = new Map(Object.entries(WALLET_HOLDINGS || {}).map(([key, value]) => [String(key).toLowerCase(), value]));
+    for (const candidate of candidates.map((key) => String(key).toLowerCase())) {
+      if (lower.has(candidate)) return lower.get(candidate);
+    }
+    return [];
   }
 
   function _holdingKey(item) {
@@ -830,8 +882,7 @@
     const overlay = document.getElementById('mgmt-transaction-overlay');
     const tradeView = document.getElementById('mgmt-overlay-trade');
     const overlayTitle = document.getElementById('mgmt-overlay-title');
-    const openTradeBtn = document.getElementById('mgmt-open-trade-btn');
-    const inlineStatus = document.getElementById('mgmt-inline-status');
+    const openTradeBtn = document.getElementById('mgmt-qe-open-trade-btn');
     const portfolio = _activePortfolio();
     const isSummary = _isSummaryPortfolio(_activePortId);
 
@@ -843,15 +894,6 @@
       openTradeBtn.disabled = isSummary;
       openTradeBtn.classList.toggle('is-disabled', isSummary);
       openTradeBtn.textContent = isSummary ? 'Summary is read only' : 'New transaction';
-    }
-    if (inlineStatus) {
-      if (isSummary) {
-        _setPillState(inlineStatus, 'Summary stays stable and read only', '');
-      } else if (_isTransactionsPanelOpen()) {
-        _setPillState(inlineStatus, 'Trading in focused panel', '');
-      } else {
-        _setPillState(inlineStatus, 'Stable holdings layout', '');
-      }
     }
     if (overlay) overlay.dataset.mode = 'trade';
   }
@@ -951,43 +993,295 @@
     _syncTransactionsPanel();
   }
 
+  function _buildSummarySparkline(snapshots, txs) {
+    const allSeries = (snapshots || [])
+      .map((snapshot) => {
+        const value = Number(snapshot && snapshot.portfolioValue);
+        const tsRaw = String(snapshot && snapshot.snapshotDate || '').slice(0, 10);
+        const ts = tsRaw ? new Date(`${tsRaw}T00:00:00Z`).getTime() : null;
+        return Number.isFinite(value) && Number.isFinite(ts) ? [ts, value] : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a[0] - b[0]);
+
+    const now = new Date();
+    const rightEdge = now.getTime();
+    const threeYearsAgo = new Date(now.getTime());
+    threeYearsAgo.setFullYear(now.getFullYear() - 3);
+
+    const oldestTs = allSeries.length ? allSeries[0][0] : rightEdge;
+    const startBound = Math.max(oldestTs, threeYearsAgo.getTime());
+    const trimmedSeries = allSeries.filter(([ts]) => ts >= startBound && ts <= rightEdge);
+    const fallbackBeforeStart = [...allSeries].reverse().find(([ts]) => ts < startBound);
+    const fallbackSeries = fallbackBeforeStart ? [[startBound, fallbackBeforeStart[1]], [rightEdge, fallbackBeforeStart[1]]] : [];
+    const baseSeries = trimmedSeries.length ? trimmedSeries : fallbackSeries;
+    const safeBaseSeries = baseSeries.length ? baseSeries : [[startBound, allSeries[allSeries.length - 1][1]], [rightEdge, allSeries[allSeries.length - 1][1]]];
+    const lastPoint = safeBaseSeries[safeBaseSeries.length - 1];
+    const displaySeries = lastPoint && lastPoint[0] < rightEdge
+      ? [...safeBaseSeries, [rightEdge, lastPoint[1]]]
+      : safeBaseSeries;
+
+    if (displaySeries.length < 2) {
+      return '<div class="wallet-summary-empty-mini">No value history yet</div>';
+    }
+
+    const valueNow = displaySeries[displaySeries.length - 1][1];
+    const valueStart = displaySeries[0][1];
+    const isUp = valueNow >= valueStart;
+    const sparkSVG = typeof makeSparkline === 'function'
+      ? makeSparkline(displaySeries, isUp, 520, 170)
+      : '';
+
+    const firstTs = displaySeries[0][0];
+    const lastTs = Math.max(displaySeries[displaySeries.length - 1][0], rightEdge);
+    const firstYear = new Date(firstTs).getFullYear();
+    const lastYear = new Date(lastTs).getFullYear();
+    const axisDates = [];
+
+    for (let year = firstYear; year <= lastYear; year += 1) {
+      const yearEnd = new Date(Date.UTC(year, 11, 31, 12, 0, 0));
+      const yearEndTs = yearEnd.getTime();
+      if (yearEndTs >= firstTs && yearEndTs <= lastTs) {
+        axisDates.push(yearEnd);
+      }
+    }
+
+    if (!axisDates.length || axisDates[axisDates.length - 1].getTime() < lastTs) {
+      axisDates.push(new Date(lastTs));
+    }
+
+    const axisLabels = axisDates.map((date) => {
+      const pct = ((date.getTime() - firstTs) / Math.max(lastTs - firstTs, 1)) * 100;
+      const year = date.getFullYear();
+      return `
+        <span class="wallet-summary-axis-label" style="left:${Math.min(96, Math.max(4, pct))}%">${year}</span>
+      `;
+    }).join('');
+
+    const txMap = new Map();
+    (txs || [])
+      .filter((tx) => ['DEPOSIT', 'WITHDRAWAL'].includes(String(tx && tx.type || '').toUpperCase()))
+      .forEach((tx) => {
+        const dateKey = String(tx.transactionDate || tx.date || '').slice(0, 10);
+        const amount = Math.abs(Number(tx.value ?? tx.amount ?? tx.total ?? 0) || 0);
+        if (!dateKey || !amount) return;
+        const prior = txMap.get(dateKey) || { dateKey, total: 0, isDeposit: true };
+        const isDeposit = String(tx.type || '').toUpperCase() === 'DEPOSIT';
+        prior.total += isDeposit ? amount : -amount;
+        prior.isDeposit = prior.total >= 0;
+        prior.label = isDeposit ? 'Deposit' : 'Withdrawal';
+        txMap.set(dateKey, prior);
+      });
+
+    const eventMarkers = Array.from(txMap.values())
+      .sort((a, b) => a.dateKey.localeCompare(b.dateKey))
+      .map((tx) => {
+        const idx = (snapshots || []).findIndex((snapshot) => String(snapshot && snapshot.snapshotDate || '').slice(0, 10) === tx.dateKey);
+        if (idx < 0) return null;
+
+        const values = displaySeries.map(([_, value]) => value);
+        const min = Math.min(...values);
+        const max = Math.max(...values) || 1;
+        const range = max - min || 1;
+        const currentValue = Number((snapshots || [])[idx] && (snapshots || [])[idx].portfolioValue || 0);
+        const pct = (currentValue - min) / range;
+        const left = (((idx || 0) / Math.max(displaySeries.length - 1, 1)) * 100);
+        const top = 100 - (pct * 100);
+        return {
+          left: Math.min(96, Math.max(4, left)),
+          top: Math.min(92, Math.max(12, top)),
+          label: tx.label || 'Cash flow',
+          isDeposit: tx.total >= 0,
+          total: Math.abs(tx.total),
+          dateLabel: tx.dateKey,
+        };
+      })
+      .filter(Boolean);
+
+    const visibleMarkers = eventMarkers.length > 6
+      ? eventMarkers
+          .slice()
+          .sort((a, b) => b.total - a.total)
+          .slice(0, 6)
+      : eventMarkers;
+
+    const markers = visibleMarkers.map((marker) => `
+      <span class="wallet-summary-event-marker ${marker.isDeposit ? 'is-deposit' : 'is-withdrawal'}"
+        style="left:${marker.left}%; top:${marker.top}%;"
+        title="${marker.dateLabel} · ${marker.isDeposit ? '+' : '-'}${marker.total.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN"
+        aria-label="${marker.dateLabel} · ${marker.isDeposit ? '+' : '-'}${marker.total.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN">
+        <span>${marker.isDeposit ? '+' : '−'}</span>
+      </span>
+    `).join('');
+
+    return `
+      <div class="wallet-summary-mini-card wallet-summary-chart-card">
+        <div class="wallet-summary-mini-header">
+          <span>Value history</span>
+        </div>
+        <div class="wallet-summary-spark-wrap">
+          ${sparkSVG || '<div class="wallet-summary-empty-mini">No value history yet</div>'}
+          ${axisLabels}
+          ${markers}
+        </div>
+      </div>
+    `;
+  }
+
+  function _buildHoldingPieChart(holdings) {
+    const active = (holdings || [])
+      .filter((holding) => Number(holding && holding.currentValue || 0) > 0)
+      .map((holding) => ({
+        name: String(holding.name || holding.ticker || 'Unknown'),
+        ticker: String(holding.ticker || '').trim(),
+        value: Number(holding.currentValue || holding.purchaseValue || 0),
+      }))
+      .sort((a, b) => b.value - a.value);
+
+    if (!active.length) {
+      return '<div class="wallet-summary-empty-mini">No holdings yet</div>';
+    }
+
+    const total = active.reduce((sum, item) => sum + item.value, 0) || 1;
+    let start = 0;
+    const segments = active.map((item, index) => {
+      const share = item.value / total;
+      const end = start + share * 360;
+      const color = getColor(item.name, index);
+      const segment = `${color} ${start}deg ${end}deg`;
+      start = end;
+      return segment;
+    }).join(', ');
+
+    const legend = active.slice(0, 5).map((item, index) => {
+      const share = (item.value / total) * 100;
+      const color = getColor(item.name, index);
+      return `
+        <div class="wallet-summary-legend-item">
+          <span class="wallet-summary-legend-swatch" style="background:${color};"></span>
+          <span class="wallet-summary-legend-name">${_esc(item.ticker || item.name.slice(0, 12))}</span>
+          <span class="wallet-summary-legend-value">${share.toFixed(1)}%</span>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="wallet-summary-mini-card wallet-summary-pie-card">
+        <div class="wallet-summary-mini-header">
+          <span>Holdings</span>
+          <span class="wallet-summary-mini-pill">${active.length} assets</span>
+        </div>
+        <div class="wallet-summary-pie-wrapper">
+          <div class="wallet-summary-pie" style="background: conic-gradient(${segments});" aria-label="Portfolio allocation chart">
+            <div class="wallet-summary-pie-center">${active.length}</div>
+          </div>
+          <div class="wallet-summary-pie-legend">
+            ${legend}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function _renderWalletSummaryVisuals() {
+    const wrap = document.getElementById('wallet-summary-visuals');
+    if (!wrap) return;
+
+    const sparkline = _buildSummarySparkline(_currentSnapshots || [], _currentTransactions || []);
+    const pie = _buildHoldingPieChart(_currentHoldings || []);
+
+    wrap.innerHTML = `
+      <div class="wallet-summary-visual-grid">
+        ${sparkline}
+        ${pie}
+      </div>
+    `;
+
+    if (typeof getSparkTooltip === 'function') {
+      wrap.querySelectorAll('.wallet-summary-spark-wrap .sparkline-svg').forEach((svg) => {
+        const tip = getSparkTooltip();
+        const rect = svg && svg.querySelector('rect[data-color]');
+        if (!rect || !svg.dataset.coords) return;
+        const coords = JSON.parse(svg.dataset.coords);
+        const dots = [...svg.querySelectorAll('.sp-dot')];
+
+        rect.addEventListener('mousemove', (event) => {
+          const svgRect = svg.getBoundingClientRect();
+          const mouseX = event.clientX - svgRect.left;
+          let best = coords[0];
+          let bestDist = Infinity;
+          let bestIdx = 0;
+
+          coords.forEach((point, index) => {
+            const diff = Math.abs(point.x - mouseX);
+            if (diff < bestDist) {
+              bestDist = diff;
+              best = point;
+              bestIdx = index;
+            }
+          });
+
+          dots.forEach((dot, index) => dot.setAttribute('opacity', index === bestIdx ? '1' : '0'));
+
+          const datePart = best.date
+            ? new Date(best.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            : best.label || 'Date';
+          const valuePart = Number(best.v || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
+
+          tip.textContent = `${datePart} · ${valuePart}`;
+          tip.style.display = 'block';
+          tip.style.left = `${event.clientX + 12}px`;
+          tip.style.top = `${event.clientY - 18}px`;
+        });
+
+        rect.addEventListener('mouseleave', () => {
+          dots.forEach((dot) => dot.setAttribute('opacity', '0'));
+          tip.style.display = 'none';
+        });
+      });
+    }
+  }
+
   function _renderSettings(portfolio, holdingsCount, txCount) {
     const titleEl = document.getElementById('mgmt-holdings-title');
     const summaryEl = document.getElementById('mgmt-settings-summary');
+    const totalKpiEl = document.getElementById('wob-kpi-total');
+    const dayKpiEl = document.getElementById('wob-kpi-day');
+    const returnKpiEl = document.getElementById('wob-kpi-return');
     const actionsEl = document.getElementById('mgmt-settings-actions');
     const subtitleEl = document.getElementById('mgmt-holdings-subtitle');
-    const inlineStatus = document.getElementById('mgmt-inline-status');
     const tradeCard = document.querySelector('.wallet-card-trade');
     const benchmarkSettingEl = document.getElementById('mgmt-benchmark-setting');
-    const annualReturnContentEl = document.getElementById('mgmt-annual-return-content');
-    const summary = _walletSummaryFor(portfolio) || { total: 0, dailyPLN: 0, dailyPct: 0, annualReturn: 0 };
-    const isSummary = _isSummaryPortfolio(portfolio && portfolio.portfolioId);
+    const summary = _effectiveWalletSummary(portfolio);
+    const isSummary = !!(portfolio && _isSummaryPortfolio(portfolio.portfolioId));
+
+    const totalText = `${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
+    const dailyText = `${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
+    const dailyPctText = `${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%`;
+    const annualNumber = Number(summary.annualReturn || 0);
+    const annualReturnText = Number.isFinite(annualNumber) && annualNumber !== 0 ? `${annualNumber > 0 ? '+' : ''}${(annualNumber * 100).toFixed(2)}%` : '—';
 
     if (titleEl) titleEl.textContent = portfolio ? portfolio.name : 'Select a portfolio';
     if (subtitleEl) subtitleEl.textContent = isSummary
-      ? 'Aggregated holdings across all wallets. Summary is pinned and read-only.'
+      ? 'All wallets combined. Your aggregate balance and performance across every wallet.'
       : 'Live value, allocation, and quick trade actions.';
     if (summaryEl) {
       summaryEl.innerHTML = isSummary
-        ? `Summary is auto-calculated from all wallets. Current total: <strong>${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN</strong>.`
+        ? `All wallets combined. Current total: <strong>${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN</strong> · Daily <strong>${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN (${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%)</strong>.`
         : `Live total: <strong>${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN</strong> · Daily <strong>${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN (${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%)</strong> · ${holdingsCount} holdings · ${txCount} transactions.`;
     }
+    if (totalKpiEl) totalKpiEl.textContent = totalText;
+    if (dayKpiEl) dayKpiEl.textContent = `${dailyText} / ${dailyPctText}`;
+    if (returnKpiEl) returnKpiEl.textContent = annualReturnText;
     if (actionsEl) {
-        actionsEl.innerHTML = isSummary ? `
-        <span class="wallet-settings-pill">Summary pinned first</span>
-        <button class="mgmt-icon-btn wallet-settings-btn" title="Wallet Settings"
-          onclick="window._mgmt.openWalletSettingsModal()">⚙️ Settings</button>
-      ` : `
+        actionsEl.innerHTML = `
         <button class="mgmt-icon-btn wallet-settings-btn" title="Wallet Settings"
           onclick="window._mgmt.openWalletSettingsModal()">⚙️ Settings</button>
       `;
     }
     if (tradeCard) tradeCard.style.display = isSummary && _transactionsPanelMode === 'trade' ? 'none' : '';
-    // Quick Entry is now always visible
-    if (inlineStatus && !isSummary && !_isTransactionsPanelOpen()) {
-      _setPillState(inlineStatus, `Stable holdings · ${holdingsCount} positions · ${txCount} entries`, '');
-    }
     _syncTransactionsPanel();
+    _renderWalletSummaryVisuals();
     // Render ATH section for the selected wallet
     if (typeof window.renderWalletAthSection === 'function') {
       const athKey = portfolio ? (isSummary ? 'Summary' : portfolio.name) : null;
@@ -998,15 +1292,6 @@
         benchmarkSettingEl.style.display = isSummary ? '' : 'none';
     }
 
-    if (annualReturnContentEl) {
-        if (typeof summary.annualReturn === 'number') {
-            annualReturnContentEl.textContent = `${summary.annualReturn > 0 ? '+' : ''}${(summary.annualReturn * 100).toFixed(2)}% / yr`;
-            annualReturnContentEl.className = `wob-value-bold ${_dailyChangeClass(summary.annualReturn)}`;
-        } else {
-            annualReturnContentEl.textContent = '--';
-            annualReturnContentEl.className = 'wob-value-bold';
-        }
-    }
   }
 
   // ── Load portfolios from DynamoDB ────────────────────────────
@@ -1102,96 +1387,109 @@
 
   // ── Select portfolio → show its holdings ─────────────────────
   async function selectPortfolio(portfolioId) {
-    _activePortId = portfolioId;
-    _renderPortfolioList();
-    _syncWalletSelectorChrome();
-    if (_isCompactWalletSelector()) _setWalletSelectorOpen(false, { force: true });
-
-    const panel = document.getElementById('mgmt-holdings-panel');
-    // Panel is always in-flow (no display:none). Just ensure it's visible.
-    if (panel && panel.style.display === 'none') panel.style.display = '';
-
-    const p = _portfolios.find(x => x.portfolioId === portfolioId);
-    const tbody = document.getElementById('mgmt-holdings-body');
-    const holdingsMeta = document.getElementById('mgmt-holdings-meta');
-    const cemeteryBody = document.getElementById('mgmt-cemetery-body');
-    const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
-    const valueHistoryBody = document.getElementById('mgmt-value-history-body');
-    const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
-    _renderHoldingsSkeleton();
-    if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
-    if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
-    if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
-    const txBody = document.getElementById('mgmt-transactions-body');
-    if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
-    if (valueHistoryBody) valueHistoryBody.innerHTML = '<tr><td colspan="3" class="mgmt-loading" style="text-align:center;padding:20px;">Loading…</td></tr>';
-    if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Loading snapshots…', 'syncing');
-
-    if (!p) return;
-
-    if (_isSummaryPortfolio(portfolioId)) {
-      const holdings = _mergeHoldings([], _liveHoldingsFor(p));
-      _currentHoldings = holdings;
-      const sourcePortfolioIds = (_portfolios || [])
-        .filter((port) => !_isSummaryPortfolio(port.portfolioId))
-        .map((port) => port.portfolioId);
-      const summaryTxResponses = await Promise.all(
-        sourcePortfolioIds.map((pid) => PortfolioClient.listTransactions(pid, 5000).catch(() => ({ transactions: [] })))
-      );
-      _currentTransactions = summaryTxResponses.flatMap((response, idx) => {
-        const pid = sourcePortfolioIds[idx];
-        const rows = (response && response.transactions) || [];
-        return rows.map((tx) => ({ ...tx, portfolioId: tx.portfolioId || pid }));
-      });
-      _currentClosedHoldings = [];
-      try {
-        const snapshotData = await PortfolioClient.listSnapshots(portfolioId);
-        _currentSnapshots = snapshotData.snapshots || [];
-      } catch (_) {
-        _currentSnapshots = [];
-      }
-      _renderSettings(p, holdings.length, _currentTransactions.length);
-      _renderHoldings(portfolioId, holdings, true);
-      if (txBody) {
-        txBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">Summary is aggregated across wallets. Open an individual wallet to inspect its transactions.</td></tr>';
-      }
-      _renderValueHistory(_currentSnapshots);
-      _resetTransactionForm({ keepType: false });
-      _syncTransactionsPanel();
-      return;
+    const lockKey = portfolioId || 'none';
+    if (_activePortId === lockKey && _walletSelectionPromise) {
+      return _walletSelectionPromise;
     }
+    _activePortId = lockKey;
+    _walletSelectionPromise = (async () => {
+      _renderPortfolioList();
+      _syncWalletSelectorChrome();
+      if (_isCompactWalletSelector()) _setWalletSelectorOpen(false, { force: true });
+
+      const panel = document.getElementById('mgmt-holdings-panel');
+      if (panel && panel.style.display === 'none') panel.style.display = '';
+
+      const p = _portfolios.find(x => x.portfolioId === portfolioId);
+      const tbody = document.getElementById('mgmt-holdings-body');
+      const holdingsMeta = document.getElementById('mgmt-holdings-meta');
+      const cemeteryBody = document.getElementById('mgmt-cemetery-body');
+      const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
+      const valueHistoryBody = document.getElementById('mgmt-value-history-body');
+      const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
+      _renderHoldingsSkeleton();
+      if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
+      if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
+      if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
+      const txBody = document.getElementById('mgmt-transactions-body');
+      if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
+      if (valueHistoryBody) valueHistoryBody.innerHTML = '<tr><td colspan="3" class="mgmt-loading" style="text-align:center;padding:20px;">Loading…</td></tr>';
+      if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Loading snapshots…', 'syncing');
+
+      if (!p) return;
+
+      if (_isSummaryPortfolio(portfolioId)) {
+        const holdings = _mergeHoldings([], _liveHoldingsFor(p));
+        _currentHoldings = holdings;
+        const sourcePortfolioIds = (_portfolios || [])
+          .filter((port) => !_isSummaryPortfolio(port.portfolioId))
+          .map((port) => port.portfolioId);
+        const summaryTxResponses = await Promise.all(
+          sourcePortfolioIds.map((pid) => PortfolioClient.listTransactions(pid, 5000).catch(() => ({ transactions: [] })))
+        );
+        _currentTransactions = summaryTxResponses.flatMap((response, idx) => {
+          const pid = sourcePortfolioIds[idx];
+          const rows = (response && response.transactions) || [];
+          return rows.map((tx) => ({ ...tx, portfolioId: tx.portfolioId || pid }));
+        });
+        _currentClosedHoldings = [];
+        try {
+          const snapshotData = await PortfolioClient.listSnapshots(portfolioId);
+          _currentSnapshots = snapshotData.snapshots || [];
+        } catch (_) {
+          _currentSnapshots = [];
+        }
+        _renderSettings(p, holdings.length, _currentTransactions.length);
+        _renderHoldings(portfolioId, holdings, true);
+        if (txBody) {
+          txBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">Summary is aggregated across wallets. Open an individual wallet to inspect its transactions.</td></tr>';
+        }
+        _renderValueHistory(_currentSnapshots);
+        _resetTransactionForm({ keepType: false });
+        _syncTransactionsPanel();
+        return;
+      }
+
+      try {
+        const [data, snapshotData] = await Promise.all([
+          PortfolioClient.getPortfolio(portfolioId),
+          PortfolioClient.listSnapshots(portfolioId),
+        ]);
+        const holdings = _mergeHoldings(data.holdings || [], _liveHoldingsFor(p));
+        const transactions = data.transactions || [];
+        const closedHoldings = data.closedHoldings || [];
+        const snapshots = snapshotData.snapshots || [];
+        _currentHoldings = holdings;
+        _currentTransactions = transactions;
+        _currentClosedHoldings = closedHoldings;
+        _currentSnapshots = snapshots;
+        _renderSettings(p, holdings.length, transactions.length);
+        _renderHoldings(portfolioId, holdings, false);
+        _renderTransactions(transactions);
+        _renderValueHistory(snapshots);
+        _resetTransactionForm({ keepType: false });
+        _syncTransactionsPanel();
+      } catch(e) {
+        _currentHoldings = [];
+        _currentTransactions = [];
+        _currentClosedHoldings = [];
+        _currentSnapshots = [];
+        _renderSettings(p, 0, 0);
+        tbody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
+        if (txBody) txBody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
+        if (valueHistoryBody) valueHistoryBody.innerHTML = `<tr><td colspan="3" class="mgmt-error" style="text-align:center;padding:20px;">Error: ${_esc(e.message)}</td></tr>`;
+        if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Unable to load snapshots', 'error');
+        if (holdingsMeta) _setPillState(holdingsMeta, 'Unable to load holdings', 'error');
+        _syncTransactionsPanel();
+      }
+    })();
 
     try {
-      const [data, snapshotData] = await Promise.all([
-        PortfolioClient.getPortfolio(portfolioId),
-        PortfolioClient.listSnapshots(portfolioId),
-      ]);
-      const holdings = _mergeHoldings(data.holdings || [], _liveHoldingsFor(p));
-      const transactions = data.transactions || [];
-      const closedHoldings = data.closedHoldings || [];
-      const snapshots = snapshotData.snapshots || [];
-      _currentHoldings = holdings;
-      _currentTransactions = transactions;
-      _currentClosedHoldings = closedHoldings;
-      _currentSnapshots = snapshots;
-      _renderSettings(p, holdings.length, transactions.length);
-      _renderHoldings(portfolioId, holdings, false);
-      _renderTransactions(transactions);
-      _renderValueHistory(snapshots);
-      _resetTransactionForm({ keepType: false });
-      _syncTransactionsPanel();
-    } catch(e) {
-      _currentHoldings = [];
-      _currentTransactions = [];
-      _currentClosedHoldings = [];
-      _currentSnapshots = [];
-      _renderSettings(p, 0, 0);
-      tbody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
-      if (txBody) txBody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
-      if (valueHistoryBody) valueHistoryBody.innerHTML = `<tr><td colspan="3" class="mgmt-error" style="text-align:center;padding:20px;">Error: ${_esc(e.message)}</td></tr>`;
-      if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Unable to load snapshots', 'error');
-      if (holdingsMeta) _setPillState(holdingsMeta, 'Unable to load holdings', 'error');
-      _syncTransactionsPanel();
+      return await _walletSelectionPromise;
+    } finally {
+      if (_activePortId === lockKey) {
+        _walletSelectionPromise = null;
+      }
     }
   }
 
@@ -2905,16 +3203,25 @@
 
   // ── Wallet screen entry point ─────────────────────────────────
   async function initWalletScreen() {
-    const dateEl = document.getElementById('mgmt-transaction-date');
-    if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
-    _bindWalletStickyBehavior();
-    _setCreateComposerOpen(false);
-    _setWalletStickyCondensed(false);
-    _resetTransactionForm({ keepType: false });
-    await _loadPortfolios();
-    _loadBenchmarkSetting();
-    _syncTransactionsPanel();
-    _syncWalletStickyCondensed(true);
+    if (_walletScreenInitPromise) return _walletScreenInitPromise;
+    _walletScreenInitPromise = (async () => {
+      const dateEl = document.getElementById('mgmt-transaction-date');
+      if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+      _bindWalletStickyBehavior();
+      _setCreateComposerOpen(false);
+      _setWalletStickyCondensed(false);
+      _resetTransactionForm({ keepType: false });
+      await _loadPortfolios();
+      _loadBenchmarkSetting();
+      _syncTransactionsPanel();
+      _syncWalletStickyCondensed(true);
+    })();
+
+    try {
+      return await _walletScreenInitPromise;
+    } finally {
+      _walletScreenInitPromise = null;
+    }
   }
 
   function openManageModal() {
@@ -3057,9 +3364,17 @@
     applyQeTemplate,
     parseQuickEntry,
   };
-  document.addEventListener('liveDataReady', () => {
-    if (document.getElementById('tab-wallets') && document.getElementById('tab-wallets').classList.contains('active')) {
-      initWalletScreen();
+  document.addEventListener('liveDataReady', async () => {
+    const walletsTab = document.getElementById('tab-wallets');
+    if (!walletsTab || !walletsTab.classList.contains('active')) return;
+
+    if (_activePortId) {
+      try {
+        await selectPortfolio(_activePortId);
+      } catch (_) {}
+      return;
     }
+
+    await initWalletScreen();
   });
 })();

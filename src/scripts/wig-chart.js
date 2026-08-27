@@ -123,12 +123,15 @@ function renderBenchmarkChart(benchmarkData, range, chartType) {
 
     destroyBenchmarkChart();
 
-    const points = getFilteredPoints(_benchmarkData, _benchmarkRange);
     const noData = document.getElementById('benchmark-no-data');
     const clLoader = document.getElementById('benchmark-cl-loader');
+    if (clLoader) clLoader.style.display = 'flex';
+
+    const points = getFilteredPoints(_benchmarkData, _benchmarkRange);
 
     if (!points.length) {
         if (noData) noData.style.display = '';
+        if (clLoader) clLoader.style.display = 'none';
         return;
     }
     if (noData) noData.style.display = 'none';

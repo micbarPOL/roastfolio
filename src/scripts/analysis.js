@@ -672,6 +672,63 @@
                 if (key !== 'date') metricNames.add(key);
             });
         });
+
+        const FIN_METRIC_PRIORITY = {
+            'Net Income': 100,
+            'Net income': 100,
+            'Ebitda': 95,
+            'EBITDA': 95,
+            'Operating Cash Flow': 90,
+            'Operating cash flow': 90,
+            'Free Cash Flow': 85,
+            'Free cash flow': 85,
+            'Operating Income': 80,
+            'Operating income': 80,
+            'Total Revenue': 75,
+            'Total revenue': 75,
+            'Operating Revenue': 70,
+            'Operating revenue': 70,
+            'Gross Profit': 65,
+            'Gross profit': 65,
+            'Diluted Eps': 30,
+            'Diluted EPS': 30,
+            'Basic Eps': 25,
+            'Basic EPS': 25,
+            'Total Debt': 20,
+            'Total debt': 20,
+            'Net Debt': 15,
+            'Net debt': 15,
+            'Working Capital': 10,
+            'Working capital': 10,
+            'Total Assets': 5,
+            'Total assets': 5,
+            'Total Liabilities Net Minority Interest': 1,
+            'Total liabilities net minority interest': 1,
+            'Total Equity Gross Minority Interest': 0,
+            'Total equity gross minority interest': 0,
+            'Capital Expenditure': -5,
+            'Capital expenditure': -5,
+            'Reconciled Cost Of Revenue': -10,
+            'Reconciled cost of revenue': -10,
+            'Reconciled Depreciation': -20,
+            'Reconciled depreciation': -20,
+        };
+
+        function normalizeMetricKey(metric) {
+            const readable = String(metric)
+                .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+                .replace(/[_-]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+            return readable.charAt(0).toUpperCase() + readable.slice(1);
+        }
+
+        const orderedMetricNames = Array.from(metricNames).sort((a, b) => {
+            const pa = FIN_METRIC_PRIORITY[normalizeMetricKey(a)] ?? Number.MIN_SAFE_INTEGER;
+            const pb = FIN_METRIC_PRIORITY[normalizeMetricKey(b)] ?? Number.MIN_SAFE_INTEGER;
+            if (pa !== pb) return pb - pa;
+            return normalizeMetricKey(a).localeCompare(normalizeMetricKey(b));
+        });
         
         // Build table header with bar chart column
         const thead = table.querySelector('thead tr');
@@ -681,9 +738,11 @@
         
         // Build table body with bar charts
         const tbody = table.querySelector('tbody');
-        const rows = Array.from(metricNames).map(metric => {
+        const rows = orderedMetricNames.map(metric => {
             // Collect values for this metric
             const values = periodData.map(pd => pd[metric]);
+            const priority = FIN_METRIC_PRIORITY[normalizeMetricKey(metric)] ?? Number.MIN_SAFE_INTEGER;
+            const isPriorityMetric = priority >= 70;
             
             // Generate cells
             const cells = periodData.map(pd => {
@@ -696,8 +755,8 @@
             // Generate bar chart
             const chartCell = generateMetricBarChart(values);
             
-            return `<tr>
-                <td style="font-weight:600;color:var(--text);">${formatMetricName(metric)}</td>
+            return `<tr class="${isPriorityMetric ? 'analysis-financial-priority-row' : ''}">
+                <td style="font-weight:${isPriorityMetric ? 700 : 600};color:var(--text);">${formatMetricName(metric)}</td>
                 ${cells.join('')}
                 ${chartCell}
             </tr>`;
@@ -751,52 +810,52 @@
 
     const FIN_TOOLTIPS = {
         // Income Statement
-        'Total Revenue': 'All money earned by the company from its core operations.<br/><br/><strong class="metric-good">Good:</strong> Steady YoY growth signals expanding market share.',
-        'Operating Revenue': 'Revenue generated directly from primary business activities, excluding one-off items.',
-        'Net Income': 'Total profit after all expenses, interest, and taxes (the "bottom line").<br/><br/><strong class="metric-good">Good:</strong> Positive and growing. Losses are acceptable for early-stage companies but a red flag for mature ones.',
-        'Gross Profit': 'Revenue minus the direct cost of producing goods/services.<br/><br/><strong class="metric-good">Good:</strong> Higher gross margin (>50%) typically indicates pricing power or a strong moat.',
-        'Operating Income': 'Gross profit minus all operating expenses (salaries, rent, R&D). Measures operational efficiency before interest and taxes.',
-        'Ebitda': 'Earnings Before Interest, Taxes, Depreciation & Amortization — widely used to compare operational profitability across companies and industries.',
-        'Diluted Eps': 'Earnings Per Share accounting for all potential shares (options, convertibles). A diluted EPS is more conservative than basic EPS.',
-        'Basic Eps': 'Net income divided by the current number of shares outstanding. Does not include potential dilution from options or convertibles.',
-        'Total Operating Expenses': 'All costs incurred in running the business — COGS, R&D, SG&A. Subtracting this from revenue gives operating income.',
-        'Selling General And Administration': 'Overhead costs: marketing, admin salaries, office expenses. High SG&A as a % of revenue can indicate inefficiency.',
-        'Research And Development': 'Investment in future products and capabilities.<br/><br/><strong class="metric-good">Good:</strong> Consistent R&D spending signals long-term thinking; declining R&D may hurt future competitiveness.',
-        'Interest Expense': 'Cost of servicing debt. High interest expense relative to operating income is a warning sign of over-leverage.',
-        'Interest Income': 'Income earned from cash deposits and short-term investments.',
-        'Tax Provision': 'Taxes owed to the government for the period. An unusually low effective tax rate may not be sustainable.',
-        'Reconciled Depreciation': 'Non-cash accounting charge spreading the cost of assets over their useful life. Added back when calculating operating cash flow.',
-        'Reconciled Cost Of Revenue': 'Direct costs tied to producing goods or delivering services (COGS). Lower COGS as % of revenue = higher gross margin.',
-        'Total Expenses': 'Sum of all costs the company incurred in the period.',
-        'Net Income Common Stockholders': 'Net income available to common shareholders after preferred dividends.',
-        'Net Income Including Noncontrolling Interests': 'Combined net income for both controlling shareholders and any minority interest holders.',
-        'Net Income Continuous Operations': 'Profit from ongoing business activities, excluding discontinued segments.',
+        'Total Revenue': 'Revenue is the money a company brings in before costs. <strong class="metric-good">Good:</strong> it grows steadily over time. <strong class="metric-bad">Watch:</strong> if revenue climbs but profit does not, margins are weakening or costs are rising faster than sales.',
+        'Operating Revenue': 'Revenue generated from the company\'s core operations, excluding unusual or one-off items. This is the clearest view of the core business engine.',
+        'Net Income': 'Net income is the bottom line: revenue minus all costs, taxes, and interest. <strong class="metric-good">Good:</strong> positive and growing. <strong class="metric-bad">Important:</strong> if revenue is healthy but net income is weak or negative, the company may be spending too much relative to what it earns. This is the metric to watch when revenue looks fine but the business is not translating sales into profit.',
+        'Gross Profit': 'Gross profit is revenue minus the direct cost of producing the product or service. It shows how much value remains before overhead costs. A stable or improving gross margin usually means stronger pricing power or lower production costs.',
+        'Operating Income': 'Operating income is profit from normal business operations before interest and taxes. It connects revenue and costs: if revenue is rising but operating income is flat or falling, expenses are likely expanding faster than the business can absorb them.',
+        'Ebitda': 'EBITDA is operating profit before interest, taxes, depreciation, and amortization. It is useful for comparing businesses across different capital structures and accounting methods, but it is not the same as true cash profit.',
+        'Diluted Eps': 'Diluted earnings per share tells you how much profit belongs to each share after accounting for all potential shares. It helps you compare profit growth with the share count. If net income rises but diluted EPS is flat, dilution may be offsetting the benefit.',
+        'Basic Eps': 'Basic EPS is net income divided by the current shares outstanding. It is easier to read than total profit, but it misses dilution from stock options or converts.',
+        'Total Operating Expenses': 'This is the full cost of running the business, including COGS, SG&A, and R&D. If operating expenses rise faster than revenue, profit pressure appears in operating income and then net income.',
+        'Selling General And Administration': 'SG&A covers overhead like sales, marketing, admin, and office costs. <strong class="metric-bad">Watch:</strong> if SG&A rises faster than revenue for several periods, margins can deteriorate even when sales stay strong.',
+        'Research And Development': 'R&D is investment in future products and innovation. <strong class="metric-good">Good:</strong> consistent R&D can support long-term growth, but it is a cost today and should be judged against future returns and profit growth.',
+        'Interest Expense': 'The cost of debt. High interest expense can eat into profit even when operating performance is solid. Compare this with operating income to see if leverage is becoming a risk.',
+        'Interest Income': 'Income earned from cash deposits and short-term investments. It is a smaller signal for most companies than revenue, margin, or free cash flow.',
+        'Tax Provision': 'Taxes owed during the period. It matters because lower taxes can lift earnings, but unusually low tax rates may not be sustainable or comparable across companies.',
+        'Reconciled Depreciation': 'Depreciation is a non-cash accounting charge for ageing assets. It reduces reported earnings but not actual cash flow. This is why cash flow often looks healthier than net income.',
+        'Reconciled Cost Of Revenue': 'This is the direct cost of providing the product or service. It is the first major bridge between revenue and gross profit: lower direct costs relative to revenue usually means a healthier margin.',
+        'Total Expenses': 'All costs incurred in the period. Used together with revenue to see whether the business is generating a real profit or just growing sales while costs absorb most of it.',
+        'Net Income Common Stockholders': 'Profit left for ordinary shareholders after preferred dividends. This is one of the cleanest ways to judge whether earnings are creating value for owners.',
+        'Net Income Including Noncontrolling Interests': 'Profit after minority-interest ownership is accounted for. It helps you see the full earnings power of a company, not just the parent-company slice.',
+        'Net Income Continuous Operations': 'Profit from continuing businesses, excluding discontinued or sold segments. This is useful when a company is restructuring or exiting a line of business.',
         // Cash Flow Statement
-        'Operating Cash Flow': 'Cash actually generated by running the business. More reliable than net income because it strips out accounting adjustments.<br/><br/><strong class="metric-good">Good:</strong> Should ideally exceed net income.',
-        'Investing Cash Flow': 'Cash spent on (or received from) investments — buying equipment, acquiring companies, or selling assets.<br/><br/><strong class="metric-good">Good:</strong> Negative is normal for growing companies (capex investment).',
-        'Financing Cash Flow': 'Cash flows from raising or repaying capital — issuing/repaying debt, issuing/buying back stock, paying dividends.',
-        'Free Cash Flow': 'Operating cash flow minus capital expenditures — the cash left over after maintaining and growing the business.<br/><br/><strong class="metric-good">Good:</strong> High FCF enables dividends, buybacks, and acquisitions without taking on debt.',
-        'Capital Expenditure': 'Cash spent on physical assets (factories, servers, equipment). Typically negative in cash flow.<br/><br/><strong class="metric-good">Good:</strong> Low capex relative to revenue means the business is "asset-light" and highly scalable.',
-        'Cash Dividends Paid': 'Cash returned to shareholders as dividends. Negative in cash flow statements.',
-        'Repurchase Of Capital Stock': 'Cash used to buy back the company\'s own shares, which reduces share count and boosts EPS.<br/><br/><strong class="metric-good">Good:</strong> Consistent buybacks signal management confidence in the stock.',
-        'Issuance Of Debt': 'New debt raised during the period. Frequent large issuances can signal cash burn or aggressive expansion.',
-        'Repayment Of Debt': 'Debt paid off during the period. Consistent debt reduction improves financial health.',
-        'Issuance Of Capital Stock': 'New shares issued — raises cash but dilutes existing shareholders.',
-        'Stock Based Compensation': 'Non-cash expense for equity given to employees. Added back to operating cash flow, but dilutes shareholders over time.',
-        'Depreciation And Amortization': 'Non-cash charge for the gradual write-down of tangible (depreciation) and intangible (amortization) assets.',
-        'Change In Working Capital': 'Change in short-term assets minus short-term liabilities. Negative means the business consumes more cash as it grows.',
-        'Changes In Account Receivables': 'Change in money owed to the company. Increasing receivables can signal delayed collections or revenue recognition issues.',
-        'Net Income From Continuing Operations': 'Profit from operations that are expected to continue, as opposed to discontinued business segments.',
-        'End Cash Position': 'Total cash and equivalents held at the end of the period.',
-        'Income Tax Paid Supplemental Data': 'Actual cash taxes paid, which may differ from the accrual-based tax provision.',
-        'Interest Paid Supplemental Data': 'Actual cash interest paid to lenders during the period.',
+        'Operating Cash Flow': 'Cash generated from everyday business activity. This is often more trustworthy than net income because it strips out non-cash accounting effects. <strong class="metric-good">Good:</strong> it should be positive and ideally stronger than reported profit.',
+        'Investing Cash Flow': 'Cash spent on or received from investments such as equipment, acquisitions, or asset sales. Negative numbers often reflect reinvestment; the key question is whether this is productive growth or unproductive spending.',
+        'Financing Cash Flow': 'Cash raised from or returned to capital providers, including debt, share issuance, buybacks, and dividends. It helps explain how the company is funding itself and returning capital to owners.',
+        'Free Cash Flow': 'Free cash flow is operating cash flow minus capital expenditure. This is the cash available after funding the business. <strong class="metric-good">Good:</strong> strong FCF helps support dividends, buybacks, debt paydown, and investment without needing more debt.',
+        'Capital Expenditure': 'Cash spent on equipment, facilities, and other long-term assets. It is a sign of reinvestment, but excessive capex can strain cash flow if revenue does not keep pace.',
+        'Cash Dividends Paid': 'Cash returned to shareholders as dividends. It is a sign of cash generation, but repeated large dividends with weak free cash flow can be a warning sign.',
+        'Repurchase Of Capital Stock': 'Cash used to buy back shares. This can improve per-share metrics, but should be judged alongside free cash flow and debt. Buybacks are positive only when the business can afford them without taking on excess risk.',
+        'Issuance Of Debt': 'New debt added during the period. It can fund expansion, but if it is large while free cash flow is weak, leverage is rising and risk is building.',
+        'Repayment Of Debt': 'Debt paid down in the period. This strengthens the balance sheet, especially when done from strong cash generation instead of asset sales.',
+        'Issuance Of Capital Stock': 'New shares issued to raise cash. This adds capital, but it dilutes existing shareholders and can pressure EPS if not offset by earnings growth.',
+        'Stock Based Compensation': 'Compensation paid in equity rather than cash. It is a real cost, even though it is non-cash in accounting terms. It can dilute shareholders over time if issued at scale.',
+        'Depreciation And Amortization': 'A non-cash charge that spreads the cost of assets over time. It reduces reported earnings but not cash, so it is often added back when looking at cash generation.',
+        'Change In Working Capital': 'The change in short-term assets and liabilities. Negative values can mean the business is consuming cash as it grows, while positive values often release cash from operations.',
+        'Changes In Account Receivables': 'Receivables grow when customers owe money but have not yet paid. Rising receivables can be healthy for growth, but if too high it can signal slowing collections or weak demand.',
+        'Net Income From Continuing Operations': 'Profit from the business that is expected to continue. It helps separate sustainable earnings from one-off or discontinued operations.',
+        'End Cash Position': 'Cash and equivalents held at the end of the period. This is the war chest for acquisitions, debt reduction, dividends, and resilience during downturns.',
+        'Income Tax Paid Supplemental Data': 'Actual cash taxes paid. This helps reconcile book profit with true cash outflows and is useful when net income and operating cash flow are far apart.',
+        'Interest Paid Supplemental Data': 'Actual cash interest paid. This matters because debt cost is not always obvious from accrual accounting and can become a real pressure point in downturns.',
         // Balance Sheet
-        'Total Assets': 'Everything of value the company owns: cash, inventory, property, intellectual property, and investments.',
-        'Total Liabilities Net Minority Interest': 'All obligations owed to creditors and others.<br/><br/><strong class="metric-good">Good:</strong> Total assets should comfortably exceed total liabilities.',
-        'Total Equity Gross Minority Interest': 'Shareholders\' stake in the company (assets minus liabilities). Growing equity signals retained profitability.',
-        'Total Debt': 'Sum of all short-term and long-term borrowings. Compare to EBITDA for leverage assessment (Debt/EBITDA < 3x is generally healthy).',
-        'Net Debt': 'Total debt minus cash holdings. Negative net debt means the company holds more cash than it owes.',
-        'Working Capital': 'Current assets minus current liabilities. Positive working capital means the company can cover near-term obligations.',
+        'Total Assets': 'Everything the company owns that has value: cash, inventory, property, brands, intellectual property, and investments. A growing asset base can be healthy if it is earning returns, but it should not be inflated by low-quality investments.',
+        'Total Liabilities Net Minority Interest': 'All obligations owed to creditors, providers, and other stakeholders. <strong class="metric-good">Good:</strong> liabilities are manageable when the company generates enough cash and earnings to service them.',
+        'Total Equity Gross Minority Interest': 'Equity is the value left for shareholders after liabilities are paid. Growing equity usually means retained earnings and a stronger capital base over time.',
+        'Total Debt': 'Total debt includes both short-term and long-term borrowings. Use it with EBITDA and cash flow: a company can carry debt if it generates enough cash, but too much debt creates financial risk.',
+        'Net Debt': 'Net debt is debt minus cash. <strong class="metric-good">Good:</strong> strong companies often have moderate or negative net debt. <strong class="metric-bad">Bad:</strong> high net debt can force the company to prioritize debt repayment over reinvestment or dividends.',
+        'Working Capital': 'Working capital is current assets minus current liabilities. It shows whether the company can cover near-term obligations without stress. Strong positive working capital usually supports resilience.',
     };
 
     function formatMetricName(name) {

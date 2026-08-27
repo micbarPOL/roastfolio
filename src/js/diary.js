@@ -359,7 +359,8 @@
             '.diary-mention{color:#5aa0ff;font-weight:700;text-decoration:underline;cursor:pointer;white-space:nowrap;background:none;border:none;padding:0;}' +
             '@keyframes diaryPulse{0%,100%{box-shadow:0 0 0 rgba(245,158,11,.15)}50%{box-shadow:0 0 20px rgba(245,158,11,.45)}}' +
             '@keyframes diaryCardIn{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}' +
-            '@media (max-width: 980px){.diary-split{grid-template-columns:1fr}.diary-ledger-list{max-height:42vh}}' +
+            '@media (max-width: 980px){.diary-split{grid-template-columns:1fr;gap:10px;min-height:auto}.diary-ledger-list{max-height:42vh}.diary-pane-head{padding:10px 12px}.diary-detail-body{padding:10px 12px}}' +
+            '@media (max-width: 640px){.diary-split{gap:8px}.diary-pane{border-radius:12px}.diary-pane-head{flex-wrap:wrap}.diary-pane-head strong{font-size:15px}.diary-ledger-list{padding:8px;max-height:36vh}.diary-ledger-card{padding:8px;border-radius:10px}.diary-detail-body{gap:10px}.diary-glass-toggle{width:52px;height:28px}.diary-toggle-status{min-width:0;font-size:11px}.diary-chat-compose{flex-direction:column}.diary-chat-compose input,.diary-chat-compose button{width:100%}.diary-check-item{grid-template-columns:auto 1fr;gap:6px}.diary-check-item input[type="date"]{grid-column:2 / -1;width:100%}.diary-check-add-row{grid-template-columns:1fr !important}.diary-check-add-row input,.diary-check-add-row button{width:100%}}' +
             '@media (max-width: 760px){.diary-check-add-row{grid-template-columns:1fr !important}.diary-check-add-row input,.diary-check-add-row button{width:100%}}';
         document.head.appendChild(style);
     }
@@ -479,6 +480,7 @@
             const held = state.holdings.has(note.ticker);
             const isInactive = !note.is_active;
             const uncheckedCount = countUncheckedChecklistItems(note);
+            const commentCount = Array.isArray(note.comments) ? note.comments.length : 0;
             const shortUpdated = formatShortDate(note.updatedAt || note.createdAt);
             const classes = [
                 'diary-ledger-card',
@@ -488,6 +490,7 @@
             const preview = escapeHtml(String(note.note_text || '').slice(0, 110) || 'No summary yet');
             const inactivePill = isInactive ? '<span class="diary-inactive-pill">Inactive hypothesis</span>' : '';
             const activePill = note.is_active && held ? '<span class="diary-badge" style="border-color:rgba(34,197,94,.5);color:#86efac;">Active conviction</span>' : '';
+            const commentsPill = commentCount > 0 ? '<span class="diary-badge" style="border-color:rgba(96,165,250,.45);color:#bfdbfe;">Comments: ' + commentCount + '</span>' : '';
             const checklistPill = uncheckedCount > 0
                 ? '<span class="diary-badge" style="border-color:rgba(245,158,11,.6);color:#fcd34d;">Open checklist: ' + uncheckedCount + '</span>'
                 : '';
@@ -495,7 +498,7 @@
                 '<article class="' + classes + '" data-note-id="' + escapeHtml(note.note_id) + '">' +
                 '  <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
                 '    <strong>' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</strong>' +
-                '    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' + inactivePill + activePill + checklistPill + '</div>' +
+                '    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' + inactivePill + activePill + commentsPill + checklistPill + '</div>' +
                 '  </div>' +
                 '  <p style="margin:7px 0 6px;color:#8ea1bb;font-size:13px;">' + preview + '</p>' +
                 '  <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
@@ -622,12 +625,15 @@
         const mentionsBlock = mentionButtons
             ? '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><span style="font-size:12px;color:#8ea1bb;">Linked holdings:</span>' + mentionButtons + '</div>'
             : '';
+        const commentCount = Array.isArray(note.comments) ? note.comments.length : 0;
+        const commentPill = commentCount > 0 ? '<span class="diary-badge" style="border-color:rgba(96,165,250,.45);color:#bfdbfe;">Comments: ' + commentCount + '</span>' : '';
 
         root.innerHTML = '' +
             '<div class="diary-pane-head">' +
             '  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
             '    <strong>Focus Sheet</strong>' +
             '    <span class="diary-badge" id="diary-detail-ticker">' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</span>' +
+            '    ' + commentPill +
             '  </div>' +
             '  <div style="display:flex;align-items:center;gap:8px;">' +
             '    <span class="diary-toggle-status">' + (note.is_active ? 'Active' : 'Inactive') + '</span>' +
@@ -641,7 +647,7 @@
             '<div class="diary-detail-body">' +
             '  <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Diary note</span><textarea id="diary-focus-note" style="min-height:90px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.note_text || '') + '</textarea></label>' +
             mentionsBlock +
-            '  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">' +
+            '  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">' +
             '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Why buy</span><textarea id="diary-why-buy" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.why_buy || '') + '</textarea></label>' +
             '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Exit plan</span><textarea id="diary-exit-plan" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.exit_plan || '') + '</textarea></label>' +
             '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Risk factors</span><textarea id="diary-risk-factors" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.risk_factors || '') + '</textarea></label>' +

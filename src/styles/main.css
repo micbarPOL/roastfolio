@@ -116,6 +116,8 @@ header {
     color: var(--brand-sky);
     transition: background .18s, border-color .18s;
     flex-shrink: 0;
+    pointer-events: auto;
+    touch-action: manipulation;
 }
 .sidenav-toggle-btn:hover {
     background: rgba(0, 242, 254, 0.14);
@@ -1719,30 +1721,70 @@ h2 {
 main.tab-content {
     width: min(1200px, calc(100% - 32px));
     max-width: none;
-    margin: 20px auto;
+    margin: 14px auto;
     padding: 0;
     box-sizing: border-box;
 }
 
-
-section {
+main.tab-content:not(#tab-dashboard) > section,
+main.tab-content:not(#tab-dashboard) .chart-container,
+main.tab-content:not(#tab-dashboard) .table-container,
+main.tab-content:not(#tab-dashboard) .analysis-screen-header,
+main.tab-content:not(#tab-dashboard) .analysis-search-section,
+main.tab-content:not(#tab-dashboard) .analysis-favorites-section,
+main.tab-content:not(#tab-dashboard) .analysis-financials-card,
+main.tab-content:not(#tab-dashboard) .analysis-fundamentals-card {
     background: var(--fintech-surface-elevated);
     color: var(--fintech-text);
-    padding: 20px;
-    margin-bottom: 30px;
-    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    border-radius: 10px;
     box-shadow: var(--fintech-shadow-md);
     border: 1px solid var(--fintech-border);
 }
 
-.chart-container {
+main.tab-content:not(#tab-dashboard) .chart-container {
     text-align: center;
     position: relative;
 }
 
+main.tab-content:not(#tab-dashboard) .history-main-title,
+main.tab-content:not(#tab-dashboard) .tx-section-title,
+main.tab-content:not(#tab-dashboard) .mgmt-section-title,
+main.tab-content:not(#tab-dashboard) h2,
+main.tab-content:not(#tab-dashboard) h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+main.tab-content:not(#tab-dashboard) .history-main-title {
+    font-size: 18px;
+}
+
+main.tab-content:not(#tab-dashboard) .tx-section-title,
+main.tab-content:not(#tab-dashboard) .mgmt-section-title {
+    font-size: 0.78rem;
+}
+
+main.tab-content:not(#tab-dashboard) .history-sub-row {
+    margin-bottom: 10px;
+}
+
+main.tab-content:not(#tab-dashboard) .history-wallet-btn,
+main.tab-content:not(#tab-dashboard) .wig-type-btn,
+main.tab-content:not(#tab-dashboard) .benchmark-range-btn,
+main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 12px;
+}
+
 /* ── History tab consolidated header ───────────────────────── */
 .history-header-section {
-    padding-bottom: 4px !important;
+    padding-bottom: 6px !important;
 }
 .history-top-row {
     display: flex;
@@ -1750,16 +1792,16 @@ section {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 .history-main-title {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
-    color: #e2e8f0;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    color: var(--fintech-text, #e2e8f0);
+    font-family: 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
+    text-transform: none;
+    letter-spacing: 0.02em;
 }
 .history-sub-row {
     display: flex;
@@ -1767,50 +1809,53 @@ section {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 /* Wallet selector button strip */
 .history-wallet-btns {
     display: flex;
-    gap: 6px;
+    gap: 8px;
     flex-wrap: wrap;
     align-items: center;
 }
 .history-wallet-btn {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    font-family: inherit;
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1.5px solid var(--fintech-border, rgba(31,95,159,.25));
-    background: transparent;
-    color: var(--fintech-text-muted, #888);
+    font-family: 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--fintech-border, rgba(148, 163, 184, 0.22));
+    background: rgba(148, 163, 184, 0.04);
+    color: var(--fintech-text-muted, #8ea0b7);
     cursor: pointer;
-    transition: all .15s;
+    transition: all 0.18s ease;
     white-space: nowrap;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
 }
 .history-wallet-btn:hover {
-    border-color: var(--fintech-accent, #1f5f9f);
-    color: var(--fintech-accent, #1f5f9f);
-    background: rgba(31,95,159,.06);
+    border-color: rgba(96, 165, 250, 0.42);
+    color: var(--fintech-text, #e2e8f0);
+    background: rgba(37, 99, 235, 0.06);
+    transform: translateY(-1px);
 }
 .history-wallet-btn.is-active {
-    background: var(--fintech-accent, #1f5f9f);
-    border-color: var(--fintech-accent, #1f5f9f);
-    color: #fff;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(59, 130, 246, 0.18));
+    border-color: rgba(96, 165, 250, 0.6);
+    color: #f8fbff;
+    box-shadow: 0 8px 18px rgba(59, 130, 246, 0.18);
 }
 .dark-mode .history-wallet-btn {
-    border-color: rgba(100,160,255,.25);
-    color: #a0b8d0;
+    border-color: rgba(148, 163, 184, 0.25);
+    color: #9eb5ce;
 }
 .dark-mode .history-wallet-btn:hover {
-    border-color: #64a0ff;
-    color: #64a0ff;
-    background: rgba(100,160,255,.08);
+    border-color: rgba(96, 165, 250, 0.45);
+    color: #dfeefe;
+    background: rgba(96, 165, 250, 0.08);
 }
 .dark-mode .history-wallet-btn.is-active {
-    background: #2563a8;
-    border-color: #2563a8;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(14, 165, 233, 0.24));
+    border-color: rgba(96, 165, 250, 0.65);
     color: #fff;
 }
 
@@ -2252,12 +2297,20 @@ section {
     position: relative;
     width: 100%;
     height: 400px;
-    margin: 20px 0;
+    margin: 18px 0 0;
+    padding: 10px 10px 6px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.18), rgba(15, 23, 42, 0.04));
+    border: 1px solid var(--fintech-border, rgba(148, 163, 184, 0.18));
+    border-radius: 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 8px 20px rgba(15, 23, 42, 0.12);
+    overflow: hidden;
 }
 
 .chart-wrapper canvas {
     width: 100% !important;
     height: 100% !important;
+    border-radius: 12px;
+    background: transparent;
 }
 
 .pie-wrapper {
@@ -3025,29 +3078,70 @@ section {
 
 .holdings-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
 }
 
-.holdings-table th, .holdings-table td {
+.holdings-table th,
+.holdings-table td,
+#returns-table-wrap table th,
+#returns-table-wrap table td,
+.analysis-financials-table-wrapper th,
+.analysis-financials-table-wrapper td,
+.wallet-holdings-table th,
+.wallet-holdings-table td,
+#tx-table th,
+#tx-table td {
     border: none;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
     text-align: left;
-    padding: 10px 8px;
-    font-size: 13px;
-    color: #e2e8f0;
+    padding: 9px 10px;
+    font-size: 12px;
+    line-height: 1.35;
+    vertical-align: middle;
+    color: var(--fintech-text, #e2e8f0);
 }
 
-.holdings-table th {
-    background: rgba(14, 165, 233, 0.05);
-    color: #0ea5e9;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+.holdings-table thead th,
+#returns-table-wrap table thead th,
+.analysis-financials-table-wrapper thead th,
+.wallet-holdings-table thead th,
+#tx-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(15, 23, 42, 0.96);
+    color: rgba(170, 186, 204, 0.9);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    text-shadow: 0 0 5px rgba(14, 165, 233, 0.3);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    border-bottom: 1px solid rgba(148, 170, 197, 0.15);
+    box-shadow: inset 0 -1px 0 rgba(148, 170, 197, 0.08);
 }
 
-.holdings-table tr:nth-child(even) {
+.holdings-table tbody tr,
+#returns-table-wrap table tbody tr,
+.analysis-financials-table-wrapper tbody tr,
+.wallet-holdings-table tbody tr,
+#tx-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.holdings-table tbody tr:nth-child(even),
+#returns-table-wrap table tbody tr:nth-child(even),
+.wallet-holdings-table tbody tr:nth-child(even),
+#tx-table tbody tr:nth-child(even) {
     background: rgba(255, 255, 255, 0.02);
+}
+
+.holdings-table tbody tr:hover,
+#returns-table-wrap table tbody tr:hover,
+.wallet-holdings-table tbody tr:hover,
+#tx-table tbody tr:hover {
+    background: rgba(14, 165, 233, 0.08);
 }
 
 /* Clickable holding rows */
@@ -3104,15 +3198,19 @@ section {
     color: #e2e8f0;
 }
 #returns-table-wrap table thead th {
-    padding: 8px 10px;
+    padding: 9px 10px;
     text-align: right;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    color: #94a3b8;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: rgba(170, 186, 204, 0.9);
 }
 #returns-table-wrap table thead th:first-child { text-align: left; }
 #returns-table-wrap table tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
 #returns-table-wrap table tbody tr:hover { background: rgba(14, 165, 233, 0.1); }
+#returns-table-wrap table td {
+    padding-top: 9px;
+    padding-bottom: 9px;
+}
 
 /* ── Stats accordions ─────────────────────────────────────────── */
 .stats-acc-section {
@@ -3479,8 +3577,8 @@ section {
     overflow-x: auto;
 }
 .tx-section-title {
-    margin: 0 0 16px;
-    font-size: 1rem;
+    margin: 0 0 12px;
+    font-size: 0.78rem;
     font-weight: 700;
     color: #0ea5e9;
     text-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
@@ -3528,13 +3626,28 @@ section {
 /* ── Transaction filter UI ── */
 #tx-table th,
 #cal-modal-body .holdings-table th {
-    background: #0f172a;
-    color: #e2e8f0;
-    font-family: inherit;
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0.3px;
+    background: rgba(15, 23, 42, 0.96);
+    color: rgba(170, 186, 204, 0.9);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     text-shadow: none;
+}
+
+#tx-table .filter-btn,
+#tx-table #f-asset,
+.col-filter,
+.analysis-scope-select,
+.cemetery-filter-select {
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 170, 197, 0.18);
+    background: rgba(8, 17, 27, 0.75);
+    color: var(--fintech-text, #e2e8f0);
+    font-size: 11px;
+    padding: 6px 8px;
+    box-sizing: border-box;
 }
 .tx-th {
     position: relative;
@@ -4003,37 +4116,40 @@ section {
 }
 .wig-range-btns, .wig-type-btns {
     display: flex;
-    gap: 2px;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
 }
 .wig-type-btns {
-    border: 1px solid rgba(14, 165, 233, 0.2);
-    border-radius: 6px;
+    border-radius: 12px;
     overflow: hidden;
-    gap: 0;
-    background: rgba(14, 165, 233, 0.05);
+    gap: 4px;
+    background: rgba(15, 23, 42, 0.12);
 }
 .wig-range-btn, .wig-type-btn {
-    padding: 4px 12px;
+    padding: 6px 12px;
     border: none;
     background: transparent;
-    font-size: 12px;
-    font-weight: 500;
-    color: #94a3b8;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--fintech-text-muted, #94a3b8);
     cursor: pointer;
-    transition: all 0.12s;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    transition: all 0.15s ease;
+    font-family: 'SF Pro Display', 'Inter', 'Segoe UI', sans-serif;
+    border-radius: 8px;
 }
-.wig-range-btn:hover, .wig-type-btn:hover { 
-    background: rgba(14, 165, 233, 0.1); 
-    color: #0ea5e9; 
-    text-shadow: 0 0 8px currentColor;
+.wig-range-btn:hover, .wig-type-btn:hover {
+    background: rgba(96, 165, 250, 0.09);
+    color: var(--fintech-text, #e2e8f0);
 }
-.wig-range-btn.active, .wig-type-btn.active { 
-    background: rgba(14, 165, 233, 0.2); 
-    color: #f8fafc; 
-    border-radius: 6px; 
-    text-shadow: 0 0 5px currentColor;
-    box-shadow: inset 0 0 0 1px rgba(14, 165, 233, 0.4);
+.wig-range-btn.active, .wig-type-btn.active {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(59, 130, 246, 0.18));
+    color: #f8fbff;
+    box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.38), 0 6px 16px rgba(59, 130, 246, 0.12);
 }
 .wig-chart-wrapper {
     position: relative;
@@ -5751,8 +5867,9 @@ section.wallet-screen {
 .wallet-screen-header h2 {
     margin: 0;
     color: var(--fintech-text);
-    font-size: clamp(1.55rem, 2vw, 1.85rem);
-    letter-spacing: -0.02em;
+    font-size: clamp(1.2rem, 1.7vw, 1.5rem);
+    letter-spacing: -0.03em;
+    font-weight: 700;
 }
 
 .wallet-screen-subtitle {
@@ -5793,11 +5910,11 @@ section.wallet-screen {
 }
 
 .wallet-card {
-    background: var(--fintech-surface-strong);
-    border: 1px solid var(--fintech-border);
-    border-radius: var(--fintech-radius-panel);
-    box-shadow: var(--fintech-shadow-md);
-    padding: var(--fintech-space-5);
+    background: rgba(16, 24, 33, 0.72);
+    border: 1px solid rgba(148, 170, 197, 0.12);
+    border-radius: 16px;
+    box-shadow: none;
+    padding: 12px 14px;
 }
 
 .wallet-card-head,
@@ -5805,22 +5922,23 @@ section.wallet-screen {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: var(--fintech-space-3);
-    margin-bottom: var(--fintech-space-4);
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
 .wallet-panel-title {
     margin: 2px 0 0;
     color: var(--fintech-text);
-    font-size: 1.28rem;
+    font-size: 1.12rem;
     letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
 .wallet-settings-summary,
 .wallet-table-subtitle {
     color: var(--fintech-text-muted);
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 12px;
+    line-height: 1.45;
 }
 
 .holdings-view-toggle {
@@ -6069,14 +6187,14 @@ section.wallet-screen {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 3px 8px;
+    padding: 2px 7px;
     border-radius: 999px;
     background: rgba(74, 159, 212, 0.12);
     color: #79b8e5;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
 }
 
 .wallet-settings-pill-muted {
@@ -6104,10 +6222,12 @@ section.wallet-screen {
 }
 
 .wallet-table-wrap {
+    position: relative;
     overflow-x: auto;
-    border: 1px solid var(--fintech-border);
-    border-radius: var(--fintech-radius-control);
-    background: rgba(7, 15, 23, 0.58);
+    overflow-y: auto;
+    border: 1px solid rgba(148, 170, 197, 0.1);
+    border-radius: 12px;
+    background: rgba(7, 12, 18, 0.42);
     box-sizing: border-box;
     max-width: 100%;
     min-width: 0;
@@ -6120,20 +6240,31 @@ section.wallet-screen {
     font-size: 13px;
 }
 
+.wallet-holdings-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: rgba(11, 17, 24, 1);
+}
+
 .wallet-holdings-table th {
+    position: sticky;
+    top: 0;
+    z-index: 4;
     text-align: left;
-    padding: 14px 16px;
-    color: var(--fintech-text-subtle);
-    font-size: 11px;
+    padding: 11px 12px;
+    color: rgba(170, 186, 204, 0.82);
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    border-bottom: 1px solid var(--fintech-border);
-    background: rgba(18, 34, 51, 0.95);
+    border-bottom: 1px solid rgba(148, 170, 197, 0.12);
+    background: rgba(14, 20, 27, 1);
+    box-shadow: inset 0 -1px 0 rgba(148, 170, 197, 0.08), 0 1px 0 rgba(148, 170, 197, 0.08);
 }
 
 .wallet-holdings-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(74, 159, 212, 0.08);
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(148, 170, 197, 0.08);
     color: var(--fintech-text);
     vertical-align: middle;
 }
@@ -6318,12 +6449,12 @@ section.wallet-screen {
 }
 
 .mgmt-section-title {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .06em;
+    letter-spacing: 0.08em;
     color: #ffe066;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 /* Portfolio list items */
@@ -6837,8 +6968,11 @@ body.wallet-overlay-open {
 }
 
 .wallet-selector-card {
-    padding: var(--wallet-space-4);
-    backdrop-filter: blur(18px);
+    padding: 10px 10px 8px;
+    backdrop-filter: blur(10px);
+    background: rgba(12, 19, 27, 0.7);
+    border-color: rgba(148, 170, 197, 0.12);
+    box-shadow: none;
 }
 
 .wallet-selector-head {
@@ -6870,15 +7004,15 @@ body.wallet-overlay-open {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: var(--wallet-space-3);
-    min-height: 64px;
-    padding: var(--wallet-space-3) var(--wallet-space-4);
-    border-radius: var(--wallet-radius-control);
-    border: 1px solid var(--wallet-border);
-    background: var(--wallet-surface);
+    gap: 8px;
+    min-height: 58px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(140, 165, 191, 0.16);
+    background: rgba(9, 15, 22, 0.8);
     color: var(--wallet-text);
     cursor: pointer;
-    box-shadow: var(--wallet-shadow-md);
+    box-shadow: none;
     transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, transform 0.18s ease;
 }
 
@@ -6906,14 +7040,14 @@ body.wallet-overlay-open {
 
 .wallet-selector-trigger-label {
     color: var(--wallet-text-subtle);
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .wallet-selector-trigger-name {
-    font-size: 17px;
+    font-size: 15px;
     line-height: 1.2;
 }
 
@@ -7125,42 +7259,62 @@ body.wallet-overlay-open {
 
 .wallet-card-holdings {
     display: grid;
-    gap: var(--wallet-space-4);
+    gap: 12px;
     min-width: 0;
     overflow: hidden;
     box-sizing: border-box;
+    background: rgba(12, 18, 25, 0.62);
+    border-color: rgba(148, 170, 197, 0.1);
+    box-shadow: none;
 }
 
 /* ── Wallet Quick Entry card ─────────────────────────────────── */
 .wallet-qe-card {
-    padding: 14px 20px 12px;
+    padding: 12px 14px;
+    background: rgba(11, 17, 24, 0.68);
+    border: 1px solid rgba(124, 148, 176, 0.12);
+    border-radius: 12px;
+    box-shadow: none;
 }
 .wallet-qe-header {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     min-width: 0;
 }
 .wallet-qe-icon {
-    width: 17px; height: 17px;
-    color: var(--fintech-accent, #1f5f9f);
+    width: 18px; height: 18px;
+    color: #8bd3ff;
     flex-shrink: 0;
+    opacity: 0.95;
 }
 .wallet-qe-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--fintech-accent, #1f5f9f);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9bd8ff;
 }
 .wallet-qe-subtitle {
+    margin-left: auto;
     font-size: 12px;
-    color: var(--fintech-text-muted, #888);
+    color: var(--fintech-text-muted, #9aa9bd);
 }
 .wallet-qe-body {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+}
+.wallet-qe-inline-copy {
+    color: var(--fintech-text-muted, #9aa9bd);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(74, 159, 212, 0.05);
+    border: 1px solid rgba(123, 155, 194, 0.12);
 }
 .wallet-qe-input-row {
     display: flex;
@@ -7180,29 +7334,38 @@ body.wallet-overlay-open {
         width: 100%;
         justify-content: center;
     }
+    .wallet-qe-subtitle {
+        margin-left: 0;
+        width: 100%;
+    }
 }
 .wallet-qe-input {
     flex: 1;
     font-size: 14px;
     font-family: inherit;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1.5px solid var(--fintech-border, rgba(31,95,159,.2));
-    background: var(--fintech-surface, #fff);
-    color: var(--fintech-text, #2c3e50);
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(123, 155, 194, 0.2);
+    background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    color: #edf8ff;
     resize: none;
     line-height: 1.5;
-    min-height: 42px;
+    min-height: 48px;
     overflow: hidden;
-    transition: border-color .15s, box-shadow .15s;
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
     box-sizing: border-box;
     min-width: 0;
     width: 100%;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.wallet-qe-input::placeholder {
+    color: rgba(182, 201, 221, 0.72);
 }
 .wallet-qe-input:focus {
     outline: none;
-    border-color: var(--fintech-accent, #1f5f9f);
-    box-shadow: 0 0 0 3px rgba(31,95,159,.08);
+    border-color: rgba(120, 200, 255, 0.75);
+    box-shadow: 0 0 0 3px rgba(74, 159, 212, 0.12), inset 0 1px 0 rgba(255,255,255,0.02);
+    transform: translateY(-1px);
 }
 .dark-mode .wallet-qe-input {
     background: rgba(255,255,255,.06);
@@ -7215,59 +7378,77 @@ body.wallet-overlay-open {
 .wallet-qe-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    padding: 10px 18px;
-    height: 42px;
+    padding: 11px 16px;
+    min-height: 42px;
     font-size: 13px;
     font-weight: 700;
     font-family: inherit;
-    background: var(--fintech-accent, #1f5f9f);
-    color: #fff;
-    border: none;
-    border-radius: 10px;
+    background: linear-gradient(180deg, #3fa2ff 0%, #1f75d8 100%);
+    color: #f7fbff;
+    border: 1px solid rgba(130, 198, 255, 0.38);
+    border-radius: 12px;
     cursor: pointer;
     white-space: nowrap;
     flex-shrink: 0;
-    transition: background .15s, transform .1s;
+    transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    box-shadow: 0 8px 18px rgba(31, 117, 216, 0.22);
 }
-.wallet-qe-btn:hover { background: #174d82; }
-.wallet-qe-btn:active { transform: scale(.97); }
+.wallet-qe-btn:hover {
+    filter: brightness(1.04);
+    box-shadow: 0 10px 18px rgba(31, 117, 216, 0.26);
+}
+.wallet-qe-btn:active { transform: translateY(1px) scale(.99); }
 .wallet-qe-btn svg { width: 15px; height: 15px; }
+.wallet-qe-btn-secondary {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(145, 170, 203, 0.24);
+    color: #eaf6ff;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.wallet-qe-btn-secondary:hover {
+    background: rgba(255,255,255,0.06);
+}
 /* Examples row — always visible */
 .wallet-qe-examples {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 4px 6px;
+    gap: 6px 8px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(126, 149, 177, 0.12);
+    background: rgba(117, 164, 211, 0.04);
     font-size: 12px;
-    color: var(--fintech-text-muted, #999);
+    color: var(--fintech-text-muted, #9aa9bd);
 }
 .wallet-qe-example {
-    color: var(--fintech-accent, #1f5f9f);
+    color: #a9d9ff;
     cursor: pointer;
     font-size: 11.5px;
-    opacity: .8;
-    transition: opacity .15s;
+    opacity: .9;
+    transition: opacity .15s ease, color .15s ease;
     text-decoration: underline dotted;
     text-underline-offset: 2px;
     white-space: normal;
     word-break: break-word;
 }
-.wallet-qe-example:hover { opacity: 1; }
+.wallet-qe-example:hover { opacity: 1; color: #d7efff; }
 .wallet-qe-sep {
-    color: var(--fintech-border, #ccc);
+    color: rgba(154, 184, 213, 0.6);
     font-size: 13px;
 }
 .wallet-qe-status {
     font-size: 12.5px;
     min-height: 16px;
     line-height: 1.4;
-    color: var(--fintech-text-muted, #888);
+    color: var(--fintech-text-muted, #9aa9bd);
     transition: color .2s;
 }
-.wallet-qe-status.is-ok    { color: #27ae60; font-weight: 600; }
-.wallet-qe-status.is-error { color: #c0392b; }
-.wallet-qe-status.is-loading { color: var(--fintech-accent, #1f5f9f); }
+.wallet-qe-status.is-ok    { color: #7ae1a3; font-weight: 600; }
+.wallet-qe-status.is-error { color: #ff9d87; }
+.wallet-qe-status.is-loading { color: #9bd8ff; }
 /* Hide card when Summary (read-only) portfolio is active */
 .wallet-qe-card.is-hidden { display: none; }
 
@@ -7320,6 +7501,266 @@ body.wallet-overlay-open {
     color: var(--wallet-text-muted);
     /* Fixed min-height = 2 lines so reflow doesn't happen when text changes */
     min-height: calc(2 * 1.5 * 13px);
+}
+
+.wob-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.wob-kpi {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(118, 140, 169, 0.18);
+    min-width: 0;
+}
+
+.wob-kpi-label {
+    color: var(--wallet-text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.wob-kpi strong {
+    color: var(--wallet-text);
+    font-size: 1rem;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wob-hint {
+    margin-top: 12px;
+    color: var(--wallet-text-muted);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(118, 140, 169, 0.14);
+    background: rgba(74, 159, 212, 0.04);
+}
+
+.wallet-summary-visuals {
+    margin-top: 12px;
+}
+
+.wallet-summary-visual-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(220px, 0.95fr);
+    gap: 10px;
+    align-items: stretch;
+}
+
+@media (max-width: 640px) {
+    .wallet-summary-visual-grid {
+        grid-template-columns: 1fr;
+    }
+    .wallet-summary-pie-wrapper {
+        align-items: center;
+    }
+}
+
+.wallet-summary-mini-card {
+    background: linear-gradient(180deg, rgba(12, 19, 29, 0.9), rgba(8, 14, 22, 0.7));
+    border: 1px solid rgba(129, 147, 168, 0.18);
+    border-radius: 12px;
+    padding: 10px 10px 8px;
+    min-width: 0;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.wallet-summary-chart-card {
+    min-height: 200px;
+}
+
+.wallet-summary-mini-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--wallet-text-muted);
+    margin-bottom: 8px;
+}
+
+.wallet-summary-mini-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: rgba(74, 159, 212, 0.12);
+    color: #a8d4ff;
+    font-size: 9px;
+    border: 1px solid rgba(74, 159, 212, 0.18);
+    letter-spacing: 0.05em;
+}
+
+.wallet-summary-spark-wrap {
+    position: relative;
+    min-height: 160px;
+    background: linear-gradient(180deg, rgba(11, 18, 28, 0.75), rgba(9, 14, 22, 0.9));
+    border: 1px solid rgba(114, 137, 174, 0.14);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.wallet-summary-axis-label {
+    position: absolute;
+    bottom: 5px;
+    transform: translateX(-50%);
+    color: rgba(196, 208, 226, 0.72);
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    pointer-events: none;
+}
+
+.wallet-summary-spark-wrap .sparkline-svg {
+    display: block;
+    width: 100% !important;
+    height: 170px !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+
+.wallet-summary-event-marker {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(255,255,255,0.32);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+    font-size: 9px;
+    font-weight: 800;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.wallet-summary-event-marker span {
+    display: block;
+    line-height: 1;
+}
+
+.wallet-summary-event-marker.is-deposit {
+    background: rgba(34, 197, 94, 0.9);
+    color: #032711;
+}
+
+.wallet-summary-event-marker.is-withdrawal {
+    background: rgba(245, 158, 11, 0.9);
+    color: #2b1702;
+}
+
+.wallet-summary-event-marker:hover {
+    transform: translate(-50%, -50%) scale(1.3);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.12), 0 8px 14px rgba(0,0,0,0.28);
+}
+
+.wallet-summary-pie-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.wallet-summary-pie {
+    position: relative;
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+.wallet-summary-pie::before {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border-radius: 50%;
+    background: rgba(10, 18, 28, 0.96);
+    border: 1px solid rgba(129, 147, 168, 0.22);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+
+.wallet-summary-pie-center {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--wallet-text);
+    z-index: 1;
+}
+
+.wallet-summary-pie-legend {
+    display: grid;
+    gap: 6px;
+    min-width: 0;
+    width: 100%;
+    font-size: 10px;
+    color: var(--wallet-text-muted);
+}
+
+.wallet-summary-legend-item {
+    display: grid;
+    grid-template-columns: 8px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 3px 5px 3px 0;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.015);
+}
+
+.wallet-summary-legend-swatch {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.04);
+}
+
+.wallet-summary-legend-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wallet-summary-legend-value {
+    font-weight: 700;
+    color: var(--wallet-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.wallet-summary-empty-mini {
+    min-height: 170px;
+    display: grid;
+    place-items: center;
+    border: 1px dashed rgba(140, 160, 190, 0.2);
+    border-radius: 12px;
+    color: var(--wallet-text-muted);
+    font-size: 11px;
 }
 
 .wob-settings-actions {
@@ -7377,6 +7818,7 @@ body.wallet-overlay-open {
 
 .wallet-table-wrap-stable,
 .wallet-table-wrap-history {
+    position: relative;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
@@ -7385,7 +7827,7 @@ body.wallet-overlay-open {
 .wallet-holdings-table th {
     position: sticky;
     top: 0;
-    z-index: 1;
+    z-index: 3;
 }
 
 .wallet-holding-row {
@@ -12349,26 +12791,58 @@ body.wallet-overlay-open {
 .analysis-financials-table-wrapper {
     overflow-x: auto;
     margin-top: 12px;
+    border: 1px solid rgba(148, 170, 197, 0.12);
+    border-radius: 10px;
+    background: rgba(7, 12, 18, 0.4);
 }
 
 .analysis-financials-table-wrapper table {
     min-width: 100%;
+    width: 100%;
     font-size: 11px;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
 }
 
 .analysis-financials-table-wrapper th,
 .analysis-financials-table-wrapper td {
-    white-space: nowrap;
-    padding: 4px 6px;
+    padding: 8px 8px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    vertical-align: top;
+}
+
+.analysis-financials-table-wrapper thead th {
+    min-width: 118px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.analysis-financials-table-wrapper tbody tr.analysis-financial-priority-row {
+    background: linear-gradient(90deg, rgba(14, 165, 233, 0.07), rgba(14, 165, 233, 0.02) 35%, transparent 100%);
+}
+
+.analysis-financials-table-wrapper tbody tr.analysis-financial-priority-row td:first-child {
+    color: #f8fafc;
+    text-shadow: 0 0 6px rgba(148, 163, 184, 0.22);
 }
 
 .analysis-financials-table-wrapper td:first-child,
 .analysis-financials-table-wrapper th:first-child {
     position: sticky;
     left: 0;
-    background: var(--brand-bg);
+    background: rgba(7, 12, 18, 0.96);
     z-index: 2;
-    min-width: 150px;
+    min-width: 220px;
+    max-width: 220px;
+    width: 220px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 /* Metric Bar Charts */
@@ -13048,40 +13522,46 @@ body.wallet-overlay-open {
     opacity: 0.5;
     transition: opacity 0.2s;
 }
-.metric-tooltip-container:hover::after {
+.metric-tooltip-container:hover::after,
+.metric-tooltip-container:focus-visible::after,
+.metric-tooltip-container:focus-within::after {
     opacity: 1;
 }
 .metric-tooltip {
     position: fixed;
     width: 260px;
     max-width: min(260px, calc(100vw - 24px));
-    background-color: var(--surface);
-    color: var(--text);
+    background: rgba(7, 12, 18, 0.97);
+    color: #e2e8f0;
     text-align: left;
     padding: 10px 12px;
-    border-radius: 8px;
+    border-radius: 10px;
     z-index: 100000;
     font-size: 12px;
     font-weight: normal;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.5;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-    border: 1px solid var(--border);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(125, 211, 252, 0.22);
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    backdrop-filter: blur(8px);
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.2s, visibility 0.2s;
     pointer-events: none;
     white-space: normal;
 }
+.metric-tooltip-container:hover .metric-tooltip,
+.metric-tooltip-container:focus-within .metric-tooltip,
+.metric-tooltip-container:focus-visible .metric-tooltip,
 .metric-tooltip.show {
     visibility: visible;
     opacity: 1;
 }
 .metric-tooltip strong.metric-good {
-    color: var(--green);
+    color: #7ee7b7;
 }
 .metric-tooltip strong.metric-bad {
-    color: var(--red);
+    color: #fda4af;
 }
 @media (max-width: 768px) {
     .metric-tooltip {
@@ -13097,17 +13577,33 @@ body.wallet-overlay-open {
     .tx-history-card {
         overflow-x: hidden;
     }
-    #tx-table {
+    #tx-table,
+    .holdings-table,
+    #returns-table-wrap table,
+    .analysis-financials-table-wrapper table,
+    .wallet-holdings-table {
         table-layout: fixed;
         min-width: 0;
         width: 100% !important;
         font-size: 12px !important;
     }
     #tx-table th,
-    #tx-table td {
-        padding: 8px 5px;
+    #tx-table td,
+    .holdings-table th,
+    .holdings-table td,
+    #returns-table-wrap table th,
+    #returns-table-wrap table td,
+    .analysis-financials-table-wrapper th,
+    .analysis-financials-table-wrapper td,
+    .wallet-holdings-table th,
+    .wallet-holdings-table td {
+        padding: 8px 6px;
         min-width: 0;
         overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .analysis-financials-table-wrapper table {
+        min-width: 680px;
     }
     #tx-table th:nth-child(2),
     #tx-table td:nth-child(2) {

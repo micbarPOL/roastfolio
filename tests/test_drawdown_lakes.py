@@ -86,9 +86,24 @@ def test_dataframe_input_custom_value_column():
     assert len(result["lakes"]) == 1
 
 
-def test_invalid_non_positive_values_raise():
+def test_non_positive_values_are_ignored_instead_of_failing():
     analyzer = DrawdownLakeAnalyzer()
-    data = _series([100, 0, 101])
+    data = _series([100, 0, 95, 110, 105])
 
-    with pytest.raises(ValueError, match="strictly positive"):
-        analyzer.analyze(data)
+    result = analyzer.analyze(data)
+    assert result["daily"]["hwm"].tolist() == [100, 100, 110, 110]
+    assert result["daily"]["lakeId"].tolist() == [0, 1, 0, 2]
+    assert len(result["lakes"]) == 2
+    assert result["lakes"][0]["startDate"] == "2026-01-03"
+    assert result["lakes"][0]["endDate"] == "2026-01-04"
+    assert result["lakes"][1]["startDate"] == "2026-01-05"
+    assert result["lakes"][1]["endDate"] == "Open"
+
+
+def test_all_values_non_positive_produce_empty_result():
+    analyzer = DrawdownLakeAnalyzer()
+    data = _series([0, 0, 0])
+
+    result = analyzer.analyze(data)
+    assert result["daily"].empty
+    assert result["lakes"] == []

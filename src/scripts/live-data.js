@@ -877,17 +877,29 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
     }
 
     window.refreshLivePrices = async function () {
-        showStatus('⟳ Refreshing prices…', 'loading');
-        window._lastGaugeAnimSignature = null;
-        window._marketCommentaryRendered = false;
-        window._gaugeDataReady = false;
-        try { localStorage.removeItem('lambda_cache'); } catch (_) {}
-        const liteOk = await doFetch('lite');
-        if (liteOk) {
-            void doFetch('full', 1, { background: true });
-            return true;
+        if (window.__refreshLivePricesPromise) {
+            return window.__refreshLivePricesPromise;
         }
-        return doFetch('full');
+
+        window.__refreshLivePricesPromise = (async () => {
+            showStatus('⟳ Refreshing prices…', 'loading');
+            window._lastGaugeAnimSignature = null;
+            window._marketCommentaryRendered = false;
+            window._gaugeDataReady = false;
+            try { localStorage.removeItem('lambda_cache'); } catch (_) {}
+            const liteOk = await doFetch('lite');
+            if (liteOk) {
+                void doFetch('full', 1, { background: true });
+                return true;
+            }
+            return doFetch('full');
+        })();
+
+        try {
+            return await window.__refreshLivePricesPromise;
+        } finally {
+            window.__refreshLivePricesPromise = null;
+        }
     };
 
     window.addEventListener('portfolioHistoryRecalculated', () => {

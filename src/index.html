@@ -140,7 +140,7 @@
     <header>
         <div class="brand-header">
             <!-- Hamburger menu button -->
-            <button type="button" class="sidenav-toggle-btn" id="sidenav-toggle" onclick="openSidenav()" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidenav">
+            <button type="button" class="sidenav-toggle-btn" id="sidenav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidenav">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
             <button type="button" class="brand-logo-btn" onclick="toggleBrandModal(true)" aria-label="Open Roastfolio logo">
@@ -157,7 +157,7 @@
     </header>
 
     <!-- ── Sidebar navigation ────────────────────────────────── -->
-    <div id="sidenav-backdrop" class="sidenav-backdrop" onclick="closeSidenav()" aria-hidden="true"></div>
+    <div id="sidenav-backdrop" class="sidenav-backdrop" aria-hidden="true"></div>
     <aside id="sidenav" class="sidenav" role="navigation" aria-label="Main navigation">
         <div class="sidenav-header">
             <img src="data/logos/icon-512.png" alt="" class="sidenav-logo">
@@ -165,7 +165,7 @@
                 <div class="sidenav-app-name">Roastfolio</div>
                 <div class="sidenav-app-sub" id="sidenav-user-name"></div>
             </div>
-            <button type="button" class="sidenav-close-btn" onclick="closeSidenav()" aria-label="Close menu">
+            <button type="button" class="sidenav-close-btn" aria-label="Close menu">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
         </div>
@@ -524,6 +524,126 @@
                 </div>
             </div>
 
+            <!-- ── Holdings — always visible ───────────────────
+                 No display:none. Skeleton shows while loading.
+                 Transactions open in overlay without touching this.
+            ── -->
+            <div id="mgmt-holdings-panel" class="wallet-screen-content wallet-holdings-shell">
+                    <div class="wallet-card wallet-card-holdings">
+                        <div class="wallet-table-header">
+                            <div>
+                                <div class="mgmt-section-title">Holdings</div>
+                                <div id="mgmt-holdings-subtitle" class="wallet-table-subtitle">Live value, allocation, and quick trade actions.</div>
+                            </div>
+                            <div id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading holdings…</div>
+                        </div>
+                        <div class="holdings-view-toggle" role="tablist" aria-label="Holdings view">
+                            <button type="button" class="holdings-view-btn is-active" data-holdings-view="active" role="tab" aria-selected="true" onclick="window._mgmt.setHoldingsView('active')">Active Holdings</button>
+                            <button type="button" class="holdings-view-btn" data-holdings-view="cemetery" role="tab" aria-selected="false" onclick="window._mgmt.setHoldingsView('cemetery')">The Cemetery</button>
+                        </div>
+                        <div data-holdings-view-panel="active">
+                        <div class="wallet-table-wrap wallet-table-wrap-stable wallet-desktop-only">
+                                <table class="wallet-holdings-table">
+                                    <colgroup>
+                                        <col class="wht-col-company">
+                                        <col class="wht-col-shares">
+                                        <col class="wht-col-value">
+                                        <col class="wht-col-today">
+                                        <col class="wht-col-alloc">
+                                        <col class="wht-col-actions">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th class="wht-th">Company</th>
+                                            <th class="wht-th wht-th-r">Shares</th>
+                                            <th class="wht-th wht-th-r">Value</th>
+                                            <th class="wht-th wht-th-r">Today</th>
+                                            <th class="wht-th wht-th-r">Alloc</th>
+                                            <th class="wht-th"></th>
+                                        </tr>
+                                    </thead>
+                                <tbody id="mgmt-holdings-body"></tbody>
+                            </table>
+                        </div>
+                        <!-- Mobile: holdings as stacked cards -->
+                        <div id="mgmt-holdings-cards" class="wallet-holdings-cards"></div>
+                        </div>
+                        <div data-holdings-view-panel="cemetery" hidden>
+                            <div class="cemetery-header">
+                                <div>
+                                    <div class="cemetery-title">Closed Positions</div>
+                                    <div class="wallet-table-subtitle">Closed positions with lifecycle and total return.</div>
+                                </div>
+                                <div class="cemetery-controls">
+                                    <label for="cemetery-filter" class="cemetery-filter-label">View</label>
+                                    <select id="cemetery-filter" class="cemetery-filter-select">
+                                        <option value="all">All</option>
+                                        <option value="active">Active</option>
+                                        <option value="closed">Closed</option>
+                                    </select>
+                                    <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
+                                </div>
+                            </div>
+                            <div class="wallet-table-wrap cemetery-table-wrap">
+                                <table class="wallet-holdings-table cemetery-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th><button type="button" id="cemetery-sort-date" class="cemetery-sort-btn" aria-label="Sort by close date">Holding lifespan</button></th>
+                                            <th><button type="button" id="cemetery-sort-return" class="cemetery-sort-btn" aria-label="Sort by return">Total (Realized) Return</button></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mgmt-cemetery-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- ── Quick Entry — always visible on wallet screen ── -->
+            <div id="wallet-quick-entry-card" class="wallet-card wallet-qe-card">
+                <div class="wallet-qe-header">
+                    <svg class="wallet-qe-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M3 6h14M3 10h10M3 14h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                    <span class="wallet-qe-title">Quick entry</span>
+                    <span class="wallet-qe-subtitle">Add a transaction in plain English</span>
+                </div>
+                <div class="wallet-qe-body">
+                    <div class="wallet-qe-inline-copy">Use this to record buys, sells, deposits, and withdrawals without filling a long form.</div>
+                    <div class="wallet-qe-input-row">
+                        <textarea id="mgmt-quick-entry-input"
+                            class="wallet-qe-input"
+                            rows="1"
+                            placeholder="e.g. Buy 10 AAPL for 185.50 to XTB on 2025-06-01"
+                            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                            oninput="window._mgmt.onQuickEntryInput(event)"
+                            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._mgmt.parseQuickEntry();}"></textarea>
+                    </div>
+                    <div class="wallet-qe-action-row" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                        <button type="button" id="mgmt-qe-open-trade-btn" class="wallet-qe-btn wallet-qe-btn-secondary"
+                                onclick="window._mgmt.openTransactionsPanel('trade')">
+                            Full form
+                        </button>
+                        <button type="button" id="mgmt-qe-parse-btn" class="wallet-qe-btn"
+                                onclick="window._mgmt.parseQuickEntry()">
+                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" style="width: 16px; height: 16px; margin-right: 6px;">
+                                <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Save entry
+                        </button>
+                    </div>
+                    <div class="wallet-qe-examples">
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('buy')">📈 Buy 10 AAPL for 185.50 to XTB on 2025-06-01</span>
+                        <span class="wallet-qe-sep">·</span>
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('sell')">📉 Sell 5 CDR.WA for 120 to IKE</span>
+                        <span class="wallet-qe-sep">·</span>
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('deposit')">💰 Deposit 5000 to IKZE</span>
+                    </div>
+                    <div id="mgmt-qe-status" class="wallet-qe-status"></div>
+                </div>
+            </div>
+
             <!-- ── Compact overview bar ─────────────────────────
                  Always visible. Replaces the old wallet-card-overview.
                  Shows wallet name, rename/delete actions, benchmark
@@ -538,6 +658,21 @@
                     <div id="mgmt-settings-actions" class="wallet-settings-actions wob-settings-actions"></div>
                 </div>
                 <div id="mgmt-settings-summary" class="wallet-settings-summary wob-summary">Summary stays pinned first. Select a wallet to manage it.</div>
+                <div class="wob-kpi-strip" aria-label="Wallet summary metrics">
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Total value</span>
+                        <strong id="wob-kpi-total">—</strong>
+                    </div>
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Today</span>
+                        <strong id="wob-kpi-day">—</strong>
+                    </div>
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Annual return</span>
+                        <strong id="wob-kpi-return">—</strong>
+                    </div>
+                </div>
+                <div id="wallet-summary-visuals" class="wallet-summary-visuals"></div>
                 <div id="mgmt-benchmark-setting" style="display:none"></div>
                 <!-- ── ATH management ────────────────────────────────── -->
                 <div id="mgmt-ath-setting" class="wallet-setting-item" style="display:none">
@@ -545,54 +680,7 @@
                     <div id="mgmt-ath-content"></div>
                     <div id="mgmt-ath-status" class="portfolio-ath-status" aria-live="polite"></div>
                 </div>
-                <div id="mgmt-annual-return-setting" class="wallet-setting-item">
-                    <span class="wallet-setting-label">Average Yearly Return</span>
-                    <div id="mgmt-annual-return-content" class="wob-value-bold">--</div>
-                </div>
-                <div class="wob-actions">
-                    <button id="mgmt-open-trade-btn" class="mgmt-btn mgmt-btn-primary wallet-quick-action"
-                            onclick="window._mgmt.openTransactionsPanel('trade')">New transaction</button>
-                    <span id="mgmt-inline-status" class="wallet-settings-pill wallet-settings-pill-muted">Stable holdings layout</span>
-                </div>
-            </div>
-
-            <!-- ── Quick Entry — always visible on wallet screen ── -->
-            <div id="wallet-quick-entry-card" class="wallet-card wallet-qe-card">
-                <div class="wallet-qe-header">
-                    <svg class="wallet-qe-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                        <path d="M3 6h14M3 10h10M3 14h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    </svg>
-                    <span class="wallet-qe-title">Quick Entry</span>
-                    <span class="wallet-qe-subtitle">Type a transaction in plain text, press Enter to confirm</span>
-                </div>
-                <div class="wallet-qe-body">
-                    <div class="wallet-qe-input-row">
-                        <textarea id="mgmt-quick-entry-input"
-                            class="wallet-qe-input"
-                            rows="1"
-                            placeholder="e.g. Buy 10 AAPL for 185.50"
-                            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-                            oninput="window._mgmt.onQuickEntryInput(event)"
-                            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._mgmt.parseQuickEntry();}"></textarea>
-                    </div>
-                    <div class="wallet-qe-action-row" style="display: flex; justify-content: flex-end; margin-top: 8px;">
-                        <button type="button" id="mgmt-qe-parse-btn" class="wallet-qe-btn"
-                                onclick="window._mgmt.parseQuickEntry()">
-                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" style="width: 16px; height: 16px; margin-right: 6px;">
-                                <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            Process
-                        </button>
-                    </div>
-                    <div class="wallet-qe-examples">
-                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('buy')">📈 Buy 10 AAPL for 185.50 to XTB on 2025-06-01</span>
-                        <span class="wallet-qe-sep">·</span>
-                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('sell')">📉 Sell 5 CDR.WA for 120 to IKE</span>
-                        <span class="wallet-qe-sep">·</span>
-                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('deposit')">💰 Deposit 5000 to IKZE</span>
-                    </div>
-                    <div id="mgmt-qe-status" class="wallet-qe-status"></div>
-                </div>
+                <div class="wob-actions"></div>
             </div>
 
             <!-- ── Inline Transaction Form ─────────────────── -->
@@ -803,82 +891,6 @@
 
             </div><!-- /#wallet-transaction-card -->
 
-            <!-- ── Holdings — always visible ───────────────────
-                 No display:none. Skeleton shows while loading.
-                 Transactions open in overlay without touching this.
-            ── -->
-            <div id="mgmt-holdings-panel" class="wallet-screen-content wallet-holdings-shell">
-                    <div class="wallet-card wallet-card-holdings">
-                        <div class="wallet-table-header">
-                            <div>
-                                <div class="mgmt-section-title">Holdings</div>
-                                <div id="mgmt-holdings-subtitle" class="wallet-table-subtitle">Live value, allocation, and quick trade actions.</div>
-                            </div>
-                            <div id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading holdings…</div>
-                        </div>
-                        <div class="holdings-view-toggle" role="tablist" aria-label="Holdings view">
-                            <button type="button" class="holdings-view-btn is-active" data-holdings-view="active" role="tab" aria-selected="true" onclick="window._mgmt.setHoldingsView('active')">Active Holdings</button>
-                            <button type="button" class="holdings-view-btn" data-holdings-view="cemetery" role="tab" aria-selected="false" onclick="window._mgmt.setHoldingsView('cemetery')">The Cemetery</button>
-                        </div>
-                        <div data-holdings-view-panel="active">
-                        <div class="wallet-table-wrap wallet-table-wrap-stable wallet-desktop-only">
-                                <table class="wallet-holdings-table">
-                                    <colgroup>
-                                        <col class="wht-col-company">
-                                        <col class="wht-col-shares">
-                                        <col class="wht-col-value">
-                                        <col class="wht-col-today">
-                                        <col class="wht-col-alloc">
-                                        <col class="wht-col-actions">
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <th class="wht-th">Company</th>
-                                            <th class="wht-th wht-th-r">Shares</th>
-                                            <th class="wht-th wht-th-r">Value</th>
-                                            <th class="wht-th wht-th-r">Today</th>
-                                            <th class="wht-th wht-th-r">Alloc</th>
-                                            <th class="wht-th"></th>
-                                        </tr>
-                                    </thead>
-                                <tbody id="mgmt-holdings-body"></tbody>
-                            </table>
-                        </div>
-                        <!-- Mobile: holdings as stacked cards -->
-                        <div id="mgmt-holdings-cards" class="wallet-holdings-cards"></div>
-                        </div>
-                        <div data-holdings-view-panel="cemetery" hidden>
-                            <div class="cemetery-header">
-                                <div>
-                                    <div class="cemetery-title">Closed Positions</div>
-                                    <div class="wallet-table-subtitle">Closed positions with lifecycle and total return.</div>
-                                </div>
-                                <div class="cemetery-controls">
-                                    <label for="cemetery-filter" class="cemetery-filter-label">View</label>
-                                    <select id="cemetery-filter" class="cemetery-filter-select">
-                                        <option value="all">All</option>
-                                        <option value="active">Active</option>
-                                        <option value="closed">Closed</option>
-                                    </select>
-                                    <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
-                                </div>
-                            </div>
-                            <div class="wallet-table-wrap cemetery-table-wrap">
-                                <table class="wallet-holdings-table cemetery-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th><button type="button" id="cemetery-sort-date" class="cemetery-sort-btn" aria-label="Sort by close date">Holding lifespan</button></th>
-                                            <th><button type="button" id="cemetery-sort-return" class="cemetery-sort-btn" aria-label="Sort by return">Total (Realized) Return</button></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="mgmt-cemetery-body"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             <!-- Mobile FAB: quick new transaction -->
             <button class="wallet-fab" id="mgmt-wallet-fab" type="button" aria-label="New transaction"
                     onclick="window._mgmt.openTransactionsPanel('trade')">
@@ -937,12 +949,46 @@
         </section>
 
         <section class="chart-container">
-            <div class="chart-wrapper" style="height:360px;"><canvas id="investmentChart"></canvas></div>
+            <div class="chart-wrapper" style="height:360px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
+                <canvas id="investmentChart"></canvas>
+            </div>
         </section>
 
         <section class="chart-container">
-            <h2 class="tx-section-title">Monthly Net Gains</h2>
-            <div class="chart-wrapper" style="height:280px;">
+            <div class="history-sub-row">
+                <h2 class="tx-section-title" style="margin:0;">Monthly Returns</h2>
+                <div class="wig-type-btns" id="history-monthly-metric-btns">
+                    <button class="wig-type-btn active" data-history-monthly-metric="gain" onclick="setHistoryMonthlyMetric('gain')">Monthly Net Gains</button>
+                    <button class="wig-type-btn" data-history-monthly-metric="deposit" onclick="setHistoryMonthlyMetric('deposit')">Monthly Net Deposits</button>
+                </div>
+            </div>
+            <div class="chart-wrapper" style="height:280px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
                 <canvas id="monthlyReturnsChart"></canvas>
             </div>
         </section>
@@ -954,19 +1000,58 @@
                     <button class="wig-type-btn" data-history-return-mode="pln" onclick="setHistoryReturnMode('pln')">PLN Return</button>
                 </div>
             </div>
-            <div class="chart-wrapper" style="height:360px;">
+            <div class="chart-wrapper" style="height:360px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
                 <canvas id="returnsChart"></canvas>
             </div>
         </section>
         <section class="chart-container">
             <h2 class="tx-section-title">Daily % Change</h2>
-            <div class="chart-wrapper" style="height:560px;">
+            <div class="chart-wrapper" style="height:560px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
                 <canvas id="dailyChangeChart"></canvas>
             </div>
         </section>
         <section class="chart-container">
             <h2 class="tx-section-title">Daily PLN Change</h2>
-            <div class="chart-wrapper" style="height:560px;">
+            <div class="chart-wrapper" style="height:560px; position:relative;">
+                <div class="chart-loader-overlay card-cl-overlay" style="display:none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
                 <canvas id="dailyPLNChart"></canvas>
             </div>
         </section>
@@ -1611,63 +1696,57 @@
                 <div class="dash-label">Fundamental Properties</div>
                 <div class="analysis-fundamentals-grid">
                     <div class="monthly-metric-card">
-                        <span class="monthly-metric-title metric-tooltip-container">
+                        <span class="monthly-metric-title metric-tooltip-container" tabindex="0" aria-label="Sector help">
                             Sector
                             <div class="metric-tooltip">
-                                A sector is a broad area of the economy. Good diversification involves holding assets across multiple different sectors.
+                                The broad industry group the company belongs to. Mixing sectors reduces single-industry risk and helps diversify your portfolio.
                             </div>
                         </span>
                         <div id="analysis-fund-sector" class="monthly-metric-value">—</div>
                         <div id="analysis-fund-industry" class="monthly-metric-sub">—</div>
                     </div>
                     <div class="monthly-metric-card">
-                        <span class="monthly-metric-title metric-tooltip-container">
+                        <span class="monthly-metric-title metric-tooltip-container" tabindex="0" aria-label="Market cap help">
                             Market Cap
                             <div class="metric-tooltip">
-                                Total market value of a company's outstanding shares.<br/><br/>
-                                <strong>Good:</strong> Large-cap ($10B+) usually means stability and steady dividends.<br/>
-                                <strong>Riskier:</strong> Small-cap ($250M-$2B) can offer high growth but higher volatility.
+                                The total value of all outstanding shares. Large-cap companies are usually more stable; small-cap names can grow faster but are more volatile.
                             </div>
                         </span>
                         <div id="analysis-fund-mcap" class="monthly-metric-value">—</div>
                     </div>
                     <div class="monthly-metric-card">
-                        <span class="monthly-metric-title metric-tooltip-container">
+                        <span class="monthly-metric-title metric-tooltip-container" tabindex="0" aria-label="P E ratio help">
                             P/E Ratio
                             <div class="metric-tooltip">
-                                Price-to-Earnings Ratio. Measures current share price relative to its per-share earnings.<br/><br/>
-                                <strong class="metric-good">Good:</strong> A lower P/E (e.g. 10-15) often means the stock is undervalued or a solid value play.<br/>
-                                <strong class="metric-bad">Bad:</strong> A very high P/E can mean it's overvalued, though high-growth tech companies often naturally have high P/Es.
+                                Price-to-earnings ratio: the stock price divided by annual earnings per share. Lower values can mean better value; higher values usually imply stronger growth expectations.
                             </div>
                         </span>
                         <div id="analysis-fund-pe" class="monthly-metric-value">—</div>
                         <div class="monthly-metric-sub">Fwd: <span id="analysis-fund-fwd-pe">—</span></div>
                     </div>
                     <div class="monthly-metric-card">
-                        <span class="monthly-metric-title metric-tooltip-container">
+                        <span class="monthly-metric-title metric-tooltip-container" tabindex="0" aria-label="Dividend yield help">
                             Dividend Yield
                             <div class="metric-tooltip">
-                                The ratio of a company's annual dividend compared to its share price.<br/><br/>
-                                <strong class="metric-good">Good:</strong> 2% to 6% is generally considered a solid, sustainable yield.<br/>
-                                <strong class="metric-bad">Bad:</strong> An exceptionally high yield (e.g. 10%+) can be a "dividend trap", signaling the market expects a dividend cut soon.
+                                The annual dividend as a percentage of the share price. It shows the cash income you can expect from owning the stock, before price changes.
                             </div>
                         </span>
                         <div id="analysis-fund-div" class="monthly-metric-value">—</div>
                     </div>
                     <div class="monthly-metric-card">
-                        <span class="monthly-metric-title metric-tooltip-container">
+                        <span class="monthly-metric-title metric-tooltip-container" tabindex="0" aria-label="52 week high help">
                             52-Week High
                             <div class="metric-tooltip">
-                                The highest price the stock has traded at in the last year. Stocks trading near their high often show strong market momentum.
+                                The highest share price reached in the last year. It helps show how much momentum the stock has had and how close it is to its recent peak.
                             </div>
                         </span>
                         <div id="analysis-fund-high" class="monthly-metric-value">—</div>
                     </div>
                     <div class="monthly-metric-card">
-                        <span class="monthly-metric-title metric-tooltip-container">
+                        <span class="monthly-metric-title metric-tooltip-container" tabindex="0" aria-label="52 week low help">
                             52-Week Low
                             <div class="metric-tooltip">
-                                The lowest price the stock has traded at in the last year. Stocks trading near their low might be undervalued bargains, or they might be facing serious fundamental issues.
+                                The lowest share price reached in the last year. It helps show the recent downside range and how much room the stock has to recover.
                             </div>
                         </span>
                         <div id="analysis-fund-low" class="monthly-metric-value">—</div>
@@ -1732,8 +1811,9 @@
             const backdrop = document.getElementById('sidenav-backdrop');
             const toggle = document.getElementById('sidenav-toggle');
             if (!nav) return;
+            if (nav.classList.contains('is-open')) return;
             nav.classList.add('is-open');
-            backdrop.classList.add('is-visible');
+            if (backdrop) backdrop.classList.add('is-visible');
             document.body.classList.add('sidenav-open');
             if (toggle) toggle.setAttribute('aria-expanded', 'true');
             // Populate user info
@@ -1755,11 +1835,47 @@
             const backdrop = document.getElementById('sidenav-backdrop');
             const toggle = document.getElementById('sidenav-toggle');
             if (!nav) return;
+            if (!nav.classList.contains('is-open')) return;
             nav.classList.remove('is-open');
-            backdrop.classList.remove('is-visible');
+            if (backdrop) backdrop.classList.remove('is-visible');
             document.body.classList.remove('sidenav-open');
             if (toggle) toggle.setAttribute('aria-expanded', 'false');
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('sidenav-toggle');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    const nav = document.getElementById('sidenav');
+                    const isOpen = nav && nav.classList.contains('is-open');
+                    if (isOpen) {
+                        closeSidenav();
+                    } else {
+                        openSidenav();
+                    }
+                });
+            }
+
+            const closeBtn = document.querySelector('.sidenav-close-btn');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closeSidenav();
+                });
+            }
+
+            const backdrop = document.getElementById('sidenav-backdrop');
+            if (backdrop) {
+                backdrop.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closeSidenav();
+                });
+            }
+        });
 
         function showTab(name) {
             // Check role restriction

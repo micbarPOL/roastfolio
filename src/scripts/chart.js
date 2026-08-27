@@ -2,6 +2,7 @@ const _historyCharts = {};
 let _historyLoadPromise = null;
 let _historyRange = 'ALL';
 let _historyReturnMode = 'pct';
+let _historyMonthlyMetric = 'gain'; // 'gain' | 'deposit'
 let _historyWalletKey = 'summary'; // 'summary' | wallet name
 function _chartTextColor() {
     return (typeof window.isRoastfolioDark === 'function' && !window.isRoastfolioDark()) ? '#102033' : '#e2e8f0';
@@ -336,6 +337,59 @@ const _historyXAxisCallback = function(val) {
     return date.toLocaleString('en-US', { month: 'short', year: 'numeric' });
 };
 
+function _historyFadeGradient(ctx, chartArea, start = 'rgba(125, 183, 217, 0.38)', end = 'rgba(125, 183, 217, 0.02)') {
+    if (!chartArea) return start;
+    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+    gradient.addColorStop(0, start);
+    gradient.addColorStop(1, end);
+    return gradient;
+}
+
+function _historyChartTooltipConfig() {
+    return {
+        backgroundColor: 'rgba(15, 23, 42, 0.92)',
+        borderColor: 'rgba(148, 163, 184, 0.28)',
+        borderWidth: 1,
+        titleColor: '#f8fafc',
+        bodyColor: '#dfeaf5',
+        displayColors: false,
+        padding: 10,
+        cornerRadius: 10,
+        titleFont: { family: 'SF Pro Display, Inter, sans-serif', weight: '700', size: 12 },
+        bodyFont: { family: 'SF Pro Display, Inter, sans-serif', weight: '500', size: 11 },
+    };
+}
+
+function _historyChartLegendConfig(colorOverride = null) {
+    return {
+        display: true,
+        position: 'top',
+        align: 'start',
+        labels: {
+            color: colorOverride || _chartTextColor(),
+            usePointStyle: true,
+            pointStyle: 'circle',
+            boxWidth: 8,
+            boxHeight: 8,
+            padding: 12,
+            font: { family: 'SF Pro Display, Inter, sans-serif', weight: '600', size: 11 },
+        },
+    };
+}
+
+function _historyAxisConfig(labelText = null) {
+    return {
+        border: { display: false },
+        grid: { color: _chartGridColor(), drawBorder: false },
+        ticks: {
+            color: _chartTextColor(),
+            padding: 8,
+            font: { family: 'SF Pro Display, Inter, sans-serif', weight: '500', size: 10 },
+        },
+        title: labelText ? { display: true, text: labelText, color: _chartTextColor(), font: { family: 'SF Pro Display, Inter, sans-serif', weight: '600', size: 11 } } : { display: false },
+    };
+}
+
 function _updateAthPeaksForChartData(data, activeRows) {
     if (!data || !data.length) return;
 
@@ -409,22 +463,32 @@ function _makeLineChart(canvasId, data, compact, athInfo = null, activeRows = nu
         {
             label: 'Portfolio Value',
             data: data.map(d => d.value),
-            borderColor: '#7db7d9',
-            backgroundColor: 'rgba(125,183,217,0.08)',
+            borderColor: '#7dd3fc',
+            backgroundColor: (context) => {
+                const { chart } = context;
+                const { ctx, chartArea } = chart;
+                return _historyFadeGradient(ctx, chartArea, 'rgba(125, 211, 252, 0.38)', 'rgba(125, 211, 252, 0.03)');
+            },
             borderWidth: compact ? 1.5 : 2,
             pointRadius: 0,
             pointHoverRadius: 4,
-            tension: 0.15,
+            tension: 0.18,
+            fill: true,
         },
         {
             label: 'Investment',
             data: data.map(d => d.investment),
-            borderColor: '#d8b4d8',
-            backgroundColor: 'rgba(216,180,216,0.08)',
+            borderColor: '#c4b5fd',
+            backgroundColor: (context) => {
+                const { chart } = context;
+                const { ctx, chartArea } = chart;
+                return _historyFadeGradient(ctx, chartArea, 'rgba(196, 181, 253, 0.22)', 'rgba(196, 181, 253, 0.02)');
+            },
             borderWidth: compact ? 1.5 : 2,
             pointRadius: 0,
             pointHoverRadius: 4,
-            tension: 0.15,
+            tension: 0.18,
+            fill: true,
         },
     ];
 
@@ -494,14 +558,19 @@ function _makeLineChart(canvasId, data, compact, athInfo = null, activeRows = nu
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { top: 12, right: 10, bottom: 4, left: 4 } },
             interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: {
+                    ..._historyChartLegendConfig(),
                     display: !compact,
-                    position: 'top',
-                    labels: { filter: item => item.text !== 'ATH Peaks', color: _chartTextColor() },
+                    labels: {
+                        ..._historyChartLegendConfig().labels,
+                        filter: item => item.text !== 'ATH Peaks',
+                    },
                 },
                 tooltip: {
+                    ..._historyChartTooltipConfig(),
                     filter: item => item.dataset.label !== 'ATH Peaks',
                     callbacks: {
                         title: ctx => 'Date: ' + ctx[0].label,
@@ -523,14 +592,28 @@ function _makeLineChart(canvasId, data, compact, athInfo = null, activeRows = nu
                 },
             },
             scales: {
-                x: { ticks: { maxTicksLimit: compact ? 6 : 10, maxRotation: 45, color: _chartTextColor(), callback: _historyXAxisCallback } },
-                y: { ticks: { callback: value => _fmtMoneyTick(value), color: _chartTextColor() }, grid: { color: _chartGridColor() } },
+                x: {
+                    ..._historyAxisConfig(),
+                    ticks: {
+                        ..._historyAxisConfig().ticks,
+                        maxTicksLimit: compact ? 6 : 10,
+                        maxRotation: 45,
+                        callback: _historyXAxisCallback,
+                    },
+                },
+                y: {
+                    ..._historyAxisConfig('Portfolio value'),
+                    ticks: {
+                        ..._historyAxisConfig().ticks,
+                        callback: value => _fmtMoneyTick(value),
+                    },
+                },
             },
         },
     });
 }
 
-function _makeMonthlyReturnsChart(canvasId, data) {
+function _makeMonthlyReturnsChart(canvasId, data, metric = 'gain') {
     if (!data || data.length < 2) {
         _setChartMessage(canvasId, 'Need at least two snapshots to calculate monthly returns.');
         return;
@@ -552,32 +635,45 @@ function _makeMonthlyReturnsChart(canvasId, data) {
     for (let i = 1; i < months.length; i++) {
         const prev = byMonth[months[i - 1]];
         const curr = byMonth[months[i]];
+        const investmentDelta = Number((curr.investment - prev.investment).toFixed(2));
         const netGain = Number(((curr.value - prev.value) - (curr.investment - prev.investment)).toFixed(2));
+        const delta = metric === 'deposit' ? investmentDelta : netGain;
         labels.push(months[i]);
-        values.push(netGain);
-        colors.push(netGain >= 0 ? 'rgba(190, 229, 207, 0.95)' : 'rgba(244, 199, 194, 0.95)');
+        values.push(delta);
+        colors.push(delta >= 0 ? 'rgba(52, 211, 153, 0.9)' : 'rgba(251, 113, 133, 0.88)');
     }
+
+    const metricLabel = metric === 'deposit' ? 'Monthly Net Deposits (PLN)' : 'Monthly Net Gain (PLN)';
+    const valueLabel = metric === 'deposit' ? 'Net deposits' : 'Net gain';
 
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'bar',
         data: {
             labels,
             datasets: [{
-                label: 'Monthly Net Gain (PLN)',
+                label: metricLabel,
                 data: values,
-                backgroundColor: colors,
-                borderColor: colors.map(c => c.includes('190, 229, 207') ? 'rgba(147, 196, 169, 1)' : 'rgba(225, 160, 152, 1)'),
+                backgroundColor: (context) => {
+                    const value = context.parsed.y ?? 0;
+                    return value >= 0 ? 'rgba(52, 211, 153, 0.92)' : 'rgba(251, 113, 133, 0.88)';
+                },
+                borderColor: (context) => {
+                    const value = context.parsed.y ?? 0;
+                    return value >= 0 ? 'rgba(16, 185, 129, 1)' : 'rgba(244, 63, 94, 1)';
+                },
                 borderWidth: 1,
-                borderRadius: 3,
+                borderRadius: 6,
             }],
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { top: 12, right: 10, bottom: 4, left: 4 } },
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: false, labels: { color: _chartTextColor() } },
+                legend: { display: false, labels: { color: _chartTextColor(), font: { family: 'SF Pro Display, Inter, sans-serif', weight: '600', size: 11 } } },
                 tooltip: {
+                    ..._historyChartTooltipConfig(),
                     callbacks: {
                         title: ctx => {
                             const [year, month] = ctx[0].label.split('-');
@@ -585,15 +681,16 @@ function _makeMonthlyReturnsChart(canvasId, data) {
                         },
                         label: ctx => {
                             const value = Number(ctx.parsed.y || 0);
-                            return 'Net gain: ' + (value >= 0 ? '+' : '') + value.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
+                            return valueLabel + ': ' + (value >= 0 ? '+' : '') + value.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
                         },
                     },
                 },
             },
             scales: {
                 x: {
+                    ..._historyAxisConfig(),
                     ticks: {
-                        color: _chartTextColor(),
+                        ..._historyAxisConfig().ticks,
                         maxRotation: 45,
                         callback: function(_value, index) {
                             const [year, month] = labels[index].split('-');
@@ -602,8 +699,11 @@ function _makeMonthlyReturnsChart(canvasId, data) {
                     },
                 },
                 y: {
-                    ticks: { callback: value => (value >= 0 ? '+' : '') + _fmtMoneyTick(value), color: _chartTextColor() },
-                    grid: { color: _chartGridColor() },
+                    ..._historyAxisConfig('Net change'),
+                    ticks: {
+                        ..._historyAxisConfig().ticks,
+                        callback: value => (value >= 0 ? '+' : '') + _fmtMoneyTick(value),
+                    },
                 },
             },
         },
@@ -706,10 +806,18 @@ function _makeDailyChangeChart(canvasId, data, mode) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { top: 12, right: 10, bottom: 4, left: 4 } },
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: true, labels: { filter: item => item.text === '14-day MA', color: _chartTextColor() } },
+                legend: {
+                    ..._historyChartLegendConfig(),
+                    labels: {
+                        ..._historyChartLegendConfig().labels,
+                        filter: item => item.text === '14-day MA',
+                    },
+                },
                 tooltip: {
+                    ..._historyChartTooltipConfig(),
                     callbacks: {
                         title: ctx => 'Date: ' + ctx[0].label,
                         label: ctx => {
@@ -722,16 +830,31 @@ function _makeDailyChangeChart(canvasId, data, mode) {
                 },
             },
             scales: {
-                x: { type: 'category', ticks: { maxTicksLimit: 10, maxRotation: 45, color: _chartTextColor(), callback: _historyXAxisCallback }, grid: { color: _chartGridColor() } },
+                x: {
+                    ..._historyAxisConfig(),
+                    type: 'category',
+                    ticks: {
+                        ..._historyAxisConfig().ticks,
+                        maxTicksLimit: 10,
+                        maxRotation: 45,
+                        callback: _historyXAxisCallback,
+                    },
+                },
                 y: mode === 'pct'
                     ? {
-                        title: { display: true, text: 'Daily % Change', color: _chartTextColor() },
-                        ticks: { callback: value => (value >= 0 ? '+' : '') + Number(value).toFixed(1) + '%', color: _chartTextColor() },
+                        ..._historyAxisConfig('Daily % Change'),
+                        ticks: {
+                            ..._historyAxisConfig().ticks,
+                            callback: value => (value >= 0 ? '+' : '') + Number(value).toFixed(1) + '%',
+                        },
                         grid: { color: ctx => ctx.tick.value === 0 ? _chartGridColor(true) : _chartGridColor() },
                     }
                     : {
-                        title: { display: true, text: 'Daily PLN Change', color: _chartTextColor() },
-                        ticks: { callback: value => (value >= 0 ? '+' : '') + _fmtMoneyTick(value), color: _chartTextColor() },
+                        ..._historyAxisConfig('Daily PLN Change'),
+                        ticks: {
+                            ..._historyAxisConfig().ticks,
+                            callback: value => (value >= 0 ? '+' : '') + _fmtMoneyTick(value),
+                        },
                         grid: { color: ctx => ctx.tick.value === 0 ? _chartGridColor(true) : _chartGridColor() },
                     },
             },
@@ -784,22 +907,28 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
             datasets: [{
                 label: mode === 'pln' ? 'Cumulative Return (PLN)' : 'Cumulative Return (%)',
                 data: returns,
-                borderColor: '#7db7d9',
-                backgroundColor: 'rgba(125,183,217,0.08)',
+                borderColor: '#8ed4ff',
+                backgroundColor: (context) => {
+                    const { chart } = context;
+                    const { ctx, chartArea } = chart;
+                    return _historyFadeGradient(ctx, chartArea, 'rgba(142, 212, 255, 0.36)', 'rgba(142, 212, 255, 0.02)');
+                },
                 borderWidth: 2.5,
                 pointRadius: 0,
                 pointHoverRadius: 4,
-                tension: 0.15,
+                tension: 0.18,
                 fill: true,
             }],
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { top: 12, right: 10, bottom: 4, left: 4 } },
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: true, position: 'top', labels: { color: _chartTextColor() } },
+                legend: _historyChartLegendConfig(),
                 tooltip: {
+                    ..._historyChartTooltipConfig(),
                     callbacks: {
                         title: ctx => ctx[0].label,
                         label: ctx => mode === 'pln'
@@ -809,16 +938,30 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
                 },
             },
             scales: {
-                x: { ticks: { maxTicksLimit: 10, maxRotation: 45, color: _chartTextColor(), callback: _historyXAxisCallback }, grid: { color: _chartGridColor() } },
+                x: {
+                    ..._historyAxisConfig(),
+                    ticks: {
+                        ..._historyAxisConfig().ticks,
+                        maxTicksLimit: 10,
+                        maxRotation: 45,
+                        callback: _historyXAxisCallback,
+                    },
+                },
                 y: mode === 'pln'
                     ? {
-                        title: { display: true, text: 'Return (PLN)', color: _chartTextColor() },
-                        ticks: { callback: value => (value >= 0 ? '+' : '') + _fmtMoneyTick(value), color: _chartTextColor() },
+                        ..._historyAxisConfig('Return (PLN)'),
+                        ticks: {
+                            ..._historyAxisConfig().ticks,
+                            callback: value => (value >= 0 ? '+' : '') + _fmtMoneyTick(value),
+                        },
                         grid: { color: ctx => ctx.tick.value === 0 ? _chartGridColor(true) : _chartGridColor() },
                     }
                     : {
-                        title: { display: true, text: 'Return (%)', color: _chartTextColor() },
-                        ticks: { callback: value => (value >= 0 ? '+' : '') + Number(value).toFixed(0) + '%', color: _chartTextColor() },
+                        ..._historyAxisConfig('Return (%)'),
+                        ticks: {
+                            ..._historyAxisConfig().ticks,
+                            callback: value => (value >= 0 ? '+' : '') + Number(value).toFixed(0) + '%',
+                        },
                         grid: { color: ctx => ctx.tick.value === 0 ? _chartGridColor(true) : _chartGridColor() },
                     },
             },
@@ -826,7 +969,27 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
     });
 }
 
+function _setHistoryChartLoaderState(visible) {
+    const chartIds = ['investmentChart', 'monthlyReturnsChart', 'returnsChart', 'dailyChangeChart', 'dailyPLNChart'];
+    chartIds.forEach((id) => {
+        const canvas = document.getElementById(id);
+        const wrapper = canvas && canvas.closest('.chart-wrapper');
+        const loader = wrapper && wrapper.querySelector('.chart-loader-overlay');
+        if (loader) loader.style.display = visible ? 'flex' : 'none';
+    });
+}
+
+function _showHistoryChartLoaderNow() {
+    if (typeof window !== 'undefined') {
+        window.requestAnimationFrame(() => _setHistoryChartLoaderState(true));
+    } else {
+        _setHistoryChartLoaderState(true);
+    }
+}
+
 async function renderHistoryTab(force = false) {
+    const startedAt = Date.now();
+    _showHistoryChartLoaderNow();
     try {
         const history = await _loadHistorySnapshots(force);
         const walletNames = Object.keys(history.wallets || {}).sort((a, b) => a.localeCompare(b));
@@ -839,6 +1002,7 @@ async function renderHistoryTab(force = false) {
         _renderWalletBtns(walletNames);
         _setHistoryButtonState('[data-history-range]', 'data-history-range', _historyRange);
         _setHistoryButtonState('[data-history-return-mode]', 'data-history-return-mode', _historyReturnMode);
+        _setHistoryButtonState('[data-history-monthly-metric]', 'data-history-monthly-metric', _historyMonthlyMetric);
 
         // Pick data source based on selected wallet
         const isTotal = _historyWalletKey === 'summary';
@@ -852,7 +1016,7 @@ async function renderHistoryTab(force = false) {
         const resampledMain = _resampleHistoryRows(filteredMain, strategy);
 
         _makeLineChart('investmentChart', resampledMain, false, activeAth, activeRows);
-        _makeMonthlyReturnsChart('monthlyReturnsChart', anchoredMain);
+        _makeMonthlyReturnsChart('monthlyReturnsChart', anchoredMain, _historyMonthlyMetric);
         _makeCumulativeReturnChart('returnsChart', resampledMain, _historyReturnMode);
         _makeDailyChangeChart('dailyChangeChart', anchoredMain, 'pct');
         _makeDailyChangeChart('dailyPLNChart', anchoredMain, 'pln');
@@ -860,13 +1024,21 @@ async function renderHistoryTab(force = false) {
         console.warn('Failed to render history tab from live snapshots:', error);
         ['investmentChart', 'monthlyReturnsChart', 'returnsChart', 'dailyChangeChart', 'dailyPLNChart']
             .forEach(id => _setChartMessage(id, error.message || 'Could not load snapshot history.'));
+    } finally {
+        const elapsed = Date.now() - startedAt;
+        const minimumDelay = 180;
+        const remaining = Math.max(0, minimumDelay - elapsed);
+        if (remaining > 0) {
+            await new Promise(resolve => setTimeout(resolve, remaining));
+        }
+        _setHistoryChartLoaderState(false);
     }
 }
 
 window.renderHistoryTab = renderHistoryTab;
 window.setHistoryWallet = function setHistoryWallet(key) {
     _historyWalletKey = key || 'summary';
-    // Update button active state immediately for snappy feel
+    _showHistoryChartLoaderNow();
     document.querySelectorAll('.history-wallet-btn').forEach(btn => {
         btn.classList.toggle('is-active', btn.dataset.walletKey === _historyWalletKey);
     });
@@ -874,11 +1046,18 @@ window.setHistoryWallet = function setHistoryWallet(key) {
 };
 window.setHistoryRange = function setHistoryRange(range) {
     _historyRange = range;
+    _showHistoryChartLoaderNow();
     renderHistoryTab().catch(error => console.warn('Failed to update history range:', error));
 };
 window.setHistoryReturnMode = function setHistoryReturnMode(mode) {
     _historyReturnMode = mode;
+    _showHistoryChartLoaderNow();
     renderHistoryTab().catch(error => console.warn('Failed to update history return mode:', error));
+};
+window.setHistoryMonthlyMetric = function setHistoryMonthlyMetric(mode) {
+    _historyMonthlyMetric = mode === 'deposit' ? 'deposit' : 'gain';
+    _showHistoryChartLoaderNow();
+    renderHistoryTab().catch(error => console.warn('Failed to update monthly history metric:', error));
 };
 
 document.addEventListener('DOMContentLoaded', function () {
