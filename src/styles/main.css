@@ -1721,25 +1721,65 @@ h2 {
 main.tab-content {
     width: min(1200px, calc(100% - 32px));
     max-width: none;
-    margin: 20px auto;
+    margin: 14px auto;
     padding: 0;
     box-sizing: border-box;
 }
 
-
-section {
+main.tab-content:not(#tab-dashboard) > section,
+main.tab-content:not(#tab-dashboard) .chart-container,
+main.tab-content:not(#tab-dashboard) .table-container,
+main.tab-content:not(#tab-dashboard) .analysis-screen-header,
+main.tab-content:not(#tab-dashboard) .analysis-search-section,
+main.tab-content:not(#tab-dashboard) .analysis-favorites-section,
+main.tab-content:not(#tab-dashboard) .analysis-financials-card,
+main.tab-content:not(#tab-dashboard) .analysis-fundamentals-card {
     background: var(--fintech-surface-elevated);
     color: var(--fintech-text);
-    padding: 20px;
-    margin-bottom: 30px;
-    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    border-radius: 10px;
     box-shadow: var(--fintech-shadow-md);
     border: 1px solid var(--fintech-border);
 }
 
-.chart-container {
+main.tab-content:not(#tab-dashboard) .chart-container {
     text-align: center;
     position: relative;
+}
+
+main.tab-content:not(#tab-dashboard) .history-main-title,
+main.tab-content:not(#tab-dashboard) .tx-section-title,
+main.tab-content:not(#tab-dashboard) .mgmt-section-title,
+main.tab-content:not(#tab-dashboard) h2,
+main.tab-content:not(#tab-dashboard) h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+main.tab-content:not(#tab-dashboard) .history-main-title {
+    font-size: 18px;
+}
+
+main.tab-content:not(#tab-dashboard) .tx-section-title,
+main.tab-content:not(#tab-dashboard) .mgmt-section-title {
+    font-size: 0.78rem;
+}
+
+main.tab-content:not(#tab-dashboard) .history-sub-row {
+    margin-bottom: 8px;
+}
+
+main.tab-content:not(#tab-dashboard) .history-wallet-btn,
+main.tab-content:not(#tab-dashboard) .wig-type-btn,
+main.tab-content:not(#tab-dashboard) .benchmark-range-btn,
+main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-size: 12px;
 }
 
 /* ── History tab consolidated header ───────────────────────── */
@@ -1752,11 +1792,11 @@ section {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 .history-main-title {
     margin: 0;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 700;
     color: #e2e8f0;
     font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
@@ -1769,7 +1809,7 @@ section {
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 /* Wallet selector button strip */
 .history-wallet-btns {
@@ -3481,8 +3521,8 @@ section {
     overflow-x: auto;
 }
 .tx-section-title {
-    margin: 0 0 16px;
-    font-size: 1rem;
+    margin: 0 0 12px;
+    font-size: 0.78rem;
     font-weight: 700;
     color: #0ea5e9;
     text-shadow: 0 0 8px rgba(14, 165, 233, 0.4);
