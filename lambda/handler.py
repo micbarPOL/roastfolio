@@ -1150,8 +1150,12 @@ def search_handler(event: dict) -> dict:
         print(f"Error fetching historical holdings for search: {e}")
 
     if len(q) < 1:
-        # Return all historical holdings if query is empty, current first
-        owned_list = sorted(list(historical_holdings.values()), key=lambda x: (not x.get("isCurrent", False), x["symbol"]))
+        # When the user has not typed anything yet, prefer the current holdings set only.
+        # Former holdings remain available when the user starts searching.
+        owned_list = sorted(
+            [h for h in historical_holdings.values() if h.get("isCurrent", False)],
+            key=lambda x: x["symbol"]
+        )
         return _resp(200, {"results": owned_list})
 
     if len(q) > 50:
