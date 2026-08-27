@@ -3067,29 +3067,70 @@ main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
 
 .holdings-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
 }
 
-.holdings-table th, .holdings-table td {
+.holdings-table th,
+.holdings-table td,
+#returns-table-wrap table th,
+#returns-table-wrap table td,
+.analysis-financials-table-wrapper th,
+.analysis-financials-table-wrapper td,
+.wallet-holdings-table th,
+.wallet-holdings-table td,
+#tx-table th,
+#tx-table td {
     border: none;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
     text-align: left;
-    padding: 10px 8px;
-    font-size: 13px;
-    color: #e2e8f0;
+    padding: 9px 10px;
+    font-size: 12px;
+    line-height: 1.35;
+    vertical-align: middle;
+    color: var(--fintech-text, #e2e8f0);
 }
 
-.holdings-table th {
-    background: rgba(14, 165, 233, 0.05);
-    color: #0ea5e9;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+.holdings-table thead th,
+#returns-table-wrap table thead th,
+.analysis-financials-table-wrapper thead th,
+.wallet-holdings-table thead th,
+#tx-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: rgba(15, 23, 42, 0.96);
+    color: rgba(170, 186, 204, 0.9);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    text-shadow: 0 0 5px rgba(14, 165, 233, 0.3);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    border-bottom: 1px solid rgba(148, 170, 197, 0.15);
+    box-shadow: inset 0 -1px 0 rgba(148, 170, 197, 0.08);
 }
 
-.holdings-table tr:nth-child(even) {
+.holdings-table tbody tr,
+#returns-table-wrap table tbody tr,
+.analysis-financials-table-wrapper tbody tr,
+.wallet-holdings-table tbody tr,
+#tx-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.holdings-table tbody tr:nth-child(even),
+#returns-table-wrap table tbody tr:nth-child(even),
+.wallet-holdings-table tbody tr:nth-child(even),
+#tx-table tbody tr:nth-child(even) {
     background: rgba(255, 255, 255, 0.02);
+}
+
+.holdings-table tbody tr:hover,
+#returns-table-wrap table tbody tr:hover,
+.wallet-holdings-table tbody tr:hover,
+#tx-table tbody tr:hover {
+    background: rgba(14, 165, 233, 0.08);
 }
 
 /* Clickable holding rows */
@@ -3146,15 +3187,19 @@ main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
     color: #e2e8f0;
 }
 #returns-table-wrap table thead th {
-    padding: 8px 10px;
+    padding: 9px 10px;
     text-align: right;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-    color: #94a3b8;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: rgba(170, 186, 204, 0.9);
 }
 #returns-table-wrap table thead th:first-child { text-align: left; }
 #returns-table-wrap table tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
 #returns-table-wrap table tbody tr:hover { background: rgba(14, 165, 233, 0.1); }
+#returns-table-wrap table td {
+    padding-top: 9px;
+    padding-bottom: 9px;
+}
 
 /* ── Stats accordions ─────────────────────────────────────────── */
 .stats-acc-section {
@@ -3570,13 +3615,28 @@ main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
 /* ── Transaction filter UI ── */
 #tx-table th,
 #cal-modal-body .holdings-table th {
-    background: #0f172a;
-    color: #e2e8f0;
-    font-family: inherit;
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: 0.3px;
+    background: rgba(15, 23, 42, 0.96);
+    color: rgba(170, 186, 204, 0.9);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     text-shadow: none;
+}
+
+#tx-table .filter-btn,
+#tx-table #f-asset,
+.col-filter,
+.analysis-scope-select,
+.cemetery-filter-select {
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid rgba(148, 170, 197, 0.18);
+    background: rgba(8, 17, 27, 0.75);
+    color: var(--fintech-text, #e2e8f0);
+    font-size: 11px;
+    padding: 6px 8px;
+    box-sizing: border-box;
 }
 .tx-th {
     position: relative;
@@ -12717,24 +12777,29 @@ body.wallet-overlay-open {
 .analysis-financials-table-wrapper {
     overflow-x: auto;
     margin-top: 12px;
+    border: 1px solid rgba(148, 170, 197, 0.12);
+    border-radius: 10px;
+    background: rgba(7, 12, 18, 0.4);
 }
 
 .analysis-financials-table-wrapper table {
     min-width: 100%;
     font-size: 11px;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .analysis-financials-table-wrapper th,
 .analysis-financials-table-wrapper td {
     white-space: nowrap;
-    padding: 4px 6px;
+    padding: 8px 8px;
 }
 
 .analysis-financials-table-wrapper td:first-child,
 .analysis-financials-table-wrapper th:first-child {
     position: sticky;
     left: 0;
-    background: var(--brand-bg);
+    background: rgba(7, 12, 18, 0.96);
     z-index: 2;
     min-width: 150px;
 }
@@ -13465,17 +13530,33 @@ body.wallet-overlay-open {
     .tx-history-card {
         overflow-x: hidden;
     }
-    #tx-table {
+    #tx-table,
+    .holdings-table,
+    #returns-table-wrap table,
+    .analysis-financials-table-wrapper table,
+    .wallet-holdings-table {
         table-layout: fixed;
         min-width: 0;
         width: 100% !important;
         font-size: 12px !important;
     }
     #tx-table th,
-    #tx-table td {
-        padding: 8px 5px;
+    #tx-table td,
+    .holdings-table th,
+    .holdings-table td,
+    #returns-table-wrap table th,
+    #returns-table-wrap table td,
+    .analysis-financials-table-wrapper th,
+    .analysis-financials-table-wrapper td,
+    .wallet-holdings-table th,
+    .wallet-holdings-table td {
+        padding: 8px 6px;
         min-width: 0;
         overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .analysis-financials-table-wrapper table {
+        min-width: 680px;
     }
     #tx-table th:nth-child(2),
     #tx-table td:nth-child(2) {
