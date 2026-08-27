@@ -13481,11 +13481,16 @@ body.wallet-overlay-open {
     opacity: 0.5;
     transition: opacity 0.2s;
 }
-.metric-tooltip-container:hover::after {
+.metric-tooltip-container:hover::after,
+.metric-tooltip-container:focus-visible::after,
+.metric-tooltip-container:focus-within::after {
     opacity: 1;
 }
 .metric-tooltip {
-    position: fixed;
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 8px);
+    transform: translateX(-50%);
     width: 260px;
     max-width: min(260px, calc(100vw - 24px));
     background-color: var(--surface);
@@ -13506,6 +13511,9 @@ body.wallet-overlay-open {
     pointer-events: none;
     white-space: normal;
 }
+.metric-tooltip-container:hover .metric-tooltip,
+.metric-tooltip-container:focus-within .metric-tooltip,
+.metric-tooltip-container:focus-visible .metric-tooltip,
 .metric-tooltip.show {
     visibility: visible;
     opacity: 1;
