@@ -953,7 +953,13 @@
         </section>
 
         <section class="chart-container">
-            <h2 class="tx-section-title">Monthly Net Gains</h2>
+            <div class="history-sub-row">
+                <h2 class="tx-section-title" style="margin:0;">Monthly Returns</h2>
+                <div class="wig-type-btns" id="history-monthly-metric-btns">
+                    <button class="wig-type-btn active" data-history-monthly-metric="gain" onclick="setHistoryMonthlyMetric('gain')">Monthly Net Gains</button>
+                    <button class="wig-type-btn" data-history-monthly-metric="deposit" onclick="setHistoryMonthlyMetric('deposit')">Monthly Net Deposits</button>
+                </div>
+            </div>
             <div class="chart-wrapper" style="height:280px;">
                 <canvas id="monthlyReturnsChart"></canvas>
             </div>

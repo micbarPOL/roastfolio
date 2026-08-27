@@ -2,6 +2,7 @@ const _historyCharts = {};
 let _historyLoadPromise = null;
 let _historyRange = 'ALL';
 let _historyReturnMode = 'pct';
+let _historyMonthlyMetric = 'gain'; // 'gain' | 'deposit'
 let _historyWalletKey = 'summary'; // 'summary' | wallet name
 function _chartTextColor() {
     return (typeof window.isRoastfolioDark === 'function' && !window.isRoastfolioDark()) ? '#102033' : '#e2e8f0';
@@ -530,7 +531,7 @@ function _makeLineChart(canvasId, data, compact, athInfo = null, activeRows = nu
     });
 }
 
-function _makeMonthlyReturnsChart(canvasId, data) {
+function _makeMonthlyReturnsChart(canvasId, data, metric = 'gain') {
     if (!data || data.length < 2) {
         _setChartMessage(canvasId, 'Need at least two snapshots to calculate monthly returns.');
         return;
@@ -552,18 +553,23 @@ function _makeMonthlyReturnsChart(canvasId, data) {
     for (let i = 1; i < months.length; i++) {
         const prev = byMonth[months[i - 1]];
         const curr = byMonth[months[i]];
+        const investmentDelta = Number((curr.investment - prev.investment).toFixed(2));
         const netGain = Number(((curr.value - prev.value) - (curr.investment - prev.investment)).toFixed(2));
+        const delta = metric === 'deposit' ? investmentDelta : netGain;
         labels.push(months[i]);
-        values.push(netGain);
-        colors.push(netGain >= 0 ? 'rgba(190, 229, 207, 0.95)' : 'rgba(244, 199, 194, 0.95)');
+        values.push(delta);
+        colors.push(delta >= 0 ? 'rgba(190, 229, 207, 0.95)' : 'rgba(244, 199, 194, 0.95)');
     }
+
+    const metricLabel = metric === 'deposit' ? 'Monthly Net Deposits (PLN)' : 'Monthly Net Gain (PLN)';
+    const valueLabel = metric === 'deposit' ? 'Net deposits' : 'Net gain';
 
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'bar',
         data: {
             labels,
             datasets: [{
-                label: 'Monthly Net Gain (PLN)',
+                label: metricLabel,
                 data: values,
                 backgroundColor: colors,
                 borderColor: colors.map(c => c.includes('190, 229, 207') ? 'rgba(147, 196, 169, 1)' : 'rgba(225, 160, 152, 1)'),
@@ -585,7 +591,7 @@ function _makeMonthlyReturnsChart(canvasId, data) {
                         },
                         label: ctx => {
                             const value = Number(ctx.parsed.y || 0);
-                            return 'Net gain: ' + (value >= 0 ? '+' : '') + value.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
+                            return valueLabel + ': ' + (value >= 0 ? '+' : '') + value.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
                         },
                     },
                 },
@@ -839,6 +845,7 @@ async function renderHistoryTab(force = false) {
         _renderWalletBtns(walletNames);
         _setHistoryButtonState('[data-history-range]', 'data-history-range', _historyRange);
         _setHistoryButtonState('[data-history-return-mode]', 'data-history-return-mode', _historyReturnMode);
+        _setHistoryButtonState('[data-history-monthly-metric]', 'data-history-monthly-metric', _historyMonthlyMetric);
 
         // Pick data source based on selected wallet
         const isTotal = _historyWalletKey === 'summary';
@@ -852,7 +859,7 @@ async function renderHistoryTab(force = false) {
         const resampledMain = _resampleHistoryRows(filteredMain, strategy);
 
         _makeLineChart('investmentChart', resampledMain, false, activeAth, activeRows);
-        _makeMonthlyReturnsChart('monthlyReturnsChart', anchoredMain);
+        _makeMonthlyReturnsChart('monthlyReturnsChart', anchoredMain, _historyMonthlyMetric);
         _makeCumulativeReturnChart('returnsChart', resampledMain, _historyReturnMode);
         _makeDailyChangeChart('dailyChangeChart', anchoredMain, 'pct');
         _makeDailyChangeChart('dailyPLNChart', anchoredMain, 'pln');
@@ -879,6 +886,10 @@ window.setHistoryRange = function setHistoryRange(range) {
 window.setHistoryReturnMode = function setHistoryReturnMode(mode) {
     _historyReturnMode = mode;
     renderHistoryTab().catch(error => console.warn('Failed to update history return mode:', error));
+};
+window.setHistoryMonthlyMetric = function setHistoryMonthlyMetric(mode) {
+    _historyMonthlyMetric = mode === 'deposit' ? 'deposit' : 'gain';
+    renderHistoryTab().catch(error => console.warn('Failed to update monthly history metric:', error));
 };
 
 document.addEventListener('DOMContentLoaded', function () {
