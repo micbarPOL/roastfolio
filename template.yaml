@@ -840,7 +840,7 @@ Resources:
           DATA_TABLE: !Ref DataTable
           TRANSACTIONS_TABLE: !Ref TransactionsTable
           SNAPSHOTS_TABLE: !Ref SnapshotsTable
-          RETIREMENT_PLANS_TABLE: !Ref RetirementPlansTable
+          RETIREMENT_TABLE: !Ref RetirementPlansTable
           DIARY_TABLE: !Ref DiaryTable
           WRAPS_TABLE: !Ref DiaryTable
       Policies:
