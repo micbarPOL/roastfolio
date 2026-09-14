@@ -313,8 +313,23 @@ def generate_returns_data():
             pass
 
     def safe(v):
-        try: return float(v.strip()) if v.strip() else None
-        except: return None
+        if v is None:
+            return None
+        s = str(v).strip()
+        if not s:
+            return None
+        s = s.replace(' ', '')
+        if ',' in s and '.' in s:
+            if s.rfind(',') > s.rfind('.'):
+                s = s.replace('.', '').replace(',', '.')
+            else:
+                s = s.replace(',', '')
+        elif ',' in s:
+            s = s.replace(',', '.')
+        try:
+            return float(s)
+        except ValueError:
+            return None
 
     with open(CSV_PATH, encoding='iso-8859-2') as f:
         lines = f.read().strip().split('\n')

@@ -51,6 +51,66 @@ function _clearChartMessage(canvasId) {
     canvas.style.display = '';
 }
 
+function _findChartLoader(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return null;
+    return canvas.parentElement ? canvas.parentElement.querySelector('.history-chart-loader') : null;
+}
+
+function _showHistoryChartLoader(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const wrap = canvas.parentElement;
+    if (!wrap) return;
+    let loader = wrap.querySelector('.history-chart-loader');
+    if (!loader) {
+        loader = document.createElement('div');
+        loader.className = 'history-chart-loader';
+        loader.innerHTML = `
+            <div class="cl-loader">
+                <div class="cl-candles">
+                    <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                    <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                    <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                    <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                    <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                    <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                </div>
+                <span class="cl-loader-text">Loading chart…</span>
+            </div>
+        `;
+        wrap.appendChild(loader);
+    }
+    wrap.classList.add('is-loading');
+    loader.style.display = 'flex';
+    loader.style.opacity = '1';
+    const note = wrap.querySelector('.history-empty-state');
+    if (note) note.style.display = 'none';
+    if (canvas) {
+        canvas.style.visibility = 'hidden';
+        canvas.style.opacity = '0';
+    }
+}
+
+function _hideHistoryChartLoader(canvasId) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const wrap = canvas.parentElement;
+    if (!wrap) return;
+    const loader = wrap.querySelector('.history-chart-loader');
+    if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(() => {
+            loader.style.display = 'none';
+        }, 180);
+    }
+    wrap.classList.remove('is-loading');
+    const note = wrap.querySelector('.history-empty-state');
+    if (note) note.style.display = 'flex';
+    canvas.style.visibility = '';
+    canvas.style.opacity = '';
+}
+
 function _getResamplingStrategy(range, dates) {
     // Show full daily resolution across all ranges (ALL, 5Y, 3Y, 1Y, YTD, 1M, 1W)
     return 'daily';
@@ -833,6 +893,10 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
 }
 
 async function renderHistoryTab(force = false) {
+    const chartIds = ['investmentChart', 'monthlyReturnsChart', 'returnsChart', 'dailyChangeChart', 'dailyPLNChart'];
+    const startedAt = performance.now();
+    chartIds.forEach(_showHistoryChartLoader);
+
     try {
         const history = await _loadHistorySnapshots(force);
         const walletNames = Object.keys(history.wallets || {}).sort((a, b) => a.localeCompare(b));
@@ -865,8 +929,14 @@ async function renderHistoryTab(force = false) {
         _makeDailyChangeChart('dailyPLNChart', anchoredMain, 'pln');
     } catch (error) {
         console.warn('Failed to render history tab from live snapshots:', error);
-        ['investmentChart', 'monthlyReturnsChart', 'returnsChart', 'dailyChangeChart', 'dailyPLNChart']
-            .forEach(id => _setChartMessage(id, error.message || 'Could not load snapshot history.'));
+        chartIds.forEach(id => _setChartMessage(id, error.message || 'Could not load snapshot history.'));
+    } finally {
+        const elapsed = performance.now() - startedAt;
+        const minVisibleMs = 260;
+        const remaining = Math.max(0, minVisibleMs - elapsed);
+        setTimeout(() => {
+            chartIds.forEach(_hideHistoryChartLoader);
+        }, remaining);
     }
 }
 

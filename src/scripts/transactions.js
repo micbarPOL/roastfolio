@@ -656,19 +656,51 @@ function renderTurnoverChart(rows) {
         _txChart.destroy();
         _txChart = null;
     }
+
+    const validMonths = [...new Set(
+        rows
+            .map(row => row.date && String(row.date).slice(0, 7))
+            .filter(Boolean)
+            .sort()
+    )];
+
     const byMonth = {};
     for (const row of rows) {
-        if (!isTurnoverOperation(row.operation)) continue;
-        const month = row.date.slice(0, 7);
+        const month = row.date && String(row.date).slice(0, 7);
         if (!month) continue;
+        if (!isTurnoverOperation(row.operation)) {
+            byMonth[month] = byMonth[month] || 0;
+            continue;
+        }
         byMonth[month] = (byMonth[month] || 0) + Math.abs(row.value);
     }
-    const months = Object.keys(byMonth).sort();
+
+    let months = validMonths;
+    if (validMonths.length) {
+        const first = validMonths[0];
+        const last = validMonths[validMonths.length - 1];
+        const monthKeys = [];
+        const [startYear, startMonth] = first.split('-').map(Number);
+        const [endYear, endMonth] = last.split('-').map(Number);
+        const startDate = new Date(startYear, startMonth - 1, 1);
+        const endDate = new Date(endYear, endMonth - 1, 1);
+        const cursor = new Date(startDate);
+
+        while (cursor <= endDate) {
+            const year = cursor.getFullYear();
+            const monthIndex = cursor.getMonth() + 1;
+            const monthKey = `${year}-${String(monthIndex).padStart(2, '0')}`;
+            monthKeys.push(monthKey);
+            cursor.setMonth(cursor.getMonth() + 1);
+        }
+        months = monthKeys;
+    }
+
     const labels = months.map(month => {
         const [year, numMonth] = month.split('-');
         return new Date(year, Number(numMonth) - 1).toLocaleString('en-US', { month: 'short' }) + ' ' + year.slice(2);
     });
-    const values = months.map(month => parseFloat(byMonth[month].toFixed(2)));
+    const values = months.map(month => parseFloat((byMonth[month] || 0).toFixed(2)));
     _txChart = new Chart(canvas, {
         type: 'bar',
         data: {

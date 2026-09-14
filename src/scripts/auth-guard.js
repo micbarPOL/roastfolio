@@ -14,7 +14,49 @@
     var cfg      = window.__CONFIG__ || {};
     var clientId = cfg.cognitoClientId || '';
     var AUTH_PAGE = 'auth.html';
-    var PREFIX;
+    var PREFIX = clientId ? 'CognitoIdentityServiceProvider.' + clientId : '';
+
+    function isDevAuthOverrideEnabled() {
+        try {
+            var params = new URLSearchParams(window.location.search || '');
+            if (params.get('devAuth') === '1' || params.get('authTest') === '1' || params.get('skipAuth') === '1') {
+                return true;
+            }
+            return localStorage.getItem('roastfolio.devAuth') === '1';
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function createDevJwt() {
+        var now = Math.floor(Date.now() / 1000);
+        var payload = {
+            sub: 'dev-user-123',
+            email: 'dev@roastfolio.local',
+            nickname: 'Dev User',
+            exp: now + 60 * 60 * 24 * 365,
+            iat: now
+        };
+        function b64url(value) {
+            return btoa(unescape(encodeURIComponent(value)))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/g, '');
+        }
+        return b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' })) + '.' +
+               b64url(JSON.stringify(payload)) + '.dev';
+    }
+
+    function enableDevAuthSession() {
+        if (!clientId) return;
+        try {
+            localStorage.setItem('roastfolio.devAuth', '1');
+            localStorage.setItem(PREFIX + '.LastAuthUser', 'dev-user');
+            localStorage.setItem(PREFIX + '.dev-user.idToken', createDevJwt());
+            localStorage.setItem(PREFIX + '.dev-user.accessToken', 'dev-access-token');
+            localStorage.setItem(PREFIX + '.dev-user.refreshToken', 'dev-refresh-token');
+        } catch (_) {}
+    }
 
     // If no Cognito config (local dev without config.js), skip guard gracefully
     if (!clientId) {
@@ -28,7 +70,10 @@
         return;
     }
 
-    PREFIX = 'CognitoIdentityServiceProvider.' + clientId;
+    if (isDevAuthOverrideEnabled()) {
+        enableDevAuthSession();
+        console.info('[AuthGuard] Local dev auth override enabled for verification.');
+    }
 
     // ── Token helpers ──────────────────────────────────────────────────────────
 

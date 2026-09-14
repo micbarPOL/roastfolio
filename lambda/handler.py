@@ -2077,6 +2077,45 @@ def roast_report_handler(event: dict) -> dict:
         return _resp(500, {"error": "Internal server error"})
 
 
+def monthly_wraps_handler(event: dict) -> dict:
+    """GET /monthly-wraps — return one or all pre-compiled monthly audits."""
+    if event.get("httpMethod") == "OPTIONS":
+        return _resp(200, {})
+    user_id, error = _require_role(event, db.ROLE_BASIC)
+    if error:
+        return error
+
+    from boto3.dynamodb.conditions import Key
+
+    period = str(_query_value(event, "period", "") or "").strip()
+    if period and not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", period):
+        return _resp(400, {"error": "period must use YYYY-MM format"})
+
+    table_name = os.environ.get("WRAPS_TABLE", os.environ.get("DIARY_TABLE", "roastfolio-diary"))
+    table = boto3.resource("dynamodb").Table(table_name)
+    partition_key = f"USER#{user_id}"
+
+    if period:
+        item = table.get_item(Key={"PK": partition_key, "SK": f"WRAP#MONTH#{period}"}).get("Item")
+        if not item:
+            return _resp(404, {"error": "Monthly audit not found", "period": period})
+        return _resp(200, {"item": item})
+
+    response = table.query(
+        KeyConditionExpression=Key("PK").eq(partition_key) & Key("SK").begins_with("WRAP#MONTH#"),
+        ScanIndexForward=False,
+    )
+    items = response.get("Items", [])
+    while response.get("LastEvaluatedKey"):
+        response = table.query(
+            KeyConditionExpression=Key("PK").eq(partition_key) & Key("SK").begins_with("WRAP#MONTH#"),
+            ScanIndexForward=False,
+            ExclusiveStartKey=response["LastEvaluatedKey"],
+        )
+        items.extend(response.get("Items", []))
+    return _resp(200, {"items": items})
+
+
 
 # ── Lambda entry point ────────────────────────────────────────
 
@@ -2136,6 +2175,10 @@ def handler(event, context):
         # Route /roast-report
         if path.endswith("/roast-report"):
             return roast_report_handler(event)
+
+        # Route /monthly-wraps
+        if path.endswith("/monthly-wraps"):
+            return monthly_wraps_handler(event)
 
         # Route /migrate
         if path.endswith("/migrate"):

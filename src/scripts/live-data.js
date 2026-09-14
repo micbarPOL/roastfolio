@@ -129,6 +129,54 @@ function formatPortfolioUpdatedAtCET(updatedAt) {
 }
 window.formatPortfolioUpdatedAtCET = formatPortfolioUpdatedAtCET;
 
+function _safeNumber(value, fallback = 0) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? numeric : fallback;
+}
+
+function _formatSignedMoney(value) {
+    const numeric = _safeNumber(value, 0);
+    const abs = Math.abs(numeric);
+    const formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+    const prefix = numeric >= 0 ? '+' : '-';
+    return `${prefix}${formatter.format(abs)} PLN`;
+}
+
+function _formatSignedPct(value) {
+    const numeric = _safeNumber(value, 0);
+    return `${numeric >= 0 ? '+' : ''}${numeric.toFixed(1)}%`;
+}
+
+function _memoryLaneWalletRows(walletSummaries) {
+    if (!walletSummaries || typeof walletSummaries !== 'object') return [];
+
+    const entries = Object.entries(walletSummaries)
+        .filter(([name]) => name && name !== 'Summary')
+        .map(([name, row]) => ({
+            name,
+            total: _safeNumber(row && row.total, 0),
+            dailyPLN: _safeNumber(row && row.dailyPLN, 0),
+            dailyPct: _safeNumber(row && row.dailyPct, 0),
+        }))
+        .sort((a, b) => Math.abs(b.total) - Math.abs(a.total));
+
+    const summary = walletSummaries.Summary ? {
+        name: 'Total wallet',
+        total: _safeNumber(walletSummaries.Summary.total, 0),
+        dailyPLN: _safeNumber(walletSummaries.Summary.dailyPLN, 0),
+        dailyPct: _safeNumber(walletSummaries.Summary.dailyPct, 0),
+        isTotal: true,
+    } : null;
+
+    const rows = [];
+    if (summary) rows.push(summary);
+    rows.push(...entries.slice(0, 3).map(row => ({ ...row, isTotal: false })));
+    return rows.filter((row, index, list) => {
+        const first = list.findIndex(item => item.name === row.name);
+        return first === index;
+    });
+}
+
 /** Render a sarcastic Sheldon-style market commentary in the header. */
 function renderMarketCommentary(pct, benchmarkName) {
     const targets = Array.from(document.querySelectorAll('[data-market-commentary]'));

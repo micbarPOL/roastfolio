@@ -931,6 +931,14 @@
 
     <!-- Tab: History -->
     <main id="tab-history" class="tab-content">
+        <nav class="history-subnav" aria-label="Sekcje historii" role="tablist">
+            <button class="history-subnav-btn is-active" type="button" role="tab" aria-selected="true"
+                data-history-section="overview" onclick="setHistorySection('overview')">Przegląd</button>
+            <button class="history-subnav-btn" type="button" role="tab" aria-selected="false"
+                data-history-section="recaps" onclick="setHistorySection('recaps')">Podsumowania</button>
+        </nav>
+
+        <div id="history-overview-view">
         <section class="chart-container history-header-section">
             <div class="history-top-row">
                 <h2 class="history-main-title">Portfolio History</h2>
@@ -944,11 +952,11 @@
                     <button class="benchmark-range-btn wig-range-btn" data-history-range="1W" onclick="setHistoryRange('1W')">1W</button>
                 </div>
             </div>
-            <!-- Wallet selector buttons — populated by JS -->
             <div class="history-wallet-btns" id="history-wallet-btns" role="tablist" aria-label="Select portfolio"></div>
         </section>
 
-        <section class="chart-container">
+        <section id="historyOverviewPanel" class="chart-container">
+            <div id="historyOverviewDummyCards" class="dummy-history-grid" aria-live="polite"></div>
             <div class="chart-wrapper" style="height:360px;"><canvas id="investmentChart"></canvas></div>
         </section>
 
@@ -1012,6 +1020,11 @@
             </div>
             <!-- Selector panel — shown when picker btn is clicked -->
             <div class="bm-vs-panel" id="bm-vs-panel" hidden></div>
+        </section>
+        </div>
+
+        <section id="history-recaps-view" class="monthly-audit-shell" aria-live="polite" hidden>
+            <div id="monthly-audit-root"></div>
         </section>
     </main>
 
@@ -1731,6 +1744,7 @@
     <script src="scripts/statistics.js?v=20260702b"></script>
     <script src="scripts/transactions.js?v=20260702a"></script>
     <script src="scripts/chart.js?v=20260625b"></script>
+    <script src="scripts/monthly-audit.js?v=20260914a"></script>
     <script src="scripts/benchmark-chart.js?v=20260720a"></script>
     <script src="scripts/analysis.js?v=20260625a"></script>
 
@@ -1844,6 +1858,265 @@
                     _renderDiaryTagPalette();
                     _renderDiaryNotes();
                 });
+            }
+        }
+
+        function drawTopographicalLake(canvasId, drawdownPoints) {
+            const container = document.getElementById(canvasId);
+            if (!container) return;
+
+            const points = Array.isArray(drawdownPoints) && drawdownPoints.length ? drawdownPoints : [0, -2, -5, -8, -12, -9, -6, -3, 0];
+            const width = 260;
+            const height = 150;
+            const leftPad = 10;
+            const rightPad = 10;
+            const topPad = 18;
+            const bottomPad = 22;
+            const minValue = Math.min(...points, 0);
+            const maxValue = 0;
+            const span = Math.abs(minValue - maxValue) || 1;
+            const gradientId = `lakeGradient-${Math.random().toString(16).slice(2)}`;
+
+            const lakePath = points.map((point, idx) => {
+                const x = leftPad + (idx / (points.length - 1)) * (width - leftPad - rightPad);
+                const y = topPad + (Math.abs(point - maxValue) / span) * (height - topPad - bottomPad);
+                return `${idx === 0 ? 'M' : 'L'} ${x} ${y}`;
+            }).join(' ');
+
+            const bucketBottom = `L ${width - rightPad} ${height - bottomPad} L ${leftPad} ${height - bottomPad} Z`;
+            const deepest = Math.min(...points);
+            const deepestIndex = points.indexOf(deepest);
+            const deepestX = leftPad + (deepestIndex / (points.length - 1)) * (width - leftPad - rightPad);
+            const deepestY = topPad + (Math.abs(deepest - maxValue) / span) * (height - topPad - bottomPad);
+
+            let widestStart = 0;
+            let widestLen = 0;
+            let currentStart = 0;
+            let currentLen = 0;
+            for (let i = 0; i < points.length; i += 1) {
+                if (points[i] < 0) {
+                    if (currentLen === 0) currentStart = i;
+                    currentLen += 1;
+                } else {
+                    if (currentLen > widestLen) {
+                        widestLen = currentLen;
+                        widestStart = currentStart;
+                    }
+                    currentLen = 0;
+                }
+            }
+            if (currentLen > widestLen) {
+                widestLen = currentLen;
+                widestStart = currentStart;
+            }
+
+            const widestLeftX = leftPad + (widestStart / (points.length - 1)) * (width - leftPad - rightPad);
+            const widestRightX = leftPad + ((widestStart + widestLen - 1) / (points.length - 1)) * (width - leftPad - rightPad);
+            const bracketY = height - bottomPad + 8;
+
+            container.innerHTML = `
+                <svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" role="img" aria-label="Yearly drawdown lake visualization" style="width:100%;height:100%;display:block;">
+                    <defs>
+                        <linearGradient id="${gradientId}" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(255,255,255,0)" />
+                            <stop offset="25%" stop-color="rgba(103,232,249,0.18)" />
+                            <stop offset="100%" stop-color="rgba(56,189,248,0.5)" />
+                        </linearGradient>
+                        <filter id="lakeGlow-${gradientId}" x="-20%" y="-20%" width="140%" height="160%">
+                            <feGaussianBlur stdDeviation="5" result="blur"/>
+                            <feMerge>
+                                <feMergeNode in="blur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <line x1="${leftPad}" y1="${topPad}" x2="${width - rightPad}" y2="${topPad}" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
+                    <path d="${lakePath} ${bucketBottom}" fill="url(#${gradientId})" filter="url(#lakeGlow-${gradientId})" opacity="0.95"></path>
+                    <path d="${lakePath}" fill="none" stroke="rgba(125, 211, 252, 0.9)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <line x1="${deepestX}" y1="${deepestY}" x2="${deepestX}" y2="${deepestY + 16}" stroke="rgba(125,211,252,0.9)" stroke-dasharray="4 4" stroke-width="1.2"></line>
+                    <text x="${deepestX + 8}" y="${deepestY - 10}" fill="#dbeafe" font-size="11" font-weight="700">Deepest Lake</text>
+                    <text x="${deepestX + 8}" y="${deepestY + 10}" fill="#dbeafe" font-size="10">${deepest.toFixed(0)}%</text>
+                    <line x1="${widestLeftX}" y1="${bracketY}" x2="${widestRightX}" y2="${bracketY}" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"></line>
+                    <line x1="${widestLeftX}" y1="${bracketY - 9}" x2="${widestLeftX}" y2="${bracketY + 9}" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"></line>
+                    <line x1="${widestRightX}" y1="${bracketY - 9}" x2="${widestRightX}" y2="${bracketY + 9}" stroke="rgba(255,255,255,0.35)" stroke-width="1.5"></line>
+                    <rect x="${widestLeftX + 2}" y="${bracketY - 22}" width="${Math.max(widestRightX - widestLeftX - 4, 50)}" height="16" rx="8" fill="rgba(15,23,42,0.44)" stroke="rgba(255,255,255,0.12)"></rect>
+                    <text x="${(widestLeftX + widestRightX) / 2}" y="${bracketY - 9}" fill="#e2e8f0" font-size="9" text-anchor="middle">Widest Lake ${widestLen}d</text>
+                </svg>
+            `;
+        }
+
+        function drawCarryAndDragSVG(containerId, carryName, carryPct, dragName, dragPct) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const safeCarry = Number.isFinite(Number(carryPct)) ? Number(carryPct) : 12.4;
+            const safeDrag = Number.isFinite(Number(dragPct)) ? Number(dragPct) : -8.1;
+            const carryAbs = Math.max(Math.abs(safeCarry), 1);
+            const dragAbs = Math.max(Math.abs(safeDrag), 1);
+            const maxAbs = Math.max(carryAbs, dragAbs, 1);
+            const centerX = 160;
+            const leftBase = 40;
+            const rightBase = 280;
+            const carryWidth = (Math.abs(safeCarry) / maxAbs) * 100;
+            const dragWidth = (Math.abs(safeDrag) / maxAbs) * 100;
+            const carryEnd = centerX + (carryWidth / 100) * (rightBase - centerX);
+            const dragEnd = centerX - (dragWidth / 100) * (centerX - leftBase);
+            const carryLabelX = carryEnd + 8;
+            const dragLabelX = dragEnd - 8;
+
+            container.innerHTML = `
+                <svg viewBox="0 0 320 74" preserveAspectRatio="none" role="img" aria-label="Carry and drag performance comparison" style="width:100%;height:100%;display:block;">
+                    <line x1="160" y1="32" x2="160" y2="58" stroke="rgba(255,255,255,0.28)" stroke-width="1.4"/>
+                    <line x1="${leftBase}" y1="32" x2="${rightBase}" y2="32" stroke="rgba(255,255,255,0.12)" stroke-width="10" stroke-linecap="round"/>
+                    <line x1="${centerX}" y1="32" x2="${carryEnd}" y2="32" stroke="#10B981" stroke-width="10" stroke-linecap="round"/>
+                    <line x1="${centerX}" y1="32" x2="${dragEnd}" y2="32" stroke="#EF4444" stroke-width="10" stroke-linecap="round"/>
+                    <circle cx="${centerX}" cy="32" r="6" fill="rgba(148,163,184,0.9)"/>
+                    <text x="${carryLabelX}" y="25" fill="#d1fae5" font-size="11" font-weight="700">${carryName}</text>
+                    <text x="${carryLabelX}" y="43" fill="#d1fae5" font-size="10">+${Number(safeCarry).toFixed(1)}%</text>
+                    <text x="${dragLabelX}" y="25" fill="#fecaca" font-size="11" font-weight="700" text-anchor="end">${dragName}</text>
+                    <text x="${dragLabelX}" y="43" fill="#fecaca" font-size="10" text-anchor="end">${Number(safeDrag).toFixed(1)}%</text>
+                </svg>
+            `;
+        }
+
+        function drawRadialGoal(containerId, currentDeposited, targetGoal) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const current = Number(currentDeposited) || 0;
+            const target = Number(targetGoal) || 1;
+            const progress = Math.min(Math.max(current / target, 0), 1);
+            const size = 120;
+            const radius = 44;
+            const circumference = 2 * Math.PI * radius;
+            const strokeOffset = circumference * (1 - progress);
+            const percent = Math.round((progress || 0) * 100);
+
+            container.innerHTML = `
+                <svg viewBox="0 0 ${size} ${size}" role="img" aria-label="Monthly deposit goal gauge" style="width:100%;height:100%;display:block;">
+                    <defs>
+                        <linearGradient id="goalGradient" x1="0" x2="1" y1="0" y2="1">
+                            <stop offset="0%" stop-color="#A855F7" />
+                            <stop offset="100%" stop-color="#10B981" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="60" cy="60" r="${radius}" fill="none" stroke="rgba(148,163,184,0.18)" stroke-width="12"/>
+                    <circle class="goal-ring-arc" cx="60" cy="60" r="${radius}" fill="none" stroke="url(#goalGradient)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${strokeOffset}" transform="rotate(-90 60 60)" style="transition: stroke-dashoffset 1.25s ease;"/>
+                    <text x="60" y="58" text-anchor="middle" fill="#f8fafc" font-size="20" font-weight="800">${percent}%</text>
+                    <text x="60" y="76" text-anchor="middle" fill="rgba(191,219,254,0.8)" font-size="8.5">PLN deposited</text>
+                </svg>
+            `;
+        }
+
+        function _renderLocalHistoryDummyCards() {
+            const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+            if (!isLocal) return;
+
+            const overviewWrap = document.getElementById('historyOverviewDummyCards');
+            const benchmarkWrap = document.getElementById('historyBenchmarkDummyCards');
+            const recapCarousel = document.getElementById('recapCarousel');
+
+            if (overviewWrap) {
+                overviewWrap.innerHTML = `
+                    <article class="recap-card is-active">
+                        <div class="recap-card-top"><span class="recap-badge">Portfolio value</span><span class="recap-micro">Live mock</span></div>
+                        <div class="recap-wallet-list">
+                            <div class="recap-wallet-row"><span>Total value</span><div class="recap-wallet-metrics"><span data-private-value="2100000" data-original-value="2,100,000 PLN">2,100,000 PLN</span><strong>+12.4%</strong></div></div>
+                            <div class="recap-wallet-row"><span>Monthly gain</span><div class="recap-wallet-metrics"><span data-private-value="98000" data-original-value="98,000 PLN">98,000 PLN</span><strong>+4.8%</strong></div></div>
+                            <div class="recap-wallet-row"><span>Benchmark gap</span><div class="recap-wallet-metrics"><span data-private-value="23000" data-original-value="23,000 PLN">23,000 PLN</span><strong>+1.9%</strong></div></div>
+                        </div>
+                    </article>
+                    <article class="recap-card is-active">
+                        <div class="recap-card-top"><span class="recap-badge accent">Return quality</span><span class="recap-micro">Last 30 days</span></div>
+                        <div class="recap-wallet-list">
+                            <div class="recap-wallet-row"><span>Summary</span><div class="recap-wallet-metrics"><span data-private-value="84000" data-original-value="84,000 PLN">84,000 PLN</span><strong>+8.2%</strong></div></div>
+                            <div class="recap-wallet-row"><span>WIG</span><div class="recap-wallet-metrics"><span data-private-value="52000" data-original-value="52,000 PLN">52,000 PLN</span><strong>+6.4%</strong></div></div>
+                            <div class="recap-wallet-row"><span>MSCI</span><div class="recap-wallet-metrics"><span data-private-value="64000" data-original-value="64,000 PLN">64,000 PLN</span><strong>+7.1%</strong></div></div>
+                        </div>
+                    </article>
+                `;
+            }
+
+            if (benchmarkWrap) {
+                benchmarkWrap.innerHTML = `
+                    <article class="recap-card is-active">
+                        <div class="recap-card-top"><span class="recap-badge">Benchmark score</span><span class="recap-micro">Last 12m</span></div>
+                        <div class="recap-benchmark-grid">
+                            <div><span>WIG</span><strong>+15.6%</strong></div>
+                            <div><span>MSCI</span><strong>+18.1%</strong></div>
+                            <div><span>SP500</span><strong>+19.4%</strong></div>
+                            <div><span>NASDAQ</span><strong>+21.9%</strong></div>
+                        </div>
+                    </article>
+                    <article class="recap-card is-active">
+                        <div class="recap-card-top"><span class="recap-badge accent">Trend check</span><span class="recap-micro">Relative</span></div>
+                        <div class="recap-wallet-list">
+                            <div class="recap-wallet-row"><span>Portfolio</span><div class="recap-wallet-metrics"><span data-private-value="135000" data-original-value="135,000 PLN">135,000 PLN</span><strong>+9.7%</strong></div></div>
+                            <div class="recap-wallet-row"><span>Vs. WIG</span><div class="recap-wallet-metrics"><span data-private-value="26000" data-original-value="26,000 PLN">26,000 PLN</span><strong>+2.3%</strong></div></div>
+                            <div class="recap-wallet-row"><span>Vs. MSCI</span><div class="recap-wallet-metrics"><span data-private-value="32000" data-original-value="32,000 PLN">32,000 PLN</span><strong>+3.1%</strong></div></div>
+                        </div>
+                    </article>
+                `;
+            }
+
+            if (recapCarousel) {
+                recapCarousel.innerHTML = `
+                    <article class="recap-card is-active" data-recap-card>
+                        <div class="recap-card-top">
+                            <span class="recap-badge">Weekly Triage</span>
+                            <span class="recap-micro">Last 7 days</span>
+                        </div>
+                        <div class="recap-wallet-list">
+                            <div class="recap-wallet-row"><span>Emerytura</span><div class="recap-wallet-metrics"><span data-private-value="1490" data-original-value="+1,490 PLN">+1,490 PLN</span><strong>+4.8%</strong></div></div>
+                            <div class="recap-wallet-row"><span>XTB</span><div class="recap-wallet-metrics"><span data-private-value="-340" data-original-value="-340 PLN">-340 PLN</span><strong>-1.2%</strong></div></div>
+                            <div class="recap-wallet-row"><span>IKZE</span><div class="recap-wallet-metrics"><span data-private-value="980" data-original-value="+980 PLN">+980 PLN</span><strong>+6.3%</strong></div></div>
+                        </div>
+                        <div class="recap-benchmark-grid">
+                            <div><span>WIG</span><strong>+2.1%</strong></div>
+                            <div><span>MSCI</span><strong>+3.4%</strong></div>
+                            <div><span>NASDAQ</span><strong>+5.0%</strong></div>
+                            <div><span>SP500</span><strong>+2.7%</strong></div>
+                        </div>
+                        <div class="carry-drag-block">
+                            <div class="mini-meter"><label>Carry</label><div class="mini-meter-track"><span style="height:72%"></span></div></div>
+                            <div class="mini-meter"><label>Drag</label><div class="mini-meter-track red"><span style="height:54%"></span></div></div>
+                        </div>
+                    </article>
+                    <article class="recap-card" data-recap-card>
+                        <div class="recap-card-top">
+                            <span class="recap-badge accent">Monthly Audit</span>
+                            <span class="recap-micro">Deposit goal</span>
+                        </div>
+                        <div class="goal-progress">
+                            <div class="goal-label-row"><span>Monthly deposit goal</span><strong data-private-value="750" data-original-value="750 / 1,000 PLN">750 / 1,000 PLN</strong></div>
+                            <div class="goal-progress-track"><span style="width:75%"></span></div>
+                        </div>
+                        <div id="monthlyGoalGauge" class="goal-ring-wrap" aria-label="Monthly goal gauge"></div>
+                        <div class="hypothesis-grid">
+                            <div class="hypothesis-col success"><h4>Verified</h4><ul><li>✔ DAX thesis held</li><li>✔ ETF rotation before rate cut</li></ul></div>
+                            <div class="hypothesis-col warning"><h4>Falsified</h4><ul><li>⚠ Soft landing call</li></ul></div>
+                            <div class="hypothesis-col danger"><h4>Overdue</h4><ul><li>● Rebalance check pending</li></ul></div>
+                        </div>
+                    </article>
+                    <article class="recap-card" data-recap-card>
+                        <div class="recap-card-top">
+                            <span class="recap-badge glow">Yearly Holo Deck</span>
+                            <span class="recap-micro">Archetype</span>
+                        </div>
+                        <div class="holo-deck">
+                            <div class="archetype-card">
+                                <div class="archetype-orb archetype-orb-purple"></div>
+                                <div class="archetype-copy"><span>Archetype</span><strong>ETF Monk</strong></div>
+                            </div>
+                            <div id="yearlyLakeVisual" class="lake-map" aria-label="Drawdown lake map"></div>
+                            <div id="carryDragVisual" class="carry-drag-visual" aria-label="Carry and drag chart"></div>
+                            <div class="cemetery-grid">
+                                <div><span>Cemetery</span><strong>+18.4%</strong></div>
+                                <div><span>Paper</span><strong>+11.6%</strong></div>
+                            </div>
+                        </div>
+                    </article>
+                `;
             }
         }
 
@@ -2392,6 +2665,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             refreshDiaryEmptyGraphic();
             initCopingDiary();
+            _renderLocalHistoryDummyCards();
+            if (typeof drawTopographicalLake === 'function') {
+                drawTopographicalLake('yearlyLakeVisual', [0, -1.2, -5.4, -12.1, -12.1, -3.2, 0]);
+            }
+            if (typeof drawCarryAndDragSVG === 'function') {
+                drawCarryAndDragSVG('carryDragVisual', 'Carry', 18.4, 'Drag', -9.1);
+            }
+            if (typeof drawRadialGoal === 'function') {
+                drawRadialGoal('monthlyGoalGauge', 750, 1000);
+            }
         });
         window.addEventListener('roastfolio:themechange', refreshDiaryEmptyGraphic);
         function showHoldingsTab(contentId, btn, fromObserver = false) {

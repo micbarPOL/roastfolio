@@ -46,6 +46,9 @@ const NEVER_CACHE = [
     /cdn\.jsdelivr\.net/, /unpkg\.com/,
     /cognito-idp\./, /cognito\.amazonaws\.com/,
     /localhost/, /127\.0\.0\.1/,
+    /\/scripts\/config\.js$/,
+    /\/scripts\/auth-guard\.js$/,
+    /\/scripts\/auth\.js$/,
 ];
 
 function isNeverCached(url) {

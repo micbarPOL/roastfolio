@@ -13,6 +13,7 @@ class DashboardUiContractTests(unittest.TestCase):
         self.service_worker_js = (ROOT / "src" / "service-worker.js").read_text()
         self.user_profile_js = (ROOT / "src" / "scripts" / "user-profile.js").read_text()
         self.live_data_js = (ROOT / "src" / "scripts" / "live-data.js").read_text()
+        self.monthly_audit_js = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
 
     def test_basic_user_only_has_dashboard_portfolio_user_and_wallet_access(self):
         self.assertNotIn("id=\"manage-btn\"", self.index_html)
@@ -110,6 +111,14 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("margin-left: -24px;", self.main_css)
         self.assertIn("margin-bottom: -24px;", self.main_css)
         self.assertIn("window.MARKET_CAROUSEL", self.dashboard_js)
+
+    def test_monthly_audit_recaps_load_persisted_reports(self):
+        self.assertIn('data-history-section="recaps"', self.index_html)
+        self.assertIn('id="monthly-audit-root"', self.index_html)
+        self.assertIn("fetchJson('/monthly-wraps')", self.monthly_audit_js)
+        self.assertIn("window.selectMonthlyAuditPeriod", self.monthly_audit_js)
+        self.assertIn("flowsCard(item)", self.monthly_audit_js)
+        self.assertIn("diaryCard(item)", self.monthly_audit_js)
 
     def test_benchmark_chart_can_reset_to_smart_range(self):
         wig_chart_js = (ROOT / "src" / "scripts" / "wig-chart.js").read_text()

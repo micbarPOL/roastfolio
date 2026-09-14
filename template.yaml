@@ -537,6 +537,12 @@ Resources:
             Path: /roast-events
             Method: POST
             RestApiId: !Ref PricesApi
+        MonthlyWrapsGet:
+          Type: Api
+          Properties:
+            Path: /monthly-wraps
+            Method: GET
+            RestApiId: !Ref PricesApi
         WidgetGet:
           Type: Api
           Properties:
@@ -818,6 +824,78 @@ Resources:
         Arn: !GetAtt BenchmarkFunction.Arn
         RoleArn: !GetAtt BenchmarkScheduleRole.Arn
         Input: '{"action": "update"}'
+
+  MonthlyWrapFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !If [IsDev, dev-roastfolio-monthly-wrap, roastfolio-monthly-wrap]
+      CodeUri: lambda/
+      Handler: trigger_recalc.monthly_wrap_handler
+      Description: Compiles the preceding monthly audit for every Roastfolio user
+      Timeout: 900
+      MemorySize: 1024
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+          DATA_TABLE: !Ref DataTable
+          TRANSACTIONS_TABLE: !Ref TransactionsTable
+          SNAPSHOTS_TABLE: !Ref SnapshotsTable
+          RETIREMENT_PLANS_TABLE: !Ref RetirementPlansTable
+          DIARY_TABLE: !Ref DiaryTable
+          WRAPS_TABLE: !Ref DiaryTable
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Scan
+              Resource: !GetAtt UsersTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt DataTable.Arn
+                - !GetAtt TransactionsTable.Arn
+                - !GetAtt SnapshotsTable.Arn
+                - !GetAtt RetirementPlansTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:Query
+              Resource: !GetAtt DiaryTable.Arn
+
+  MonthlyWrapScheduleRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: scheduler.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeMonthlyWrapFunction
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !GetAtt MonthlyWrapFunction.Arn
+
+  MonthlyWrapSchedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: !If [IsDev, dev-roastfolio-monthly-wrap, roastfolio-monthly-wrap]
+      Description: Compile the preceding monthly audit on day one after daily snapshots
+      FlexibleTimeWindow:
+        Mode: 'OFF'
+      ScheduleExpression: cron(0 8 1 * ? *)
+      ScheduleExpressionTimezone: Europe/Warsaw
+      Target:
+        Arn: !GetAtt MonthlyWrapFunction.Arn
+        RoleArn: !GetAtt MonthlyWrapScheduleRole.Arn
+        Input: '{}'
 
   SnapshotFunction:
     Type: AWS::Serverless::Function
