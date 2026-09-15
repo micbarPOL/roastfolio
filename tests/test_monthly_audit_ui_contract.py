@@ -35,6 +35,8 @@ def test_monthly_audit_renders_six_required_cards_and_real_api_path():
     assert "fetchJson('/monthly-wraps')" in script
     assert "fetchJson(`/monthly-wraps?period=" in script
     assert "window.MONTHLY_WRAP_DATA" in script
+    assert "Nominal change" in script
+    assert "overall_nominal_change_pln" in script
     for number in range(1, 7):
         assert f"'{number:02d} ·" not in script
 

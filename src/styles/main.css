@@ -15182,6 +15182,12 @@ body.wallet-overlay-open {
     padding-bottom: 3px;
 }
 
+.monthly-audit-hero-metrics {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+}
+
 .monthly-audit-hero-result span {
     color: #94a3b8;
     font-size: 11px;
@@ -15193,6 +15199,10 @@ body.wallet-overlay-open {
     font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
     font-size: 25px;
 }
+
+.monthly-audit-hero-result.is-positive strong { color: #34d399; }
+.monthly-audit-hero-result.is-negative strong { color: #fb7185; }
+.monthly-audit-hero-result.is-neutral strong { color: #e2e8f0; }
 
 .monthly-audit-content {
     display: grid;
@@ -15708,6 +15718,12 @@ body.wallet-overlay-open {
     .monthly-audit-hero-result {
         justify-content: space-between;
         width: 100%;
+    }
+
+    .monthly-audit-hero-metrics {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
     }
 
     .monthly-audit-card {

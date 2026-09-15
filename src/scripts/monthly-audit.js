@@ -334,7 +334,10 @@
             ${timelineMarkup()}
             <header class="monthly-audit-hero">
                 <div><span>Monthly audit</span><h1>${escapeHtml(periodTitle)}</h1></div>
-                ${item ? `<div class="monthly-audit-hero-result ${tone(item.overall_twr_pct)}"><span>TWR result</span><strong>${escapeHtml(formatPct(item.overall_twr_pct, true))}</strong></div>` : ''}
+                ${item ? `<div class="monthly-audit-hero-metrics">
+                    <div class="monthly-audit-hero-result ${tone(item.overall_twr_pct)}"><span>TWR result</span><strong>${escapeHtml(formatPct(item.overall_twr_pct, true))}</strong></div>
+                    <div class="monthly-audit-hero-result ${tone(item.overall_nominal_change_pln)}"><span>Nominal change</span><strong>${escapeHtml(formatPLN(item.overall_nominal_change_pln, true))}</strong></div>
+                </div>` : ''}
             </header>
             <div class="monthly-audit-content">
                 ${item ? [flowsCard(item), extremesCard(item), seasonalityCard(item), retirementCard(item), carryCard(item), diaryCard(item)].join('') : renderEmpty(state.selectedPeriod)}
