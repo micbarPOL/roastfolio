@@ -1058,6 +1058,16 @@
       `;
     }).join('');
 
+    const sameWeekKey = (dateKey) => {
+      const base = new Date(`${dateKey}T12:00:00`);
+      if (Number.isNaN(base.getTime())) return null;
+      const diffToMonday = (base.getDay() + 6) % 7;
+      const monday = new Date(base);
+      monday.setDate(base.getDate() - diffToMonday);
+      monday.setHours(0, 0, 0, 0);
+      return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+    };
+
     const txMap = new Map();
     (txs || [])
       .filter((tx) => ['DEPOSIT', 'WITHDRAWAL'].includes(String(tx && tx.type || '').toUpperCase()))
@@ -1065,12 +1075,15 @@
         const dateKey = String(tx.transactionDate || tx.date || '').slice(0, 10);
         const amount = Math.abs(Number(tx.value ?? tx.amount ?? tx.total ?? 0) || 0);
         if (!dateKey || !amount) return;
-        const prior = txMap.get(dateKey) || { dateKey, total: 0, isDeposit: true };
+        const weekKey = sameWeekKey(dateKey);
+        if (!weekKey) return;
         const isDeposit = String(tx.type || '').toUpperCase() === 'DEPOSIT';
-        prior.total += isDeposit ? amount : -amount;
-        prior.isDeposit = prior.total >= 0;
+        const markerKey = `${weekKey}:${isDeposit ? 'deposit' : 'withdrawal'}`;
+        const prior = txMap.get(markerKey) || { dateKey, weekKey, total: 0, isDeposit };
+        prior.total += amount;
+        if (dateKey > prior.dateKey) prior.dateKey = dateKey;
         prior.label = isDeposit ? 'Deposit' : 'Withdrawal';
-        txMap.set(dateKey, prior);
+        txMap.set(markerKey, prior);
       });
 
     const eventMarkers = Array.from(txMap.values())
@@ -1091,9 +1104,9 @@
           left: Math.min(96, Math.max(4, left)),
           top: Math.min(92, Math.max(12, top)),
           label: tx.label || 'Cash flow',
-          isDeposit: tx.total >= 0,
-          total: Math.abs(tx.total),
-          dateLabel: tx.dateKey,
+          isDeposit: tx.isDeposit,
+          total: tx.total,
+          dateLabel: tx.weekKey,
         };
       })
       .filter(Boolean);
@@ -1407,6 +1420,8 @@
       const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
       const valueHistoryBody = document.getElementById('mgmt-value-history-body');
       const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
+      const holdingsWrap = document.querySelector('.wallet-table-wrap.wallet-table-wrap-stable');
+      if (holdingsWrap) holdingsWrap.classList.add('is-loading');
       _renderHoldingsSkeleton();
       if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
       if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
@@ -1487,6 +1502,8 @@
     try {
       return await _walletSelectionPromise;
     } finally {
+      const holdingsWrap = document.querySelector('.wallet-table-wrap.wallet-table-wrap-stable');
+      if (holdingsWrap) holdingsWrap.classList.remove('is-loading');
       if (_activePortId === lockKey) {
         _walletSelectionPromise = null;
       }

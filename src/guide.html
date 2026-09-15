@@ -1213,11 +1213,17 @@
     </ul>
 
     <h3 id="history-benchmarks">History &amp; Benchmarks</h3>
-    <p>The <strong>History</strong> screen visualizes your portfolio's performance over time. You can view the history for the combined <strong>Summary</strong> of all wallets, or filter down to a specific wallet using the selector.</p>
+    <p>The <strong>History</strong> screen visualizes your portfolio over time. You can inspect the combined <strong>Summary</strong> of all wallets or switch to an individual wallet using the wallet selector. The section is split into three tabs to make the story clearer:</p>
     <ul>
-      <li><strong>Performance Charts:</strong> View your Total Value, Daily PLN Change, and Daily % Change over time. The charts dynamically maintain high-fidelity <strong>daily datapoints</strong> for ranges up to 1 Year (e.g. YTD, 1Y) to ensure your All-Time High lines are perfectly aligned without downsampling artifacts.</li>
-      <li><strong>Return vs Benchmark:</strong> A dedicated chart calculates your Time-Weighted Return (TWR) using the <em>Modified Dietz</em> methodology. This prevents massive deposits or withdrawals from artificially distorting your percentage returns, allowing for an apples-to-apples comparison of your portfolio's raw market performance against benchmarks.</li>
-      <li><strong>Benchmarks:</strong> Compare your portfolio's returns against indices or assets. You can toggle between defaults like <strong>S&amp;P 500</strong>, <strong>MSCI World</strong>, and <strong>WIG20</strong>, or add <strong>custom benchmarks</strong> in your wallet settings using any valid Yahoo Finance ticker (e.g., <code>BTC-USD</code>).</li>
+      <li><strong>Overview:</strong> This is the main performance view. It shows the portfolio value curve, cumulative return, monthly net gains, and the daily PLN/% change charts. It is the place to review trend quality, drawdowns, and whether performance is improving or losing ground over a selected period.</li>
+      <li><strong>Memory Lane:</strong> This tab turns the last period into a compact recap story. You will find a set of recap cards summarizing recent performance, wallet contributions, benchmark context, deposit progress, and "carry vs drag" framing. It is designed to help you quickly understand what moved the portfolio and which wallets mattered most during the period.</li>
+      <li><strong>Benchmarks:</strong> This tab focuses on external comparison. You can compare portfolio performance against major indices and market benchmarks, review benchmark drift, and see how your portfolio stacks up against the market over the selected time range.</li>
+    </ul>
+    <p>Across the History screen, the app also keeps the benchmark comparison logic aligned with a clean portfolio return model:</p>
+    <ul>
+      <li><strong>Performance Charts:</strong> View your Total Value, Daily PLN Change, and Daily % Change over time. The charts maintain high-fidelity <strong>daily datapoints</strong> for ranges up to 1 Year (e.g. YTD, 1Y) to keep ATH lines and trend analysis accurate.</li>
+      <li><strong>Return vs Benchmark:</strong> A dedicated chart calculates your Time-Weighted Return (TWR) using the <em>Modified Dietz</em> methodology. This prevents large deposits or withdrawals from distorting the percentage picture, making the portfolio comparison fairer.</li>
+      <li><strong>Benchmark selection:</strong> Compare against indices or assets such as <strong>S&amp;P 500</strong>, <strong>MSCI World</strong>, and <strong>WIG20</strong>. If needed, you can also add <strong>custom benchmarks</strong> in wallet settings using valid Yahoo Finance tickers such as <code>BTC-USD</code>.</li>
     </ul>
 
     <h3 id="statistics-screen">Statistics</h3>

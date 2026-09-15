@@ -1062,6 +1062,20 @@ function setSparkMode(mode) {
     if (typeof renderDailyBreakdown === 'function') renderDailyBreakdown();
 }
 
+function makeSparklinePlaceholder(width, height, isUp) {
+    const lineColor = isUp ? '#34d399' : '#f87171';
+    const fillColor = isUp ? 'rgba(52, 211, 153, 0.12)' : 'rgba(248, 113, 113, 0.12)';
+    const strokeColor = isUp ? 'rgba(52, 211, 153, 0.5)' : 'rgba(248, 113, 113, 0.5)';
+
+    return `
+        <svg class="sparkline-svg sparkline-placeholder" width="${width}" height="${height}"
+            style="display:block;overflow:visible;flex-shrink:0;min-width:${width}px;">
+            <rect x="0" y="0" width="${width}" height="${height}" rx="8" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1" stroke-dasharray="4 6"/>
+            <path d="M6 ${height * 0.6} Q ${width * 0.25} ${height * 0.25}, ${width * 0.5} ${height * 0.52} T ${width - 6} ${height * 0.45}"
+                fill="none" stroke="${lineColor}" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+        </svg>`;
+}
+
 function makeSparkline(barPairs, isUp, width, height) {
     if (!barPairs || barPairs.length < 2) return '';
     const vals = barPairs.map(p => p[1]);
@@ -1357,7 +1371,9 @@ function renderDailyBreakdown() {
             const now = Date.now();
             barPairs = rawBars.map((v, i) => [now - (rawBars.length - 1 - i) * 60000, v]);
         }
-        const spark = makeSparkline(barPairs, isUp, isMobile ? 150 : 135, isMobile ? 40 : 36);
+        const spark = (Array.isArray(barPairs) && barPairs.length >= 2)
+            ? makeSparkline(barPairs, isUp, isMobile ? 150 : 135, isMobile ? 40 : 36)
+            : makeSparklinePlaceholder(isMobile ? 150 : 135, isMobile ? 40 : 36, isUp);
 
         if (isMobile) {
             const clickHandler = isCash ? '' : `onclick="window.openAnalysisForTicker('${ticker}')"`;

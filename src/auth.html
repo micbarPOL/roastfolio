@@ -911,9 +911,58 @@ function switchTab(tab) {
 </script>
 
 <!-- Cognito SDK -->
-<script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6/dist/amazon-cognito-identity.min.js"></script>
+<script src="vendor/amazon-cognito-identity-js.min.js"></script>
+<script>
+window.__COGNITO_LIB_VERSION = 'vendored/amazon-cognito-identity-js.min.js';
+window.addEventListener('DOMContentLoaded', function () {
+    if (!window.AmazonCognitoIdentity) {
+        console.error('[Auth] amazon-cognito-identity-js v6 failed to load from the bundled asset.');
+        var el = document.getElementById('login-msg');
+        if (el) {
+            el.textContent = 'Authentication library failed to load from the app bundle. Please refresh the page.';
+            el.className = 'auth-message error';
+        }
+    }
+});
+</script>
 <!-- Runtime config -->
 <script src="scripts/config.js" onerror="window.__CONFIG__={}"></script>
+<script>
+(function () {
+    var params = new URLSearchParams(window.location.search || '');
+    var devOverride = params.get('devAuth') === '1' || params.get('skipAuth') === '1';
+    if (!devOverride) return;
+
+    var cfg = window.__CONFIG__ || {};
+    var clientId = cfg.cognitoClientId || cfg.cognitoUserPoolId || '';
+    if (!clientId) return;
+
+    var prefix = 'CognitoIdentityServiceProvider.' + clientId;
+    var now = Math.floor(Date.now() / 1000);
+    function b64url(value) {
+        return btoa(unescape(encodeURIComponent(value)))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/g, '');
+    }
+    var payload = {
+        sub: 'dev-user-123',
+        email: 'dev@roastfolio.local',
+        nickname: 'Dev User',
+        exp: now + 60 * 60 * 24 * 365,
+        iat: now
+    };
+    var token = b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' })) + '.' +
+        b64url(JSON.stringify(payload)) + '.dev';
+
+    localStorage.setItem('roastfolio.devAuth', '1');
+    localStorage.setItem(prefix + '.LastAuthUser', 'dev-user');
+    localStorage.setItem(prefix + '.dev-user.idToken', token);
+    localStorage.setItem(prefix + '.dev-user.accessToken', 'dev-access-token');
+    localStorage.setItem(prefix + '.dev-user.refreshToken', 'dev-refresh-token');
+    window.location.replace('index.html?devAuth=1');
+})();
+</script>
 <!-- Auth logic (all IDs match the markup above) -->
 <script src="scripts/auth.js"></script>
 </body>

@@ -1,7 +1,7 @@
 /**
  * auth.js — Roastfolio Cognito authentication module
  *
- * Uses amazon-cognito-identity-js (CDN, UMD build).
+ * Uses amazon-cognito-identity-js from the app's vendored static bundle.
  * Library reference: https://github.com/aws-amplify/amplify-js/tree/main/packages/amazon-cognito-identity-js
  *
  * Supports:

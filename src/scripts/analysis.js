@@ -558,6 +558,7 @@
         // Show loader
         const loader = document.getElementById('analysis-loader');
         if (loader) loader.style.display = 'flex';
+        setFinancialsTableLoading(true);
 
         try {
             const params = new URLSearchParams({ ticker, period });
@@ -599,12 +600,14 @@
             };
             
             renderFinancialTables();
+            setFinancialsTableLoading(false);
             
             // Hide loader after chart is rendered
             if (loader) loader.style.display = 'none';
             
         } catch (e) {
             console.error('Asset analysis error:', e);
+            setFinancialsTableLoading(false);
             
             // Hide loader on error
             if (loader) loader.style.display = 'none';
@@ -642,6 +645,17 @@
             renderFinancialTable();
         } else {
             section.style.display = 'none';
+        }
+    }
+
+    function setFinancialsTableLoading(isLoading) {
+        const table = document.getElementById('analysis-financials-table');
+        if (!table) return;
+        table.style.opacity = isLoading ? '0.5' : '';
+        table.style.pointerEvents = isLoading ? 'none' : '';
+        const tbody = table.querySelector('tbody');
+        if (tbody && isLoading) {
+            tbody.innerHTML = '<tr><td colspan="100%" style="text-align:center;color:#888;padding:20px;">Loading financials…</td></tr>';
         }
     }
 

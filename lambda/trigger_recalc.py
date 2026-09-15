@@ -9,7 +9,7 @@ Rules implemented:
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import re
 
@@ -19,6 +19,7 @@ import db
 import diary_handler
 import portfolios
 import snapshots
+import wrap_generator
 
 
 _DEFAULT_REGION = os.environ.get("AWS_REGION", "us-west-2")
@@ -292,6 +293,57 @@ def sweep_user(user_id: str) -> dict:
         "copingTagsAdded": coping_tagged,
         "goalpostBadgesActivated": goalpost_badges,
         "activeFlagsSynced": active_flags_synced,
+    }
+
+
+def generate_previous_month_wraps(
+    now: datetime | None = None,
+    user_ids: list[str] | None = None,
+    force: bool = False,
+) -> list[dict]:
+    """Compile the preceding month's audit for every user on day one."""
+    run_at = now or datetime.now(timezone.utc)
+    if run_at.day != 1 and not force:
+        return []
+
+    previous_month_last_day = run_at.date().replace(day=1) - timedelta(days=1)
+    if user_ids is None:
+        table = boto3.resource("dynamodb").Table(os.environ["USERS_TABLE"])
+        response = table.scan(ProjectionExpression="userId")
+        users = response.get("Items", [])
+        while response.get("LastEvaluatedKey"):
+            response = table.scan(
+                ProjectionExpression="userId",
+                ExclusiveStartKey=response["LastEvaluatedKey"],
+            )
+            users.extend(response.get("Items", []))
+        user_ids = [str(item["userId"]) for item in users if item.get("userId")]
+
+    results = []
+    for user_id in user_ids:
+        try:
+            document = wrap_generator.generate_monthly_wrap(
+                user_id,
+                previous_month_last_day.year,
+                previous_month_last_day.month,
+            )
+            results.append({"userId": user_id, "period": document["period"], "status": "ok"})
+        except Exception as exc:
+            print(f"Monthly wrap failed for {user_id}: {exc}")
+            results.append({"userId": user_id, "period": previous_month_last_day.strftime("%Y-%m"), "status": "error", "error": str(exc)})
+    return results
+
+
+def monthly_wrap_handler(event, _context):
+    event = event or {}
+    as_of_raw = str(event.get("asOfDate") or "").strip()
+    run_at = datetime.fromisoformat(as_of_raw.replace("Z", "+00:00")) if as_of_raw else datetime.now(timezone.utc)
+    results = generate_previous_month_wraps(run_at, force=bool(event.get("force", False)))
+    return {
+        "statusCode": 200,
+        "generated": sum(result["status"] == "ok" for result in results),
+        "failed": sum(result["status"] == "error" for result in results),
+        "results": results,
     }
 
 

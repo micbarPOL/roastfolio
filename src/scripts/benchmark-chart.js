@@ -172,7 +172,7 @@ async function renderBenchmarkComparisonChart(force) {
     const canvas = document.getElementById(BM_CANVAS_ID);
     if (!canvas) return;
 
-    _showBmMessage('Loading comparison data\u2026');
+    _showBmLoading();
 
     try {
         // Load snapshot data and all selected benchmarks in parallel
@@ -431,6 +431,8 @@ async function renderBenchmarkComparisonChart(force) {
     } catch (err) {
         console.error('[benchmark-chart] Render error:', err);
         _showBmMessage('Failed to load comparison data.');
+    } finally {
+        _hideBmLoading();
     }
 }
 
@@ -440,8 +442,29 @@ function _destroyBmChart() {
     if (existing) existing.destroy();
 }
 
+function _showBmLoading() {
+    const canvas = document.getElementById(BM_CANVAS_ID);
+    if (!canvas) return;
+    const wrap = canvas.parentElement;
+    const loader = document.getElementById('benchmark-cl-loader');
+    if (loader) loader.style.display = 'flex';
+    if (canvas) canvas.style.display = 'none';
+    if (wrap) {
+        const el = wrap.querySelector('.bm-vs-empty');
+        if (el) el.style.display = 'none';
+    }
+}
+
+function _hideBmLoading() {
+    const loader = document.getElementById('benchmark-cl-loader');
+    if (loader) loader.style.display = 'none';
+    const canvas = document.getElementById(BM_CANVAS_ID);
+    if (canvas) canvas.style.display = '';
+}
+
 function _showBmMessage(msg) {
     _destroyBmChart();
+    _hideBmLoading();
     const canvas = document.getElementById(BM_CANVAS_ID);
     if (!canvas) return;
     canvas.style.display = 'none';
@@ -458,6 +481,7 @@ function _showBmMessage(msg) {
 }
 
 function _clearBmMessage() {
+    _hideBmLoading();
     const canvas = document.getElementById(BM_CANVAS_ID);
     if (!canvas) return;
     canvas.style.display = '';
