@@ -152,6 +152,7 @@ def _extremes(items: list[dict], transactions: list[dict], start: date, next_mon
             "start_drawdown_pct": ZERO,
             "end_drawdown_pct": ZERO,
             "trajectory_delta_pp": ZERO,
+            "drawdown_trajectory_pct": [],
             "best_day": None,
             "worst_day": None,
         }
@@ -214,6 +215,7 @@ def _extremes(items: list[dict], transactions: list[dict], start: date, next_mon
         "start_drawdown_pct": _pct(start_drawdown),
         "end_drawdown_pct": _pct(end_drawdown),
         "trajectory_delta_pp": _pct(end_drawdown - start_drawdown),
+        "drawdown_trajectory_pct": [_pct(drawdown) for _, drawdown in month_drawdowns],
         "best_day": best_day,
         "worst_day": worst_day,
     }

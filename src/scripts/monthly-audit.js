@@ -159,19 +159,28 @@
             </div>`;
     }
 
-    function trajectoryVisual(start, end) {
-        const startDepth = Math.abs(number(start));
-        const endDepth = Math.abs(number(end));
-        const scale = Math.max(startDepth, endDepth, 1);
-        const startY = 8 + (startDepth / scale) * 28;
-        const endY = 8 + (endDepth / scale) * 28;
-        const line = `M4 ${startY} C38 ${startY}, 78 ${endY}, 116 ${endY}`;
+    function trajectoryVisual(series, start, end) {
+        const values = Array.isArray(series) && series.length >= 2
+            ? series.map(value => number(value))
+            : [number(start), number(end)];
+        const depths = values.map(value => Math.abs(value));
+        const scale = Math.max(...depths, 1);
+        const step = values.length > 1 ? 112 / (values.length - 1) : 0;
+        const points = values.map((value, index) => ({
+            x: 4 + (step * index),
+            y: 8 + (Math.abs(value) / scale) * 28,
+        }));
+        const line = points.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(' ');
+        const first = points[0];
+        const last = points[points.length - 1];
+        const lastX = last ? last.x.toFixed(2) : '116';
+        const lake = `M4 5 L${points.map(point => `${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(' L')} L${lastX} 5 Z`;
         return `
             <svg class="monthly-audit-trajectory" viewBox="0 0 120 44" aria-hidden="true">
                 <path class="trajectory-baseline" d="M4 5 H116" />
-                <path class="trajectory-lake" d="M4 5 L4 ${startY} C38 ${startY}, 78 ${endY}, 116 ${endY} L116 5 Z" />
+                <path class="trajectory-lake" d="${lake}" />
                 <path class="trajectory-line" d="${line}" />
-                <circle cx="4" cy="${startY}" r="2.5"/><circle cx="116" cy="${endY}" r="2.5"/>
+                <circle cx="${first.x.toFixed(2)}" cy="${first.y.toFixed(2)}" r="2.5"/><circle cx="${last.x.toFixed(2)}" cy="${last.y.toFixed(2)}" r="2.5"/>
             </svg>`;
     }
 
@@ -234,7 +243,7 @@
                 ${stat('ATH status', athValue, athDetail, item.is_new_ath ? 'is-ath' : '')}
                 ${stat('Days since ATH', item.days_since_ath == null ? 'No data' : `${number(item.days_since_ath)} days`, 'State at month end')}
                 ${stat('Max drawdown', formatPct(item.max_drawdown_pct), formatDate(item.max_drawdown_date), 'is-danger')}
-                ${stat('Drawdown trajectory', `${formatPct(item.start_drawdown_pct)} → ${formatPct(item.end_drawdown_pct)}`, `${delta > 0 ? '+' : ''}${delta.toLocaleString('en-GB', { maximumFractionDigits: 2 })} pp`, tone(delta), trajectoryVisual(item.start_drawdown_pct, item.end_drawdown_pct))}
+                ${stat('Drawdown trajectory', `${formatPct(item.start_drawdown_pct)} → ${formatPct(item.end_drawdown_pct)}`, `${delta > 0 ? '+' : ''}${delta.toLocaleString('en-GB', { maximumFractionDigits: 2 })} pp`, tone(delta), trajectoryVisual(item.drawdown_trajectory_pct, item.start_drawdown_pct, item.end_drawdown_pct))}
                 ${stat('Best day', formatPLN(item.best_day?.change_pln, true), formatDate(item.best_day?.date), 'is-positive')}
                 ${stat('Worst day', formatPLN(item.worst_day?.change_pln), formatDate(item.worst_day?.date), 'is-negative')}
             </div>`;
