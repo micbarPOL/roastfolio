@@ -12,6 +12,14 @@ def test_history_contains_podsumowania_subtab_and_monthly_audit_mount():
     assert 'scripts/monthly-audit.js' in html
 
 
+def test_history_does_not_restore_local_memory_lane_mocks():
+    html = (ROOT / "src" / "index.html").read_text()
+    assert "_renderLocalHistoryDummyCards" not in html
+    assert "historyOverviewDummyCards" not in html
+    assert "historyBenchmarkDummyCards" not in html
+    assert "recapCarousel" not in html
+
+
 def test_monthly_audit_renders_six_required_cards_and_real_api_path():
     script = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
     expected_titles = {

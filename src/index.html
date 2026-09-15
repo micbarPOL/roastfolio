@@ -956,7 +956,6 @@
         </section>
 
         <section id="historyOverviewPanel" class="chart-container">
-            <div id="historyOverviewDummyCards" class="dummy-history-grid" aria-live="polite"></div>
             <div class="chart-wrapper" style="height:360px;"><canvas id="investmentChart"></canvas></div>
         </section>
 
@@ -2008,118 +2007,6 @@
             `;
         }
 
-        function _renderLocalHistoryDummyCards() {
-            const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-            if (!isLocal) return;
-
-            const overviewWrap = document.getElementById('historyOverviewDummyCards');
-            const benchmarkWrap = document.getElementById('historyBenchmarkDummyCards');
-            const recapCarousel = document.getElementById('recapCarousel');
-
-            if (overviewWrap) {
-                overviewWrap.innerHTML = `
-                    <article class="recap-card is-active">
-                        <div class="recap-card-top"><span class="recap-badge">Portfolio value</span><span class="recap-micro">Live mock</span></div>
-                        <div class="recap-wallet-list">
-                            <div class="recap-wallet-row"><span>Total value</span><div class="recap-wallet-metrics"><span data-private-value="2100000" data-original-value="2,100,000 PLN">2,100,000 PLN</span><strong>+12.4%</strong></div></div>
-                            <div class="recap-wallet-row"><span>Monthly gain</span><div class="recap-wallet-metrics"><span data-private-value="98000" data-original-value="98,000 PLN">98,000 PLN</span><strong>+4.8%</strong></div></div>
-                            <div class="recap-wallet-row"><span>Benchmark gap</span><div class="recap-wallet-metrics"><span data-private-value="23000" data-original-value="23,000 PLN">23,000 PLN</span><strong>+1.9%</strong></div></div>
-                        </div>
-                    </article>
-                    <article class="recap-card is-active">
-                        <div class="recap-card-top"><span class="recap-badge accent">Return quality</span><span class="recap-micro">Last 30 days</span></div>
-                        <div class="recap-wallet-list">
-                            <div class="recap-wallet-row"><span>Summary</span><div class="recap-wallet-metrics"><span data-private-value="84000" data-original-value="84,000 PLN">84,000 PLN</span><strong>+8.2%</strong></div></div>
-                            <div class="recap-wallet-row"><span>WIG</span><div class="recap-wallet-metrics"><span data-private-value="52000" data-original-value="52,000 PLN">52,000 PLN</span><strong>+6.4%</strong></div></div>
-                            <div class="recap-wallet-row"><span>MSCI</span><div class="recap-wallet-metrics"><span data-private-value="64000" data-original-value="64,000 PLN">64,000 PLN</span><strong>+7.1%</strong></div></div>
-                        </div>
-                    </article>
-                `;
-            }
-
-            if (benchmarkWrap) {
-                benchmarkWrap.innerHTML = `
-                    <article class="recap-card is-active">
-                        <div class="recap-card-top"><span class="recap-badge">Benchmark score</span><span class="recap-micro">Last 12m</span></div>
-                        <div class="recap-benchmark-grid">
-                            <div><span>WIG</span><strong>+15.6%</strong></div>
-                            <div><span>MSCI</span><strong>+18.1%</strong></div>
-                            <div><span>SP500</span><strong>+19.4%</strong></div>
-                            <div><span>NASDAQ</span><strong>+21.9%</strong></div>
-                        </div>
-                    </article>
-                    <article class="recap-card is-active">
-                        <div class="recap-card-top"><span class="recap-badge accent">Trend check</span><span class="recap-micro">Relative</span></div>
-                        <div class="recap-wallet-list">
-                            <div class="recap-wallet-row"><span>Portfolio</span><div class="recap-wallet-metrics"><span data-private-value="135000" data-original-value="135,000 PLN">135,000 PLN</span><strong>+9.7%</strong></div></div>
-                            <div class="recap-wallet-row"><span>Vs. WIG</span><div class="recap-wallet-metrics"><span data-private-value="26000" data-original-value="26,000 PLN">26,000 PLN</span><strong>+2.3%</strong></div></div>
-                            <div class="recap-wallet-row"><span>Vs. MSCI</span><div class="recap-wallet-metrics"><span data-private-value="32000" data-original-value="32,000 PLN">32,000 PLN</span><strong>+3.1%</strong></div></div>
-                        </div>
-                    </article>
-                `;
-            }
-
-            if (recapCarousel) {
-                recapCarousel.innerHTML = `
-                    <article class="recap-card is-active" data-recap-card>
-                        <div class="recap-card-top">
-                            <span class="recap-badge">Weekly Triage</span>
-                            <span class="recap-micro">Last 7 days</span>
-                        </div>
-                        <div class="recap-wallet-list">
-                            <div class="recap-wallet-row"><span>Emerytura</span><div class="recap-wallet-metrics"><span data-private-value="1490" data-original-value="+1,490 PLN">+1,490 PLN</span><strong>+4.8%</strong></div></div>
-                            <div class="recap-wallet-row"><span>XTB</span><div class="recap-wallet-metrics"><span data-private-value="-340" data-original-value="-340 PLN">-340 PLN</span><strong>-1.2%</strong></div></div>
-                            <div class="recap-wallet-row"><span>IKZE</span><div class="recap-wallet-metrics"><span data-private-value="980" data-original-value="+980 PLN">+980 PLN</span><strong>+6.3%</strong></div></div>
-                        </div>
-                        <div class="recap-benchmark-grid">
-                            <div><span>WIG</span><strong>+2.1%</strong></div>
-                            <div><span>MSCI</span><strong>+3.4%</strong></div>
-                            <div><span>NASDAQ</span><strong>+5.0%</strong></div>
-                            <div><span>SP500</span><strong>+2.7%</strong></div>
-                        </div>
-                        <div class="carry-drag-block">
-                            <div class="mini-meter"><label>Carry</label><div class="mini-meter-track"><span style="height:72%"></span></div></div>
-                            <div class="mini-meter"><label>Drag</label><div class="mini-meter-track red"><span style="height:54%"></span></div></div>
-                        </div>
-                    </article>
-                    <article class="recap-card" data-recap-card>
-                        <div class="recap-card-top">
-                            <span class="recap-badge accent">Monthly Audit</span>
-                            <span class="recap-micro">Deposit goal</span>
-                        </div>
-                        <div class="goal-progress">
-                            <div class="goal-label-row"><span>Monthly deposit goal</span><strong data-private-value="750" data-original-value="750 / 1,000 PLN">750 / 1,000 PLN</strong></div>
-                            <div class="goal-progress-track"><span style="width:75%"></span></div>
-                        </div>
-                        <div id="monthlyGoalGauge" class="goal-ring-wrap" aria-label="Monthly goal gauge"></div>
-                        <div class="hypothesis-grid">
-                            <div class="hypothesis-col success"><h4>Verified</h4><ul><li>✔ DAX thesis held</li><li>✔ ETF rotation before rate cut</li></ul></div>
-                            <div class="hypothesis-col warning"><h4>Falsified</h4><ul><li>⚠ Soft landing call</li></ul></div>
-                            <div class="hypothesis-col danger"><h4>Overdue</h4><ul><li>● Rebalance check pending</li></ul></div>
-                        </div>
-                    </article>
-                    <article class="recap-card" data-recap-card>
-                        <div class="recap-card-top">
-                            <span class="recap-badge glow">Yearly Holo Deck</span>
-                            <span class="recap-micro">Archetype</span>
-                        </div>
-                        <div class="holo-deck">
-                            <div class="archetype-card">
-                                <div class="archetype-orb archetype-orb-purple"></div>
-                                <div class="archetype-copy"><span>Archetype</span><strong>ETF Monk</strong></div>
-                            </div>
-                            <div id="yearlyLakeVisual" class="lake-map" aria-label="Drawdown lake map"></div>
-                            <div id="carryDragVisual" class="carry-drag-visual" aria-label="Carry and drag chart"></div>
-                            <div class="cemetery-grid">
-                                <div><span>Cemetery</span><strong>+18.4%</strong></div>
-                                <div><span>Paper</span><strong>+11.6%</strong></div>
-                            </div>
-                        </div>
-                    </article>
-                `;
-            }
-        }
-
         function _chooseDiaryEmptyGraphic(theme) {
             const darkCandidates = [
                 'data/diary/coping-diary-empty.png',
@@ -2665,7 +2552,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             refreshDiaryEmptyGraphic();
             initCopingDiary();
-            _renderLocalHistoryDummyCards();
             if (typeof drawTopographicalLake === 'function') {
                 drawTopographicalLake('yearlyLakeVisual', [0, -1.2, -5.4, -12.1, -12.1, -3.2, 0]);
             }
