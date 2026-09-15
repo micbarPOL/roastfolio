@@ -118,7 +118,7 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("fetchJson('/monthly-wraps')", self.monthly_audit_js)
         self.assertIn("window.selectMonthlyAuditPeriod", self.monthly_audit_js)
         self.assertIn("flowsCard(item)", self.monthly_audit_js)
-        self.assertIn("diaryCard(item)", self.monthly_audit_js)
+        self.assertIn("tradingCard(item)", self.monthly_audit_js)
 
     def test_benchmark_chart_can_reset_to_smart_range(self):
         wig_chart_js = (ROOT / "src" / "scripts" / "wig-chart.js").read_text()

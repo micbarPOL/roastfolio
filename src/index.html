@@ -30,6 +30,7 @@
     <meta property="og:type" content="website">
 
     <link rel="stylesheet" href="styles/main.css?v=20260915b">
+    <link rel="stylesheet" href="styles/monthly-audit.css?v=20260915-interactive3">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         (function() {
@@ -109,7 +110,7 @@
     <script src="scripts/auth-guard.js"></script>
 
     <!-- User profile: fetch/cache profile from DynamoDB via /profile API -->
-    <script src="scripts/user-profile.js"></script>
+    <script src="scripts/user-profile.js?v=20260915-recap2"></script>
     <!-- Portfolio client: DynamoDB portfolios + holdings CRUD + migration trigger -->
     <script src="scripts/portfolios.js?v=20260630a"></script>
     <script src="scripts/ledger-transactions.js?v=20260630c"></script>
@@ -1734,7 +1735,7 @@
 
     <script src="scripts/config.js"></script>
     <script src="scripts/RoastTracker.js?v=20260709b"></script>
-    <script src="scripts/user-profile.js"></script>
+    <script src="scripts/user-profile.js?v=20260915-recap2"></script>
     <script src="scripts/roast-engine.js"></script>
     <script src="scripts/xp-engine.js"></script>
     <script src="scripts/engagement-strip.js"></script>
@@ -1743,7 +1744,75 @@
     <script src="scripts/statistics.js?v=20260702b"></script>
     <script src="scripts/transactions.js?v=20260702a"></script>
     <script src="scripts/chart.js?v=20260625b"></script>
-    <script src="scripts/monthly-audit.js?v=20260915b"></script>
+    <script>
+        (function() {
+            const isLocalHost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
+            if (!isLocalHost) return;
+
+            // Synthetic localhost-only editions. Start with 10,000 PLN; deposits settle
+            // at each closing boundary, so monthly nominal = opening value × TWR.
+            // No generated market prices in production.
+            const markets = [
+                ['MSCI_WORLD', 'MSCI World · IWDA proxy', 'EUR'], ['SP500', 'S&P 500', 'USD'],
+                ['NASDAQ', 'NASDAQ Composite', 'USD'], ['DAX', 'DAX', 'EUR'], ['FTSE100', 'FTSE 100', 'GBP'], ['WIG', 'WIG', 'PLN']
+            ];
+            const scenes = [
+                { period: '2026-06', end: '2026-07-01', prior: '2026-05-29', close: '2026-06-30',
+                    returns: [0, 1.2, -1, 2.1, 3.2, 4], benchmark: [0, .8, -.3, 1.2, 2.1, 2.8],
+                    market: [2.7, 3.1, 4.2, 1.8, .9, 2.4], nominal: 400, deposits: 0,
+                    leader: ['AAPL', 250], anchor: ['BND', -50], goal: 1000, actual: 400,
+                    buy: 0, sell: 0, dividends: 0, trades: [], ath: true, athValue: 10400, athDate: '2026-07-01', daysSinceAth: 0,
+                    best: {date: '2026-06-19', change_pln: 100}, worst: {date: '2026-06-13', change_pln: -80} },
+                { period: '2026-07', end: '2026-08-01', prior: '2026-06-30', close: '2026-07-31',
+                    returns: [0, -1.2, -3.1, -6.1, -5.3, -4.7], benchmark: [0, -.2, null, -2, -1.8, -1.5],
+                    market: [-1.6, -2.2, -3.7, -1.2, null, -1.8], nominal: -488.8, deposits: 1500,
+                    leader: ['MSFT', 180], anchor: ['BND', -620], goal: 220, actual: -488.8,
+                    buy: 1500, sell: 2800, dividends: 0,
+                    trades: [{date: '2026-07-21', type: 'SELL', ticker: 'BND', value_pln: 2800}, {date: '2026-07-08', type: 'BUY', ticker: 'MSFT', value_pln: 1500}], ath: true,
+                    athValue: 11411.2, athDate: '2026-08-01', daysSinceAth: 0,
+                    best: {date: '2026-07-25', change_pln: 70}, worst: {date: '2026-07-19', change_pln: -140} },
+                { period: '2026-08', end: '2026-09-01', prior: '2026-07-31', close: '2026-08-31',
+                    returns: [0, 1.2, -.6, 2.1, 2.2, 300 / 11411.2 * 100], benchmark: [0, .5, .2, .8, 1.2, 1.8], startPeak: 100 / .953,
+                    market: [1.7, 2.1, 3.8, -.4, .6, 1.3], nominal: 300, deposits: 3200,
+                    leader: ['NVDA', 1200], anchor: ['BND', -900], goal: 100, actual: 300,
+                    buy: 1000, sell: 400, dividends: 25,
+                    trades: [{date: '2026-08-12', type: 'BUY', ticker: 'NVDA', value_pln: 1000}, {date: '2026-08-24', type: 'SELL', ticker: 'BND', value_pln: 400}], ath: true,
+                    athValue: 14911.2, athDate: '2026-09-01', daysSinceAth: 0,
+                    best: {date: '2026-08-19', change_pln: 100}, worst: {date: '2026-08-13', change_pln: -80} }
+            ];
+            window.MONTHLY_WRAP_DATA = scenes.map(scene => {
+                const dates = ['01', '07', '13', '19', '25'].map(day => `${scene.period}-${day}`).concat(scene.end);
+                let peak = scene.startPeak || 100;
+                const drawdown = scene.returns.map(value => { const units = 100 + value; peak = Math.max(peak, units); return (units / peak - 1) * 100; });
+                const twr = scene.returns.at(-1);
+                const wallet = {name: 'Demo portfolio', twr_pct: twr, nominal_change_pln: scene.nominal, cash_flow_pln: scene.deposits};
+                return {
+                    period: scene.period, overall_twr_pct: twr, overall_nominal_change_pln: scene.nominal,
+                    deposits_pln: scene.deposits, withdrawals_pln: 0,
+                    best_efficiency_wallet: wallet, primary_profit_engine_wallet: wallet, wallet_performance: [wallet],
+                    journey: {benchmark_id: 'MSCI_WORLD', benchmark_name: 'MSCI World · IWDA proxy', benchmark_currency: 'EUR',
+                        points: dates.map((date, i) => ({date, portfolio_pct: scene.returns[i], benchmark_pct: scene.benchmark[i]})),
+                        benchmark_return_pct: scene.benchmark.at(-1), start_date: dates[0], end_date: scene.end,
+                        benchmark_start_price_date: scene.period === '2026-08' ? scene.prior : dates[0], benchmark_end_price_date: scene.period === '2026-07' ? scene.close : scene.end},
+                    market_context: markets.map(([id, name, currency], i) => ({id, name, currency, return_pct: scene.market[i],
+                        start_price_date: scene.market[i] === null ? null : scene.prior, end_price_date: scene.market[i] === null ? null : scene.close})),
+                    trading_activity: {buy_total_pln: scene.buy, sell_total_pln: scene.sell, turnover_pln: scene.buy + scene.sell,
+                        dividend_total_pln: scene.dividends, transaction_count: scene.trades.length, largest_transactions: scene.trades},
+                    drawdown_trajectory_pct: drawdown, start_drawdown_pct: drawdown[0], end_drawdown_pct: drawdown.at(-1),
+                    trajectory_delta_pp: drawdown.at(-1) - drawdown[0], max_drawdown_pct: Math.min(...drawdown), max_drawdown_date: dates[drawdown.indexOf(Math.min(...drawdown))],
+                    is_new_ath: scene.ath, ath_value_pln: scene.athValue, ath_date: scene.athDate, days_since_ath: scene.daysSinceAth,
+                    best_day: scene.best, worst_day: scene.worst,
+                    historical_years_count: 4, positive_years_count: 3, negative_years_count: 1, avg_negative_pct: -2.7, avg_positive_pct: 4.2, outperformed_seasonal_history: twr > 2.475,
+                    retirement_target: {plan_id: 'demo-plan', monthly_target_nominal_pln: scene.goal, actual_nominal_gain_pln: scene.actual, pct_achieved: scene.actual / scene.goal * 100},
+                    avco_gains: {realized_pln: null, unrealized_pln: null},
+                    carry: {ticker: scene.leader[0], net_contribution_pln: scene.leader[1], context_note: 'Synthetic net contribution; all other positions are included in the month total.'},
+                    anchor: {ticker: scene.anchor[0], net_contribution_pln: scene.anchor[1], context_note: 'Synthetic net contribution; trading totals are shown separately.'}
+                };
+            });
+        })();
+    </script>
+    <script src="scripts/monthly-audit-share.js?v=20260915-interactive3"></script>
+    <script src="scripts/monthly-audit.js?v=20260915-interactive3"></script>
     <script src="scripts/benchmark-chart.js?v=20260720a"></script>
     <script src="scripts/analysis.js?v=20260625a"></script>
 
@@ -2818,7 +2887,7 @@
     <!-- Swipe-to-refresh (mobile pull-down gesture) -->
     <script src="scripts/swipe-refresh.js" defer></script>
     <!-- Portfolio management -->
-    <script src="scripts/manage.js"></script>
+    <script src="scripts/manage.js?v=20260915-recap2"></script>
 
     <!-- ── User Settings Modal ──────────────────────────────── -->
     <div id="user-modal" class="user-modal-overlay" style="display:none" onclick="if(event.target===this)closeUserModal()">

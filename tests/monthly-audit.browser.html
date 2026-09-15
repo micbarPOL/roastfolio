@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Monthly recap · browser regression fixture</title>
+    <link rel="stylesheet" href="../src/styles/main.css">
+    <link rel="stylesheet" href="../src/styles/monthly-audit.css">
+    <style>
+        body { margin: 0; padding: 20px; background: #101720; }
+        html[data-theme="light"] body { background: #f1f2ec; }
+        .fixture-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; color: #91a89d; }
+        .fixture-tools button { min-height: 44px; }
+    </style>
+</head>
+<body>
+    <div class="fixture-tools"><strong>SYNTHETIC DATA · NOT AN ACCOUNT</strong><button onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">Toggle theme</button><output id="test-result">Running…</output></div>
+    <section class="monthly-audit-shell"><div id="monthly-audit-root"></div></section>
+    <script>
+        const daily = Array.from({length: 31}, (_, i) => -Math.round(Math.abs(Math.sin(i / 4)) * 720) / 100);
+        const sample = {
+            period: '2026-08', month: 8, overall_twr_pct: 13.78, overall_nominal_change_pln: 24680,
+            deposits_pln: 3200, withdrawals_pln: 0,
+            best_efficiency_wallet: {name: 'Retirement · IKE', twr_pct: 15.2},
+            primary_profit_engine_wallet: {name: 'Long-term investments', nominal_change_pln: 18600},
+            wallet_performance: [{name: 'Retirement · IKE', twr_pct: 15.2, nominal_change_pln: 18600, cash_flow_pln: 3200}],
+            drawdown_trajectory_pct: daily, start_drawdown_pct: daily[0], end_drawdown_pct: daily[30], trajectory_delta_pp: daily[30],
+            max_drawdown_pct: Math.min(...daily), max_drawdown_date: '2026-08-07',
+            is_new_ath: true, ath_value_pln: 548230, ath_date: '2026-08-28', days_since_ath: 3,
+            best_day: {date:'2026-08-12', change_pln: 2840}, worst_day: {date:'2026-08-07', change_pln: -1960},
+            historical_years_count: 4, positive_years_count: 3, negative_years_count: 1,
+            avg_negative_pct: -2.3, avg_positive_pct: 4.1, outperformed_seasonal_history: true,
+            retirement_target: {plan_id: 'test-plan', monthly_target_nominal_pln: 100, actual_nominal_gain_pln: 300, pct_achieved: 300},
+            avco_gains: {realized_pln: 1240, unrealized_pln: 23440},
+            carry: {ticker:'NVDA', net_contribution_pln: 8940, context_note:'Price move + bought 1,000 PLN'},
+            anchor: {ticker:'BND', net_contribution_pln: -1260, context_note:'Pure price movement, no trades'},
+            journey: {benchmark_id:'MSCI_WORLD', benchmark_name:'MSCI World · IWDA proxy', benchmark_currency:'EUR',
+                start_date:'2026-08-01', end_date:'2026-09-01', benchmark_start_price_date:'2026-07-31', benchmark_end_price_date:'2026-09-01', benchmark_return_pct:4.2,
+                points:[
+                    {date:'2026-08-01', portfolio_pct:0, benchmark_pct:0},
+                    {date:'2026-08-04', portfolio_pct:2.1, benchmark_pct:.5},
+                    {date:'2026-08-10', portfolio_pct:-1.5, benchmark_pct:null},
+                    {date:'2026-08-11', portfolio_pct:null, benchmark_pct:1.2},
+                    {date:'2026-08-20', portfolio_pct:8, benchmark_pct:2.8},
+                    {date:'2026-09-01', portfolio_pct:13.78, benchmark_pct:4.2}
+                ]},
+            market_context: [
+                ['WIG','WIG','PLN',2.4],
+                ['MSCI_WORLD','MSCI World · IWDA proxy','EUR',4.1], ['SP500','S&P 500','USD',5.2],
+                ['NASDAQ','NASDAQ Composite','USD',15], ['DAX','DAX','EUR',-1.2], ['FTSE100','FTSE 100','GBP',null]
+            ].map(([id,name,currency,return_pct]) => ({id,name,currency,return_pct,start_price_date:return_pct === null ? null : '2026-07-31',end_price_date:return_pct === null ? null : '2026-08-31'})),
+            trading_activity:{buy_total_pln:1000,sell_total_pln:400,turnover_pln:1400,dividend_total_pln:25,transaction_count:2,
+                largest_transactions:[{date:'2026-08-12',type:'BUY',ticker:'NVDA',value_pln:1000},{date:'2026-08-24',type:'SELL',ticker:'BND',value_pln:400}]},
+        };
+        const edition = (period, end, twr, nominal) => ({...sample, period, overall_twr_pct:twr, overall_nominal_change_pln:nominal,
+            journey:{...sample.journey,start_date:`${period}-01`,end_date:end,benchmark_start_price_date:`${period}-01`,benchmark_end_price_date:end,
+                points:[{date:`${period}-01`,portfolio_pct:0,benchmark_pct:0},{date:end,portfolio_pct:twr,benchmark_pct:4.2}]},
+            market_context:[], trading_activity:{buy_total_pln:0,sell_total_pln:0,turnover_pln:0,dividend_total_pln:0,transaction_count:0,largest_transactions:[]},
+            drawdown_trajectory_pct:[], max_drawdown_pct:null, max_drawdown_date:null, start_drawdown_pct:null,end_drawdown_pct:null,trajectory_delta_pp:null,
+            best_day:null,worst_day:null,is_new_ath:false,ath_value_pln:null,ath_date:null,days_since_ath:null,
+            wallet_performance:[],best_efficiency_wallet:null,primary_profit_engine_wallet:null,
+            carry:{ticker:'MSFT',net_contribution_pln:12000},anchor:{ticker:'BND',net_contribution_pln:-15000},
+            retirement_target:{plan_id:'test-plan',monthly_target_nominal_pln:100,actual_nominal_gain_pln:nominal,pct_achieved:nominal}
+        });
+        window.MONTHLY_WRAP_DATA = [
+            edition('2026-06','2026-07-01',0,0),
+            edition('2026-07','2026-08-01',-4.7,-7480),
+            sample,
+        ];
+        window.monthlyFixture = sample;
+    </script>
+    <script src="../src/scripts/monthly-audit-share.js"></script>
+    <script src="../src/scripts/monthly-audit.js"></script>
+    <script>
+        window.fixtureReady = (async () => {
+            const results = [];
+            const check = (name, condition) => { results.push({name, passed: Boolean(condition)}); if (!condition) throw new Error(name); };
+            try {
+                await initMonthlyAudit();
+                check('Seven bento sections', document.querySelectorAll('.monthly-audit-card').length === 7);
+                check('Dated return gaps in both series', document.querySelectorAll('.ma-return-portfolio').length === 2 && document.querySelectorAll('.ma-return-benchmark').length === 2);
+                check('Single target track at one third', document.querySelector('.ma-target-percent').textContent === '300%' && Math.abs(parseFloat(document.querySelector('.ma-target-marker').style.left) - 100 / 3) < .001 && !document.querySelector('.monthly-audit-ring'));
+                check('Wallet and AVCO details retained', document.querySelector('.ma-goal .ma-details').textContent.includes('AVCO') && document.querySelector('.ma-flows .ma-details').textContent.includes('Retirement'));
+                const privateModel = MonthlyAuditPresentation.buildModel({...sample, userId:'SECRET-USER', balance:987654321});
+                check('Private by default', privateModel.hideAmounts && privateModel.nominalChange === null);
+                check('No identity or amounts in private payload', !JSON.stringify(privateModel).includes('SECRET-USER') && !JSON.stringify(privateModel).includes('24680') && !JSON.stringify(privateModel).includes('987654321'));
+                const publicModel = MonthlyAuditPresentation.buildModel(sample, {hideAmounts:false});
+                check('Opt-in nominal change', publicModel.nominalChange === '+24,680 PLN');
+                check('Missing is not zero', MonthlyAuditPresentation.buildModel({period:'2026-01'}).twr === 'No data');
+                check('Negative month narrative', MonthlyAuditPresentation.buildModel({...sample, overall_twr_pct:-1}).headline.includes('step back'));
+                check('Null observations stay missing', privateModel.journey.points[2].benchmark_pct === null && privateModel.journey.points[3].portfolio_pct === null && !('trajectory' in privateModel));
+                check('Wordmark replaces decorative glyph', document.querySelector('.ma-wordmark')?.textContent === 'roastfolio' && !document.querySelector('.ma-cover-glyph'));
+                check('Six markets in regional order', [...document.querySelectorAll('.ma-market-row')].map(row => row.dataset.marketId).join(',') === 'WIG,DAX,FTSE100,SP500,NASDAQ,MSCI_WORLD');
+                check('One solid zero grid', document.querySelectorAll('.ma-return-zero').length === 1 && getComputedStyle(document.querySelector('.ma-return-zero')).strokeDasharray === 'none');
+                const chart = document.querySelector('.ma-return-chart');
+                chart.focus(); chart.dispatchEvent(new KeyboardEvent('keydown', {key:'ArrowRight',bubbles:true}));
+                check('SVG keyboard inspection without range input', chart.getAttribute('aria-valuenow') === '1' && document.querySelector('#ma-journey-value').textContent.includes('2026-08-04') && !document.querySelector('input[type="range"]'));
+                chart.blur();
+                const canvas = document.createElement('canvas');
+                MonthlyAuditPresentation.drawPoster(canvas, privateModel);
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                check('PNG rendered locally', blob?.type === 'image/png' && blob.size > 10000 && canvas.width === 1080 && canvas.height === 1350);
+                await selectMonthlyAuditPeriod('2026-07');
+                check('Month navigation updates cover', document.querySelector('.monthly-audit-hero').classList.contains('is-negative'));
+                await selectMonthlyAuditPeriod('2026-08');
+                document.getElementById('test-result').textContent = `${results.length} checks passed`;
+            } catch (error) {
+                document.getElementById('test-result').textContent = `FAILED: ${error.message}`;
+            }
+            window.monthlyTestResults = results;
+            return results;
+        })();
+    </script>
+</body>
+</html>
