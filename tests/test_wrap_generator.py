@@ -85,6 +85,12 @@ def test_extremes_tracks_ath_drawdown_trajectory_and_daily_moves():
     assert result["start_drawdown_pct"] == Decimal("-9.0909")
     assert result["end_drawdown_pct"] == Decimal("0.0000")
     assert result["trajectory_delta_pp"] == Decimal("9.0909")
+    assert result["drawdown_trajectory_pct"] == [
+        Decimal("-9.0909"),
+        Decimal("0.0000"),
+        Decimal("-18.1818"),
+        Decimal("0.0000"),
+    ]
     assert result["best_day"] == {"date": "2026-09-20", "change_pln": Decimal("500.00")}
     assert result["worst_day"] == {"date": "2026-09-10", "change_pln": Decimal("-300.00")}
 

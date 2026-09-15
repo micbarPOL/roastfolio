@@ -43,6 +43,8 @@ def test_monthly_audit_renders_six_required_cards_and_real_api_path():
 
 def test_monthly_audit_uses_lake_trajectory_and_rounded_target_percentage():
     script = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
+    assert "drawdown_trajectory_pct" in script
+    assert "Array.isArray(series) && series.length >= 2" in script
     assert 'class="trajectory-lake"' in script
     assert 'class="trajectory-line"' in script
     assert "const rounded = Math.round(number(percent))" in script
