@@ -181,6 +181,11 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(result["portfolioValue"], Decimal("900.00"))
         self.assertEqual(result["dailyReturn"], Decimal("4.6512"))
 
+    def test_market_currency_prefers_explicit_currency_over_suffix_heuristic(self):
+        self.assertEqual(snapshots._market_currency_for_asset("IB1T.DE", "PLN"), "PLN")
+        self.assertEqual(snapshots._market_currency_for_asset("AAPL", "USD"), "USD")
+        self.assertEqual(snapshots._market_currency_for_asset("DAX.DE", None), "EUR")
+
     def test_warsaw_snapshot_date_uses_previous_local_day(self):
         dt = datetime(2026, 5, 12, 0, 15, tzinfo=timezone.utc)
         self.assertEqual(snapshots.warsaw_snapshot_date(dt), "2026-05-11")

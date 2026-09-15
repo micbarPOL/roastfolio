@@ -1648,6 +1648,14 @@ def portfolios_handler(event: dict) -> dict:
                 return _resp(400, {"error": "Invalid JSON"})
             try:
                 tx = portfolios.record_transaction(user_id, portfolio_id, body)
+                from_date = tx.get("transactionDate")
+                if from_date:
+                    try:
+                        tx["recalculated"] = snapshots.recalculate_portfolio_snapshots_from_date(user_id, portfolio_id, from_date)
+                        tx["summaryUpdated"] = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
+                    except Exception as recalc_exc:
+                        # Transaction write succeeded; return warning so clients can surface stale-history risk.
+                        tx["historyRecalcWarning"] = str(recalc_exc)
                 return _resp(200, tx)
             except ValueError as e:
                 return _resp(400, {"error": str(e)})

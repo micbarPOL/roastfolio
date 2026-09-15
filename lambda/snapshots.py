@@ -586,17 +586,24 @@ def _get_fx_close_pair(currency: str, cache: dict[str, tuple[Decimal, Decimal]],
 def _market_currency_for_asset(ticker: str | None, currency: str | None = "PLN") -> str:
     if not ticker:
         return currency or "PLN"
+    explicit_currency = str(currency or "").strip().upper()
     t = str(ticker).upper().strip()
     import portfolios
     if t in portfolios._MARKET_CURRENCY_BY_TICKER:
         return portfolios._MARKET_CURRENCY_BY_TICKER[t]
     if t.endswith(".WA"):
         return "PLN"
+
+    # Guardrail: for non-.WA assets prefer the explicit ledger currency over
+    # broad ticker suffix heuristics (prevents accidental double FX conversion).
+    if explicit_currency:
+        return explicit_currency
+
     if any(t.endswith(sfx) for sfx in (".DE", ".PA", ".AS", ".MI", ".MC")):
         return "EUR"
     if t.endswith(".L"):
         return "GBP"
-    return currency or "PLN"
+    return "PLN"
 
 
 def calculate_portfolio_snapshot(holdings: list[dict], snapshot_date: str | None = None) -> dict:

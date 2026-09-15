@@ -52,7 +52,9 @@ class PortfolioHandlerTests(unittest.TestCase):
         mock_list.assert_called_once_with("user-1", "xtb", limit=1000)
 
     def test_post_transaction_route(self):
-        with patch.object(handler.portfolios, "record_transaction", return_value={"transactionId": "tx-1", "type": "BUY"}) as mock_record:
+        with patch.object(handler.portfolios, "record_transaction", return_value={"transactionId": "tx-1", "type": "BUY", "transactionDate": "2026-09-10"}) as mock_record, \
+             patch.object(handler.snapshots, "recalculate_portfolio_snapshots_from_date", return_value={"updated": 2}) as mock_recalc, \
+             patch.object(handler.snapshots, "recalculate_summary_snapshots_from_date", return_value=1) as mock_summary:
             resp = handler.portfolios_handler(self._event(
                 "POST",
                 "/portfolios/xtb/transactions",
@@ -62,7 +64,28 @@ class PortfolioHandlerTests(unittest.TestCase):
         self.assertEqual(resp["statusCode"], 200)
         body = json.loads(resp["body"])
         self.assertEqual(body["transactionId"], "tx-1")
+        self.assertEqual(body["recalculated"], {"updated": 2})
+        self.assertEqual(body["summaryUpdated"], 1)
         mock_record.assert_called_once()
+        mock_recalc.assert_called_once_with("user-1", "xtb", "2026-09-10")
+        mock_summary.assert_called_once_with("user-1", "2026-09-10")
+
+    def test_post_transaction_route_returns_warning_when_recalc_fails(self):
+        with patch.object(handler.portfolios, "record_transaction", return_value={"transactionId": "tx-1", "type": "BUY", "transactionDate": "2026-09-10"}), \
+             patch.object(handler.snapshots, "recalculate_portfolio_snapshots_from_date", side_effect=RuntimeError("boom")), \
+             patch.object(handler.snapshots, "recalculate_summary_snapshots_from_date") as mock_summary:
+            resp = handler.portfolios_handler(self._event(
+                "POST",
+                "/portfolios/xtb/transactions",
+                {"portfolioId": "xtb"},
+                body=json.dumps({"type": "BUY", "ticker": "AAPL", "quantity": 1}),
+            ))
+
+        self.assertEqual(resp["statusCode"], 200)
+        body = json.loads(resp["body"])
+        self.assertEqual(body["transactionId"], "tx-1")
+        self.assertIn("historyRecalcWarning", body)
+        mock_summary.assert_not_called()
 
     def test_put_transaction_route_updates_and_recalculates_history(self):
         update_result = {
