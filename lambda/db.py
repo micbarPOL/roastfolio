@@ -133,9 +133,17 @@ BENCHMARKS = {
         "id":          "MSCI_WORLD",
         "name":        "MSCI World",
         "ticker":      "IWDA.AS",
-        "currency":    "USD",
+        "currency":    "EUR",  # Amsterdam quote currency, not the fund's USD base currency
         "exchange":    "Euronext Amsterdam",
-        "description": "Global equity benchmark",
+        "description": "Global equity benchmark proxied by the accumulating IWDA ETF",
+    },
+    "FTSE100": {
+        "id": "FTSE100",
+        "name": "FTSE 100",
+        "ticker": "^FTSE",
+        "currency": "GBP",
+        "exchange": "London Stock Exchange",
+        "description": "UK large-cap benchmark",
     },
 }
 DEFAULT_BENCHMARK = "WIG"

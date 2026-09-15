@@ -336,6 +336,17 @@ def generate_previous_month_wraps(
 
 def monthly_wrap_handler(event, _context):
     event = event or {}
+    # This Lambda is not an HTTP handler. Only IAM-authorized scheduler/API
+    # Lambda invocations may enter it; malformed events must never scan users.
+    if not isinstance(event, dict) or "requestContext" in event or "httpMethod" in event:
+        raise ValueError("Trusted Lambda invocation required")
+    if event.get("action") == "recalculate":
+        if set(event) - {"action", "user_id", "job_id"}:
+            raise ValueError("Unexpected recalculation fields")
+        import monthly_recalculation
+        return monthly_recalculation.run_job(event, _context)
+    if event.get("action") != "scheduled" or set(event) - {"action", "asOfDate", "force"}:
+        raise ValueError("Explicit scheduled or user-scoped recalculate action required")
     as_of_raw = str(event.get("asOfDate") or "").strip()
     run_at = datetime.fromisoformat(as_of_raw.replace("Z", "+00:00")) if as_of_raw else datetime.now(timezone.utc)
     results = generate_previous_month_wraps(run_at, force=bool(event.get("force", False)))
