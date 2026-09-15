@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def test_history_contains_podsumowania_subtab_and_monthly_audit_mount():
     html = (ROOT / "src" / "index.html").read_text()
     assert 'data-history-section="recaps"' in html
-    assert '>Podsumowania<' in html
+    assert '>Summaries<' in html
     assert 'id="monthly-audit-root"' in html
     assert 'scripts/monthly-audit.js' in html
 
@@ -23,12 +23,12 @@ def test_history_does_not_restore_local_memory_lane_mocks():
 def test_monthly_audit_renders_six_required_cards_and_real_api_path():
     script = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
     expected_titles = {
-        "Przepływy i wynik portfeli",
-        "Statystyki i ekstrema miesiąca",
-        "Kontekst historyczny i sezonowość",
-        "Plan emerytalny i zyski",
-        "Lider i kotwica miesiąca",
-        "Audyt Coping Diary i aktywność",
+        "Cash Flows and Portfolio Performance",
+        "Monthly Statistics and Extremes",
+        "Historical Context and Seasonality",
+        "Retirement Plan and Gains",
+        "Monthly Leader and Anchor",
+        "Coping Diary Audit and Activity",
     }
     for title in expected_titles:
         assert title in script
