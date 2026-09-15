@@ -35,6 +35,17 @@ def test_monthly_audit_renders_six_required_cards_and_real_api_path():
     assert "fetchJson('/monthly-wraps')" in script
     assert "fetchJson(`/monthly-wraps?period=" in script
     assert "window.MONTHLY_WRAP_DATA" in script
+    for number in range(1, 7):
+        assert f"'{number:02d} ·" not in script
+
+
+def test_monthly_audit_uses_lake_trajectory_and_rounded_target_percentage():
+    script = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
+    assert 'class="trajectory-lake"' in script
+    assert 'class="trajectory-line"' in script
+    assert "const rounded = Math.round(number(percent))" in script
+    assert "rounded.toLocaleString('en-GB')" in script
+    assert 'class="monthly-audit-ring-stack"' in script
 
 
 def test_monthly_audit_has_glass_cards_timeline_and_mobile_single_columns():

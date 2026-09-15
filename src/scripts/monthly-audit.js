@@ -160,26 +160,35 @@
     }
 
     function trajectoryVisual(start, end) {
-        const startY = 8 + Math.min(28, Math.abs(number(start)) * 1.2);
-        const endY = 8 + Math.min(28, Math.abs(number(end)) * 1.2);
+        const startDepth = Math.abs(number(start));
+        const endDepth = Math.abs(number(end));
+        const scale = Math.max(startDepth, endDepth, 1);
+        const startY = 8 + (startDepth / scale) * 28;
+        const endY = 8 + (endDepth / scale) * 28;
+        const line = `M4 ${startY} C38 ${startY}, 78 ${endY}, 116 ${endY}`;
         return `
             <svg class="monthly-audit-trajectory" viewBox="0 0 120 44" aria-hidden="true">
-                <path d="M4 ${startY} C38 ${startY}, 78 ${endY}, 116 ${endY}" />
-                <circle cx="4" cy="${startY}" r="3"/><circle cx="116" cy="${endY}" r="3"/>
+                <path class="trajectory-baseline" d="M4 5 H116" />
+                <path class="trajectory-lake" d="M4 5 L4 ${startY} C38 ${startY}, 78 ${endY}, 116 ${endY} L116 5 Z" />
+                <path class="trajectory-line" d="${line}" />
+                <circle cx="4" cy="${startY}" r="2.5"/><circle cx="116" cy="${endY}" r="2.5"/>
             </svg>`;
     }
 
     function progressRing(percent) {
         const clamped = Math.max(0, Math.min(100, number(percent)));
+        const rounded = Math.round(number(percent));
         const circumference = 175.93;
         const offset = circumference * (1 - clamped / 100);
         return `
-            <div class="monthly-audit-ring" style="--ring-offset:${offset}">
-                <svg viewBox="0 0 72 72" aria-hidden="true">
-                    <circle class="ring-track" cx="36" cy="36" r="28"/>
-                    <circle class="ring-progress" cx="36" cy="36" r="28"/>
-                </svg>
-                <strong>${escapeHtml(formatPct(percent))}</strong>
+            <div class="monthly-audit-ring-stack">
+                <strong>${escapeHtml(`${rounded.toLocaleString('en-GB')}%`)}</strong>
+                <div class="monthly-audit-ring" style="--ring-offset:${offset}">
+                    <svg viewBox="0 0 72 72" aria-hidden="true">
+                        <circle class="ring-track" cx="36" cy="36" r="28"/>
+                        <circle class="ring-progress" cx="36" cy="36" r="28"/>
+                    </svg>
+                </div>
             </div>`;
     }
 
@@ -213,7 +222,7 @@
                     <b class="${tone(engine.nominal_change_pln)}">${escapeHtml(formatPLN(engine.nominal_change_pln, true))}</b>
                 </div>
             </div>`;
-        return card('Cash Flows and Portfolio Performance', '01 · Reconciliation', body);
+        return card('Cash Flows and Portfolio Performance', 'Reconciliation', body);
     }
 
     function extremesCard(item) {
@@ -229,7 +238,7 @@
                 ${stat('Best day', formatPLN(item.best_day?.change_pln, true), formatDate(item.best_day?.date), 'is-positive')}
                 ${stat('Worst day', formatPLN(item.worst_day?.change_pln), formatDate(item.worst_day?.date), 'is-negative')}
             </div>`;
-        return card('Monthly Statistics and Extremes', '02 · Turning Points', body);
+        return card('Monthly Statistics and Extremes', 'Turning Points', body);
     }
 
     function seasonalityCard(item) {
@@ -256,7 +265,7 @@
                     <strong>${escapeHtml(status)}</strong>
                 </div>
             </div>`;
-        return card('Historical Context and Seasonality', '03 · Market Memory', body);
+        return card('Historical Context and Seasonality', 'Market Memory', body);
     }
 
     function retirementCard(item) {
@@ -277,7 +286,7 @@
                 <div><span>Unrealized gains</span><strong class="${tone(gains.unrealized_pln)}">${escapeHtml(formatPLN(gains.unrealized_pln, true))}</strong><small>Open positions</small></div>
                 <div><span>Realized gains</span><strong class="${tone(gains.realized_pln)}">${escapeHtml(formatPLN(gains.realized_pln, true))}</strong><small>Monthly sells · AVCO</small></div>
             </div>`;
-        return card('Retirement Plan and Gains', '04 · Target and AVCO', body);
+        return card('Retirement Plan and Gains', 'Target and AVCO', body);
     }
 
     function contributionPanel(kind, asset) {
@@ -295,7 +304,7 @@
 
     function carryCard(item) {
         const body = `<div class="monthly-audit-contributions">${contributionPanel('carry', item.carry)}${contributionPanel('anchor', item.anchor)}</div>`;
-        return card('Monthly Leader and Anchor', '05 · Net Contribution', body);
+        return card('Monthly Leader and Anchor', 'Net Contribution', body);
     }
 
     function diaryCard(item) {
@@ -311,7 +320,7 @@
                 <div class="falsified"><strong>${number(audit.checkpoints_false)}</strong><span>FALSE · invalidated</span></div>
                 <div class="overdue"><strong>${number(audit.checkpoints_overdue)}</strong><span>OVERDUE · pending</span></div>
             </div>`;
-        return card('Coping Diary Audit and Activity', '06 · Process Discipline', body);
+        return card('Coping Diary Audit and Activity', 'Process Discipline', body);
     }
 
     function renderReport() {

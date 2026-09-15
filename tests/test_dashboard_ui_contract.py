@@ -36,7 +36,7 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("id=\"dash-daily-pln\"", self.index_html)
 
     def test_gauge_sarcastic_comment_uses_readable_typography(self):
-        self.assertIn("styles/main.css?v=20260702c", self.index_html)
+        self.assertIn("styles/main.css?v=20260915b", self.index_html)
         self.assertIn("const CACHE_NAME = 'roastfolio-v69';", self.service_worker_js)
         self.assertIn("font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', sans-serif !important;", self.main_css)
         self.assertIn("font-style: normal;", self.main_css)
@@ -176,7 +176,7 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("contain: paint;", self.main_css)
         self.assertIn("splash-to-gauge", self.index_html)
         self.assertIn("body.splash-to-gauge", self.main_css)
-        self.assertIn("styles/main.css?v=20260702c", self.index_html)
+        self.assertIn("styles/main.css?v=20260915b", self.index_html)
         self.assertIn("scripts/dashboard.js?v=20260709b", self.index_html)
         self.assertIn("candleTransmitOut", self.main_css)
         self.assertIn("gaugeCardHandoff", self.main_css)

@@ -15347,12 +15347,24 @@ body.wallet-overlay-open {
 .monthly-audit-trajectory {
     display: block;
     width: 100%;
-    height: 30px;
+    height: 38px;
     margin-top: 5px;
-    overflow: visible;
+    overflow: hidden;
 }
 
-.monthly-audit-trajectory path {
+.monthly-audit-trajectory .trajectory-baseline {
+    fill: none;
+    stroke: rgba(148, 163, 184, 0.38);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+}
+
+.monthly-audit-trajectory .trajectory-lake {
+    fill: rgba(34, 211, 238, 0.2);
+    stroke: none;
+}
+
+.monthly-audit-trajectory .trajectory-line {
     fill: none;
     stroke: #22d3ee;
     stroke-width: 2;
@@ -15432,9 +15444,26 @@ body.wallet-overlay-open {
 
 .monthly-audit-ring {
     position: relative;
-    flex: 0 0 72px;
     width: 72px;
     height: 72px;
+}
+
+.monthly-audit-ring-stack {
+    display: grid;
+    flex: 0 0 88px;
+    justify-items: center;
+    gap: 5px;
+    width: 88px;
+}
+
+.monthly-audit-ring-stack > strong {
+    max-width: 100%;
+    color: #e0f2fe;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1;
+    overflow-wrap: anywhere;
+    text-align: center;
 }
 
 .monthly-audit-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
@@ -15446,16 +15475,6 @@ body.wallet-overlay-open {
     stroke-dashoffset: var(--ring-offset);
     stroke-linecap: round;
     filter: drop-shadow(0 0 5px rgba(34, 211, 238, 0.55));
-}
-
-.monthly-audit-ring > strong {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    color: #e0f2fe;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 11px;
 }
 
 .monthly-audit-retirement-copy {
