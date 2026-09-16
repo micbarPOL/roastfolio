@@ -167,9 +167,12 @@ function currentTabIsTransactions() {
     return document.getElementById('tab-transactions')?.classList.contains('active');
 }
 
-function setSummaryMessage(message) {
+function setSummaryMessage(message, isError = false) {
     const summary = document.getElementById('tx-summary');
-    if (summary) summary.textContent = message;
+    if (!summary) return;
+    summary.textContent = message;
+    summary.style.color = isError ? '#f87171' : '#94a3b8';
+    summary.style.fontWeight = isError ? '600' : 'normal';
 }
 
 function applyFilters() {
@@ -277,6 +280,22 @@ async function handleTransactionSave(button) {
         if (status) status.textContent = message;
         tr.classList.toggle('tx-row-error', error);
     };
+    const clearErrorRows = () => {
+        document.querySelectorAll(`.tx-error-row[data-tx-error-for="${tr.dataset.txId}"]`).forEach(el => el.remove());
+    };
+    const showErrorBanner = (message) => {
+        clearErrorRows();
+        const errRow = document.createElement('tr');
+        errRow.className = 'tx-error-row';
+        errRow.dataset.txErrorFor = tr.dataset.txId;
+        errRow.innerHTML = `<td colspan="9"><div class="tx-inline-error-banner"><span class="tx-error-icon">⚠️</span><span class="tx-error-text">${escapeHtml(message)}</span></div></td>`;
+        if (tr.nextElementSibling && tr.nextElementSibling.classList.contains('tx-mobile-edit-row')) {
+            tr.parentNode.insertBefore(errRow, tr.nextElementSibling.nextElementSibling);
+        } else {
+            tr.parentNode.insertBefore(errRow, tr.nextElementSibling);
+        }
+    };
+
     if (!row) {
         setStatus('Row not found.', true);
         return;
@@ -290,7 +309,10 @@ async function handleTransactionSave(button) {
     try {
         payload = readTransactionUpdatePayload(row, tr);
     } catch (error) {
-        setStatus(error.message || 'Invalid row data.', true);
+        const errorMsg = error.message || 'Invalid row data.';
+        setStatus(errorMsg, true);
+        showErrorBanner(errorMsg);
+        setSummaryMessage(`⚠️ ${errorMsg}`, true);
         return;
     }
 
@@ -298,14 +320,20 @@ async function handleTransactionSave(button) {
     button.textContent = 'Saving…';
     tr.classList.add('tx-row-saving');
     setStatus('Saving…');
+    clearErrorRows();
     try {
         const result = await PortfolioClient.updateTransaction(row.portfolioId, row.transactionId, payload);
         _editingTxId = null;
+        clearErrorRows();
         if (window.LedgerTransactions?.loadRows) {
             await window.LedgerTransactions.loadRows({ force: true, attemptMigration: false });
         } else {
             await refreshTransactionsTabData(true);
         }
+        const recalcStatus = result?.recalculated?.status === 'dispatched_background'
+            ? 'Transaction saved! Recalculating history in background…'
+            : 'Transaction saved successfully.';
+        setSummaryMessage(recalcStatus);
         window.dispatchEvent(new CustomEvent('portfolioHistoryRecalculated', {
             detail: {
                 portfolioId: row.portfolioId,
@@ -318,7 +346,10 @@ async function handleTransactionSave(button) {
         button.disabled = false;
         button.textContent = 'Save';
         tr.classList.remove('tx-row-saving');
-        setStatus(error.message || 'Save failed.', true);
+        const errorMsg = error.message || 'Save failed.';
+        setStatus(errorMsg, true);
+        showErrorBanner(errorMsg);
+        setSummaryMessage(`⚠️ ${errorMsg}`, true);
     }
 }
 
@@ -571,6 +602,7 @@ function ensureTransactionsUi() {
         if (editBtn) {
             const tr = editBtn.closest('tr[data-tx-id]');
             if (tr) {
+                document.querySelectorAll('.tx-error-row').forEach(el => el.remove());
                 _editingTxId = tr.dataset.txId;
                 renderTable();
             }
@@ -578,6 +610,7 @@ function ensureTransactionsUi() {
         }
         const cancelBtn = event.target.closest('[data-tx-cancel]');
         if (cancelBtn) {
+            document.querySelectorAll('.tx-error-row').forEach(el => el.remove());
             _editingTxId = null;
             renderTable();
             return;
