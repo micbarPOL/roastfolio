@@ -599,6 +599,35 @@
             letter-spacing: 0.01em;
         }
 
+        .auth-page-footer {
+            font-size: 11.5px;
+            color: rgba(156, 185, 209, 0.55);
+            text-align: center;
+            margin-top: 8px;
+            letter-spacing: 0.01em;
+        }
+        .auth-page-footer strong {
+            color: var(--c-accent);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .auth-page-footer a {
+            color: var(--c-accent);
+            text-decoration: none;
+        }
+        .auth-page-footer a:hover {
+            text-decoration: underline;
+        }
+        .auth-version {
+            background: rgba(14, 165, 233, 0.12);
+            border: 1px solid rgba(14, 165, 233, 0.25);
+            color: var(--c-accent);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-family: ui-monospace, monospace;
+        }
+
         /* ── Responsive ────────────────────────────────────────── */
         @media (max-width: 480px) {
             .auth-view { padding: 24px 18px 22px; }
@@ -882,6 +911,10 @@
     <div class="auth-page-note">
         Roastfolio is a personal finance tracker — not financial advice.
     </div>
+
+    <footer class="auth-page-footer">
+        Powered by <strong>TOMINEX</strong> &middot; <span class="auth-version">v11.2.1</span> &middot; <a href="guide.html#release-numbering">Release notes</a>
+    </footer>
 
 </div><!-- /.auth-shell -->
 

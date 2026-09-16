@@ -15760,3 +15760,314 @@ body.wallet-overlay-open {
     .monthly-audit-contribution > div { align-items: flex-start; flex-direction: column; gap: 5px; }
     .monthly-audit-contribution b { text-align: left; }
 }
+
+/* ── Application Global Footer (TOMINEX) ───────────────────── */
+.app-global-footer {
+    width: min(1200px, calc(100% - 32px));
+    margin: 48px auto 28px;
+    box-sizing: border-box;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+
+.app-footer-card {
+    background: linear-gradient(180deg, rgba(12, 23, 38, 0.82) 0%, rgba(8, 16, 28, 0.94) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.16);
+    border-radius: 20px;
+    padding: 24px 28px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 14px 34px rgba(2, 8, 16, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.75fr);
+    gap: 32px;
+    align-items: center;
+}
+
+.app-footer-brand-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.app-footer-logo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.app-footer-logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 242, 254, 0.25);
+    flex-shrink: 0;
+}
+
+.app-footer-app-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--brand-text);
+    letter-spacing: -0.01em;
+}
+
+.app-footer-powered-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.22);
+    font-size: 11px;
+    color: var(--brand-text-soft);
+    letter-spacing: 0.02em;
+}
+
+.tominex-brand-name {
+    font-weight: 800;
+    color: var(--brand-sky);
+    letter-spacing: 0.08em;
+}
+
+.app-footer-tagline {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--brand-text-soft);
+    max-width: 440px;
+}
+
+.app-footer-nav-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.app-footer-version-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.app-footer-version-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(0, 203, 214, 0.10);
+    border: 1px solid rgba(0, 242, 254, 0.26);
+    font-size: 12px;
+    color: var(--brand-text);
+}
+
+.app-footer-status-indicator {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #7ee2a8;
+    box-shadow: 0 0 8px #7ee2a8;
+    animation: footerPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes footerPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+.app-footer-version-prefix {
+    font-size: 11px;
+    color: var(--brand-text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.app-footer-version-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--brand-sky);
+}
+
+.app-footer-release-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--brand-blue);
+    text-decoration: none;
+    transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.app-footer-release-link:hover {
+    color: var(--brand-sky);
+    text-decoration: underline;
+}
+
+.app-footer-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    font-size: 12.5px;
+}
+
+.app-footer-link {
+    color: var(--brand-text-soft);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.app-footer-link:hover {
+    color: var(--brand-text);
+    text-decoration: underline;
+}
+
+.app-footer-sep {
+    color: rgba(156, 185, 209, 0.4);
+}
+
+.app-footer-legal {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 11px;
+    color: var(--fintech-text-subtle);
+}
+
+.app-footer-legal strong {
+    color: var(--brand-text);
+}
+
+.app-footer-disclaimer {
+    opacity: 0.75;
+}
+
+/* Sidenav brand note */
+.sidenav-bottom-brand {
+    padding: 10px 14px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--brand-text-soft);
+    border-top: 1px solid rgba(0, 242, 254, 0.10);
+    margin-top: 4px;
+}
+
+.sidenav-bottom-brand strong {
+    color: var(--brand-sky);
+    letter-spacing: 0.06em;
+}
+
+.sidenav-version-tag {
+    font-family: ui-monospace, monospace;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.18);
+    color: var(--brand-sky);
+    font-size: 10.5px;
+}
+
+/* User modal version branding */
+.user-modal-branding {
+    font-size: 11.5px;
+    color: var(--brand-text-soft);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-modal-branding strong {
+    color: var(--brand-sky);
+    letter-spacing: 0.06em;
+}
+
+.user-modal-version {
+    font-family: ui-monospace, monospace;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.18);
+    color: var(--brand-sky);
+    font-size: 11px;
+}
+
+/* Light theme overrides */
+:root[data-theme="light"] .app-footer-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94) 0%, rgba(240, 248, 255, 0.90) 100%);
+    border: 1px solid rgba(0, 158, 195, 0.22);
+    box-shadow: 0 12px 30px rgba(0, 90, 130, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+:root[data-theme="light"] .app-footer-powered-badge {
+    background: rgba(0, 158, 195, 0.08);
+    border-color: rgba(0, 158, 195, 0.24);
+    color: var(--brand-text-soft);
+}
+
+:root[data-theme="light"] .tominex-brand-name {
+    color: var(--brand-blue-deep);
+}
+
+:root[data-theme="light"] .app-footer-version-pill {
+    background: rgba(0, 158, 195, 0.08);
+    border-color: rgba(0, 158, 195, 0.26);
+}
+
+:root[data-theme="light"] .app-footer-version-code {
+    color: var(--brand-blue-deep);
+}
+
+:root[data-theme="light"] .app-footer-release-link {
+    color: var(--brand-blue-deep);
+}
+
+:root[data-theme="light"] .sidenav-bottom-brand {
+    border-top-color: rgba(0, 158, 195, 0.16);
+}
+
+:root[data-theme="light"] .sidenav-version-tag {
+    background: rgba(0, 158, 195, 0.08);
+    border-color: rgba(0, 158, 195, 0.20);
+    color: var(--brand-blue-deep);
+}
+
+:root[data-theme="light"] .user-modal-branding strong,
+:root[data-theme="light"] .user-modal-version {
+    color: var(--brand-blue-deep);
+}
+
+:root[data-theme="light"] .user-modal-version {
+    background: rgba(0, 158, 195, 0.08);
+    border-color: rgba(0, 158, 195, 0.20);
+}
+
+/* Responsive layout for mobile / tablet */
+@media (max-width: 768px) {
+    .app-footer-card {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px 18px;
+        border-radius: 16px;
+    }
+    .app-footer-nav-section {
+        align-items: flex-start;
+        text-align: left;
+    }
+    .app-footer-version-row {
+        justify-content: flex-start;
+    }
+    .app-footer-links {
+        justify-content: flex-start;
+    }
+}
+
