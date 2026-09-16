@@ -461,6 +461,34 @@ def test_global_market_verdict_one_liner(page):
     assert "is-caution" in verdict.get_attribute("class")
 
 
+def test_wrapped_cover_benchmarks_bottom_right(page):
+    render_case(page, {
+        "overall_twr_pct": 2.5,
+        "market_context": [
+            {"id": "WIG", "return_pct": 3.4},
+            {"id": "MSCI_WORLD", "return_pct": -1.2}
+        ]
+    })
+    hero = page.locator(".monthly-audit-hero")
+    assert hero.locator("#ma-hero-benchmarks").count() == 1
+    assert "BENCHMARKS" in hero.locator(".ma-hero-benchmarks-title").inner_text()
+    assert "Poland (WIG)" in hero.locator("#ma-hero-benchmarks").inner_text()
+    assert "World (MSCI ACWI)" in hero.locator("#ma-hero-benchmarks").inner_text()
+
+    wig_el = hero.locator("#ma-hero-benchmark-wig")
+    assert "+3.4%" in wig_el.inner_text()
+    assert "is-positive" in wig_el.get_attribute("class")
+
+    msci_el = hero.locator("#ma-hero-benchmark-msci")
+    assert "-1.2%" in msci_el.inner_text()
+    assert "is-negative" in msci_el.get_attribute("class")
+
+    # Verify buildModel in share sheet includes benchmarks
+    model = page.evaluate("MonthlyAuditPresentation.buildModel(MONTHLY_WRAP_DATA[0])")
+    assert "benchmarks" in model
+    assert model["benchmarks"]["wig"] is not None or model["benchmarks"]["msci"] is not None
+
+
 def test_trading_activity_and_missing_vs_confirmed_zero(page):
     text = page.locator(".ma-trading").inner_text()
     for expected in ("Trading activity", "1,400 PLN", "1,000 PLN", "400 PLN", "Dividends received", "+25 PLN", "2026-08-12", "NVDA"):

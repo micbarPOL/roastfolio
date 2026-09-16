@@ -58,6 +58,17 @@
     // Allowlist, not a copy of the wrap: never include identity, wallet names,
     // holdings, diary entries, balances or private amounts when privacy is on.
     function buildModel(item, { hideAmounts = true } = {}) {
+        const heroBenchmarks = item._heroBenchmarks || {};
+        let wigVal = heroBenchmarks.wig;
+        let msciVal = heroBenchmarks.msci;
+        if (!finite(wigVal) && Array.isArray(item.market_context)) {
+            const w = item.market_context.find(e => e?.id === 'WIG');
+            if (finite(w?.return_pct)) wigVal = Number(w.return_pct);
+        }
+        if (!finite(msciVal) && Array.isArray(item.market_context)) {
+            const m = item.market_context.find(e => e?.id === 'MSCI_WORLD');
+            if (finite(m?.return_pct)) msciVal = Number(m.return_pct);
+        }
         return {
             schemaVersion: 2,
             period: /^\d{4}-(0[1-9]|1[0-2])$/.test(item.period || '') ? item.period : '',
@@ -69,6 +80,10 @@
             nominalChange: hideAmounts ? null : money(item.overall_nominal_change_pln),
             maxDrawdown: percent(item.max_drawdown_pct),
             journey: buildJourney(item),
+            benchmarks: {
+                wig: finite(wigVal) ? percent(wigVal) : null,
+                msci: finite(msciVal) ? percent(msciVal) : null,
+            },
         };
     }
 
@@ -131,6 +146,32 @@
         text(model.nominalChange ?? 'Amounts kept private.', 76, 625, 43, '#17281e');
         text(model.hideAmounts ? 'Your story. Your numbers to keep.' : 'Nominal change · net of deposits and withdrawals', 76, 668, 22, '#314735');
         text(model.headline, 76, 731, 29, '#17281e');
+        if (model.benchmarks && (model.benchmarks.wig || model.benchmarks.msci)) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.strokeStyle = 'rgba(28, 44, 34, 0.16)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if (typeof ctx.roundRect === 'function') {
+                ctx.roundRect(648, 560, 360, 142, 18);
+            } else {
+                ctx.rect(648, 560, 360, 142);
+            }
+            ctx.fill();
+            ctx.stroke();
+
+            text('BENCHMARKS', 672, 594, 16, '#344634', 312, 750);
+            text('Poland (WIG)', 672, 636, 21, '#17281e', 200, 600);
+            const wigVal = model.benchmarks.wig ?? 'No data';
+            ctx.textAlign = 'right';
+            text(wigVal, 984, 636, 21, '#17281e', 100, 700);
+            ctx.textAlign = 'left';
+
+            text('World (MSCI ACWI)', 672, 676, 21, '#17281e', 200, 600);
+            const msciVal = model.benchmarks.msci ?? 'No data';
+            ctx.textAlign = 'right';
+            text(msciVal, 984, 676, 21, '#17281e', 100, 700);
+            ctx.textAlign = 'left';
+        }
         text('CUMULATIVE RETURNS', 72, 826, 21, '#aab7c5');
         const { points, benchmark_name: benchmarkName, benchmark_currency: currency } = model.journey;
         const legend = (label, y, color, dashed = false) => {

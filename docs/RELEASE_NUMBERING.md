@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `11.3.0`  
+**Current Release:** `11.4.0`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -57,11 +57,12 @@ A Service release (also called patch or maintenance release) is dedicated exclus
 
 ## 3. Current Release Status
 
-* **Current Active Release:** `11.3.0`
+* **Current Active Release:** `11.4.0`
   * **Major 11:** Multi-asset portfolio intelligence, Coping Diary, and Monthly Recaps.
-  * **Minor 3:** Subtle tactile texture and ambient lighting mesh on wrapped covers, global market comparison one-liner against MSCI World, gapless weekend benchmark extrapolation in Journey, and dynamic benchmark returns in The Bigger Picture.
-  * **Service Release 0:** Base release for Minor tier 3 (Service resets to 0 upon Minor bump).
+  * **Minor 4:** Summary wrapped benchmarks card in the right bottom corner displaying Poland (WIG) and World (MSCI ACWI) monthly returns, synchronized across web recaps and Canvas export posters.
+  * **Service Release 0:** Base release for Minor tier 4 (Service resets to 0 upon Minor bump).
 * **Prior Releases:**
+  * **11.3.0:** Subtle tactile texture and ambient lighting mesh on wrapped covers, global market comparison one-liner against MSCI World, gapless weekend benchmark extrapolation in Journey, and dynamic benchmark returns in The Bigger Picture.
   * **11.2.1:** Boundary date alignments, asset query versioning, and stability fixes.
   * **11.2.0:** Editorial Bento presentation, interactive dated return charts, and private share sheets.
 * **Organization:** Powered by **TOMINEX**.
@@ -74,7 +75,7 @@ When preparing a release for deployment:
 
 1. **Classify the Changes:**
    * Did you add a new feature? $\rightarrow$ Bump **Major** (`12.0.0`).
-   * Did you modify an existing feature? $\rightarrow$ Bump **Minor** (`11.3.0`).
+   * Did you modify an existing feature? $\rightarrow$ Bump **Minor** (`11.4.0`).
    * Did you only fix bugs or performance? $\rightarrow$ Bump **Service** (`11.2.2`).
 
 2. **Update Version in Codebase:**

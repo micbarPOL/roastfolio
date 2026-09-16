@@ -429,6 +429,18 @@
                 verdictEl.hidden = true;
             }
         }
+        const heroWig = document.getElementById('ma-hero-benchmark-wig');
+        if (heroWig) {
+            const wigVal = resolveMarketReturn(item, 'WIG');
+            heroWig.className = `ma-hero-benchmark-val ${tone(wigVal)}`;
+            heroWig.textContent = formatPct(wigVal, true);
+        }
+        const heroMsci = document.getElementById('ma-hero-benchmark-msci');
+        if (heroMsci) {
+            const msciVal = resolveMarketReturn(item, 'MSCI_WORLD');
+            heroMsci.className = `ma-hero-benchmark-val ${tone(msciVal)}`;
+            heroMsci.textContent = formatPct(msciVal, true);
+        }
     }
 
     async function loadAllBenchmarkMonthlyReturns(force = false) {
@@ -602,15 +614,32 @@
         if (!root) return;
         const item = state.items.get(state.selectedPeriod);
         const periodTitle = window.MonthlyAuditPresentation.periodTitle(state.selectedPeriod);
+        const wigReturn = item ? resolveMarketReturn(item, 'WIG') : null;
+        const msciReturn = item ? resolveMarketReturn(item, 'MSCI_WORLD') : null;
         root.innerHTML = `
             ${timelineMarkup()}
             ${item ? `<header class="monthly-audit-hero ${tone(item.overall_twr_pct)}">
                 <div class="ma-cover-top"><div class="ma-cover-brand"><span class="ma-wordmark">roastfolio</span><span class="ma-cover-edition">MONTHLY AUDIT</span></div><button type="button" class="ma-share-button" onclick="shareMonthlyAudit()"><span aria-hidden="true">↗</span> Share recap</button></div>
                 <h1>${escapeHtml(periodTitle)}<br><em>Wrapped.</em></h1>
                 <p class="ma-cover-story">${escapeHtml(window.MonthlyAuditPresentation.headline(item))}</p>
-                <div class="monthly-audit-hero-metrics">
-                    <div class="monthly-audit-hero-result ma-twr"><strong>${escapeHtml(formatPct(item.overall_twr_pct, true))}</strong><span>TWR result</span></div>
-                    <div class="monthly-audit-hero-result ma-nominal"><strong>${escapeHtml(formatPLN(item.overall_nominal_change_pln, true))}</strong><span>Nominal change · net of cash flows</span></div>
+                <div class="monthly-audit-hero-bottom">
+                    <div class="monthly-audit-hero-metrics">
+                        <div class="monthly-audit-hero-result ma-twr"><strong>${escapeHtml(formatPct(item.overall_twr_pct, true))}</strong><span>TWR result</span></div>
+                        <div class="monthly-audit-hero-result ma-nominal"><strong>${escapeHtml(formatPLN(item.overall_nominal_change_pln, true))}</strong><span>Nominal change · net of cash flows</span></div>
+                    </div>
+                    <div class="ma-hero-benchmarks" id="ma-hero-benchmarks" aria-label="Key monthly benchmarks">
+                        <span class="ma-hero-benchmarks-title">BENCHMARKS</span>
+                        <div class="ma-hero-benchmarks-grid">
+                            <div class="ma-hero-benchmark-row">
+                                <span class="ma-hero-benchmark-label">Poland (WIG)</span>
+                                <strong class="ma-hero-benchmark-val ${tone(wigReturn)}" id="ma-hero-benchmark-wig">${escapeHtml(formatPct(wigReturn, true))}</strong>
+                            </div>
+                            <div class="ma-hero-benchmark-row">
+                                <span class="ma-hero-benchmark-label">World (MSCI ACWI)</span>
+                                <strong class="ma-hero-benchmark-val ${tone(msciReturn)}" id="ma-hero-benchmark-msci">${escapeHtml(formatPct(msciReturn, true))}</strong>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </header>` : ''}
             <div class="monthly-audit-content">
@@ -621,7 +650,13 @@
 
     window.shareMonthlyAudit = () => {
         const item = state.items.get(state.selectedPeriod);
-        if (item) window.MonthlyAuditShare.open(item);
+        if (item) {
+            item._heroBenchmarks = {
+                wig: resolveMarketReturn(item, 'WIG'),
+                msci: resolveMarketReturn(item, 'MSCI_WORLD'),
+            };
+            window.MonthlyAuditShare.open(item);
+        }
     };
 
     async function loadPeriod(period) {

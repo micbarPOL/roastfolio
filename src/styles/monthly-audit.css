@@ -82,11 +82,21 @@
 #monthly-audit-root .monthly-audit-hero h1 { color: #1c2c22; font-size: clamp(32px, 4.7vw, 64px); letter-spacing: -.055em; line-height: 1.03; font-weight: 750; max-width: 80%; margin: 0; }
 .monthly-audit-hero h1 em { font-style: normal; font-weight: 400; }
 .ma-cover-story { margin: 20px 0 30px; font-size: clamp(15px, 1.6vw, 19px); color: #344634; max-width: 70%; }
-#monthly-audit-root .monthly-audit-hero-metrics { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; gap: 16px 32px; max-width: 85%; }
+#monthly-audit-root .monthly-audit-hero-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px 36px; flex-wrap: wrap; margin-top: 10px; }
+#monthly-audit-root .monthly-audit-hero-metrics { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; gap: 16px 32px; max-width: 65%; flex: 1 1 auto; min-width: 280px; }
 #monthly-audit-root .monthly-audit-hero-result { display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 8px; width: auto; min-width: 0; }
 #monthly-audit-root .monthly-audit-hero-result strong { color: #1c2c22; font-family: inherit; font-size: clamp(24px, 3vw, 42px); font-weight: 700; line-height: 1.05; letter-spacing: -.045em; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 #monthly-audit-root .monthly-audit-hero-result.ma-twr strong { font-size: clamp(44px, 7vw, 94px); letter-spacing: -.07em; }
 #monthly-audit-root .monthly-audit-hero-result span { font-size: 11px; color: #344634; font-weight: 600; letter-spacing: .06em; }
+#monthly-audit-root .ma-hero-benchmarks { display: flex; flex-direction: column; gap: 7px; padding: 12px 18px; border-radius: 18px; background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(28, 44, 34, 0.14); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 4px 18px rgba(28, 44, 34, 0.04); min-width: 220px; flex: 0 0 auto; }
+#monthly-audit-root .ma-hero-benchmarks-title { font-size: 9.5px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; color: #344634; }
+#monthly-audit-root .ma-hero-benchmarks-grid { display: flex; flex-direction: column; gap: 5px; }
+#monthly-audit-root .ma-hero-benchmark-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; font-size: 13px; line-height: 1.25; }
+#monthly-audit-root .ma-hero-benchmark-label { color: #1c2c22; font-weight: 600; letter-spacing: -.01em; }
+#monthly-audit-root .ma-hero-benchmark-val { font-family: inherit; font-size: 13.5px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #1c2c22; }
+#monthly-audit-root .ma-hero-benchmark-val.is-positive { color: #14532d; }
+#monthly-audit-root .ma-hero-benchmark-val.is-negative { color: #991b1b; }
+#monthly-audit-root .ma-hero-benchmark-val.is-neutral { color: #344634; }
 
 /* Desktop hierarchy: 2:1 panels, not seven equal boxes. */
 .monthly-audit-content { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
@@ -260,9 +270,11 @@
     .ma-share-button { padding: 9px 12px; font-size: 12px !important; gap: 6px; }
     #monthly-audit-root .monthly-audit-hero h1 { max-width: 100%; font-size: clamp(32px, 8vw, 52px); }
     .ma-cover-story { max-width: 100%; margin-bottom: 24px; font-size: 15px; }
-    #monthly-audit-root .monthly-audit-hero-metrics { grid-template-columns: 1fr; gap: 24px; }
+    #monthly-audit-root .monthly-audit-hero-bottom { flex-direction: column; align-items: stretch; gap: 20px; }
+    #monthly-audit-root .monthly-audit-hero-metrics { grid-template-columns: 1fr; gap: 24px; max-width: 100%; width: 100%; min-width: 0; }
     #monthly-audit-root .monthly-audit-hero-result.ma-twr strong { font-size: clamp(42px, 14vw, 76px); }
     #monthly-audit-root .monthly-audit-hero-result.ma-nominal strong { font-size: clamp(24px, 6vw, 34px); }
+    #monthly-audit-root .ma-hero-benchmarks { width: 100%; min-width: 0; box-sizing: border-box; }
     .monthly-audit-content { grid-template-columns: 1fr; gap: 14px; }
     #monthly-audit-root .monthly-audit-card,
     #monthly-audit-root .monthly-audit-card.ma-journey,
