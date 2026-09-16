@@ -1725,19 +1725,46 @@ def portfolios_handler(event: dict) -> dict:
                 if from_date:
                     tx_type = str(tx.get("type") or "").upper()
                     is_cash_tx = tx_type in {"DEPOSIT", "WITHDRAWAL", "EXTRA_COST", "CASH_ADJUSTMENT"}
-                    try:
-                        tx["recalculated"] = snapshots.recalculate_portfolio_snapshots_from_date(
-                            user_id,
-                            portfolio_id,
-                            from_date,
-                            is_cash_only=is_cash_tx,
-                            old_transaction=None,
-                            new_transaction=tx,
-                        )
-                        tx["summaryUpdated"] = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
-                    except Exception as recalc_exc:
-                        # Transaction write succeeded; return warning so clients can surface stale-history risk.
-                        tx["historyRecalcWarning"] = str(recalc_exc)
+                    fn_name = os.environ.get("MONTHLY_WRAP_FUNCTION_NAME")
+                    dispatched_async = False
+                    if fn_name:
+                        try:
+                            import boto3
+                            payload = {
+                                "action": "recalculate_snapshots",
+                                "user_id": user_id,
+                                "portfolio_id": portfolio_id,
+                                "from_date": from_date,
+                                "is_cash_only": is_cash_tx,
+                                "old_transaction": None,
+                                "new_transaction": tx,
+                            }
+                            boto3.client("lambda").invoke(
+                                FunctionName=fn_name,
+                                InvocationType="Event",
+                                Payload=json.dumps(payload, default=str).encode("utf-8"),
+                            )
+                            dispatched_async = True
+                        except Exception as async_exc:
+                            print(f"Async dispatch error: {async_exc}")
+
+                    if dispatched_async:
+                        tx["recalculated"] = {"status": "dispatched_background", "fromDate": from_date}
+                        tx["summaryUpdated"] = "dispatched_background"
+                    else:
+                        try:
+                            tx["recalculated"] = snapshots.recalculate_portfolio_snapshots_from_date(
+                                user_id,
+                                portfolio_id,
+                                from_date,
+                                is_cash_only=is_cash_tx,
+                                old_transaction=None,
+                                new_transaction=tx,
+                            )
+                            tx["summaryUpdated"] = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
+                        except Exception as recalc_exc:
+                            # Transaction write succeeded; return warning so clients can surface stale-history risk.
+                            tx["historyRecalcWarning"] = str(recalc_exc)
                 return _resp(200, tx)
             except ValueError as e:
                 return _resp(400, {"error": str(e)})
@@ -1755,7 +1782,7 @@ def portfolios_handler(event: dict) -> dict:
 
                 fn_name = os.environ.get("MONTHLY_WRAP_FUNCTION_NAME")
                 dispatched_async = False
-                if fn_name and not is_cash_only:
+                if fn_name:
                     try:
                         import boto3
                         payload = {
@@ -1820,6 +1847,30 @@ def portfolios_handler(event: dict) -> dict:
             if not from_date or len(from_date) < 10 or from_date[4:5] != "-" or from_date[7:8] != "-":
                 return _resp(400, {"error": "fromDate must be YYYY-MM-DD"})
             from_date = from_date[:10]
+            fn_name = os.environ.get("MONTHLY_WRAP_FUNCTION_NAME")
+            if fn_name:
+                try:
+                    import boto3
+                    payload = {
+                        "action": "recalculate_snapshots",
+                        "user_id": user_id,
+                        "portfolio_id": portfolio_id,
+                        "from_date": from_date,
+                        "is_cash_only": False,
+                    }
+                    boto3.client("lambda").invoke(
+                        FunctionName=fn_name,
+                        InvocationType="Event",
+                        Payload=json.dumps(payload, default=str).encode("utf-8"),
+                    )
+                    return _resp(200, {
+                        "updated": "dispatched_background",
+                        "fromDate": from_date,
+                        "portfolioId": portfolio_id,
+                        "summaryUpdated": "dispatched_background",
+                    })
+                except Exception as async_exc:
+                    print(f"Async dispatch error: {async_exc}")
             try:
                 result = snapshots.recalculate_portfolio_snapshots_from_date(user_id, portfolio_id, from_date)
                 summary_updated = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)

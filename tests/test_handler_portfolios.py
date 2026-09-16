@@ -521,6 +521,33 @@ class PortfolioHandlerTests(unittest.TestCase):
         self.assertEqual(payload["action"], "recalculate_snapshots")
         self.assertEqual(payload["portfolio_id"], "xtb")
 
+    def test_put_transaction_route_dispatches_background_worker_for_cash_only_edits(self):
+        update_result = {
+            "transaction": {"transactionId": "dep-1", "transactionDate": "2021-10-01", "type": "DEPOSIT", "value": 2000},
+            "isCashOnly": True,
+            "recalculateFrom": "2021-10-01",
+        }
+        mock_lambda_client = MagicMock()
+        with patch.dict(os.environ, {"MONTHLY_WRAP_FUNCTION_NAME": "test-monthly-wrap-worker"}), \
+             patch.object(handler.portfolios, "update_transaction", return_value=update_result), \
+             patch("boto3.client", return_value=mock_lambda_client):
+            resp = handler.portfolios_handler(self._event(
+                "PUT",
+                "/portfolios/xtb/transactions/dep-1",
+                {"portfolioId": "xtb", "transactionId": "dep-1"},
+                body=json.dumps({"value": 2000}),
+            ))
+        self.assertEqual(resp["statusCode"], 200)
+        body = json.loads(resp["body"])
+        self.assertEqual(body["recalculated"]["status"], "dispatched_background")
+        mock_lambda_client.invoke.assert_called_once()
+        call_kwargs = mock_lambda_client.invoke.call_args[1]
+        self.assertEqual(call_kwargs["FunctionName"], "test-monthly-wrap-worker")
+        payload = json.loads(call_kwargs["Payload"].decode())
+        self.assertEqual(payload["action"], "recalculate_snapshots")
+        self.assertEqual(payload["portfolio_id"], "xtb")
+        self.assertTrue(payload["is_cash_only"])
+
 
 if __name__ == "__main__":
     unittest.main()
