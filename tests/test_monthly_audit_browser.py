@@ -489,7 +489,7 @@ def test_wrapped_cover_benchmarks_bottom_right(page):
     assert model["benchmarks"]["wig"] is not None or model["benchmarks"]["msci"] is not None
 
 
-def test_hero_twr_nowrap_and_stacked_above_nominal(page):
+def test_hero_twr_nowrap_and_middle_nominal_layout(page):
     render_case(page, {
         "overall_twr_pct": 13.78,
         "overall_nominal_change_pln": 24680,
@@ -500,10 +500,10 @@ def test_hero_twr_nowrap_and_stacked_above_nominal(page):
     # Verify white-space is nowrap so percent never wraps under the number
     white_space = twr_strong.evaluate("e => getComputedStyle(e).whiteSpace")
     assert white_space == "nowrap"
-    # Verify TWR is stacked vertically above nominal change
+    # Verify TWR is on the left and nominal change is in the middle to its right
     twr_box = twr_strong.bounding_box()
     nominal_box = nominal_strong.bounding_box()
-    assert twr_box["y"] < nominal_box["y"]
+    assert twr_box["x"] + twr_box["width"] <= nominal_box["x"]
 
 
 def test_trading_activity_and_missing_vs_confirmed_zero(page):
