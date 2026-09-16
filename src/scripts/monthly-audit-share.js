@@ -160,53 +160,147 @@
             text(msciVal, 984, 656, 21, '#17281e', 100, 700);
             ctx.textAlign = 'left';
         }
+        // — Minimalist chart section —
+        const { points, benchmark_name: benchmarkName } = model.journey;
+        const chartL = 72, chartR = 1008, chartT = 840, chartB = 1070;
+        const chartW = chartR - chartL, chartH = chartB - chartT;
+
         text('CUMULATIVE RETURNS', 72, 826, 21, '#aab7c5');
-        const { points, benchmark_name: benchmarkName, benchmark_currency: currency } = model.journey;
-        const legend = (label, y, color, dashed = false) => {
-            ctx.strokeStyle = color; ctx.lineWidth = 4; ctx.setLineDash(dashed ? [9, 7] : []);
-            ctx.beginPath(); ctx.moveTo(72, y - 7); ctx.lineTo(108, y - 7); ctx.stroke(); ctx.setLineDash([]);
-            text(label, 122, y, 23, color, 886);
-        };
-        legend('Portfolio · cumulative TWR', 862, '#b8e4ca');
-        legend(`${benchmarkName} · ${currency || 'currency unavailable'}`, 896, '#d0c5f4', true);
+
+        // Compact inline legend: colored dots + labels, right-aligned at top
+        const dot = (cx, cy, r, color) => { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); };
+        ctx.font = '500 18px system-ui, sans-serif';
+        const bmLabel = benchmarkName || 'Benchmark';
+        const bmW = ctx.measureText(bmLabel).width;
+        const pLabel = 'Portfolio';
+        const pW = ctx.measureText(pLabel).width;
+        // Legend: Portfolio ● ... Benchmark ●  (right-aligned)
+        const legendY = 826;
+        const legendGap = 28;
+        const totalLegendW = 10 + 8 + pW + legendGap + 10 + 8 + bmW;
+        const legendX = chartR - totalLegendW;
+        dot(legendX + 5, legendY - 5, 5, '#b8e4ca');
+        ctx.fillStyle = '#aab7c5'; ctx.font = '500 18px system-ui, sans-serif';
+        ctx.fillText(pLabel, legendX + 18, legendY);
+        dot(legendX + 18 + pW + legendGap + 5, legendY - 5, 5, '#d0c5f4');
+        ctx.fillText(bmLabel, legendX + 18 + pW + legendGap + 18, legendY);
+
         const values = points.flatMap(point => [point.portfolio_pct, point.benchmark_pct].filter(finite));
         const dates = points.map(point => Date.parse(`${point.date}T00:00:00Z`));
         if (new Set(dates).size >= 2 && values.length) {
             const first = Math.min(...dates), last = Math.max(...dates);
             const low = Math.min(0, ...values), high = Math.max(0, ...values);
-            const x = date => 150 + (Date.parse(`${date}T00:00:00Z`) - first) / (last - first) * 858;
-            const y = value => 930 + (high - value) / (high - low || 1) * 145;
-            [...new Set([high, 0, low])].forEach(value => {
-                ctx.strokeStyle = value === 0 ? '#aab7c5' : '#46515f';
-                ctx.lineWidth = value === 0 ? 2 : 1; ctx.setLineDash(value === 0 ? [] : [5, 6]);
-                ctx.beginPath(); ctx.moveTo(150, y(value)); ctx.lineTo(1008, y(value)); ctx.stroke();
-                text(percent(value), 72, y(value) + 6, 18, '#aab7c5', 70);
-            });
-            ['portfolio_pct', 'benchmark_pct'].forEach((key, index) => {
-                ctx.strokeStyle = ctx.fillStyle = index ? '#d0c5f4' : '#b8e4ca';
-                ctx.lineWidth = 4; ctx.setLineDash(index ? [9, 7] : []);
+            const range = high - low || 1;
+            // Add 8% vertical padding so lines don't touch edges
+            const padFrac = 0.08;
+            const x = date => chartL + (Date.parse(`${date}T00:00:00Z`) - first) / (last - first) * chartW;
+            const y = value => chartT + padFrac * chartH + (high - value) / range * (chartH * (1 - 2 * padFrac));
+
+            // Faint zero baseline only (no grid, no Y-axis labels)
+            if (low < 0 && high > 0) {
+                ctx.save();
+                ctx.strokeStyle = 'rgba(170, 183, 197, 0.25)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([6, 8]);
+                ctx.beginPath(); ctx.moveTo(chartL, y(0)); ctx.lineTo(chartR, y(0)); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.restore();
+            }
+
+            // Draw portfolio line + gradient fill
+            const pfPoints = points.filter(p => finite(p.portfolio_pct));
+            if (pfPoints.length >= 2) {
+                // Build segments of continuous finite points
+                const segments = [];
+                let currentSegment = [];
+                points.forEach(p => {
+                    if (finite(p.portfolio_pct)) {
+                        currentSegment.push({ x: x(p.date), y: y(p.portfolio_pct), date: p.date });
+                    } else if (currentSegment.length) {
+                        segments.push(currentSegment);
+                        currentSegment = [];
+                    }
+                });
+                if (currentSegment.length) segments.push(currentSegment);
+
+                // Gradient fill under each continuous portfolio segment
+                ctx.save();
+                const grad = ctx.createLinearGradient(0, chartT, 0, chartB);
+                grad.addColorStop(0, 'rgba(184, 228, 202, 0.35)');
+                grad.addColorStop(0.6, 'rgba(184, 228, 202, 0.08)');
+                grad.addColorStop(1, 'rgba(184, 228, 202, 0)');
+                ctx.fillStyle = grad;
+                segments.forEach(seg => {
+                    if (seg.length < 2) return;
+                    ctx.beginPath();
+                    seg.forEach((c, i) => { if (i === 0) ctx.moveTo(c.x, c.y); else ctx.lineTo(c.x, c.y); });
+                    ctx.lineTo(seg[seg.length - 1].x, chartB);
+                    ctx.lineTo(seg[0].x, chartB);
+                    ctx.closePath();
+                    ctx.fill();
+                });
+                ctx.restore();
+
+                // Portfolio line (retains gaps with moveTo)
+                ctx.save();
+                ctx.strokeStyle = '#b8e4ca';
+                ctx.lineWidth = 3;
+                ctx.lineJoin = 'round'; ctx.lineCap = 'round';
                 ctx.beginPath();
                 let connected = false;
                 points.forEach(point => {
-                    if (!finite(point[key])) { connected = false; return; }
-                    if (connected) ctx.lineTo(x(point.date), y(point[key]));
-                    else ctx.moveTo(x(point.date), y(point[key]));
+                    if (!finite(point.portfolio_pct)) { connected = false; return; }
+                    if (connected) ctx.lineTo(x(point.date), y(point.portfolio_pct));
+                    else ctx.moveTo(x(point.date), y(point.portfolio_pct));
                     connected = true;
                 });
-                ctx.stroke(); ctx.setLineDash([]);
-                // Isolated observations remain visible, without joining across gaps.
-                points.filter(point => finite(point[key])).forEach(point => {
-                    ctx.beginPath(); ctx.arc(x(point.date), y(point[key]), 3, 0, Math.PI * 2); ctx.fill();
+                ctx.stroke();
+
+                // Terminal dot with subtle glow
+                const lastPf = pfPoints[pfPoints.length - 1];
+                ctx.shadowColor = '#b8e4ca'; ctx.shadowBlur = 12;
+                dot(x(lastPf.date), y(lastPf.portfolio_pct), 5, '#b8e4ca');
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+
+            // Draw benchmark line
+            const bmPoints = points.filter(p => finite(p.benchmark_pct));
+            if (bmPoints.length >= 2) {
+                ctx.save();
+                ctx.strokeStyle = '#d0c5f4';
+                ctx.lineWidth = 2;
+                ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+                ctx.setLineDash([8, 6]);
+                ctx.beginPath();
+                let started = false;
+                points.forEach(p => {
+                    if (!finite(p.benchmark_pct)) { started = false; return; }
+                    if (started) ctx.lineTo(x(p.date), y(p.benchmark_pct));
+                    else ctx.moveTo(x(p.date), y(p.benchmark_pct));
+                    started = true;
                 });
-            });
-            text(points[0].date, 150, 1105, 19, '#aab7c5');
-            ctx.textAlign = 'right'; text(points[points.length - 1].date, 1008, 1105, 19, '#aab7c5'); ctx.textAlign = 'left';
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // Terminal dot
+                const lastBm = bmPoints[bmPoints.length - 1];
+                dot(x(lastBm.date), y(lastBm.benchmark_pct), 4, '#d0c5f4');
+                ctx.restore();
+            }
+
+            // Single centered x-axis label: "August 2026" derived from the period
+            const monthLabel = model.period && /^\d{4}-(0[1-9]|1[0-2])$/.test(model.period)
+                ? new Date(`${model.period}-15T12:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+                : model.title || '';
+            ctx.textAlign = 'center';
+            text(monthLabel, (chartL + chartR) / 2, chartB + 36, 20, '#aab7c5', chartW, 500);
+            ctx.textAlign = 'left';
         } else {
             text('Dated return history unavailable', 72, 1005, 28, '#aab7c5');
         }
         ctx.setLineDash([]);
         const missing = ['portfolio_pct', 'benchmark_pct'].map((key, i) => points.some(point => finite(point[key])) ? '' : `${i ? 'Benchmark' : 'Portfolio'} unavailable`).filter(Boolean);
-        text(missing.length ? missing.join(' · ') : 'Native-currency benchmark · not PLN-adjusted. Weekends extrapolated.', 72, 1137, 18, '#aab7c5');
+        text(missing.length ? missing.join(' · ') : 'Not PLN-adjusted · weekends extrapolated', 72, 1137, 18, '#aab7c5');
         text(`Max drawdown  ${model.maxDrawdown}`, 72, 1170, 28, '#f4f5f7');
         ctx.fillStyle = '#384250'; ctx.fillRect(72, 1220, 936, 1);
         text('A month in perspective. Not investment advice.', 72, 1282, 22, '#aab7c5');

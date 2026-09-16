@@ -409,14 +409,14 @@
     function updateMarketContextDom() {
         const item = state.items.get(state.selectedPeriod);
         if (!item) return;
-        const rows = document.querySelectorAll('.ma-market-row[data-market-id]');
+        const rows = document.querySelectorAll('.ma-ticker-item[data-market-id], .ma-market-row[data-market-id]');
         rows.forEach(row => {
             const id = row.getAttribute('data-market-id');
-            const bTag = row.querySelector('div > b');
-            if (!bTag) return;
+            const valEl = row.querySelector('.ma-ticker-val') || row.querySelector('div > b') || row.querySelector('b, strong');
+            if (!valEl) return;
             const currentVal = resolveMarketReturn(item, id);
-            bTag.className = tone(currentVal);
-            bTag.textContent = formatPct(currentVal, true);
+            valEl.className = valEl.classList.contains('ma-ticker-val') ? `ma-ticker-val ${tone(currentVal)}` : tone(currentVal);
+            valEl.textContent = formatPct(currentVal, true);
         });
         const verdictEl = document.getElementById('ma-global-market-verdict');
         if (verdictEl) {
@@ -483,11 +483,9 @@
     }
 
     function marketContext(item) {
-        const definitions = [
-            ['Poland', [['WIG', 'WIG', 'PLN']]],
-            ['Europe', [['DAX', 'DAX', 'EUR'], ['FTSE100', 'FTSE 100', 'GBP']]],
-            ['US', [['SP500', 'S&P 500', 'USD'], ['NASDAQ', 'NASDAQ', 'USD']]],
-            ['World', [['MSCI_WORLD', 'MSCI World proxy', 'EUR']]],
+        const tickers = [
+            ['WIG', 'WIG'], ['DAX', 'DAX'], ['FTSE100', 'FTSE 100'],
+            ['SP500', 'S&P 500'], ['NASDAQ', 'NASDAQ'], ['MSCI_WORLD', 'MSCI World'],
         ];
         const verdict = globalMarketVerdict(item);
         const verdictHtml = verdict ? `
@@ -500,10 +498,10 @@
                 ${metric('Your portfolio · monthly TWR', formatPct(item.overall_twr_pct, true), tone(item.overall_twr_pct))}
                 ${verdictHtml}
             </div>
-            <div class="ma-markets">${definitions.map(([region, entries]) => `<section class="ma-market-group" aria-label="${region}"><h3>${region}</h3>${entries.map(([id, label, currency]) => {
+            <div class="ma-ticker-strip">${tickers.map(([id, label]) => {
                 const returnVal = resolveMarketReturn(item, id);
-                return `<div class="ma-market-row" data-market-id="${id}"><div><strong>${label}</strong><b class="${tone(returnVal)}">${escapeHtml(formatPct(returnVal, true))}</b></div><span>${currency}</span></div>`;
-            }).join('')}</section>`).join('')}</div><p class="ma-footnote">Calendar close-to-close, native currencies (not PLN-adjusted); dates may differ from portfolio TWR. MSCI World uses a proxy.</p>`;
+                return `<div class="ma-ticker-item ma-market-row" data-market-id="${id}"><span class="ma-ticker-label">${label}</span><b class="ma-ticker-val ${tone(returnVal)}">${escapeHtml(formatPct(returnVal, true))}</b></div>`;
+            }).join('')}</div><p class="ma-footnote">Calendar close-to-close, native currencies (not PLN-adjusted); dates may differ from portfolio TWR. MSCI World uses a proxy.</p>`;
     }
 
     function seasonalityCard(item) {

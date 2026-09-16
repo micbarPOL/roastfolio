@@ -386,8 +386,8 @@ def test_share_canvas_draws_dated_return_lines_and_retains_drawdown_text(page):
         return {labels,lines:strokes.filter(s => ['#b8e4ca','#d0c5f4'].includes(s.color) && s.path.some(p=>p[2]>=930))};
     }""")
     assert 'roastfolio' in drawing['labels'] and 'CUMULATIVE RETURNS' in drawing['labels']
-    assert '2026-08-01' in drawing['labels'] and '2026-09-01' in drawing['labels']
-    assert 'Portfolio · cumulative TWR' in drawing['labels']
+    assert 'August 2026' in drawing['labels']
+    assert 'Portfolio' in drawing['labels']
     assert any('MSCI World' in label for label in drawing['labels'])
     assert any(label.startswith('Max drawdown') for label in drawing['labels'])
     assert not any('Drawdown through' in label for label in drawing['labels'])
@@ -397,7 +397,7 @@ def test_share_canvas_draws_dated_return_lines_and_retains_drawdown_text(page):
     assert sum(point[0] == 'moveTo' for point in portfolio['path']) == 2  # Portfolio retains gaps.
     assert sum(point[0] == 'moveTo' for point in benchmark['path']) == 1  # Benchmark is extrapolated without gaps.
     points = portfolio['path']
-    assert points[1][1] - points[0][1] == pytest.approx(858 * 3 / 31)
+    assert points[1][1] - points[0][1] == pytest.approx(936 * 3 / 31)
     assert points[2][2] > points[0][2]  # Negative returns below zero, not clamped.
 
 
@@ -405,14 +405,8 @@ def test_bigger_picture_currencies_calendars_and_seasonality(page):
     rows = page.locator(".ma-market-row")
     assert rows.count() == 6
     assert rows.evaluate_all("es => es.map(e => e.dataset.marketId)") == ["WIG", "DAX", "FTSE100", "SP500", "NASDAQ", "MSCI_WORLD"]
-    assert page.locator('.ma-market-group h3').all_text_contents() == ["Poland", "Europe", "US", "World"]
-    expected = {"WIG": ("Poland", "PLN"), "MSCI_WORLD": ("World", "EUR"), "SP500": ("US", "USD"),
-                "NASDAQ": ("US", "USD"), "DAX": ("Europe", "EUR"), "FTSE100": ("Europe", "GBP")}
-    for market_id, (region, currency) in expected.items():
-        row = page.locator(f'[data-market-id="{market_id}"]')
-        assert currency in row.inner_text()
-        assert row.evaluate("e => e.closest('section').getAttribute('aria-label')") == region
-        assert row.locator('p, small').count() == 0
+    assert page.locator('.ma-ticker-label').all_text_contents() == ["WIG", "DAX", "FTSE 100", "S&P 500", "NASDAQ", "MSCI World"]
+    assert page.locator('.ma-market-group').count() == 0
     text = page.locator('.ma-seasonality').inner_text()
     for removed in ('Portfolio boundary', 'Market quotes', 'ahead of', 'behind this market'):
         assert removed not in text
