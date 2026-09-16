@@ -362,6 +362,50 @@
         return null;
     }
 
+    function globalMarketVerdict(item) {
+        if (!item || !finite(item.overall_twr_pct)) return null;
+        const userReturn = number(item.overall_twr_pct);
+        const msciReturn = resolveMarketReturn(item, 'MSCI_WORLD');
+        if (!finite(msciReturn)) return null;
+
+        const msci = number(msciReturn);
+        const delta = userReturn - msci;
+        const absDiff = Math.abs(delta);
+        const diffStr = `${absDiff.toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} pp`;
+
+        if (absDiff < 0.05) {
+            return {
+                status: 'Matched global market',
+                tone: 'is-neutral',
+                text: 'You matched the global market — pacing neck and neck with the MSCI World benchmark.',
+            };
+        }
+
+        if (delta > 0) {
+            const detail = userReturn >= 0 && msci < 0
+                ? `You were better than the global market — staying positive while the MSCI World slipped (+${diffStr} alpha).`
+                : userReturn < 0
+                ? `You were better than the global market — weathering the drop better than the MSCI World (+${diffStr} cushion).`
+                : `You were better than the global market — beating the MSCI World by +${diffStr} this month.`;
+            return {
+                status: 'Better than global market',
+                tone: 'is-positive',
+                text: detail,
+            };
+        }
+
+        const detail = userReturn < 0 && msci >= 0
+            ? `You were behind the global market — the MSCI World held positive territory by ${diffStr}.`
+            : userReturn >= 0
+            ? `You were behind the global market — a positive run, but the MSCI World set a faster pace by ${diffStr}.`
+            : `You were behind the global market — the market pullback weighed on you more than the MSCI World by ${diffStr}.`;
+        return {
+            status: 'Behind global market',
+            tone: 'is-caution',
+            text: detail,
+        };
+    }
+
     function updateMarketContextDom() {
         const item = state.items.get(state.selectedPeriod);
         if (!item) return;
@@ -374,6 +418,17 @@
             bTag.className = tone(currentVal);
             bTag.textContent = formatPct(currentVal, true);
         });
+        const verdictEl = document.getElementById('ma-global-market-verdict');
+        if (verdictEl) {
+            const verdict = globalMarketVerdict(item);
+            if (verdict) {
+                verdictEl.className = `ma-market-verdict ${verdict.tone}`;
+                verdictEl.hidden = false;
+                verdictEl.innerHTML = `<span class="ma-verdict-badge">${escapeHtml(verdict.status)}</span><span class="ma-verdict-copy">${escapeHtml(verdict.text)}</span>`;
+            } else {
+                verdictEl.hidden = true;
+            }
+        }
     }
 
     async function loadAllBenchmarkMonthlyReturns(force = false) {
@@ -422,7 +477,17 @@
             ['US', [['SP500', 'S&P 500', 'USD'], ['NASDAQ', 'NASDAQ', 'USD']]],
             ['World', [['MSCI_WORLD', 'MSCI World proxy', 'EUR']]],
         ];
-        return `<div class="ma-market-portfolio">${metric('Your portfolio · monthly TWR', formatPct(item.overall_twr_pct, true), tone(item.overall_twr_pct))}</div>
+        const verdict = globalMarketVerdict(item);
+        const verdictHtml = verdict ? `
+            <div class="ma-market-verdict ${verdict.tone}" id="ma-global-market-verdict" role="status">
+                <span class="ma-verdict-badge">${escapeHtml(verdict.status)}</span>
+                <span class="ma-verdict-copy">${escapeHtml(verdict.text)}</span>
+            </div>` : '<div class="ma-market-verdict is-pending" id="ma-global-market-verdict" hidden></div>';
+
+        return `<div class="ma-market-portfolio">
+                ${metric('Your portfolio · monthly TWR', formatPct(item.overall_twr_pct, true), tone(item.overall_twr_pct))}
+                ${verdictHtml}
+            </div>
             <div class="ma-markets">${definitions.map(([region, entries]) => `<section class="ma-market-group" aria-label="${region}"><h3>${region}</h3>${entries.map(([id, label, currency]) => {
                 const returnVal = resolveMarketReturn(item, id);
                 return `<div class="ma-market-row" data-market-id="${id}"><div><strong>${label}</strong><b class="${tone(returnVal)}">${escapeHtml(formatPct(returnVal, true))}</b></div><span>${currency}</span></div>`;
@@ -639,4 +704,5 @@
 
     window.loadMonthlyAuditBenchmarkReturns = loadAllBenchmarkMonthlyReturns;
     window._monthlyAuditBenchmarkReturns = _benchmarkReturns;
+    window.globalMarketVerdict = globalMarketVerdict;
 })();

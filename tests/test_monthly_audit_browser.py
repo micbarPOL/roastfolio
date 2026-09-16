@@ -438,6 +438,29 @@ def test_market_context_fetches_and_populates_missing_benchmark_returns(page):
     assert "is-positive" in page.locator('[data-market-id="FTSE100"] b').get_attribute("class")
 
 
+def test_global_market_verdict_one_liner(page):
+    # Case 1: Better than global market (portfolio 10% vs MSCI World 4%)
+    render_case(page, {
+        "overall_twr_pct": 10.0,
+        "market_context": [{"id": "MSCI_WORLD", "return_pct": 4.0}],
+    })
+    verdict = page.locator('#ma-global-market-verdict')
+    assert "better than global market" in verdict.locator('.ma-verdict-badge').inner_text().lower()
+    assert "You were better than the global market" in verdict.locator('.ma-verdict-copy').inner_text()
+    assert "+6.0 pp" in verdict.locator('.ma-verdict-copy').inner_text()
+    assert "is-positive" in verdict.get_attribute("class")
+
+    # Case 2: Behind global market (portfolio 2% vs MSCI World 5%)
+    render_case(page, {
+        "overall_twr_pct": 2.0,
+        "market_context": [{"id": "MSCI_WORLD", "return_pct": 5.0}],
+    })
+    assert "behind global market" in verdict.locator('.ma-verdict-badge').inner_text().lower()
+    assert "You were behind the global market" in verdict.locator('.ma-verdict-copy').inner_text()
+    assert "3.0 pp" in verdict.locator('.ma-verdict-copy').inner_text()
+    assert "is-caution" in verdict.get_attribute("class")
+
+
 def test_trading_activity_and_missing_vs_confirmed_zero(page):
     text = page.locator(".ma-trading").inner_text()
     for expected in ("Trading activity", "1,400 PLN", "1,000 PLN", "400 PLN", "Dividends received", "+25 PLN", "2026-08-12", "NVDA"):
