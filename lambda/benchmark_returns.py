@@ -106,8 +106,8 @@ def list_monthly_returns(benchmark_id: str, from_ym: str | None = None) -> list[
         kwargs["ExclusiveStartKey"] = lek
 
     if from_ym:
-        items = [i for i in items if i.get("month", "") >= from_ym]
-    items.sort(key=lambda x: x.get("month", ""))
+        items = [i for i in items if (i.get("month") or "") >= from_ym]
+    items.sort(key=lambda x: (x.get("month") or ""))
     return items
 
 

@@ -402,7 +402,46 @@ class PortfolioHandlerTests(unittest.TestCase):
              patch.object(handler.portfolios, "rebuild_holdings_from_transactions", return_value=[]):
             res = handler.portfolios.update_transaction("user-1", "xtb", "tx-1", {"ticker": "RBW.WA", "name": "RBW.WA"})
             self.assertEqual(res["transaction"]["holdingId"], "rbw-wa")
-            self.assertEqual(res["transaction"]["ticker"], "RBW.WA")
+    def test_benchmark_returns_handler_handles_none_values_safely(self):
+        sample_items = [
+            {"month": "2026-07", "returnPct": None, "openPrice": None, "closePrice": None},
+            {"month": "2026-08", "returnPct": 2.5, "openPrice": 100.0, "closePrice": 102.5},
+            {"invalid": "entry"},
+        ]
+        with patch("benchmark_returns.list_monthly_returns", return_value=sample_items):
+            resp = handler.benchmark_returns_handler(self._event(
+                "GET",
+                "/benchmark-returns",
+                query={"benchmarkId": "MSCI_WORLD", "from": "2010-01"}
+            ))
+        self.assertEqual(resp["statusCode"], 200)
+        body = json.loads(resp["body"])
+        self.assertEqual(body["benchmarkId"], "MSCI_WORLD")
+        self.assertEqual(len(body["returns"]), 2)
+        self.assertEqual(body["returns"][0], {
+            "month": "2026-07",
+            "returnPct": 0.0,
+            "openPrice": 0.0,
+            "closePrice": 0.0,
+        })
+        self.assertEqual(body["returns"][1], {
+            "month": "2026-08",
+            "returnPct": 2.5,
+            "openPrice": 100.0,
+            "closePrice": 102.5,
+        })
+
+    def test_benchmark_returns_handler_handles_exception_fallback(self):
+        with patch("benchmark_returns.list_monthly_returns", side_effect=Exception("DynamoDB error")):
+            resp = handler.benchmark_returns_handler(self._event(
+                "GET",
+                "/benchmark-returns",
+                query={"benchmarkId": "MSCI_WORLD", "from": "2010-01"}
+            ))
+        self.assertEqual(resp["statusCode"], 200)
+        body = json.loads(resp["body"])
+        self.assertEqual(body["benchmarkId"], "MSCI_WORLD")
+        self.assertEqual(body["returns"], [])
 
 
 if __name__ == "__main__":

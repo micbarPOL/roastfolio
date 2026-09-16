@@ -971,6 +971,41 @@
       background: var(--surface2);
       color: var(--text);
     }
+
+    .guide-footer {
+      margin-top: 56px;
+      padding: 28px 0 16px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .guide-footer strong {
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .guide-footer code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--accent);
+    }
+    .release-table code {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .release-table td:first-child {
+      white-space: nowrap;
+      min-width: 140px;
+    }
   </style>
 </head>
 <body>
@@ -1045,6 +1080,11 @@
         <li><a href="#ach-xp-rules">XP &amp; Level calculation</a></li>
         <li><a href="#ach-setup">Setup &amp; configuration</a></li>
         <li><a href="#ach-multi-profile">Multiple retirement plans</a></li>
+      </ul>
+
+      <div class="section-label">About &amp; Releases</div>
+      <ul>
+        <li><a href="#release-numbering">Release Numbering &amp; TOMINEX</a></li>
       </ul>
 
       <div data-guide-advanced>
@@ -1853,6 +1893,51 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════════
+         ABOUT & RELEASE NUMBERING
+         ══════════════════════════════════════════════════════════ -->
+    <h2 id="about-releases">🏷️ About &amp; Release Numbering</h2>
+
+    <h3 id="release-numbering">Release Numbering Standard</h3>
+    <p>Roastfolio is built and maintained by <strong>TOMINEX</strong>. To provide full transparency and predictable updates, our releases follow a three-tier semantic versioning structure:</p>
+
+    <div class="callout ok">
+      <p><strong>Current Active Release:</strong> <code>v11.5.0</code> &mdash; Powered by <strong>TOMINEX</strong></p>
+    </div>
+
+    <p>Every release follows the <code>MAJOR.MINOR.SERVICE</code> pattern (e.g. <code>11.5.0</code>), with each component signaling a distinct scope of changes:</p>
+
+    <div class="table-scroll-wrapper">
+      <table class="two-col-mobile release-table">
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>Type</th>
+            <th>Classification &amp; Trigger</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>MAJOR</code> (e.g. <strong>12.0.0</strong>)</td>
+            <td><strong>New Features</strong></td>
+            <td>Brand-new user-facing features, tools, screens, or asset classes added to Roastfolio (such as Coping Diary, Retirement Planner, Monthly Recaps, or new analytics modules).</td>
+          </tr>
+          <tr>
+            <td><code>MINOR</code> (e.g. <strong>11.5.0</strong>)</td>
+            <td><strong>Changes to Existing Features</strong></td>
+            <td>Modifications, redesigns, workflow improvements, or calculation adjustments to features that already exist in the app (e.g. Editorial Bento layout upgrades, benchmark selector refinements, metrics recalculation UX).</td>
+          </tr>
+          <tr>
+            <td><code>SERVICE</code> (e.g. <strong>11.2.2</strong>)</td>
+            <td><strong>Bug Fixes &amp; Maintenance</strong></td>
+            <td>Bug fixes, regression repairs, performance improvements, security patches, and reliability hotfixes.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Full architectural details and developer release workflows are documented in <code>docs/RELEASE_NUMBERING.md</code> in the repository. The active release number is always visible in the application footer.</p>
+
+    <!-- ══════════════════════════════════════════════════════════
          DESIGN SYSTEM
          ══════════════════════════════════════════════════════════ -->
     <div data-guide-advanced>
@@ -2202,6 +2287,10 @@
     </table>
 
     </div><!-- /[data-guide-advanced] Design System -->
+
+    <footer class="guide-footer">
+      <p>Roastfolio <code>v11.5.0</code> &middot; Powered by <strong>TOMINEX</strong> &middot; &copy; 2026 TOMINEX. All rights reserved.</p>
+    </footer>
 
   </main>
 

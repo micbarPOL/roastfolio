@@ -5,12 +5,13 @@ from __future__ import annotations
 import calendar
 import os
 from collections import defaultdict
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 
 import boto3
 
+import db
 import diary_handler
 import portfolio_avco
 import portfolios
@@ -21,6 +22,7 @@ import snapshots
 ZERO = Decimal("0")
 MONEY = Decimal("0.01")
 PCT = Decimal("0.0001")
+MARKET_CONTEXT_IDS = ("WIG", "DAX", "FTSE100", "SP500", "NASDAQ", "MSCI_WORLD")
 
 
 def _decimal(value: Any) -> Decimal:
@@ -69,6 +71,8 @@ def _period_boundaries(items: list[dict], start: date, next_month: date) -> tupl
     start_key = start.isoformat()
     end_key = next_month.isoformat()
     start_snapshot = next((item for item in ordered if _snapshot_date(item) >= start_key), None)
+    if not start_snapshot or _snapshot_date(start_snapshot) >= end_key:
+        return None, None
     end_snapshot = next((item for item in ordered if _snapshot_date(item) >= end_key), None)
     if end_snapshot is None:
         end_snapshot = next((item for item in reversed(ordered) if _snapshot_date(item) < end_key), None)
@@ -103,6 +107,160 @@ def _monthly_performance(items: list[dict], start: date, next_month: date, cash_
 
 def _transaction_value(transaction: dict) -> Decimal:
     return abs(_decimal(transaction.get("value")))
+
+
+def selected_benchmark(user_id: str) -> str:
+    profile = db.get_user(user_id) or {}
+    benchmark_id = (profile.get("settings") or {}).get("benchmark", db.DEFAULT_BENCHMARK)
+    return benchmark_id if benchmark_id in db.BENCHMARKS else db.DEFAULT_BENCHMARK
+
+
+def _benchmark_daily(benchmark_id: str, start: date, end: date) -> dict[str, Decimal]:
+    # Runtime import avoids coupling the API module's imports to the generator.
+    from handler import load_benchmark_cache, fetch_benchmark_history, save_benchmark_cache
+
+    cache = load_benchmark_cache(benchmark_id)
+    start_key, end_key = start.isoformat(), end.isoformat()
+    covered = any(
+        row.get("start", "9999") <= start_key and row.get("end", "") >= end_key
+        for row in cache.get("daily_ranges", [])
+    )
+    dates = {row.get("t") for row in cache.get("daily", [])}
+    required_weekdays = {
+        (start + timedelta(days=offset)).isoformat()
+        for offset in range((end - start).days + 1)
+        if (start + timedelta(days=offset)).weekday() < 5
+    }
+    if not covered and not required_weekdays.issubset(dates):
+        updated = fetch_benchmark_history(
+            benchmark_id, db.BENCHMARKS[benchmark_id]["ticker"], cache,
+            start_date=start_key, end_date=end_key,
+        )
+        if updated != cache:
+            save_benchmark_cache(benchmark_id, updated)
+        cache = updated
+    prices = {}
+    for row in cache.get("daily", []):
+        try:
+            price = _decimal(row.get("c"))
+            day = date.fromisoformat(str(row.get("t"))).isoformat()
+            if price.is_finite() and price > ZERO:
+                prices[day] = price
+        except (ValueError, ArithmeticError):
+            continue
+    return prices
+
+
+def _asof_close(prices: dict[str, Decimal], day: str) -> tuple[str | None, Decimal | None]:
+    # A boundary may be a weekend/holiday. Disclose the actual quote date and
+    # never use a future quote or an indefinitely stale price.
+    earliest = (date.fromisoformat(day) - timedelta(days=7)).isoformat()
+    quote_day = max((key for key in prices if earliest <= key <= day), default=None)
+    return quote_day, prices.get(quote_day) if quote_day else None
+
+
+def _price_return(start_price: Decimal | None, end_price: Decimal | None) -> Decimal | None:
+    if start_price is None or end_price is None or start_price <= ZERO:
+        return None
+    return _pct((end_price / start_price - 1) * 100)
+
+
+def _journey(items: list[dict], start: date, next_month: date, benchmark_id: str,
+             prices: dict[str, Decimal]) -> dict:
+    meta = db.BENCHMARKS[benchmark_id]
+    result = {
+        "benchmark_id": benchmark_id, "benchmark_name": meta["name"],
+        "benchmark_currency": meta["currency"], "points": [],
+        "benchmark_return_pct": None, "start_date": None, "end_date": None,
+        "benchmark_start_price_date": None, "benchmark_end_price_date": None,
+    }
+    ordered = _with_unit_prices(items)
+    first, last = _period_boundaries(ordered, start, next_month)
+    if not first or not last:
+        return result
+    first_day, last_day = _snapshot_date(first), _snapshot_date(last)
+    start_quote, base_price = _asof_close(prices, first_day)
+    end_quote, end_price = _asof_close(prices, last_day)
+    base_unit = _decimal(first.get("unitPrice"))
+    units = {_snapshot_date(row): _decimal(row.get("unitPrice")) for row in ordered}
+    days = sorted({day for day in set(units) | set(prices) if first_day <= day <= last_day})
+    result.update({
+        "start_date": first_day, "end_date": last_day,
+        "benchmark_start_price_date": start_quote, "benchmark_end_price_date": end_quote,
+        "benchmark_return_pct": _price_return(base_price, end_price),
+        "points": [{
+            "date": day,
+            "portfolio_pct": _price_return(base_unit, units.get(day)) if units.get(day, ZERO) > ZERO else None,
+            # No interpolation or forward-filled daily points, even on weekends.
+            "benchmark_pct": _price_return(base_price, prices.get(day)),
+        } for day in days],
+    })
+    return result
+
+
+def _stored_benchmark_return(benchmark_id: str, ym: str) -> Decimal | None:
+    try:
+        import benchmark_returns as br
+        tbl = br._table()
+        res = tbl.get_item(Key={"userId": br._BENCHMARK_PK, "sk": br._sk(benchmark_id, ym)})
+        item = res.get("Item")
+        if item and item.get("returnPct") is not None:
+            return _pct(item["returnPct"])
+    except Exception:
+        pass
+    return None
+
+
+def _market_comparison(user_id: str, items: list[dict], start: date, next_month: date,
+                       benchmark_id: str | None = None) -> dict:
+    benchmark_id = benchmark_id or selected_benchmark(user_id)
+    if benchmark_id not in db.BENCHMARKS:
+        raise ValueError("Unknown benchmark")
+    _, last = _period_boundaries(items, start, next_month)
+    end = max(next_month, date.fromisoformat(_snapshot_date(last))) if last else next_month
+    histories = {
+        bid: _benchmark_daily(bid, start - timedelta(days=8), end)
+        for bid in dict.fromkeys((benchmark_id, *MARKET_CONTEXT_IDS))
+    }
+    market_context = []
+    ym = start.strftime("%Y-%m")
+    for bid in MARKET_CONTEXT_IDS:
+        meta = db.BENCHMARKS[bid]
+        baseline_day, baseline = _asof_close(histories[bid], (start - timedelta(days=1)).isoformat())
+        close_day, close = _asof_close(histories[bid], (next_month - timedelta(days=1)).isoformat())
+        ret_pct = _price_return(baseline, close)
+        if ret_pct is None:
+            ret_pct = _stored_benchmark_return(bid, ym)
+        market_context.append({
+            "id": bid, "name": meta["name"], "currency": meta["currency"],
+            "return_pct": ret_pct,
+            "start_price_date": baseline_day, "end_price_date": close_day,
+        })
+    return {"journey": _journey(items, start, next_month, benchmark_id, histories[benchmark_id]),
+            "market_context": market_context}
+
+
+def _trading_activity(transactions: list[dict]) -> dict:
+    # Ledger value is the settled PLN amount (BUY includes commission; SELL
+    # and DIVIDEND are net of stored fees/tax). currency describes the asset.
+    totals = {kind: ZERO for kind in ("BUY", "SELL", "DIVIDEND")}
+    trades = []
+    for tx in transactions:
+        kind = str(tx.get("type") or "").upper()
+        if kind not in totals:
+            continue
+        value = _transaction_value(tx)
+        totals[kind] += value
+        if kind in {"BUY", "SELL"}:
+            trades.append({"date": str(tx.get("transactionDate") or "")[:10],
+                           "type": kind, "ticker": tx.get("ticker") or tx.get("holdingId"),
+                           "value_pln": _money(value)})
+    return {
+        "buy_total_pln": _money(totals["BUY"]), "sell_total_pln": _money(totals["SELL"]),
+        "turnover_pln": _money(totals["BUY"] + totals["SELL"]),
+        "dividend_total_pln": _money(totals["DIVIDEND"]), "transaction_count": len(trades),
+        "largest_transactions": sorted(trades, key=lambda tx: (-tx["value_pln"], tx["date"], str(tx["ticker"])))[:5],
+    }
 
 
 def _transactions_in_period(transactions: list[dict], start: date, next_month: date) -> list[dict]:
@@ -460,7 +618,7 @@ def _dynamodb_value(value: Any) -> Any:
     return value
 
 
-def generate_monthly_wrap(user_id: str, year: int, month: int) -> dict:
+def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: str | None = None) -> dict:
     """Compile and persist one complete monthly audit document."""
     if not str(user_id or "").strip():
         raise ValueError("user_id is required")
@@ -517,6 +675,10 @@ def generate_monthly_wrap(user_id: str, year: int, month: int) -> dict:
         "overall_nominal_change_pln": overall["nominal_change_pln"],
         "start_value_pln": overall["start_value_pln"],
         "end_value_pln": overall["end_value_pln"],
+        **_market_comparison(user_id, summary_snapshots, start, next_month, benchmark_id),
+        "trading_activity": _trading_activity([
+            transaction for rows in monthly_transactions.values() for transaction in rows
+        ]),
         "wallet_performance": wallet_performance,
         "best_efficiency_wallet": best_wallet,
         "primary_profit_engine_wallet": profit_engine,

@@ -37,3 +37,4 @@ tmp_logs2.txt
 # Test files
 src/test-comments.html
 lambda/feedback.json
+tmp/

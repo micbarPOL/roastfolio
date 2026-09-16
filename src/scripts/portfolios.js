@@ -49,7 +49,7 @@
       // Clean up cache shortly after it settles to allow fresh fetches later
       promise.finally(() => {
         setTimeout(() => { delete _fetchPromises[path]; }, 100);
-      });
+      }).catch(() => {});
     }
 
     return promise;
@@ -160,17 +160,29 @@
       });
     },
 
+    _benchmarkReturnsCache: new Map(),
+
     /**
      * Get stored monthly returns for a benchmark.
      * benchmarkId: e.g. 'WIG' (defaults to user's primary benchmark on server)
      * from: 'YYYY-MM' earliest month to include (default '2020-01')
      */
     getBenchmarkReturns(benchmarkId, from) {
+      const key = `${benchmarkId || ''}::${from || ''}`;
+      if (this._benchmarkReturnsCache && this._benchmarkReturnsCache.has(key)) {
+        return this._benchmarkReturnsCache.get(key);
+      }
       const params = new URLSearchParams();
       if (benchmarkId) params.set('benchmarkId', benchmarkId);
       if (from) params.set('from', from);
       const qs = params.toString();
-      return _fetch(`/benchmark-returns${qs ? '?' + qs : ''}`);
+      const promise = _fetch(`/benchmark-returns${qs ? '?' + qs : ''}`).catch(err => {
+        if (this._benchmarkReturnsCache) this._benchmarkReturnsCache.delete(key);
+        return { benchmarkId, returns: [] };
+      });
+      if (!this._benchmarkReturnsCache) this._benchmarkReturnsCache = new Map();
+      this._benchmarkReturnsCache.set(key, promise);
+      return promise;
     },
 
     /**

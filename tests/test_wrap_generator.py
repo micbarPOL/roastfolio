@@ -236,6 +236,11 @@ def test_generate_monthly_wrap_persists_exact_single_table_keys_and_wallet_split
     monkeypatch.setattr(wrap_generator, "_avco_gains", lambda *_args: {})
     monkeypatch.setattr(wrap_generator, "_asset_contributions", lambda *_args: {"carry": None, "anchor": None})
     monkeypatch.setattr(wrap_generator, "_diary_audit", lambda *_args: {})
+    monkeypatch.setattr(wrap_generator.db, "get_user", lambda _user: {"settings": {"benchmark": "SP500"}})
+    monkeypatch.setattr(wrap_generator, "_benchmark_daily", lambda *_args: {
+        "2026-08-31": Decimal("90"), "2026-09-01": Decimal("100"),
+        "2026-09-30": Decimal("105"), "2026-10-01": Decimal("110"),
+    })
 
     writes = []
     monkeypatch.setattr(wrap_generator, "_wrap_table", lambda: type("Table", (), {"put_item": lambda _self, **kwargs: writes.append(kwargs["Item"])})())
@@ -248,6 +253,11 @@ def test_generate_monthly_wrap_persists_exact_single_table_keys_and_wallet_split
     assert result["deposits_pln"] == Decimal("50.00")
     assert result["withdrawals_pln"] == Decimal("0.00")
     assert result["overall_twr_pct"] == Decimal("20.0000")
+    assert result["journey"]["points"][-1]["portfolio_pct"] == result["overall_twr_pct"]
+    assert result["journey"]["benchmark_id"] == "SP500"
+    assert result["journey"]["benchmark_return_pct"] == Decimal("10.0000")
+    assert [row["id"] for row in result["market_context"]] == list(wrap_generator.MARKET_CONTEXT_IDS)
+    assert result["trading_activity"]["turnover_pln"] == 0
     assert result["overall_nominal_change_pln"] == Decimal("150.00")
     assert result["best_efficiency_wallet"]["portfolio_id"] == "a"
     assert result["primary_profit_engine_wallet"]["portfolio_id"] == "b"

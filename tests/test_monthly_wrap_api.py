@@ -41,10 +41,11 @@ def test_monthly_wrap_api_reads_only_authenticated_users_partition():
     event = {
         "httpMethod": "GET",
         "path": "/monthly-wraps",
+        "requestContext": {"authorizer": {"claims": {"sub": "user-1"}}},
         "queryStringParameters": {"period": "2026-09"},
     }
 
-    with patch.object(handler, "_require_role", return_value=("user-1", None)), patch.object(
+    with patch.object(
         handler.boto3, "resource", return_value=_DynamoResource(table)
     ):
         response = handler.monthly_wraps_handler(event)
@@ -58,8 +59,8 @@ def test_monthly_wrap_api_rejects_invalid_period():
     event = {
         "httpMethod": "GET",
         "path": "/monthly-wraps",
+        "requestContext": {"authorizer": {"claims": {"sub": "user-1"}}},
         "queryStringParameters": {"period": "September"},
     }
-    with patch.object(handler, "_require_role", return_value=("user-1", None)):
-        response = handler.monthly_wraps_handler(event)
+    response = handler.monthly_wraps_handler(event)
     assert response["statusCode"] == 400

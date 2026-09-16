@@ -149,6 +149,40 @@
         return updateSettings({ benchmark: benchmarkId });
     }
 
+    // Monthly history is deliberately separate from updating the preference.
+    async function benchmarkRequest(path, options) {
+        if (!getIdToken()) throw new Error('Sign in to manage monthly summaries.');
+        var profileUrl = getProfileUrl();
+        if (!profileUrl) throw new Error('No profile API URL');
+        var resp = await fetch(profileUrl.replace(/\/profile$/, '') + path, {
+            ...options,
+            headers: authHeaders()
+        });
+        var data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+        return data;
+    }
+
+    function getBenchmarks() {
+        return benchmarkRequest('/benchmarks');
+    }
+
+    function recalculateMonthlySummaries(consent, options) {
+        if (consent !== true) throw new Error('Explicit consent is required.');
+        return benchmarkRequest('/monthly-wraps/recalculate', {
+            signal: options && options.signal,
+            method: 'POST',
+            body: JSON.stringify({ consent: true })
+        });
+    }
+
+    function getMonthlyRecalculationStatus(jobId, options) {
+        if (!jobId) throw new Error('A monthly recalculation job ID is required.');
+        return benchmarkRequest('/monthly-wraps/recalculate?job_id=' + encodeURIComponent(jobId), {
+            signal: options && options.signal
+        });
+    }
+
     function updateRoastIntensity(intensity) {
         return updateSettings({ roastIntensity: intensity });
     }
@@ -242,6 +276,9 @@
         applyRoleGuard:      applyRoleGuard,
         getBenchmark:        getBenchmark,
         updateBenchmark:     updateBenchmark,
+        getBenchmarks:        getBenchmarks,
+        recalculateMonthlySummaries: recalculateMonthlySummaries,
+        getMonthlyRecalculationStatus: getMonthlyRecalculationStatus,
         getRoastIntensity:   getRoastIntensity,
         updateRoastIntensity: updateRoastIntensity
     };

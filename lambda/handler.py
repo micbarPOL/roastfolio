@@ -178,7 +178,10 @@ def save_benchmark_cache(benchmark_id: str, data: dict):
     except Exception as e:
         print(f"{benchmark_id} cache save failed: {e}")
 
-def fetch_benchmark_history(benchmark_id: str, ticker: str, existing: dict) -> dict:
+def fetch_benchmark_history(
+    benchmark_id: str, ticker: str, existing: dict, *,
+    start_date: str | None = None, end_date: str | None = None,
+) -> dict:
     """
     Fetch OHLCV history for any benchmark ticker via yfinance.
 
@@ -189,6 +192,69 @@ def fetch_benchmark_history(benchmark_id: str, ticker: str, existing: dict) -> d
       - S3 key is per-benchmark so each benchmark has its own cache
     """
     import pandas as pd
+
+    # Recaps can predate Yahoo's hourly retention. Fetch real daily bars for
+    # the requested inclusive interval, merging into the SAME S3 cache.
+    if start_date is not None or end_date is not None:
+        if not start_date or not end_date:
+            raise ValueError("Both start_date and end_date are required")
+        start_day, end_day = date.fromisoformat(start_date), date.fromisoformat(end_date)
+        if start_day > end_day:
+            raise ValueError("start_date must not follow end_date")
+        result = dict(existing)
+        try:
+            ticker_obj = yf.Ticker(ticker)
+            if benchmark_id == "WIG":
+                # Yahoo's WIG daily endpoint is empty even when hourly quotes
+                # exist. Use real Warsaw-session bars, as the dashboard does.
+                chunks = []
+                cursor = start_day
+                stop = end_day + timedelta(days=1)
+                while cursor < stop:
+                    chunk_end = min(cursor + timedelta(days=59), stop)
+                    chunk = ticker_obj.history(start=cursor.isoformat(), end=chunk_end.isoformat(),
+                                               interval="60m", auto_adjust=True)
+                    if not chunk.empty:
+                        chunks.append(chunk)
+                    cursor = chunk_end
+                history = pd.DataFrame()
+                if chunks:
+                    hourly = pd.concat(chunks).sort_index()
+                    hourly = hourly[~hourly.index.duplicated(keep="last")]
+                    if hourly.index.tz is None:
+                        hourly.index = hourly.index.tz_localize("Europe/Warsaw")
+                    else:
+                        hourly.index = hourly.index.tz_convert("Europe/Warsaw")
+                    history = hourly.resample("D").agg({
+                        "Open": "first", "High": "max", "Low": "min",
+                        "Close": "last", "Volume": "sum",
+                    }).dropna(subset=["Close"])
+            else:
+                history = ticker_obj.history(
+                    start=start_date, end=(end_day + timedelta(days=1)).isoformat(),
+                    interval="1d", auto_adjust=True,
+                )
+            rows = {}
+            for timestamp, row in history.iterrows():
+                close = float(row["Close"])
+                if not math.isfinite(close) or close <= 0:
+                    continue
+                rows[timestamp.strftime("%Y-%m-%d")] = {
+                    "t": timestamp.strftime("%Y-%m-%d"),
+                    "o": float(row["Open"]), "h": float(row["High"]),
+                    "l": float(row["Low"]), "c": close,
+                    "v": int(row["Volume"]) if pd.notna(row["Volume"]) else 0,
+                }
+            if rows:
+                merged = {row["t"]: row for row in existing.get("daily", [])}
+                merged.update(rows)
+                result["daily"] = [merged[key] for key in sorted(merged)]
+                result["daily_ranges"] = [*existing.get("daily_ranges", []),
+                                          {"start": min(rows), "end": max(rows)}]
+                result["ticker"] = ticker
+        except Exception as exc:
+            print(f"{benchmark_id}: daily recap history unavailable: {exc}")
+        return result
 
     CHUNK_DAYS = 59    # Yahoo Finance max per 60m request
     MAX_CHUNKS = 7     # 7 × 59 ≈ 413 days (> 1 year)
@@ -207,7 +273,7 @@ def fetch_benchmark_history(benchmark_id: str, ticker: str, existing: dict) -> d
         print(f"{benchmark_id}: incremental update ({days_old}d old, {n_chunks} chunks)")
     else:
         n_chunks = MAX_CHUNKS
-        result   = {"version": 2}
+        result   = {**existing, "version": 2}
         print(f"{benchmark_id}: full rebuild ({n_chunks} chunks)")
 
     # ── Fetch hourly chunks (1-year window) ───────────────────
@@ -280,12 +346,10 @@ def fetch_benchmark_history(benchmark_id: str, ticker: str, existing: dict) -> d
 
     # ── Build daily candles ───────────────────────────────────
     new_daily = _agg_daily(recent_df)
-    if daily_ok and n_chunks < MAX_CHUNKS and new_daily:
-        cutoff = new_daily[0]["t"]
-        existing_daily = [d for d in result.get("daily", []) if d["t"] < cutoff]
-        result["daily"] = existing_daily + new_daily
-    else:
-        result["daily"] = new_daily
+    # Keep older daily recap backfills when refreshing hourly dashboard data.
+    merged_daily = {row["t"]: row for row in existing.get("daily", [])}
+    merged_daily.update({row["t"]: row for row in new_daily})
+    result["daily"] = [merged_daily[key] for key in sorted(merged_daily)]
 
     result["weekly"]  = _agg_weekly(result["daily"])
     result["monthly"] = _agg_monthly(result["daily"])
@@ -939,21 +1003,30 @@ def benchmark_returns_handler(event: dict) -> dict:
     if bid not in db.BENCHMARKS:
         bid = db.DEFAULT_BENCHMARK
 
+    def _safe_float(val, default=0.0):
+        if val is None:
+            return default
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return default
+
     try:
-        items = br.list_monthly_returns(bid, from_ym=from_m)
+        items = br.list_monthly_returns(bid, from_ym=from_m) or []
+        out = [
+            {
+                "month":      i.get("month"),
+                "returnPct":  _safe_float(i.get("returnPct")),
+                "openPrice":  _safe_float(i.get("openPrice")),
+                "closePrice": _safe_float(i.get("closePrice")),
+            }
+            for i in items
+            if isinstance(i, dict) and i.get("month")
+        ]
     except Exception as exc:
         # Keep dashboard flows alive even if benchmark storage is unavailable.
         print(f"benchmark_returns_handler fallback for {bid}: {exc}")
-        items = []
-    out = [
-        {
-            "month":      i.get("month"),
-            "returnPct":  float(i.get("returnPct", 0)),
-            "openPrice":  float(i.get("openPrice", 0)),
-            "closePrice": float(i.get("closePrice", 0)),
-        }
-        for i in items
-    ]
+        out = []
     return _resp(200, {"benchmarkId": bid, "returns": out})
 
 
@@ -2085,11 +2158,52 @@ def roast_report_handler(event: dict) -> dict:
         return _resp(500, {"error": "Internal server error"})
 
 
+def _monthly_wrap_identity(event: dict):
+    # In the dev stack, API Gateway can omit the authorizer context even though
+    # the browser still sends a valid Authorization JWT. Only accept the fallback
+    # when the environment is explicitly marked as dev; prod must continue to
+    # require the Cognito authorizer claims.
+    claims = ((event.get("requestContext") or {}).get("authorizer") or {}).get("claims") or {}
+    user_id = claims.get("sub")
+    if not isinstance(user_id, str) or not user_id.strip():
+        if os.environ.get("ALLOW_DEV_AUTH_HEADER", "false").lower() in {"1", "true", "yes", "on"}:
+            user_id, _, _ = _get_caller_identity(event)
+    if not isinstance(user_id, str) or not user_id.strip():
+        return None, _resp(401, {"error": "Authentication required"})
+    return user_id, None
+
+
+def monthly_wrap_recalculate_handler(event: dict) -> dict:
+    if event.get("httpMethod") == "OPTIONS":
+        return _resp(200, {})
+    user_id, error = _monthly_wrap_identity(event)
+    if error:
+        return error
+    import monthly_recalculation
+    method = event.get("httpMethod")
+    try:
+        if method == "GET":
+            job = monthly_recalculation.get_job(user_id, str(_query_value(event, "job_id", "")))
+            return _resp(200, monthly_recalculation.public_job(job)) if job else _resp(404, {"error": "Job not found"})
+        if method != "POST":
+            return _resp(405, {"error": "Method not allowed"})
+        body = event.get("body") or "{}"
+        if event.get("isBase64Encoded"):
+            body = base64.b64decode(body, validate=True).decode("utf-8")
+        payload = json.loads(body)
+        return _resp(202, monthly_recalculation.create_job(user_id, payload))
+    except (ValueError, TypeError, UnicodeError) as exc:
+        return _resp(400, {"error": str(exc)})
+    except Exception as exc:
+        print(f"Monthly wrap recalculation unavailable: {exc}")
+        return _resp(503, {"error": "Monthly wrap recalculation unavailable"})
+
+
 def monthly_wraps_handler(event: dict) -> dict:
     """GET /monthly-wraps — return one or all pre-compiled monthly audits."""
     if event.get("httpMethod") == "OPTIONS":
         return _resp(200, {})
-    user_id, error = _require_role(event, db.ROLE_BASIC)
+    user_id, error = _monthly_wrap_identity(event)
     if error:
         return error
 
@@ -2185,6 +2299,8 @@ def handler(event, context):
             return roast_report_handler(event)
 
         # Route /monthly-wraps
+        if path.endswith("/monthly-wraps/recalculate"):
+            return monthly_wrap_recalculate_handler(event)
         if path.endswith("/monthly-wraps"):
             return monthly_wraps_handler(event)
 

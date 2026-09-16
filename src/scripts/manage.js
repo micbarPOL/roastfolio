@@ -1009,17 +1009,12 @@
     const threeYearsAgo = new Date(now.getTime());
     threeYearsAgo.setFullYear(now.getFullYear() - 3);
 
-    const oldestTs = allSeries.length ? allSeries[0][0] : rightEdge;
-    const startBound = Math.max(oldestTs, threeYearsAgo.getTime());
-    const trimmedSeries = allSeries.filter(([ts]) => ts >= startBound && ts <= rightEdge);
-    const fallbackBeforeStart = [...allSeries].reverse().find(([ts]) => ts < startBound);
-    const fallbackSeries = fallbackBeforeStart ? [[startBound, fallbackBeforeStart[1]], [rightEdge, fallbackBeforeStart[1]]] : [];
-    const baseSeries = trimmedSeries.length ? trimmedSeries : fallbackSeries;
-    const safeBaseSeries = baseSeries.length ? baseSeries : [[startBound, allSeries[allSeries.length - 1][1]], [rightEdge, allSeries[allSeries.length - 1][1]]];
-    const lastPoint = safeBaseSeries[safeBaseSeries.length - 1];
+    const recentSeries = allSeries.filter(([ts]) => ts >= threeYearsAgo.getTime() && ts <= rightEdge);
+    const baseSeries = recentSeries.length >= 2 ? recentSeries : allSeries;
+    const lastPoint = baseSeries[baseSeries.length - 1];
     const displaySeries = lastPoint && lastPoint[0] < rightEdge
-      ? [...safeBaseSeries, [rightEdge, lastPoint[1]]]
-      : safeBaseSeries;
+      ? [...baseSeries, [rightEdge, lastPoint[1]]]
+      : baseSeries;
 
     if (displaySeries.length < 2) {
       return '<div class="wallet-summary-empty-mini">No value history yet</div>';
@@ -3255,11 +3250,57 @@
     _resetTransactionForm({ keepType: false });
   }
 
+  let _benchmarkSaving = false;
+  let _benchmarkOperation = null;
+  let _benchmarkPollCleanup = null;
+  let _benchmarkPageActive = true;
+
+  function _benchmarkFeedback(message, state = 'pending') {
+    const el = document.getElementById('mgmt-benchmark-saved');
+    if (!el) return;
+    // Long-running feedback needs its own line, including in the mobile modal.
+    if (el.parentElement?.classList.contains('mgmt-benchmark-row')) {
+      el.parentElement.insertAdjacentElement('afterend', el);
+    }
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.dataset.state = state;
+    el.textContent = message;
+    el.style.display = 'block';
+    el.style.color = state === 'success' ? '#27ae60'
+      : state === 'error' ? 'var(--fintech-negative, #e74c3c)' : 'var(--fintech-text-muted, #5a7a9a)';
+  }
+
+  function _stopBenchmarkPolling() {
+    if (_benchmarkPollCleanup) _benchmarkPollCleanup();
+  }
+
+  function _cancelBenchmarkOperation() {
+    _stopBenchmarkPolling();
+    if (_benchmarkOperation) _benchmarkOperation.abort();
+    _benchmarkOperation = null;
+    _benchmarkSaving = false;
+    const sel = document.getElementById('mgmt-benchmark-select');
+    if (sel) sel.disabled = false;
+  }
+
   async function _loadBenchmarkSetting() {
     const sel = document.getElementById('mgmt-benchmark-select');
     if (!sel || !window.UserProfile) return;
+    const operation = _benchmarkOperation;
     try {
-      const saved = await UserProfile.getBenchmark();
+      const [saved, registry] = await Promise.all([
+        UserProfile.getBenchmark(),
+        UserProfile.getBenchmarks().catch(() => ({ benchmarks: [] })),
+      ]);
+      if (_benchmarkSaving || operation !== _benchmarkOperation) return;
+      for (const benchmark of registry.benchmarks || []) {
+        if (!benchmark.id || Array.from(sel.options).some(option => option.value === benchmark.id)) continue;
+        const option = document.createElement('option');
+        option.value = benchmark.id;
+        option.textContent = benchmark.name || benchmark.id;
+        sel.appendChild(option);
+      }
       if (saved) sel.value = saved;
     } catch (_) {}
   }
@@ -3273,28 +3314,138 @@
     } catch (_) {}
   }
 
+  function _monitorMonthlyRecalculation(initialJob, operation) {
+    const controller = new AbortController();
+    let timer;
+    let deadline;
+    const active = () => !controller.signal.aborted && !operation.signal.aborted
+      && operation === _benchmarkOperation;
+    const cleanup = () => {
+      controller.abort();
+      clearTimeout(timer);
+      clearTimeout(deadline);
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (_benchmarkPollCleanup === cleanup) _benchmarkPollCleanup = null;
+    };
+    const stopMonitoring = () => {
+      if (active()) _benchmarkFeedback('Benchmark saved. Monthly summary recalculation may still be running. Status monitoring stopped; reopen Monthly summaries later to check.');
+      cleanup();
+    };
+    const onVisibility = () => { if (document.hidden) stopMonitoring(); };
+    const handleStatus = async job => {
+      if (!active()) return;
+      if (job.status === 'completed' || job.status === 'completed_with_errors') {
+        const partial = job.status === 'completed_with_errors';
+        _benchmarkFeedback(partial
+          ? 'Benchmark saved. Monthly summary recalculation finished with errors; some summaries could not be updated.'
+          : 'Benchmark saved. Historical monthly summaries recalculated.', partial ? 'error' : 'success');
+        cleanup();
+        try {
+          if (typeof window.initMonthlyAudit === 'function') await window.initMonthlyAudit(true);
+        } catch (error) {
+          if (operation === _benchmarkOperation && !operation.signal.aborted) {
+            _benchmarkFeedback('Benchmark saved. Recalculation finished, but monthly summaries could not be refreshed. Reopen Monthly summaries to check.', 'error');
+          }
+        }
+        return;
+      }
+      if (job.status === 'failed') {
+        _benchmarkFeedback('Benchmark saved, but monthly summary recalculation failed. Some summaries may not have been updated.', 'error');
+        cleanup();
+        return;
+      }
+      if (!['accepted', 'running'].includes(job.status) || !initialJob.job_id) {
+        throw new Error('Invalid monthly recalculation status');
+      }
+      _benchmarkFeedback(job.status === 'accepted'
+        ? 'Benchmark saved. Historical monthly summary recalculation queued…'
+        : 'Benchmark saved. Recalculating historical monthly summaries…');
+      if (document.hidden || !_benchmarkPageActive) {
+        stopMonitoring();
+        return;
+      }
+      timer = setTimeout(poll, 3000);
+    };
+    const statusError = () => {
+      if (!active()) return;
+      _benchmarkFeedback('Benchmark saved. Could not check monthly summary recalculation status; the job may still be running. Reopen Monthly summaries later to check.', 'error');
+      cleanup();
+    };
+    const poll = async () => {
+      if (!active()) return;
+      try {
+        const job = await UserProfile.getMonthlyRecalculationStatus(initialJob.job_id, { signal: controller.signal });
+        await handleStatus(job);
+      } catch (_) { statusError(); }
+    };
+    _stopBenchmarkPolling();
+    _benchmarkPollCleanup = cleanup;
+    document.addEventListener('visibilitychange', onVisibility);
+    // A wall-clock deadline also aborts a stalled status request.
+    deadline = setTimeout(stopMonitoring, 120000);
+    handleStatus(initialJob).catch(statusError);
+  }
+
   async function saveBenchmark(newId) {
-    if (!window.UserProfile) return;
-    const savedEl = document.getElementById('mgmt-benchmark-saved');
+    if (!window.UserProfile || _benchmarkSaving || !_benchmarkPageActive) return;
+    const sel = document.getElementById('mgmt-benchmark-select');
+    const operation = new AbortController();
+    _cancelBenchmarkOperation();
+    _benchmarkOperation = operation;
+    _benchmarkSaving = true;
+    if (sel) sel.disabled = true;
+    const active = () => operation === _benchmarkOperation && !operation.signal.aborted;
+    let previousId = window.BENCHMARK_ID;
+    let saved = false;
     try {
+      _benchmarkFeedback('Saving benchmark…');
+      const profile = await UserProfile.get();
+      if (!active()) return;
+      if (!profile) throw new Error('Could not load the current benchmark.');
+      previousId = profile.settings?.benchmark || 'WIG';
+      if (previousId === newId) {
+        if (sel) sel.value = previousId;
+        _benchmarkFeedback('Benchmark unchanged. Historical monthly summaries were not changed.', 'success');
+        return;
+      }
       await UserProfile.updateBenchmark(newId);
-      UserProfile.clearCache();
+      if (!active()) return;
+      saved = true;
       try { localStorage.removeItem('lambda_cache'); } catch (_) {}
-      window.BENCHMARK_ID   = newId;
-      if (typeof window.resetBenchmarkRangeAuto === 'function') window.resetBenchmarkRangeAuto();
-      // Find human-readable name from select options
-      const sel = document.getElementById('mgmt-benchmark-select');
-      window.BENCHMARK_NAME = sel ? sel.options[sel.selectedIndex].text.split(' (')[0] : newId;
-      if (typeof updateBenchmarkChartLabels === 'function') updateBenchmarkChartLabels();
-      if (typeof window.refreshLivePrices === 'function') {
-        await window.refreshLivePrices();
+      window.BENCHMARK_ID = newId;
+      const option = sel && Array.from(sel.options).find(item => item.value === newId);
+      window.BENCHMARK_NAME = option ? option.text.split(' (')[0] : newId;
+      if (sel) sel.value = newId;
+      _benchmarkFeedback('Benchmark saved. Historical monthly summaries were not changed.', 'success');
+      const consent = window.confirm(
+        'Benchmark saved. Recalculate historical monthly summaries using the new benchmark?\n\n'
+        + 'This updates monthly reports only, not all analytics or portfolio snapshots.\n\n'
+        + 'OK: recalculate monthly summaries. Cancel: keep existing monthly summaries and the new benchmark.'
+      );
+      // Dashboard refresh failures must not turn a successful preference save into
+      // a failed save or prevent an explicitly requested monthly recalculation.
+      Promise.resolve().then(async () => {
+        if (!active()) return;
+        if (typeof window.resetBenchmarkRangeAuto === 'function') window.resetBenchmarkRangeAuto();
+        if (typeof updateBenchmarkChartLabels === 'function') updateBenchmarkChartLabels();
+        if (typeof window.refreshLivePrices === 'function') await window.refreshLivePrices();
+      }).catch(error => console.warn('[benchmark] dashboard refresh failed', error));
+      if (!consent || !active()) return;
+      _benchmarkFeedback('Benchmark saved. Requesting historical monthly summary recalculation…');
+      const job = await UserProfile.recalculateMonthlySummaries(true, { signal: operation.signal });
+      if (active()) _monitorMonthlyRecalculation(job, operation);
+    } catch (error) {
+      if (!active()) return;
+      if (!saved && sel && previousId) sel.value = previousId;
+      _benchmarkFeedback(saved
+        ? 'Benchmark saved, but monthly summary recalculation could not be confirmed. Check Monthly summaries later before trying again.'
+        : 'Could not save the benchmark. Historical monthly summaries were not changed. Please try again.', 'error');
+      console.error('[benchmark]', error);
+    } finally {
+      if (active()) {
+        _benchmarkSaving = false;
+        if (sel) sel.disabled = false;
       }
-      if (savedEl) {
-        savedEl.style.display = 'inline';
-        setTimeout(() => { savedEl.style.display = 'none'; }, 2500);
-      }
-    } catch (e) {
-      console.error('[benchmark] save failed', e);
     }
   }
 
@@ -3328,9 +3479,17 @@
     }
   });
   window.addEventListener('roastfolio:auth', () => {
+    _cancelBenchmarkOperation();
+    const feedback = document.getElementById('mgmt-benchmark-saved');
+    if (feedback) feedback.style.display = 'none';
     _loadBenchmarkSetting();
     _loadRoastIntensitySetting();
   });
+  window.addEventListener('pagehide', () => {
+    _benchmarkPageActive = false;
+    _cancelBenchmarkOperation();
+  });
+  window.addEventListener('pageshow', () => { _benchmarkPageActive = true; });
   // Also load immediately in case the auth event already fired or is unused
   document.addEventListener('DOMContentLoaded', () => {
     _loadBenchmarkSetting();

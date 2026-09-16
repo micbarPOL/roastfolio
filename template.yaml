@@ -418,8 +418,13 @@ Resources:
           ROAST_HISTORY_TABLE: !Ref RoastHistoryTable
           ROAST_EVENTS_TABLE: !Ref RoastEventsTable
           ADVANCED_USER_EMAILS: "michal.bardadyn@gmail.com,michal.bardadyn@syncron.com"
+          ALLOW_DEV_AUTH_HEADER: !If [IsDev, "true", "false"]
+          MONTHLY_WRAP_FUNCTION_NAME: !Ref MonthlyWrapFunction
       Policies:
         - Statement:
+            - Effect: Allow
+              Action: lambda:InvokeFunction
+              Resource: !GetAtt MonthlyWrapFunction.Arn
             # S3: price cache
             - Effect: Allow
               Action:
@@ -543,6 +548,30 @@ Resources:
             Path: /monthly-wraps
             Method: GET
             RestApiId: !Ref PricesApi
+            Auth: !If
+              - IsDev
+              - !Ref AWS::NoValue
+              - Authorizer: MonthlyWrapCognito
+        MonthlyWrapsRecalculatePost:
+          Type: Api
+          Properties:
+            Path: /monthly-wraps/recalculate
+            Method: POST
+            RestApiId: !Ref PricesApi
+            Auth: !If
+              - IsDev
+              - !Ref AWS::NoValue
+              - Authorizer: MonthlyWrapCognito
+        MonthlyWrapsRecalculateGet:
+          Type: Api
+          Properties:
+            Path: /monthly-wraps/recalculate
+            Method: GET
+            RestApiId: !Ref PricesApi
+            Auth: !If
+              - IsDev
+              - !Ref AWS::NoValue
+              - Authorizer: MonthlyWrapCognito
         WidgetGet:
           Type: Api
           Properties:
@@ -843,11 +872,25 @@ Resources:
           RETIREMENT_TABLE: !Ref RetirementPlansTable
           DIARY_TABLE: !Ref DiaryTable
           WRAPS_TABLE: !Ref DiaryTable
+          CACHE_BUCKET: !If [IsDev, !Ref DevStaticBucket, !Ref BucketName]
+          MONTHLY_WRAP_FUNCTION_NAME: !If [IsDev, dev-roastfolio-monthly-wrap, roastfolio-monthly-wrap]
       Policies:
         - Statement:
             - Effect: Allow
+              Action: lambda:InvokeFunction
+              Resource: !Sub
+                - "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${WorkerName}"
+                - WorkerName: !If [IsDev, dev-roastfolio-monthly-wrap, roastfolio-monthly-wrap]
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource:
+                - !If [IsDev, !Sub "${DevStaticBucket.Arn}/benchmark-*.json", !Sub "arn:aws:s3:::${BucketName}/benchmark-*.json"]
+            - Effect: Allow
               Action:
                 - dynamodb:Scan
+                - dynamodb:GetItem
               Resource: !GetAtt UsersTable.Arn
             - Effect: Allow
               Action:
@@ -862,6 +905,7 @@ Resources:
               Action:
                 - dynamodb:PutItem
                 - dynamodb:Query
+                - dynamodb:GetItem
               Resource: !GetAtt DiaryTable.Arn
 
   MonthlyWrapScheduleRole:
@@ -895,7 +939,7 @@ Resources:
       Target:
         Arn: !GetAtt MonthlyWrapFunction.Arn
         RoleArn: !GetAtt MonthlyWrapScheduleRole.Arn
-        Input: '{}'
+        Input: '{"action": "scheduled"}'
 
   SnapshotFunction:
     Type: AWS::Serverless::Function
@@ -1045,6 +1089,10 @@ Resources:
     Properties:
       Name: !If [IsDev, dev-emerytura-prices-api, emerytura-prices-api]
       StageName: prod
+      Auth:
+        Authorizers:
+          MonthlyWrapCognito:
+            UserPoolArn: !GetAtt UserPool.Arn
       Cors:
         AllowMethods: "'GET,PUT,POST,DELETE,OPTIONS'"
         AllowHeaders: "'Content-Type,Authorization'"
