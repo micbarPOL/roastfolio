@@ -1,3 +1,5 @@
+import json
+import re
 import unittest
 from pathlib import Path
 
@@ -12,6 +14,15 @@ class FooterAndReleaseContractTests(unittest.TestCase):
         cls.auth_html = (ROOT / "src" / "auth.html").read_text()
         cls.main_css = (ROOT / "src" / "styles" / "main.css").read_text()
         cls.release_doc = (ROOT / "docs" / "RELEASE_NUMBERING.md").read_text()
+        cls.package_json = json.loads((ROOT / "package.json").read_text())
+
+        # Extract active release from RELEASE_NUMBERING.md
+        match = re.search(r"\*\*Current Release:\*\*\s*`([^`]+)`", cls.release_doc)
+        cls.active_version = match.group(1) if match else None
+
+    def test_version_format_and_extraction(self):
+        self.assertIsNotNone(self.active_version, "Active version could not be extracted from RELEASE_NUMBERING.md")
+        self.assertRegex(self.active_version, r"^\d+\.\d+\.\d+$", f"Invalid version format: {self.active_version}")
 
     def test_app_footer_structure_and_attribution(self):
         # Footer element presence and accessibility role
@@ -21,7 +32,8 @@ class FooterAndReleaseContractTests(unittest.TestCase):
 
         # Version display
         self.assertIn('id="app-version-display"', self.index_html)
-        self.assertIn('11.2.1', self.index_html)
+        self.assertIn(f'>{self.active_version}<', self.index_html)
+        self.assertIn(f'v{self.active_version}', self.index_html)
 
         # Links to release numbering & guide
         self.assertIn('guide.html#release-numbering', self.index_html)
@@ -42,7 +54,7 @@ class FooterAndReleaseContractTests(unittest.TestCase):
     def test_guide_html_documents_release_numbering(self):
         self.assertIn('id="release-numbering"', self.guide_html)
         self.assertIn('TOMINEX', self.guide_html)
-        self.assertIn('11.2.1', self.guide_html)
+        self.assertIn(f'v{self.active_version}', self.guide_html)
 
         # Verify semantic definitions
         self.assertIn('MAJOR', self.guide_html)
@@ -58,12 +70,12 @@ class FooterAndReleaseContractTests(unittest.TestCase):
     def test_auth_html_contains_footer_and_version(self):
         self.assertIn('class="auth-page-footer"', self.auth_html)
         self.assertIn('TOMINEX', self.auth_html)
-        self.assertIn('v11.2.1', self.auth_html)
+        self.assertIn(f'v{self.active_version}', self.auth_html)
         self.assertIn('guide.html#release-numbering', self.auth_html)
 
     def test_release_documentation_markdown(self):
         self.assertIn('TOMINEX', self.release_doc)
-        self.assertIn('11.2.1', self.release_doc)
+        self.assertIn(self.active_version, self.release_doc)
         self.assertIn('Major Version', self.release_doc)
         self.assertIn('Minor Version', self.release_doc)
         self.assertIn('Service Release', self.release_doc)
@@ -71,6 +83,10 @@ class FooterAndReleaseContractTests(unittest.TestCase):
         self.assertIn('Changes to existing features', self.release_doc)
         self.assertIn('Bug fixes', self.release_doc)
 
+    def test_package_json_version_synced(self):
+        self.assertEqual(self.package_json.get('version'), self.active_version)
+
 
 if __name__ == "__main__":
     unittest.main()
+

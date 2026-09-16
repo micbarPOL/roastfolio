@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `11.2.1`  
+**Current Release:** `11.3.0`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -57,10 +57,13 @@ A Service release (also called patch or maintenance release) is dedicated exclus
 
 ## 3. Current Release Status
 
-* **Current Active Release:** `11.2.1`
+* **Current Active Release:** `11.3.0`
   * **Major 11:** Multi-asset portfolio intelligence, Coping Diary, and Monthly Recaps.
-  * **Minor 2:** Editorial Bento presentation, interactive dated return charts, and private share sheets.
-  * **Service Release 1:** Boundary date alignments, asset query versioning, and stability fixes.
+  * **Minor 3:** Subtle tactile texture and ambient lighting mesh on wrapped covers, global market comparison one-liner against MSCI World, gapless weekend benchmark extrapolation in Journey, and dynamic benchmark returns in The Bigger Picture.
+  * **Service Release 0:** Base release for Minor tier 3 (Service resets to 0 upon Minor bump).
+* **Prior Releases:**
+  * **11.2.1:** Boundary date alignments, asset query versioning, and stability fixes.
+  * **11.2.0:** Editorial Bento presentation, interactive dated return charts, and private share sheets.
 * **Organization:** Powered by **TOMINEX**.
 
 ---
