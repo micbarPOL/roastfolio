@@ -150,7 +150,7 @@ def test_missing_sparse_and_long_values(page):
     page.keyboard.press('ArrowRight')
     page.keyboard.press('ArrowRight')
     assert page.locator(".trajectory-line").count() == 2
-    assert page.locator("#ma-journey-value").inner_text() == "2026-08-10 · Portfolio -1.5% · MSCI World · IWDA proxy No data"
+    assert page.locator("#ma-journey-value").inner_text() == "2026-08-10 · Portfolio -1.5% · MSCI World · IWDA proxy +0.5%"
 
 
 def render_case(page, overrides):
@@ -219,7 +219,7 @@ def test_target_has_one_meaningful_signed_track(page, actual, goal):
 
 def test_journey_uses_real_dates_return_values_and_independent_null_gaps(page):
     assert page.locator(".ma-return-portfolio").count() == 2
-    assert page.locator(".ma-return-benchmark").count() == 2
+    assert page.locator(".ma-return-benchmark").count() == 1
     points = page.locator(".ma-return-portfolio circle").evaluate_all("es => es.map(e => ({x:+e.getAttribute('cx'),y:+e.getAttribute('cy')}))")
     assert points[1]["x"] - points[0]["x"] == pytest.approx(560 * 3 / 31)
     assert points[2]["x"] - points[1]["x"] == pytest.approx(560 * 6 / 31)
@@ -251,9 +251,9 @@ def test_chart_hover_crosshair_tooltip_and_keyboard(page):
     point = page.locator('.ma-return-portfolio circle').nth(2)
     point.hover()
     tooltip = page.get_by_role('tooltip')
-    assert tooltip.inner_text() == '2026-08-10 · Portfolio -1.5% · MSCI World · IWDA proxy No data'
+    assert tooltip.inner_text() == '2026-08-10 · Portfolio -1.5% · MSCI World · IWDA proxy +0.5%'
     assert chart.get_attribute('aria-valuenow') == '2'
-    assert page.locator('.ma-cursor-benchmark').get_attribute('visibility') == 'hidden'
+    assert page.locator('.ma-cursor-benchmark').get_attribute('visibility') == 'visible'
     crosshair = page.locator('.ma-return-crosshair').get_attribute('d')
     x = float(point.get_attribute('cx'))
     assert crosshair == f'M{x} 22 V190'
@@ -290,7 +290,7 @@ def test_chart_mobile_touch_and_tooltip_overflow(browser):
         point = page.locator('.ma-return-portfolio circle').nth(2)
         point.tap()
         assert '2026-08-10' in page.get_by_role('tooltip').inner_text()
-        assert 'No data' in page.get_by_role('tooltip').inner_text()
+        assert '+0.5%' in page.get_by_role('tooltip').inner_text()
         assert page.locator('.ma-return-chart').get_attribute('aria-valuenow') == '2'
         assert page.locator('.ma-return-chart').evaluate("e => getComputedStyle(e).touchAction") == 'pan-y'
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
@@ -354,10 +354,10 @@ def test_share_journey_allowlist_valid_dates_numbers_and_safe_metadata(page):
     assert journey['benchmark_name'] == 'MSCI World · IWDA proxy' and journey['benchmark_currency'] == 'EUR'
     assert len(journey['points']) == 5
     assert journey['points'][0] == {'date': '2026-08-01', 'portfolio_pct': 0, 'benchmark_pct': 0}
-    assert journey['points'][1]['portfolio_pct'] == 2.5 and journey['points'][1]['benchmark_pct'] is None
-    assert journey['points'][2]['portfolio_pct'] is None
+    assert journey['points'][1]['portfolio_pct'] == 2.5 and journey['points'][1]['benchmark_pct'] == 0
+    assert journey['points'][2]['portfolio_pct'] is None and journey['points'][2]['benchmark_pct'] == -1
     for point in journey['points'][3:]:
-        assert point['portfolio_pct'] is None and point['benchmark_pct'] is None
+        assert point['portfolio_pct'] is None and point['benchmark_pct'] == -1
     assert 'SECRET' not in str(model) and '123456' not in str(model)
     unknown = page.evaluate("MonthlyAuditPresentation.buildModel({journey:{benchmark_id:'__proto__',benchmark_name:'SECRET'}}).journey")
     assert unknown == {'benchmark_id': None, 'benchmark_name': 'Benchmark', 'benchmark_currency': None, 'points': []}
@@ -394,8 +394,8 @@ def test_share_canvas_draws_dated_return_lines_and_retains_drawdown_text(page):
     assert len(drawing['lines']) == 2
     portfolio, benchmark = drawing['lines']
     assert portfolio['dash'] == [] and benchmark['dash'] != []
-    for line in (portfolio, benchmark):
-        assert sum(point[0] == 'moveTo' for point in line['path']) == 2  # Independent gaps.
+    assert sum(point[0] == 'moveTo' for point in portfolio['path']) == 2  # Portfolio retains gaps.
+    assert sum(point[0] == 'moveTo' for point in benchmark['path']) == 1  # Benchmark is extrapolated without gaps.
     points = portfolio['path']
     assert points[1][1] - points[0][1] == pytest.approx(858 * 3 / 31)
     assert points[2][2] > points[0][2]  # Negative returns below zero, not clamped.

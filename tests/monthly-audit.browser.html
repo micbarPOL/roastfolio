@@ -78,7 +78,7 @@
             try {
                 await initMonthlyAudit();
                 check('Seven bento sections', document.querySelectorAll('.monthly-audit-card').length === 7);
-                check('Dated return gaps in both series', document.querySelectorAll('.ma-return-portfolio').length === 2 && document.querySelectorAll('.ma-return-benchmark').length === 2);
+                check('Dated return benchmark unbroken, portfolio retains gaps', document.querySelectorAll('.ma-return-portfolio').length === 2 && document.querySelectorAll('.ma-return-benchmark').length === 1);
                 check('Single target track at one third', document.querySelector('.ma-target-percent').textContent === '300%' && Math.abs(parseFloat(document.querySelector('.ma-target-marker').style.left) - 100 / 3) < .001 && !document.querySelector('.monthly-audit-ring'));
                 check('Wallet and AVCO details retained', document.querySelector('.ma-goal .ma-details').textContent.includes('AVCO') && document.querySelector('.ma-flows .ma-details').textContent.includes('Retirement'));
                 const privateModel = MonthlyAuditPresentation.buildModel({...sample, userId:'SECRET-USER', balance:987654321});
@@ -88,7 +88,7 @@
                 check('Opt-in nominal change', publicModel.nominalChange === '+24,680 PLN');
                 check('Missing is not zero', MonthlyAuditPresentation.buildModel({period:'2026-01'}).twr === 'No data');
                 check('Negative month narrative', MonthlyAuditPresentation.buildModel({...sample, overall_twr_pct:-1}).headline.includes('step back'));
-                check('Null observations stay missing', privateModel.journey.points[2].benchmark_pct === null && privateModel.journey.points[3].portfolio_pct === null && !('trajectory' in privateModel));
+                check('Benchmark extrapolated from last available day', privateModel.journey.points[2].benchmark_pct === 0.5 && privateModel.journey.points[3].portfolio_pct === null && !('trajectory' in privateModel));
                 check('Wordmark replaces decorative glyph', document.querySelector('.ma-wordmark')?.textContent === 'roastfolio' && !document.querySelector('.ma-cover-glyph'));
                 check('Six markets in regional order', [...document.querySelectorAll('.ma-market-row')].map(row => row.dataset.marketId).join(',') === 'WIG,DAX,FTSE100,SP500,NASDAQ,MSCI_WORLD');
                 check('One solid zero grid', document.querySelectorAll('.ma-return-zero').length === 1 && getComputedStyle(document.querySelector('.ma-return-zero')).strokeDasharray === 'none');

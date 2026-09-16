@@ -231,7 +231,7 @@
             ${!available('portfolio_pct') ? '<p class="ma-muted">Portfolio return history unavailable.</p>' : ''}
             ${!available('benchmark_pct') ? '<p class="ma-muted">Benchmark return history unavailable.</p>' : ''}
             ${journeyVisual(points)}
-            <p class="ma-footnote">Cumulative TWR, not account value: deposits and withdrawals do not create returns. Benchmark returns are in its native currency, not converted to PLN. Missing observations remain gaps.</p>
+            <p class="ma-footnote">Cumulative TWR, not account value: deposits and withdrawals do not create returns. Benchmark returns are in its native currency, not converted to PLN. Weekend and empty benchmark observations are extrapolated from the last available day.</p>
             <div class="ma-journey-endpoints">${metric('Deepest drawdown', formatPct(item.max_drawdown_pct))}${metric('Month-end drawdown', formatPct(item.end_drawdown_pct))}${metric('Drawdown change', delta)}</div>
             <details class="ma-details"><summary>Drawdown details</summary><p class="ma-muted">Deepest on ${escapeHtml(storedDate(item.max_drawdown_date))} · Start ${escapeHtml(formatPct(item.start_drawdown_pct))}. Legacy drawdown observations have no stored dates.</p>${trajectoryVisual(item.drawdown_trajectory_pct)}</details>`;
         return card('Your returns, side by side.', 'The journey', body, 'ma-journey');

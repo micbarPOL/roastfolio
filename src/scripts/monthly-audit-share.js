@@ -16,14 +16,30 @@
         const journey = item.journey || {};
         const id = typeof journey.benchmark_id === 'string' && Object.hasOwn(benchmarks, journey.benchmark_id) ? journey.benchmark_id : null;
         const [name, currency] = id ? benchmarks[id] : ['Benchmark', null];
+        const rawPoints = (Array.isArray(journey.points) ? journey.points : [])
+            .filter(point => point && validDate(point.date))
+            .map(point => ({ date: point.date,
+                portfolio_pct: finite(point.portfolio_pct) ? Number(point.portfolio_pct) : null,
+                benchmark_pct: finite(point.benchmark_pct) ? Number(point.benchmark_pct) : null }))
+            .sort((a, b) => a.date.localeCompare(b.date));
+        const hasAnyBenchmark = rawPoints.some(point => point.benchmark_pct !== null);
+        let lastBenchmark = hasAnyBenchmark ? 0 : null;
+        const points = rawPoints.map(point => {
+            let bm = point.benchmark_pct;
+            if (bm !== null) {
+                lastBenchmark = bm;
+            } else if (lastBenchmark !== null) {
+                bm = lastBenchmark;
+            }
+            return {
+                date: point.date,
+                portfolio_pct: point.portfolio_pct,
+                benchmark_pct: bm,
+            };
+        });
         return {
             benchmark_id: id, benchmark_name: name, benchmark_currency: currency,
-            points: (Array.isArray(journey.points) ? journey.points : [])
-                .filter(point => point && validDate(point.date))
-                .map(point => ({ date: point.date,
-                    portfolio_pct: finite(point.portfolio_pct) ? Number(point.portfolio_pct) : null,
-                    benchmark_pct: finite(point.benchmark_pct) ? Number(point.benchmark_pct) : null }))
-                .sort((a, b) => a.date.localeCompare(b.date)),
+            points,
         };
     }
     const percent = value => finite(value)
@@ -137,7 +153,7 @@
         }
         ctx.setLineDash([]);
         const missing = ['portfolio_pct', 'benchmark_pct'].map((key, i) => points.some(point => finite(point[key])) ? '' : `${i ? 'Benchmark' : 'Portfolio'} unavailable`).filter(Boolean);
-        text(missing.length ? missing.join(' · ') : 'Native-currency benchmark · not PLN-adjusted. Gaps = no data.', 72, 1137, 18, '#aab7c5');
+        text(missing.length ? missing.join(' · ') : 'Native-currency benchmark · not PLN-adjusted. Weekends extrapolated.', 72, 1137, 18, '#aab7c5');
         text(`Max drawdown  ${model.maxDrawdown}`, 72, 1170, 28, '#f4f5f7');
         ctx.fillStyle = '#384250'; ctx.fillRect(72, 1220, 936, 1);
         text('A month in perspective. Not investment advice.', 72, 1282, 22, '#aab7c5');
@@ -180,7 +196,7 @@
             try {
                 const model = buildModel(item, { hideAmounts: privacy.checked });
                 drawPoster(canvas, model);
-                canvas.setAttribute('aria-label', `${model.title}. TWR ${model.twr}. ${model.hideAmounts ? 'PLN amounts hidden.' : `Nominal change ${model.nominalChange}.`} Dated cumulative portfolio TWR versus ${model.journey.benchmark_name}. Missing observations are gaps. Max drawdown ${model.maxDrawdown}.`);
+                canvas.setAttribute('aria-label', `${model.title}. TWR ${model.twr}. ${model.hideAmounts ? 'PLN amounts hidden.' : `Nominal change ${model.nominalChange}.`} Dated cumulative portfolio TWR versus ${model.journey.benchmark_name}. Weekends extrapolated. Max drawdown ${model.maxDrawdown}.`);
                 canvas.toBlob(blob => {
                     if (version !== generation || !dialog.open) return;
                     if (!blob) { status.textContent = 'Could not create image. Toggle privacy to retry.'; return; }
