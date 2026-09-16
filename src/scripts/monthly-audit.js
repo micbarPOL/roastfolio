@@ -43,7 +43,7 @@
         if (value == null || value === '' || !Number.isFinite(Number(value))) return 'No data';
         const amount = number(value) || 0;
         const sign = showSign && amount > 0 ? '+' : '';
-        return `${sign}${amount.toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 2 })}%`;
+        return `${sign}${amount.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
     };
 
     const formatDate = value => {
@@ -225,7 +225,7 @@
         const journey = window.MonthlyAuditPresentation.buildJourney(item);
         const points = journeyPoints(item);
         const available = key => points.some(point => Number.isFinite(dateTime(point.date)) && finite(point[key]));
-        const delta = finite(item.trajectory_delta_pp) ? `${number(item.trajectory_delta_pp) > 0 ? '+' : ''}${number(item.trajectory_delta_pp).toLocaleString('en-GB', { maximumFractionDigits: 2 })} pp` : 'No data';
+        const delta = finite(item.trajectory_delta_pp) ? `${number(item.trajectory_delta_pp) > 0 ? '+' : ''}${number(item.trajectory_delta_pp).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pp` : 'No data';
         const body = `
             <div class="ma-return-legend"><span class="ma-legend-portfolio">Portfolio · cumulative TWR</span><span class="ma-legend-benchmark">${escapeHtml(journey.benchmark_name || 'Benchmark')}${journey.benchmark_id === 'MSCI_WORLD' && !/proxy/i.test(journey.benchmark_name || '') ? ' · MSCI World proxy' : ''} · ${escapeHtml(journey.benchmark_currency || 'currency unavailable')}</span></div>
             ${!available('portfolio_pct') ? '<p class="ma-muted">Portfolio return history unavailable.</p>' : ''}
@@ -371,7 +371,7 @@
         const msci = number(msciReturn);
         const delta = userReturn - msci;
         const absDiff = Math.abs(delta);
-        const diffStr = `${absDiff.toLocaleString('en-GB', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} pp`;
+        const diffStr = `${absDiff.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pp`;
 
         if (absDiff < 0.05) {
             return {

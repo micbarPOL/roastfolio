@@ -43,7 +43,7 @@
         };
     }
     const percent = value => finite(value)
-        ? `${Number(value) > 0 ? '+' : ''}${(Number(value) || 0).toLocaleString('en-GB', { maximumFractionDigits: 2 })}%` : 'No data';
+        ? `${Number(value) > 0 ? '+' : ''}${(Number(value) || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : 'No data';
     const money = value => finite(value)
         ? `${Number(value) > 0 ? '+' : ''}${Math.round(Number(value)).toLocaleString('en-GB')} PLN` : 'No data';
     const periodTitle = period => {

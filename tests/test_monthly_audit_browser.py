@@ -150,7 +150,7 @@ def test_missing_sparse_and_long_values(page):
     page.keyboard.press('ArrowRight')
     page.keyboard.press('ArrowRight')
     assert page.locator(".trajectory-line").count() == 2
-    assert page.locator("#ma-journey-value").inner_text() == "2026-08-10 · Portfolio -1.5% · MSCI World · IWDA proxy +0.5%"
+    assert page.locator("#ma-journey-value").inner_text() == "2026-08-10 · Portfolio -1.50% · MSCI World · IWDA proxy +0.50%"
 
 
 def render_case(page, overrides):
@@ -230,7 +230,7 @@ def test_journey_uses_real_dates_return_values_and_independent_null_gaps(page):
     assert before == after
     page.locator(".ma-return-chart").focus()
     page.keyboard.press("ArrowRight")
-    assert "2026-08-04 · Portfolio +2.1%" in page.locator("#ma-journey-value").inner_text()
+    assert "2026-08-04 · Portfolio +2.10%" in page.locator("#ma-journey-value").inner_text()
     legend = page.locator(".ma-return-legend").inner_text()
     assert "Portfolio · cumulative TWR" in legend and "MSCI World" in legend and "EUR" in legend
     assert "not converted to PLN" in page.locator(".ma-journey").inner_text()
@@ -251,7 +251,7 @@ def test_chart_hover_crosshair_tooltip_and_keyboard(page):
     point = page.locator('.ma-return-portfolio circle').nth(2)
     point.hover()
     tooltip = page.get_by_role('tooltip')
-    assert tooltip.inner_text() == '2026-08-10 · Portfolio -1.5% · MSCI World · IWDA proxy +0.5%'
+    assert tooltip.inner_text() == '2026-08-10 · Portfolio -1.50% · MSCI World · IWDA proxy +0.50%'
     assert chart.get_attribute('aria-valuenow') == '2'
     assert page.locator('.ma-cursor-benchmark').get_attribute('visibility') == 'visible'
     crosshair = page.locator('.ma-return-crosshair').get_attribute('d')
@@ -290,7 +290,7 @@ def test_chart_mobile_touch_and_tooltip_overflow(browser):
         point = page.locator('.ma-return-portfolio circle').nth(2)
         point.tap()
         assert '2026-08-10' in page.get_by_role('tooltip').inner_text()
-        assert '+0.5%' in page.get_by_role('tooltip').inner_text()
+        assert '+0.50%' in page.get_by_role('tooltip').inner_text()
         assert page.locator('.ma-return-chart').get_attribute('aria-valuenow') == '2'
         assert page.locator('.ma-return-chart').evaluate("e => getComputedStyle(e).touchAction") == 'pan-y'
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
@@ -315,7 +315,7 @@ def test_chart_zero_grid_is_solid_distinct_and_not_duplicated(page, values, them
         other = extreme.evaluate('e => ({dash:getComputedStyle(e).strokeDasharray,color:getComputedStyle(e).stroke})')
         assert other['dash'] != 'none' and other['color'] != style['color']
     labels = page.locator('.ma-return-grid-label').all_text_contents()
-    assert labels.count('0.0%') == 1 and len(set(labels)) == len(labels)
+    assert labels.count('0.00%') == 1 and len(set(labels)) == len(labels)
     assert page.locator('.ma-return-benchmark').count() == 0
 
 
@@ -447,7 +447,7 @@ def test_global_market_verdict_one_liner(page):
     verdict = page.locator('#ma-global-market-verdict')
     assert "better than global market" in verdict.locator('.ma-verdict-badge').inner_text().lower()
     assert "You were better than the global market" in verdict.locator('.ma-verdict-copy').inner_text()
-    assert "+6.0 pp" in verdict.locator('.ma-verdict-copy').inner_text()
+    assert "+6.00 pp" in verdict.locator('.ma-verdict-copy').inner_text()
     assert "is-positive" in verdict.get_attribute("class")
 
     # Case 2: Behind global market (portfolio 2% vs MSCI World 5%)
@@ -457,7 +457,7 @@ def test_global_market_verdict_one_liner(page):
     })
     assert "behind global market" in verdict.locator('.ma-verdict-badge').inner_text().lower()
     assert "You were behind the global market" in verdict.locator('.ma-verdict-copy').inner_text()
-    assert "3.0 pp" in verdict.locator('.ma-verdict-copy').inner_text()
+    assert "3.00 pp" in verdict.locator('.ma-verdict-copy').inner_text()
     assert "is-caution" in verdict.get_attribute("class")
 
 
@@ -476,11 +476,11 @@ def test_wrapped_cover_benchmarks_bottom_right(page):
     assert "World (MSCI ACWI)" in hero.locator("#ma-hero-benchmarks").inner_text()
 
     wig_el = hero.locator("#ma-hero-benchmark-wig")
-    assert "+3.4%" in wig_el.inner_text()
+    assert "+3.40%" in wig_el.inner_text()
     assert "is-positive" in wig_el.get_attribute("class")
 
     msci_el = hero.locator("#ma-hero-benchmark-msci")
-    assert "-1.2%" in msci_el.inner_text()
+    assert "-1.20%" in msci_el.inner_text()
     assert "is-negative" in msci_el.get_attribute("class")
 
     # Verify buildModel in share sheet includes benchmarks
