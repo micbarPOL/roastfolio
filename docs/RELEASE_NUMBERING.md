@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `11.4.1`  
+**Current Release:** `11.4.2`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -57,7 +57,7 @@ A Service release (also called patch or maintenance release) is dedicated exclus
 
 ## 3. Current Release Status
 
-* **Current Active Release:** `11.4.1`
+* **Current Active Release:** `11.4.2`
   * **Major 11:** Multi-asset portfolio intelligence, Coping Diary, and Monthly Recaps.
   * **Minor 4:** Summary wrapped benchmarks card in the right bottom corner displaying Poland (WIG) and World (MSCI ACWI) monthly returns, synchronized across web recaps and Canvas export posters.
   * **Service Release 0:** Base release for Minor tier 4 (Service resets to 0 upon Minor bump).
@@ -75,7 +75,7 @@ When preparing a release for deployment:
 
 1. **Classify the Changes:**
    * Did you add a new feature? $\rightarrow$ Bump **Major** (`12.0.0`).
-   * Did you modify an existing feature? $\rightarrow$ Bump **Minor** (`11.4.1`).
+   * Did you modify an existing feature? $\rightarrow$ Bump **Minor** (`11.4.2`).
    * Did you only fix bugs or performance? $\rightarrow$ Bump **Service** (`11.2.2`).
 
 2. **Update Version in Codebase:**

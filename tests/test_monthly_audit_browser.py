@@ -489,6 +489,23 @@ def test_wrapped_cover_benchmarks_bottom_right(page):
     assert model["benchmarks"]["wig"] is not None or model["benchmarks"]["msci"] is not None
 
 
+def test_hero_twr_nowrap_and_stacked_above_nominal(page):
+    render_case(page, {
+        "overall_twr_pct": 13.78,
+        "overall_nominal_change_pln": 24680,
+    })
+    twr_strong = page.locator(".ma-twr strong")
+    nominal_strong = page.locator(".ma-nominal strong")
+    assert twr_strong.inner_text() == "+13.78%"
+    # Verify white-space is nowrap so percent never wraps under the number
+    white_space = twr_strong.evaluate("e => getComputedStyle(e).whiteSpace")
+    assert white_space == "nowrap"
+    # Verify TWR is stacked vertically above nominal change
+    twr_box = twr_strong.bounding_box()
+    nominal_box = nominal_strong.bounding_box()
+    assert twr_box["y"] < nominal_box["y"]
+
+
 def test_trading_activity_and_missing_vs_confirmed_zero(page):
     text = page.locator(".ma-trading").inner_text()
     for expected in ("Trading activity", "1,400 PLN", "1,000 PLN", "400 PLN", "Dividends received", "+25 PLN", "2026-08-12", "NVDA"):
