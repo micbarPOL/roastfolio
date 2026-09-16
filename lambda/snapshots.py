@@ -235,8 +235,10 @@ def _xirr_from_investment_history(snapshots: list[dict], as_of_date: str) -> Dec
 
     for snapshot in sorted(snapshots, key=lambda item: str(item.get("snapshotDate", ""))):
         snapshot_date = str(snapshot.get("snapshotDate", ""))[:10]
-        if not snapshot_date or snapshot_date > as_of_date:
+        if not snapshot_date:
             continue
+        if snapshot_date > as_of_date:
+            break
 
         investment_value = _to_decimal(snapshot.get("investmentValue") or 0)
         delta = investment_value if previous_investment is None else investment_value - previous_investment
@@ -1012,7 +1014,6 @@ def _holdings_at_date(all_transactions: list, as_of_date: str, portfolio_currenc
         else:
             affect_cash = bool(affect_cash)
 
-        import portfolios
         if ticker:
             currency = portfolios._MARKET_CURRENCY_BY_TICKER.get(str(ticker).upper(), currency)
 
@@ -1101,15 +1102,19 @@ def recalculate_portfolio_snapshots_from_date(
     user_id: str,
     portfolio_id: str,
     from_date: str,
+    is_cash_only: bool = False,
+    old_transaction: dict | None = None,
+    new_transaction: dict | None = None,
 ) -> dict:
     """
     Recalculates `portfolioValue`, `investmentValue`, and `dailyReturn` for all
     existing snapshots of `portfolio_id` on or after `from_date`.
 
     Algorithm per snapshot date:
-      1. Replay all transactions up to that date → holdings composition.
-      2. Look up historical closing prices (bulk-fetched from yfinance).
-         Assets with a TFI: prefix or no ticker fall back to purchaseValue.
+      1. If is_cash_only: reuse existing snapshot asset valuations, adjusting only
+         for cash/investment deltas without querying Yahoo Finance.
+      2. Otherwise, replay all transactions up to that date → holdings composition,
+         look up historical closing prices (bulk-fetched from yfinance).
       3. Sum: portfolioValue = Σ(units × close × fx).
       4. investmentValue = cumulative DEPOSIT − WITHDRAWAL up to that date.
 
@@ -1132,18 +1137,48 @@ def recalculate_portfolio_snapshots_from_date(
 
     max_date = snapshots_to_update[-1]["snapshotDate"]
 
-    # Collect yfinance-compatible tickers and FX currencies
-    yf_tickers: set = set()
-    yf_currencies: set = set()
-    for tx in all_transactions:
-        ticker = tx.get("ticker")
-        if ticker and not str(ticker).upper().startswith("TFI:"):
-            yf_tickers.add(str(ticker))
-        currency = tx.get("currency") or "PLN"
-        if currency and currency != "PLN":
-            yf_currencies.add(str(currency))
+    if is_cash_only:
+        price_history = {}
+        old_val = _to_decimal(old_transaction.get("value", 0)) if old_transaction else Decimal("0")
+        old_date = str(old_transaction.get("transactionDate") or "")[:10] if old_transaction else ""
+        old_type = str(old_transaction.get("type", "")).upper() if old_transaction else ""
+        old_is_inflow = old_type in {"DEPOSIT", "CASH_ADJUSTMENT", "DIVIDEND"}
 
-    price_history = _fetch_price_history_range(yf_tickers, yf_currencies, from_date, max_date)
+        new_val = _to_decimal(new_transaction.get("value", 0)) if new_transaction else Decimal("0")
+        new_date = str(new_transaction.get("transactionDate") or "")[:10] if new_transaction else ""
+        new_type = str(new_transaction.get("type", "")).upper() if new_transaction else ""
+        new_is_inflow = new_type in {"DEPOSIT", "CASH_ADJUSTMENT", "DIVIDEND"}
+
+        def _calc_cash_delta(d: str) -> Decimal:
+            old_eff = Decimal("0")
+            if old_date and d >= old_date:
+                old_eff = old_val if old_is_inflow else -old_val
+            new_eff = Decimal("0")
+            if new_date and d >= new_date:
+                new_eff = new_val if new_is_inflow else -new_val
+            return new_eff - old_eff
+
+        def _calc_inv_delta(d: str) -> Decimal:
+            old_eff = Decimal("0")
+            if old_date and d >= old_date and old_type in {"DEPOSIT", "WITHDRAWAL"}:
+                old_eff = old_val if old_type == "DEPOSIT" else -old_val
+            new_eff = Decimal("0")
+            if new_date and d >= new_date and new_type in {"DEPOSIT", "WITHDRAWAL"}:
+                new_eff = new_val if new_type == "DEPOSIT" else -new_val
+            return new_eff - old_eff
+    else:
+        # Collect yfinance-compatible tickers and FX currencies
+        yf_tickers: set = set()
+        yf_currencies: set = set()
+        for tx in all_transactions:
+            ticker = tx.get("ticker")
+            if ticker and not str(ticker).upper().startswith("TFI:"):
+                yf_tickers.add(str(ticker))
+            currency = tx.get("currency") or "PLN"
+            if currency and currency != "PLN":
+                yf_currencies.add(str(currency))
+
+        price_history = _fetch_price_history_range(yf_tickers, yf_currencies, from_date, max_date)
 
     now = _now_iso()
     updated = 0
@@ -1177,47 +1212,53 @@ def recalculate_portfolio_snapshots_from_date(
     with _table().batch_writer() as batch:
         for snapshot in snapshots_to_update:
             snap_date = snapshot["snapshotDate"]
-            holdings = _holdings_at_date(all_transactions, snap_date, portfolio_currency=portfolio_currency)
 
-            portfolio_value = Decimal("0")
-            for h in holdings:
-                ticker = h.get("ticker")
-                holding_currency = h.get("currency") or portfolio_currency
-                units = _to_decimal(h.get("units", 0))
-                purchase_value = _to_decimal(h.get("purchaseValue", 0))
+            if is_cash_only:
+                portfolio_value = _quantize_money(_to_decimal(snapshot.get("portfolioValue", 0)) + _calc_cash_delta(snap_date))
+                investment_value = _quantize_money(_to_decimal(snapshot.get("investmentValue", 0)) + _calc_inv_delta(snap_date))
+            else:
+                holdings = _holdings_at_date(all_transactions, snap_date, portfolio_currency=portfolio_currency)
 
-                market_currency = _market_currency_for_asset(ticker, holding_currency)
+                portfolio_value = Decimal("0")
+                for h in holdings:
+                    ticker = h.get("ticker")
+                    holding_currency = h.get("currency") or portfolio_currency
+                    units = _to_decimal(h.get("units", 0))
+                    purchase_value = _to_decimal(h.get("purchaseValue", 0))
 
-                if not ticker or str(ticker).upper().startswith("TFI:"):
+                    market_currency = _market_currency_for_asset(ticker, holding_currency)
+
+                    if not ticker or str(ticker).upper().startswith("TFI:"):
+                        fx_rate = (
+                            _price_at_or_before(price_history, f"{holding_currency}PLN=X", snap_date)
+                            if holding_currency != "PLN"
+                            else Decimal("1")
+                        )
+                        fx_rate = fx_rate if fx_rate is not None else Decimal("1")
+                        portfolio_value += purchase_value * fx_rate
+                        continue
+
+                    close_price = _price_at_or_before(price_history, ticker, snap_date)
                     fx_rate = (
-                        _price_at_or_before(price_history, f"{holding_currency}PLN=X", snap_date)
-                        if holding_currency != "PLN"
+                        _price_at_or_before(price_history, f"{market_currency}PLN=X", snap_date)
+                        if market_currency != "PLN"
                         else Decimal("1")
                     )
-                    fx_rate = fx_rate if fx_rate is not None else Decimal("1")
-                    portfolio_value += purchase_value * fx_rate
-                    continue
 
-                close_price = _price_at_or_before(price_history, ticker, snap_date)
-                fx_rate = (
-                    _price_at_or_before(price_history, f"{market_currency}PLN=X", snap_date)
-                    if market_currency != "PLN"
-                    else Decimal("1")
-                )
-
-                if close_price is not None and fx_rate is not None:
-                    portfolio_value += units * close_price * fx_rate
-                else:
-                    hist = price_history.get(ticker)
-                    fallback_price = hist[max(hist.keys())] if hist else None
-                    if fallback_price is not None:
-                        fx_rate = fx_rate or Decimal("1")
-                        portfolio_value += units * fallback_price * fx_rate
+                    if close_price is not None and fx_rate is not None:
+                        portfolio_value += units * close_price * fx_rate
                     else:
-                        portfolio_value += purchase_value
+                        hist = price_history.get(ticker)
+                        fallback_price = hist[max(hist.keys())] if hist else None
+                        if fallback_price is not None:
+                            fx_rate = fx_rate or Decimal("1")
+                            portfolio_value += units * fallback_price * fx_rate
+                        else:
+                            portfolio_value += purchase_value
 
-            portfolio_value = _quantize_money(portfolio_value)
-            investment_value = _quantize_money(_investment_total_at_date(all_transactions, snap_date))
+                portfolio_value = _quantize_money(portfolio_value)
+                investment_value = _quantize_money(_investment_total_at_date(all_transactions, snap_date))
+
             net_cash_flow = _quantize_money(net_cash_flow_by_date.get(snap_date, Decimal("0")))
 
             daily_return = Decimal("0")
@@ -1267,20 +1308,21 @@ def recalculate_portfolio_snapshots_from_date(
             batch.put_item(Item=item)
             updated += 1
 
-    current_prices = {
-        str(ticker).upper(): price
-        for ticker in yf_tickers
-        if (price := _price_at_or_before(price_history, ticker, max_date)) is not None
-    }
-    try:
-        portfolio_avco.persist_portfolio_avco(
-            user_id,
-            portfolio_id,
-            all_transactions,
-            current_prices=current_prices,
-        )
-    except Exception as exc:
-        print(f"AVCO calculation warning for {user_id} / {portfolio_id}: {exc}")
+    if not is_cash_only:
+        current_prices = {
+            str(ticker).upper(): price
+            for ticker in yf_tickers
+            if (price := _price_at_or_before(price_history, ticker, max_date)) is not None
+        }
+        try:
+            portfolio_avco.persist_portfolio_avco(
+                user_id,
+                portfolio_id,
+                all_transactions,
+                current_prices=current_prices,
+            )
+        except Exception:
+            pass
     recalculate_ath(user_id, portfolio_id)
     return {"updated": updated, "fromDate": from_date, "portfolioId": portfolio_id}
 

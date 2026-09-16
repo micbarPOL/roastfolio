@@ -1723,8 +1723,17 @@ def portfolios_handler(event: dict) -> dict:
                 tx = portfolios.record_transaction(user_id, portfolio_id, body)
                 from_date = tx.get("transactionDate")
                 if from_date:
+                    tx_type = str(tx.get("type") or "").upper()
+                    is_cash_tx = tx_type in {"DEPOSIT", "WITHDRAWAL", "EXTRA_COST", "CASH_ADJUSTMENT"}
                     try:
-                        tx["recalculated"] = snapshots.recalculate_portfolio_snapshots_from_date(user_id, portfolio_id, from_date)
+                        tx["recalculated"] = snapshots.recalculate_portfolio_snapshots_from_date(
+                            user_id,
+                            portfolio_id,
+                            from_date,
+                            is_cash_only=is_cash_tx,
+                            old_transaction=None,
+                            new_transaction=tx,
+                        )
                         tx["summaryUpdated"] = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
                     except Exception as recalc_exc:
                         # Transaction write succeeded; return warning so clients can surface stale-history risk.
@@ -1740,9 +1749,60 @@ def portfolios_handler(event: dict) -> dict:
             try:
                 result = portfolios.update_transaction(user_id, portfolio_id, transaction_id, body)
                 from_date = result.get("recalculateFrom") or result.get("transaction", {}).get("transactionDate")
-                recalculated = snapshots.recalculate_portfolio_snapshots_from_date(user_id, portfolio_id, from_date)
-                summary_updated = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
-                return _resp(200, {**result, "recalculated": recalculated, "summaryUpdated": summary_updated})
+                is_cash_only = bool(result.get("isCashOnly", False))
+                old_tx = result.get("oldTransaction")
+                new_tx = result.get("transaction")
+
+                fn_name = os.environ.get("MONTHLY_WRAP_FUNCTION_NAME")
+                dispatched_async = False
+                if fn_name and not is_cash_only:
+                    try:
+                        import boto3
+                        payload = {
+                            "action": "recalculate_snapshots",
+                            "user_id": user_id,
+                            "portfolio_id": portfolio_id,
+                            "from_date": from_date,
+                            "is_cash_only": is_cash_only,
+                            "old_transaction": old_tx,
+                            "new_transaction": new_tx,
+                        }
+                        boto3.client("lambda").invoke(
+                            FunctionName=fn_name,
+                            InvocationType="Event",
+                            Payload=json.dumps(payload, default=str).encode("utf-8"),
+                        )
+                        dispatched_async = True
+                    except Exception as async_exc:
+                        print(f"Async dispatch error: {async_exc}")
+
+                if dispatched_async:
+                    return _resp(200, {
+                        **result,
+                        "recalculated": {"status": "dispatched_background", "fromDate": from_date},
+                        "summaryUpdated": "dispatched_background",
+                    })
+
+                recalc_warning = None
+                recalculated = None
+                summary_updated = None
+                try:
+                    recalculated = snapshots.recalculate_portfolio_snapshots_from_date(
+                        user_id,
+                        portfolio_id,
+                        from_date,
+                        is_cash_only=is_cash_only,
+                        old_transaction=old_tx,
+                        new_transaction=new_tx,
+                    )
+                    summary_updated = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
+                except Exception as recalc_exc:
+                    recalc_warning = str(recalc_exc)
+
+                resp_payload = {**result, "recalculated": recalculated, "summaryUpdated": summary_updated}
+                if recalc_warning:
+                    resp_payload["historyRecalcWarning"] = recalc_warning
+                return _resp(200, resp_payload)
             except ValueError as e:
                 return _resp(400, {"error": str(e)})
             except Exception as e:

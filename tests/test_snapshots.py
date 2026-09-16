@@ -4,7 +4,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -427,6 +427,67 @@ class SnapshotTests(unittest.TestCase):
         ], "2026-08-05")
         cash_holding = next(h for h in holdings if h.get("holdingId") == "CASH")
         self.assertEqual(cash_holding["units"], Decimal("1000"))
+
+    def test_cash_only_recalculation_reuses_snapshots_without_yfinance(self):
+        existing_snapshots = [
+            {
+                "snapshotDate": "2026-08-01",
+                "portfolioValue": Decimal("5000.00"),
+                "investmentValue": Decimal("5000.00"),
+                "unitPrice": Decimal("100.00"),
+                "units": Decimal("50.00"),
+            },
+            {
+                "snapshotDate": "2026-08-02",
+                "portfolioValue": Decimal("5200.00"),
+                "investmentValue": Decimal("5000.00"),
+                "unitPrice": Decimal("104.00"),
+                "units": Decimal("50.00"),
+            },
+        ]
+        txs = [
+            {"transactionDate": "2026-08-01", "type": "DEPOSIT", "value": "5000", "transactionId": "dep-1"},
+            {"transactionDate": "2026-08-02", "type": "BUY", "value": "2000", "ticker": "CDR.WA", "units": "10", "transactionId": "buy-1"},
+        ]
+
+        old_tx = {"transactionDate": "2026-08-01", "type": "DEPOSIT", "value": "5000", "transactionId": "dep-1"}
+        new_tx = {"transactionDate": "2026-08-01", "type": "DEPOSIT", "value": "6000", "transactionId": "dep-1"}
+
+        put_items = []
+
+        class MockBatch:
+            def put_item(self, Item):
+                put_items.append(Item)
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+
+        mock_table = MagicMock()
+        mock_table.batch_writer.return_value = MockBatch()
+
+        with patch.object(snapshots, "_table", return_value=mock_table), \
+             patch.object(snapshots.portfolios, "list_all_transactions", return_value=txs), \
+             patch.object(snapshots.portfolios, "get_portfolio", return_value={"currency": "PLN"}), \
+             patch.object(snapshots, "list_snapshots", return_value=existing_snapshots), \
+             patch.object(snapshots, "_fetch_price_history_range") as mock_fetch_price, \
+             patch.object(snapshots, "recalculate_ath"):
+            res = snapshots.recalculate_portfolio_snapshots_from_date(
+                "user-1",
+                "xtb",
+                "2026-08-01",
+                is_cash_only=True,
+                old_transaction=old_tx,
+                new_transaction=new_tx,
+            )
+
+        self.assertEqual(res["updated"], 2)
+        mock_fetch_price.assert_not_called()
+        self.assertEqual(len(put_items), 2)
+        # On 2026-08-01: deposit increased by 1000, so portfolioValue becomes 5000 + 1000 = 6000
+        self.assertEqual(put_items[0]["portfolioValue"], Decimal("6000.00"))
+        # On 2026-08-02: portfolioValue becomes 5200 + 1000 = 6200
+        self.assertEqual(put_items[1]["portfolioValue"], Decimal("6200.00"))
 
 
 if __name__ == "__main__":

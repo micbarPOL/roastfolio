@@ -226,6 +226,33 @@ def test_trusted_scheduler_still_processes_all_users(monkeypatch):
     assert result["generated"] == result["failed"] == 1
     assert scheduled.call_args.kwargs == {"force": False}
 
+def test_monthly_wrap_handler_recalculate_snapshots(monkeypatch):
+    mock_port_recalc = Mock(return_value={"updated": 10})
+    mock_sum_recalc = Mock(return_value=10)
+    monkeypatch.setattr(trigger_recalc.snapshots, "recalculate_portfolio_snapshots_from_date", mock_port_recalc)
+    monkeypatch.setattr(trigger_recalc.snapshots, "recalculate_summary_snapshots_from_date", mock_sum_recalc)
+
+    event = {
+        "action": "recalculate_snapshots",
+        "user_id": "user-test",
+        "portfolio_id": "xtb",
+        "from_date": "2026-08-01",
+        "is_cash_only": True,
+        "old_transaction": {"type": "DEPOSIT"},
+        "new_transaction": {"type": "DEPOSIT"},
+    }
+    result = trigger_recalc.monthly_wrap_handler(event, None)
+    assert result["statusCode"] == 200
+    assert result["portfolioRecalculated"] == {"updated": 10}
+    assert result["summaryRecalculated"] == 10
+    mock_port_recalc.assert_called_once_with(
+        "user-test", "xtb", "2026-08-01",
+        is_cash_only=True,
+        old_transaction={"type": "DEPOSIT"},
+        new_transaction={"type": "DEPOSIT"},
+    )
+    mock_sum_recalc.assert_called_once_with("user-test", "2026-08-01")
+
 
 def test_sam_routes_auth_cache_and_worker_permissions():
     import yaml

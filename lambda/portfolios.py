@@ -589,6 +589,83 @@ def _tx_public(item: dict) -> dict:
     return public_tx
 
 
+def validate_cash_balance_invariants(
+    existing_transactions: list[dict],
+    proposed_transactions: list[dict],
+    currency: str = "PLN",
+) -> None:
+    """
+    Validates that the proposed transaction ledger does not produce a negative
+    cash position at any calendar date.
+
+    If on any date the cumulative cash balance drops below zero (< -0.01) and
+    creates a new deficit or worsens an existing historical deficit, raises
+    ValueError with the exact date and shortfall amount.
+    """
+    from collections import defaultdict
+
+    def _tx_cash_impact(tx: dict) -> Decimal:
+        ttype = str(tx.get("type") or "").upper()
+        val = _to_decimal(tx.get("value", 0))
+        affect = tx.get("affectCash")
+        if affect is None:
+            affect = True
+        else:
+            affect = bool(affect)
+
+        if ttype == "DEPOSIT":
+            return val
+        elif ttype == "WITHDRAWAL":
+            return -val
+        elif ttype == "BUY" and affect:
+            return -val
+        elif ttype == "SELL" and affect:
+            return val
+        elif ttype == "DIVIDEND" and affect:
+            return val
+        elif ttype == "CASH_ADJUSTMENT":
+            return val
+        elif ttype == "EXTRA_COST":
+            return -val
+        return Decimal("0")
+
+    def _daily_cash_curve(txs: list[dict]) -> dict[str, Decimal]:
+        daily_impacts: dict[str, Decimal] = defaultdict(Decimal)
+        for tx in txs:
+            d = str(tx.get("transactionDate") or tx.get("date") or "")[:10]
+            if d:
+                daily_impacts[d] += _tx_cash_impact(tx)
+        running = Decimal("0")
+        curve: dict[str, Decimal] = {}
+        for d in sorted(daily_impacts.keys()):
+            running += daily_impacts[d]
+            curve[d] = running
+        return curve
+
+    existing_curve = _daily_cash_curve(existing_transactions)
+    proposed_curve = _daily_cash_curve(proposed_transactions)
+    existing_points = sorted(existing_curve.items())
+
+    def _prior_cash_at(target_date: str) -> Decimal:
+        prior = Decimal("0")
+        for dt, cash in existing_points:
+            if dt <= target_date:
+                prior = cash
+            else:
+                break
+        return prior
+
+    _EPS = Decimal("0.01")
+    for d, proposed_cash in proposed_curve.items():
+        if proposed_cash < -_EPS:
+            prior_cash = _prior_cash_at(d)
+            if prior_cash >= -_EPS or proposed_cash < (prior_cash - _EPS):
+                raise ValueError(
+                    f"Cannot save transaction: cash balance would become negative ({proposed_cash:.2f} {currency}) on {d}. "
+                    f"Subsequent transactions require cash that is not yet deposited."
+                )
+
+
 def update_transaction(user_id: str, portfolio_id: str, transaction_id: str, updates: dict) -> dict:
     portfolio = get_portfolio(user_id, portfolio_id)
     if not portfolio:
@@ -714,6 +791,11 @@ def update_transaction(user_id: str, portfolio_id: str, transaction_id: str, upd
     if "comment" in updates:
         tx_item["comment"] = str(updates.get("comment") or "").strip()[:300]
 
+    # Ensure proposed update does not cause a negative cash position anywhere in history
+    existing_all = list_all_transactions(user_id, portfolio_id, scan_forward=True)
+    proposed_all = [tx_item if str(tx.get("transactionId") or "") == transaction_id else tx for tx in existing_all]
+    validate_cash_balance_invariants(existing_all, proposed_all, currency=currency)
+
     old_sk = _transaction_sk(portfolio_id, old_date, transaction_id)
     new_sk = tx_item["sk"]
     transact_items = []
@@ -737,6 +819,8 @@ def update_transaction(user_id: str, portfolio_id: str, transaction_id: str, upd
         "transaction": _tx_public(tx_item),
         "holdings": holdings,
         "recalculateFrom": min(old_date, transaction_date),
+        "isCashOnly": is_cash_tx,
+        "oldTransaction": _tx_public(existing),
     }
 
 
@@ -867,6 +951,7 @@ def record_transaction(user_id: str, portfolio_id: str, transaction: dict) -> di
         "importSource": transaction.get("importSource"),
         "importVersion": transaction.get("importVersion"),
         "sourceOperation": transaction.get("sourceOperation"),
+        "affectCash": affect_cash,
     }
 
     transact_items = [{
@@ -988,6 +1073,11 @@ def record_transaction(user_id: str, portfolio_id: str, transaction: dict) -> di
                     }),
                 }
             })
+
+    # Ensure proposed transaction ledger does not cause a negative cash position anywhere in history
+    existing_all = list_all_transactions(user_id, portfolio_id, scan_forward=True)
+    proposed_all = existing_all + ([auto_cash_tx] if auto_cash_tx else []) + [tx_item]
+    validate_cash_balance_invariants(existing_all, proposed_all, currency=currency)
 
     _client().transact_write_items(TransactItems=transact_items)
 

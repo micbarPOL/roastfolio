@@ -167,9 +167,12 @@ function currentTabIsTransactions() {
     return document.getElementById('tab-transactions')?.classList.contains('active');
 }
 
-function setSummaryMessage(message) {
+function setSummaryMessage(message, isError = false) {
     const summary = document.getElementById('tx-summary');
-    if (summary) summary.textContent = message;
+    if (!summary) return;
+    summary.textContent = message;
+    summary.style.color = isError ? '#f87171' : '#94a3b8';
+    summary.style.fontWeight = isError ? '600' : 'normal';
 }
 
 function applyFilters() {
@@ -268,6 +271,63 @@ function readTransactionUpdatePayload(row, tr) {
     return payload;
 }
 
+function showTransactionErrorPopup(message, title = 'Cannot Save Transaction') {
+    let overlay = document.getElementById('tx-error-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'tx-error-modal-overlay';
+        overlay.className = 'tx-error-modal-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-labelledby', 'tx-error-modal-title');
+        overlay.innerHTML = `
+            <div class="tx-error-modal">
+                <div class="tx-error-modal-header">
+                    <div class="tx-error-modal-title-wrap">
+                        <div class="tx-error-modal-icon">⚠️</div>
+                        <span id="tx-error-modal-title" class="tx-error-modal-title">Cannot Save Transaction</span>
+                    </div>
+                    <button class="tx-error-modal-close" id="tx-error-modal-close" aria-label="Close error modal">✕</button>
+                </div>
+                <div class="tx-error-modal-body">
+                    <div id="tx-error-modal-message" class="tx-error-modal-message"></div>
+                </div>
+                <div class="tx-error-modal-footer">
+                    <button id="tx-error-modal-btn" class="tx-error-modal-btn">Understood</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    const titleEl = overlay.querySelector('#tx-error-modal-title');
+    const msgEl = overlay.querySelector('#tx-error-modal-message');
+    const closeBtn = overlay.querySelector('#tx-error-modal-close');
+    const okBtn = overlay.querySelector('#tx-error-modal-btn');
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+
+    const hide = () => {
+        overlay.style.display = 'none';
+        document.removeEventListener('keydown', handleKey);
+    };
+
+    const handleKey = (e) => {
+        if (e.key === 'Escape') hide();
+    };
+
+    if (closeBtn) closeBtn.onclick = hide;
+    if (okBtn) okBtn.onclick = hide;
+    overlay.onclick = (e) => {
+        if (e.target === overlay) hide();
+    };
+    document.addEventListener('keydown', handleKey);
+
+    overlay.style.display = 'flex';
+}
+window.showTransactionErrorPopup = showTransactionErrorPopup;
+
 async function handleTransactionSave(button) {
     const tr = button.closest('tr[data-tx-id]');
     if (!tr) return;
@@ -277,12 +337,15 @@ async function handleTransactionSave(button) {
         if (status) status.textContent = message;
         tr.classList.toggle('tx-row-error', error);
     };
+
     if (!row) {
         setStatus('Row not found.', true);
+        showTransactionErrorPopup('Row not found in transaction table.');
         return;
     }
     if (typeof PortfolioClient?.updateTransaction !== 'function') {
-        setStatus('Update API unavailable.', true);
+        setStatus('API unavailable.', true);
+        showTransactionErrorPopup('Update API unavailable. Please check your connection or reload.');
         return;
     }
 
@@ -290,7 +353,10 @@ async function handleTransactionSave(button) {
     try {
         payload = readTransactionUpdatePayload(row, tr);
     } catch (error) {
-        setStatus(error.message || 'Invalid row data.', true);
+        const errorMsg = error.message || 'Invalid row data.';
+        setStatus('Invalid data', true);
+        showTransactionErrorPopup(errorMsg, 'Invalid Transaction Data');
+        setSummaryMessage(`⚠️ ${errorMsg}`, true);
         return;
     }
 
@@ -306,6 +372,10 @@ async function handleTransactionSave(button) {
         } else {
             await refreshTransactionsTabData(true);
         }
+        const recalcStatus = result?.recalculated?.status === 'dispatched_background'
+            ? 'Transaction saved! Recalculating history in background…'
+            : 'Transaction saved successfully.';
+        setSummaryMessage(recalcStatus);
         window.dispatchEvent(new CustomEvent('portfolioHistoryRecalculated', {
             detail: {
                 portfolioId: row.portfolioId,
@@ -318,7 +388,10 @@ async function handleTransactionSave(button) {
         button.disabled = false;
         button.textContent = 'Save';
         tr.classList.remove('tx-row-saving');
-        setStatus(error.message || 'Save failed.', true);
+        const errorMsg = error.message || 'Save failed.';
+        setStatus('Save failed', true);
+        showTransactionErrorPopup(errorMsg);
+        setSummaryMessage(`⚠️ ${errorMsg}`, true);
     }
 }
 
