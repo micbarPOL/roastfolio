@@ -2159,15 +2159,12 @@ def roast_report_handler(event: dict) -> dict:
 
 
 def _monthly_wrap_identity(event: dict):
-    # In the dev stack, API Gateway can omit the authorizer context even though
-    # the browser still sends a valid Authorization JWT. Only accept the fallback
-    # when the environment is explicitly marked as dev; prod must continue to
-    # require the Cognito authorizer claims.
+    # Prefer authorizer claims if provided by API Gateway, otherwise fall back
+    # to the Authorization Bearer JWT (consistent with all other routes in handler.py).
     claims = ((event.get("requestContext") or {}).get("authorizer") or {}).get("claims") or {}
     user_id = claims.get("sub")
     if not isinstance(user_id, str) or not user_id.strip():
-        if os.environ.get("ALLOW_DEV_AUTH_HEADER", "false").lower() in {"1", "true", "yes", "on"}:
-            user_id, _, _ = _get_caller_identity(event)
+        user_id, _, _ = _get_caller_identity(event)
     if not isinstance(user_id, str) or not user_id.strip():
         return None, _resp(401, {"error": "Authentication required"})
     return user_id, None

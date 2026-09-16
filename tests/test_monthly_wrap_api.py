@@ -64,3 +64,33 @@ def test_monthly_wrap_api_rejects_invalid_period():
     }
     response = handler.monthly_wraps_handler(event)
     assert response["statusCode"] == 400
+
+
+def test_monthly_wrap_api_authenticates_via_bearer_header_when_authorizer_absent():
+    import base64
+    table = _WrapTable({
+        "PK": "USER#prod-user-123",
+        "SK": "WRAP#MONTH#2026-08",
+        "period": "2026-08",
+    })
+    payload = json.dumps({"sub": "prod-user-123"}).encode()
+    header = json.dumps({"alg": "none"}).encode()
+    token = f"{base64.urlsafe_b64encode(header).decode().rstrip('=')}.{base64.urlsafe_b64encode(payload).decode().rstrip('=')}.sig"
+    
+    # Simulate API Gateway request with NO requestContext authorizer claims
+    event = {
+        "httpMethod": "GET",
+        "path": "/monthly-wraps",
+        "requestContext": {},
+        "headers": {"Authorization": f"Bearer {token}"},
+        "queryStringParameters": {"period": "2026-08"},
+    }
+
+    with patch.object(
+        handler.boto3, "resource", return_value=_DynamoResource(table)
+    ):
+        response = handler.monthly_wraps_handler(event)
+
+    assert response["statusCode"] == 200
+    assert table.keys == [{"PK": "USER#prod-user-123", "SK": "WRAP#MONTH#2026-08"}]
+
