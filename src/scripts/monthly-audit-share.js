@@ -147,29 +147,17 @@
         text(model.hideAmounts ? 'Your story. Your numbers to keep.' : 'Nominal change · net of deposits and withdrawals', 76, 668, 22, '#314735');
         text(model.headline, 76, 731, 29, '#17281e');
         if (model.benchmarks && (model.benchmarks.wig || model.benchmarks.msci)) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-            ctx.strokeStyle = 'rgba(28, 44, 34, 0.16)';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            if (typeof ctx.roundRect === 'function') {
-                ctx.roundRect(648, 560, 360, 142, 18);
-            } else {
-                ctx.rect(648, 560, 360, 142);
-            }
-            ctx.fill();
-            ctx.stroke();
-
-            text('BENCHMARKS', 672, 594, 16, '#344634', 312, 750);
-            text('Poland (WIG)', 672, 636, 21, '#17281e', 200, 600);
+            text('BENCHMARKS', 672, 578, 17, '#344634', 312, 600);
+            text('Poland (WIG)', 672, 618, 21, '#344634', 200, 500);
             const wigVal = model.benchmarks.wig ?? 'No data';
             ctx.textAlign = 'right';
-            text(wigVal, 984, 636, 21, '#17281e', 100, 700);
+            text(wigVal, 984, 618, 21, '#17281e', 100, 700);
             ctx.textAlign = 'left';
 
-            text('World (MSCI ACWI)', 672, 676, 21, '#17281e', 200, 600);
+            text('World (MSCI ACWI)', 672, 656, 21, '#344634', 200, 500);
             const msciVal = model.benchmarks.msci ?? 'No data';
             ctx.textAlign = 'right';
-            text(msciVal, 984, 676, 21, '#17281e', 100, 700);
+            text(msciVal, 984, 656, 21, '#17281e', 100, 700);
             ctx.textAlign = 'left';
         }
         text('CUMULATIVE RETURNS', 72, 826, 21, '#aab7c5');

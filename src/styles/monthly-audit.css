@@ -88,14 +88,14 @@
 #monthly-audit-root .monthly-audit-hero-result strong { color: #1c2c22; font-family: inherit; font-size: clamp(24px, 3vw, 42px); font-weight: 700; line-height: 1.05; letter-spacing: -.045em; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 #monthly-audit-root .monthly-audit-hero-result.ma-twr strong { font-size: clamp(44px, 7vw, 94px); letter-spacing: -.07em; }
 #monthly-audit-root .monthly-audit-hero-result span { font-size: 11px; color: #344634; font-weight: 600; letter-spacing: .06em; }
-#monthly-audit-root .ma-hero-benchmarks { display: flex; flex-direction: column; gap: 7px; padding: 12px 18px; border-radius: 18px; background: rgba(255, 255, 255, 0.45); border: 1px solid rgba(28, 44, 34, 0.14); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 4px 18px rgba(28, 44, 34, 0.04); min-width: 220px; flex: 0 0 auto; }
-#monthly-audit-root .ma-hero-benchmarks-title { font-size: 9.5px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; color: #344634; }
-#monthly-audit-root .ma-hero-benchmarks-grid { display: flex; flex-direction: column; gap: 5px; }
-#monthly-audit-root .ma-hero-benchmark-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; font-size: 13px; line-height: 1.25; }
-#monthly-audit-root .ma-hero-benchmark-label { color: #1c2c22; font-weight: 600; letter-spacing: -.01em; }
-#monthly-audit-root .ma-hero-benchmark-val { font-family: inherit; font-size: 13.5px; font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #1c2c22; }
+#monthly-audit-root .ma-hero-benchmarks { display: flex; flex-direction: column; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; min-width: 180px; flex: 0 0 auto; }
+#monthly-audit-root .ma-hero-benchmarks-title { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #344634; }
+#monthly-audit-root .ma-hero-benchmarks-grid { display: flex; flex-direction: column; gap: 4px; }
+#monthly-audit-root .ma-hero-benchmark-row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; font-size: 13px; line-height: 1.3; }
+#monthly-audit-root .ma-hero-benchmark-label { color: #344634; font-weight: 500; letter-spacing: -.01em; }
+#monthly-audit-root .ma-hero-benchmark-val { font-family: inherit; font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: #1c2c22; }
 #monthly-audit-root .ma-hero-benchmark-val.is-positive { color: #14532d; }
-#monthly-audit-root .ma-hero-benchmark-val.is-negative { color: #991b1b; }
+#monthly-audit-root .ma-hero-benchmark-val.is-negative { color: #7f1d1d; }
 #monthly-audit-root .ma-hero-benchmark-val.is-neutral { color: #344634; }
 
 /* Desktop hierarchy: 2:1 panels, not seven equal boxes. */

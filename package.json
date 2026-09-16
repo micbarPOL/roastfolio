@@ -1,6 +1,6 @@
 {
   "name": "investment-history",
-  "version": "11.4.0",
+  "version": "11.4.1",
   "description": "A web application to display the history of investments and their values over time.",
   "main": "src/scripts/main.js",
   "scripts": {
