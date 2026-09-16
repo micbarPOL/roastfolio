@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `11.4.5`  
+**Current Release:** `11.5.0`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -57,11 +57,13 @@ A Service release (also called patch or maintenance release) is dedicated exclus
 
 ## 3. Current Release Status
 
-* **Current Active Release:** `11.4.5`
+* **Current Active Release:** `11.5.0`
   * **Major 11:** Multi-asset portfolio intelligence, Coping Diary, and Monthly Recaps.
-  * **Minor 4:** Summary wrapped benchmarks card in the right bottom corner displaying Poland (WIG) and World (MSCI ACWI) monthly returns, synchronized across web recaps and Canvas export posters.
-  * **Service Release 0:** Base release for Minor tier 4 (Service resets to 0 upon Minor bump).
+  * **Minor 5:** Modern fintech UX redesign of Monthly Recap poster chart (Revolut-style minimalist curve with gradient fill, no grid lines, compact legend, single centered month axis) and The Bigger Picture market section (clean borderless horizontal ticker strip without dark frames).
+  * **Service Release 0:** Base release for Minor tier 5 (Service resets to 0 upon Minor bump).
 * **Prior Releases:**
+  * **11.4.5:** Benchmark returns API 500 error resilience and browser extension runtime.lastError suppression.
+  * **11.4.0:** Summary wrapped benchmarks card in the right bottom corner displaying Poland (WIG) and World (MSCI ACWI) monthly returns.
   * **11.3.0:** Subtle tactile texture and ambient lighting mesh on wrapped covers, global market comparison one-liner against MSCI World, gapless weekend benchmark extrapolation in Journey, and dynamic benchmark returns in The Bigger Picture.
   * **11.2.1:** Boundary date alignments, asset query versioning, and stability fixes.
   * **11.2.0:** Editorial Bento presentation, interactive dated return charts, and private share sheets.
@@ -75,7 +77,7 @@ When preparing a release for deployment:
 
 1. **Classify the Changes:**
    * Did you add a new feature? $\rightarrow$ Bump **Major** (`12.0.0`).
-   * Did you modify an existing feature? $\rightarrow$ Bump **Minor** (`11.4.5`).
+   * Did you modify an existing feature? $\rightarrow$ Bump **Minor** (`11.5.0`).
    * Did you only fix bugs or performance? $\rightarrow$ Bump **Service** (`11.2.2`).
 
 2. **Update Version in Codebase:**
