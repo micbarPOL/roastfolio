@@ -82,9 +82,33 @@
         const accent = model.direction === 'negative' ? '#f4bea8' : model.direction === 'positive' ? '#d0f5b0' : '#cec4f5';
         ctx.fillStyle = accent;
         ctx.fillRect(0, 0, 1080, 780);
+
+        // Subtle ambient lighting glow
+        const glow = ctx.createRadialGradient(180, 180, 30, 180, 180, 750);
+        glow.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
+        glow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, 1080, 780);
+
+        // Subtle topographic contour curves
         ctx.strokeStyle = '#192824';
-        ctx.globalAlpha = 0.1;
         ctx.lineWidth = 2;
+        const curves = [
+            [[-100, 720], [250, 340], [680, 820], [1200, 400]],
+            [[-100, 580], [300, 220], [640, 680], [1200, 260]],
+            [[-100, 440], [350, 100], [600, 540], [1200, 130]],
+            [[-100, 300], [400, 20],  [560, 400], [1200, 20]]
+        ];
+        curves.forEach((pts, idx) => {
+            ctx.globalAlpha = 0.04 + idx * 0.01;
+            ctx.beginPath();
+            ctx.moveTo(pts[0][0], pts[0][1]);
+            ctx.bezierCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1], pts[3][0], pts[3][1]);
+            ctx.stroke();
+        });
+
+        // Architectural dot matrix
+        ctx.globalAlpha = 0.08;
         for (let x = 24; x < 1080; x += 36) {
             for (let y = 24; y < 780; y += 36) {
                 ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI * 2); ctx.stroke();

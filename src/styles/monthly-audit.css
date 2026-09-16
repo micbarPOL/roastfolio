@@ -54,10 +54,23 @@
 }
 #monthly-audit-root .monthly-audit-hero.is-negative { background: #f2c5b0; }
 #monthly-audit-root .monthly-audit-hero.is-neutral { background: #d4caf2; }
+.monthly-audit-hero::before {
+    content: ''; position: absolute; z-index: -1; inset: 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 12% 12%, rgba(255, 255, 255, 0.45) 0%, transparent 70%),
+        radial-gradient(ellipse 65% 55% at 88% 88%, rgba(28, 44, 34, 0.08) 0%, transparent 70%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(0, 0, 0, 0.04) 100%);
+    pointer-events: none;
+}
 .monthly-audit-hero::after {
     content: ''; position: absolute; z-index: -1; inset: 0;
-    background-image: radial-gradient(circle, #1c2c2212 1px, transparent 1px);
-    background-size: 24px 24px;
+    background-image:
+        url("data:image/svg+xml,%3Csvg width='900' height='450' viewBox='0 0 900 450' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-100 400 C 140 180, 480 480, 1000 220' stroke='%231c2c22' stroke-width='1.5' opacity='0.06'/%3E%3Cpath d='M-100 320 C 180 120, 450 400, 1000 150' stroke='%231c2c22' stroke-width='1.5' opacity='0.05'/%3E%3Cpath d='M-100 240 C 220 60, 420 320, 1000 90' stroke='%231c2c22' stroke-width='1.5' opacity='0.04'/%3E%3Cpath d='M-100 160 C 260 10, 390 250, 1000 30' stroke='%231c2c22' stroke-width='1.5' opacity='0.035'/%3E%3Cpath d='M60 460 C 320 280, 580 470, 950 340' stroke='%231c2c22' stroke-width='1.5' opacity='0.04'/%3E%3C/svg%3E"),
+        radial-gradient(circle, rgba(28, 44, 34, 0.09) 1px, transparent 1px),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    background-size: 100% 100%, 28px 28px, 120px 120px;
+    background-repeat: no-repeat, repeat, repeat;
+    background-position: right bottom, center center, top left;
     pointer-events: none;
 }
 .ma-cover-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 28px; }
