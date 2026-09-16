@@ -343,8 +343,79 @@
         return card('Moments that mattered.', 'The milestones', body, 'ma-milestones');
     }
 
+    const MARKET_BENCHMARK_IDS = ['WIG', 'DAX', 'FTSE100', 'SP500', 'NASDAQ', 'MSCI_WORLD'];
+    const _benchmarkReturns = {};
+    let _benchmarkReturnsLoading = false;
+    let _benchmarkReturnsLoaded = false;
+    let _benchmarkReturnsPromise = null;
+
+    function resolveMarketReturn(item, marketId) {
+        const markets = Array.isArray(item?.market_context) ? item.market_context : [];
+        const market = markets.find(entry => entry?.id === marketId);
+        if (finite(market?.return_pct)) {
+            return number(market.return_pct);
+        }
+        const ym = item?.period;
+        if (ym && _benchmarkReturns[marketId] && finite(_benchmarkReturns[marketId][ym])) {
+            return _benchmarkReturns[marketId][ym];
+        }
+        return null;
+    }
+
+    function updateMarketContextDom() {
+        const item = state.items.get(state.selectedPeriod);
+        if (!item) return;
+        const rows = document.querySelectorAll('.ma-market-row[data-market-id]');
+        rows.forEach(row => {
+            const id = row.getAttribute('data-market-id');
+            const bTag = row.querySelector('div > b');
+            if (!bTag) return;
+            const currentVal = resolveMarketReturn(item, id);
+            bTag.className = tone(currentVal);
+            bTag.textContent = formatPct(currentVal, true);
+        });
+    }
+
+    async function loadAllBenchmarkMonthlyReturns(force = false) {
+        if (_benchmarkReturnsLoaded && !force) return _benchmarkReturns;
+        if (_benchmarkReturnsPromise && !force) return _benchmarkReturnsPromise;
+        if (!window.PortfolioClient || !window.PortfolioClient.getBenchmarkReturns) return _benchmarkReturns;
+
+        _benchmarkReturnsLoading = true;
+        _benchmarkReturnsPromise = Promise.all(
+            MARKET_BENCHMARK_IDS.map(async bid => {
+                try {
+                    const data = await window.PortfolioClient.getBenchmarkReturns(bid, '2010-01');
+                    const returns = Array.isArray(data?.returns) ? data.returns : [];
+                    const map = _benchmarkReturns[bid] || {};
+                    for (const r of returns) {
+                        const m = String(r?.month || '');
+                        const val = Number(r?.returnPct);
+                        if (m && Number.isFinite(val)) {
+                            map[m] = val;
+                        }
+                    }
+                    _benchmarkReturns[bid] = map;
+                } catch (err) {
+                    console.warn(`[monthly-audit] Failed to fetch benchmark returns for ${bid}:`, err);
+                }
+            })
+        ).then(() => {
+            _benchmarkReturnsLoaded = true;
+            _benchmarkReturnsLoading = false;
+            _benchmarkReturnsPromise = null;
+            updateMarketContextDom();
+            return _benchmarkReturns;
+        }).catch(() => {
+            _benchmarkReturnsLoading = false;
+            _benchmarkReturnsPromise = null;
+            return _benchmarkReturns;
+        });
+
+        return _benchmarkReturnsPromise;
+    }
+
     function marketContext(item) {
-        const markets = Array.isArray(item.market_context) ? item.market_context : [];
         const definitions = [
             ['Poland', [['WIG', 'WIG', 'PLN']]],
             ['Europe', [['DAX', 'DAX', 'EUR'], ['FTSE100', 'FTSE 100', 'GBP']]],
@@ -353,8 +424,8 @@
         ];
         return `<div class="ma-market-portfolio">${metric('Your portfolio · monthly TWR', formatPct(item.overall_twr_pct, true), tone(item.overall_twr_pct))}</div>
             <div class="ma-markets">${definitions.map(([region, entries]) => `<section class="ma-market-group" aria-label="${region}"><h3>${region}</h3>${entries.map(([id, label, currency]) => {
-                const market = markets.find(entry => entry?.id === id) || {};
-                return `<div class="ma-market-row" data-market-id="${id}"><div><strong>${label}</strong><b class="${tone(market.return_pct)}">${escapeHtml(formatPct(market.return_pct, true))}</b></div><span>${currency}</span></div>`;
+                const returnVal = resolveMarketReturn(item, id);
+                return `<div class="ma-market-row" data-market-id="${id}"><div><strong>${label}</strong><b class="${tone(returnVal)}">${escapeHtml(formatPct(returnVal, true))}</b></div><span>${currency}</span></div>`;
             }).join('')}</section>`).join('')}</div><p class="ma-footnote">Calendar close-to-close, native currencies (not PLN-adjusted); dates may differ from portfolio TWR. MSCI World uses a proxy.</p>`;
     }
 
@@ -522,7 +593,10 @@
     };
 
     window.initMonthlyAudit = async force => {
-        if (state.loading || (state.initialized && !force)) return;
+        if (state.loading || (state.initialized && !force)) {
+            loadAllBenchmarkMonthlyReturns();
+            return;
+        }
         state.loading = true;
         renderLoading();
         try {
@@ -543,6 +617,7 @@
         } finally {
             state.loading = false;
         }
+        loadAllBenchmarkMonthlyReturns();
     };
 
     window.setHistorySection = section => {
@@ -556,6 +631,12 @@
             button.classList.toggle('is-active', active);
             button.setAttribute('aria-selected', String(active));
         });
-        if (showRecaps) window.initMonthlyAudit(false);
+        if (showRecaps) {
+            window.initMonthlyAudit(false);
+            loadAllBenchmarkMonthlyReturns();
+        }
     };
+
+    window.loadMonthlyAuditBenchmarkReturns = loadAllBenchmarkMonthlyReturns;
+    window._monthlyAuditBenchmarkReturns = _benchmarkReturns;
 })();

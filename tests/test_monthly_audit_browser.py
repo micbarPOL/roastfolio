@@ -422,6 +422,22 @@ def test_bigger_picture_currencies_calendars_and_seasonality(page):
     assert "August was negative" in page.locator(".monthly-audit-seasonality").inner_text()
 
 
+def test_market_context_fetches_and_populates_missing_benchmark_returns(page):
+    page.evaluate("""() => {
+        window.PortfolioClient = {
+            getBenchmarkReturns: async (benchmarkId, from) => ({
+                benchmarkId,
+                returns: [
+                    { month: '2026-08', returnPct: benchmarkId === 'FTSE100' ? 2.34 : 1.5 }
+                ]
+            })
+        };
+    }""")
+    page.evaluate("() => window.loadMonthlyAuditBenchmarkReturns(true)")
+    assert "+2.34%" in page.locator('[data-market-id="FTSE100"] b').inner_text()
+    assert "is-positive" in page.locator('[data-market-id="FTSE100"] b').get_attribute("class")
+
+
 def test_trading_activity_and_missing_vs_confirmed_zero(page):
     text = page.locator(".ma-trading").inner_text()
     for expected in ("Trading activity", "1,400 PLN", "1,000 PLN", "400 PLN", "Dividends received", "+25 PLN", "2026-08-12", "NVDA"):
