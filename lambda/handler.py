@@ -1003,21 +1003,30 @@ def benchmark_returns_handler(event: dict) -> dict:
     if bid not in db.BENCHMARKS:
         bid = db.DEFAULT_BENCHMARK
 
+    def _safe_float(val, default=0.0):
+        if val is None:
+            return default
+        try:
+            return float(val)
+        except (ValueError, TypeError):
+            return default
+
     try:
-        items = br.list_monthly_returns(bid, from_ym=from_m)
+        items = br.list_monthly_returns(bid, from_ym=from_m) or []
+        out = [
+            {
+                "month":      i.get("month"),
+                "returnPct":  _safe_float(i.get("returnPct")),
+                "openPrice":  _safe_float(i.get("openPrice")),
+                "closePrice": _safe_float(i.get("closePrice")),
+            }
+            for i in items
+            if isinstance(i, dict) and i.get("month")
+        ]
     except Exception as exc:
         # Keep dashboard flows alive even if benchmark storage is unavailable.
         print(f"benchmark_returns_handler fallback for {bid}: {exc}")
-        items = []
-    out = [
-        {
-            "month":      i.get("month"),
-            "returnPct":  float(i.get("returnPct", 0)),
-            "openPrice":  float(i.get("openPrice", 0)),
-            "closePrice": float(i.get("closePrice", 0)),
-        }
-        for i in items
-    ]
+        out = []
     return _resp(200, {"benchmarkId": bid, "returns": out})
 
 

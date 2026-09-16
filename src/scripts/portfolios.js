@@ -49,7 +49,7 @@
       // Clean up cache shortly after it settles to allow fresh fetches later
       promise.finally(() => {
         setTimeout(() => { delete _fetchPromises[path]; }, 100);
-      });
+      }).catch(() => {});
     }
 
     return promise;
@@ -178,7 +178,7 @@
       const qs = params.toString();
       const promise = _fetch(`/benchmark-returns${qs ? '?' + qs : ''}`).catch(err => {
         if (this._benchmarkReturnsCache) this._benchmarkReturnsCache.delete(key);
-        throw err;
+        return { benchmarkId, returns: [] };
       });
       if (!this._benchmarkReturnsCache) this._benchmarkReturnsCache = new Map();
       this._benchmarkReturnsCache.set(key, promise);
