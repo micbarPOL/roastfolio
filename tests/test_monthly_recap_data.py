@@ -90,6 +90,20 @@ def test_market_month_returns_are_calendar_close_to_close_and_keep_missing(monke
     assert result["market_context"][2]["currency"] == "GBP"
 
 
+def test_market_month_returns_fall_back_to_stored_benchmark_returns_when_daily_empty(monkeypatch):
+    monkeypatch.setattr(wraps, "selected_benchmark", lambda _: "SP500")
+    monkeypatch.setattr(wraps, "_benchmark_daily", lambda bid, start, end: {})
+    def fake_stored(bid, ym):
+        return Decimal("3.2500") if bid == "WIG" and ym == "2026-09" else None
+    monkeypatch.setattr(wraps, "_stored_benchmark_return", fake_stored)
+    result = wraps._market_comparison("u", [snap("2026-09-01", 100), snap("2026-10-01", 110)],
+                                     date(2026, 9, 1), date(2026, 10, 1))
+    wig_entry = next(item for item in result["market_context"] if item["id"] == "WIG")
+    assert wig_entry["return_pct"] == Decimal("3.2500")
+    sp500_entry = next(item for item in result["market_context"] if item["id"] == "SP500")
+    assert sp500_entry["return_pct"] is None
+
+
 def test_trading_activity_uses_settled_pln_values_filters_period_and_top_five():
     transactions = [{"type": "BUY", "value": n, "currency": "USD", "ticker": str(n),
                      "transactionDate": "2026-09-10"} for n in range(1, 7)]

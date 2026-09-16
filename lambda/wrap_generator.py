@@ -198,6 +198,19 @@ def _journey(items: list[dict], start: date, next_month: date, benchmark_id: str
     return result
 
 
+def _stored_benchmark_return(benchmark_id: str, ym: str) -> Decimal | None:
+    try:
+        import benchmark_returns as br
+        tbl = br._table()
+        res = tbl.get_item(Key={"userId": br._BENCHMARK_PK, "sk": br._sk(benchmark_id, ym)})
+        item = res.get("Item")
+        if item and item.get("returnPct") is not None:
+            return _pct(item["returnPct"])
+    except Exception:
+        pass
+    return None
+
+
 def _market_comparison(user_id: str, items: list[dict], start: date, next_month: date,
                        benchmark_id: str | None = None) -> dict:
     benchmark_id = benchmark_id or selected_benchmark(user_id)
@@ -210,13 +223,17 @@ def _market_comparison(user_id: str, items: list[dict], start: date, next_month:
         for bid in dict.fromkeys((benchmark_id, *MARKET_CONTEXT_IDS))
     }
     market_context = []
+    ym = start.strftime("%Y-%m")
     for bid in MARKET_CONTEXT_IDS:
         meta = db.BENCHMARKS[bid]
         baseline_day, baseline = _asof_close(histories[bid], (start - timedelta(days=1)).isoformat())
         close_day, close = _asof_close(histories[bid], (next_month - timedelta(days=1)).isoformat())
+        ret_pct = _price_return(baseline, close)
+        if ret_pct is None:
+            ret_pct = _stored_benchmark_return(bid, ym)
         market_context.append({
             "id": bid, "name": meta["name"], "currency": meta["currency"],
-            "return_pct": _price_return(baseline, close),
+            "return_pct": ret_pct,
             "start_price_date": baseline_day, "end_price_date": close_day,
         })
     return {"journey": _journey(items, start, next_month, benchmark_id, histories[benchmark_id]),
