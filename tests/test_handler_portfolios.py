@@ -1,8 +1,9 @@
 import json
+import os
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,7 +68,9 @@ class PortfolioHandlerTests(unittest.TestCase):
         self.assertEqual(body["recalculated"], {"updated": 2})
         self.assertEqual(body["summaryUpdated"], 1)
         mock_record.assert_called_once()
-        mock_recalc.assert_called_once_with("user-1", "xtb", "2026-09-10")
+        self.assertEqual(mock_recalc.call_count, 1)
+        self.assertEqual(mock_recalc.call_args[0], ("user-1", "xtb", "2026-09-10"))
+        self.assertFalse(mock_recalc.call_args[1].get("is_cash_only"))
         mock_summary.assert_called_once_with("user-1", "2026-09-10")
 
     def test_post_transaction_route_returns_warning_when_recalc_fails(self):
@@ -112,7 +115,9 @@ class PortfolioHandlerTests(unittest.TestCase):
             "tx-1",
             {"quantity": 2, "price": 125, "transactionDate": "2025-05-04"},
         )
-        mock_recalc.assert_called_once_with("user-1", "xtb", "2025-05-01")
+        self.assertEqual(mock_recalc.call_count, 1)
+        self.assertEqual(mock_recalc.call_args[0], ("user-1", "xtb", "2025-05-01"))
+        self.assertFalse(mock_recalc.call_args[1].get("is_cash_only"))
         mock_summary.assert_called_once_with("user-1", "2025-05-01")
 
     def test_post_transaction_invalid_json(self):
@@ -442,6 +447,79 @@ class PortfolioHandlerTests(unittest.TestCase):
         body = json.loads(resp["body"])
         self.assertEqual(body["benchmarkId"], "MSCI_WORLD")
         self.assertEqual(body["returns"], [])
+
+    def test_put_transaction_negative_cash_validation_error(self):
+        with patch.object(handler.portfolios, "update_transaction", side_effect=ValueError("Cannot save transaction: cash balance would become negative (-1000.00 PLN) on 2026-08-02")):
+            resp = handler.portfolios_handler(self._event(
+                "PUT",
+                "/portfolios/xtb/transactions/tx-dep-1",
+                {"portfolioId": "xtb", "transactionId": "tx-dep-1"},
+                body=json.dumps({"transactionDate": "2026-08-03"}),
+            ))
+        self.assertEqual(resp["statusCode"], 400)
+        body = json.loads(resp["body"])
+        self.assertIn("cash balance would become negative", body["error"])
+
+    def test_post_transaction_negative_cash_validation_error(self):
+        with patch.object(handler.portfolios, "record_transaction", side_effect=ValueError("Cannot save transaction: cash balance would become negative (-500.00 PLN) on 2026-08-02")):
+            resp = handler.portfolios_handler(self._event(
+                "POST",
+                "/portfolios/xtb/transactions",
+                {"portfolioId": "xtb"},
+                body=json.dumps({"type": "WITHDRAWAL", "value": 5000, "transactionDate": "2026-08-01"}),
+            ))
+        self.assertEqual(resp["statusCode"], 400)
+        body = json.loads(resp["body"])
+        self.assertIn("cash balance would become negative", body["error"])
+
+    def test_put_transaction_cash_only_flag_passed_to_recalculate(self):
+        update_result = {
+            "transaction": {"transactionId": "tx-dep-1", "type": "DEPOSIT", "value": 2000, "transactionDate": "2025-01-01"},
+            "oldTransaction": {"transactionId": "tx-dep-1", "type": "DEPOSIT", "value": 1000, "transactionDate": "2025-01-01"},
+            "isCashOnly": True,
+            "recalculateFrom": "2025-01-01",
+        }
+        with patch.object(handler.portfolios, "update_transaction", return_value=update_result), \
+             patch.object(handler.snapshots, "recalculate_portfolio_snapshots_from_date", return_value={"updated": 5}) as mock_recalc, \
+             patch.object(handler.snapshots, "recalculate_summary_snapshots_from_date", return_value=5):
+            resp = handler.portfolios_handler(self._event(
+                "PUT",
+                "/portfolios/xtb/transactions/tx-dep-1",
+                {"portfolioId": "xtb", "transactionId": "tx-dep-1"},
+                body=json.dumps({"value": 2000}),
+            ))
+        self.assertEqual(resp["statusCode"], 200)
+        self.assertEqual(mock_recalc.call_count, 1)
+        self.assertTrue(mock_recalc.call_args[1].get("is_cash_only"))
+        self.assertEqual(mock_recalc.call_args[1].get("old_transaction"), update_result["oldTransaction"])
+
+    def test_put_transaction_dispatches_background_when_worker_configured(self):
+        update_result = {
+            "transaction": {"transactionId": "tx-buy-1", "type": "BUY", "value": 5000, "transactionDate": "2024-01-01"},
+            "oldTransaction": {"transactionId": "tx-buy-1", "type": "BUY", "value": 4000, "transactionDate": "2024-01-01"},
+            "isCashOnly": False,
+            "recalculateFrom": "2024-01-01",
+        }
+        mock_lambda_client = MagicMock()
+        with patch.dict(os.environ, {"MONTHLY_WRAP_FUNCTION_NAME": "test-monthly-wrap-worker"}), \
+             patch.object(handler.portfolios, "update_transaction", return_value=update_result), \
+             patch("boto3.client", return_value=mock_lambda_client):
+            resp = handler.portfolios_handler(self._event(
+                "PUT",
+                "/portfolios/xtb/transactions/tx-buy-1",
+                {"portfolioId": "xtb", "transactionId": "tx-buy-1"},
+                body=json.dumps({"value": 5000}),
+            ))
+        self.assertEqual(resp["statusCode"], 200)
+        body = json.loads(resp["body"])
+        self.assertEqual(body["recalculated"]["status"], "dispatched_background")
+        mock_lambda_client.invoke.assert_called_once()
+        call_kwargs = mock_lambda_client.invoke.call_args[1]
+        self.assertEqual(call_kwargs["FunctionName"], "test-monthly-wrap-worker")
+        self.assertEqual(call_kwargs["InvocationType"], "Event")
+        payload = json.loads(call_kwargs["Payload"].decode())
+        self.assertEqual(payload["action"], "recalculate_snapshots")
+        self.assertEqual(payload["portfolio_id"], "xtb")
 
 
 if __name__ == "__main__":

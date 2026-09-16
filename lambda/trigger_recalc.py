@@ -345,6 +345,32 @@ def monthly_wrap_handler(event, _context):
             raise ValueError("Unexpected recalculation fields")
         import monthly_recalculation
         return monthly_recalculation.run_job(event, _context)
+    if event.get("action") == "recalculate_snapshots":
+        allowed_keys = {"action", "user_id", "portfolio_id", "from_date", "is_cash_only", "old_transaction", "new_transaction"}
+        if set(event) - allowed_keys:
+            raise ValueError("Unexpected recalculate_snapshots fields")
+        user_id = str(event.get("user_id") or "").strip()
+        portfolio_id = str(event.get("portfolio_id") or "").strip()
+        from_date = str(event.get("from_date") or "").strip()[:10]
+        if not user_id or not portfolio_id or not from_date:
+            raise ValueError("user_id, portfolio_id, and from_date are required")
+        is_cash_only = bool(event.get("is_cash_only", False))
+        old_tx = event.get("old_transaction")
+        new_tx = event.get("new_transaction")
+        port_res = snapshots.recalculate_portfolio_snapshots_from_date(
+            user_id,
+            portfolio_id,
+            from_date,
+            is_cash_only=is_cash_only,
+            old_transaction=old_tx,
+            new_transaction=new_tx,
+        )
+        summary_res = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
+        return {
+            "statusCode": 200,
+            "portfolioRecalculated": port_res,
+            "summaryRecalculated": summary_res,
+        }
     if event.get("action") != "scheduled" or set(event) - {"action", "asOfDate", "force"}:
         raise ValueError("Explicit scheduled or user-scoped recalculate action required")
     as_of_raw = str(event.get("asOfDate") or "").strip()

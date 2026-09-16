@@ -142,7 +142,7 @@ class PortfolioLedgerTests(unittest.TestCase):
             "name": "Apple",
             "currency": "USD",
             "quantity": 2,
-            "value": 205,
+            "value": 200,
             "commission": 5,
             "comment": "Initial buy",
             "transactionDate": "2026-05-10",
@@ -207,7 +207,7 @@ class PortfolioLedgerTests(unittest.TestCase):
         })
         portfolios.record_transaction(self.user_id, self.portfolio_id, {
             "type": "BUY", "ticker": "AAPL", "name": "Apple", "currency": "USD",
-            "quantity": 3, "value": 332, "commission": 2, "transactionDate": "2026-05-11",
+            "quantity": 3, "value": 330, "commission": 2, "transactionDate": "2026-05-11",
         })
 
         holding = next(h for h in portfolios.list_holdings(self.user_id, self.portfolio_id) if h.get("ticker") == "AAPL")
@@ -218,7 +218,7 @@ class PortfolioLedgerTests(unittest.TestCase):
         self._deposit_cash(205)
         portfolios.record_transaction(self.user_id, self.portfolio_id, {
             "type": "BUY", "ticker": "AAPL", "name": "Apple", "currency": "USD",
-            "quantity": 2, "value": 205, "commission": 5, "transactionDate": "2026-05-10",
+            "quantity": 2, "value": 200, "commission": 5, "transactionDate": "2026-05-10",
         })
 
         holding = next(h for h in portfolios.list_holdings(self.user_id, self.portfolio_id) if h.get("ticker") == "AAPL")
@@ -439,7 +439,7 @@ class PortfolioLedgerTests(unittest.TestCase):
         cash = next(h for h in holdings if h.get("ticker") is None)
         self.assertEqual(stock["units"], Decimal("10"))
         self.assertEqual(stock["purchaseValue"], Decimal("100"))
-        self.assertEqual(cash["purchaseValue"], Decimal("44.58"))
+        self.assertEqual(cash["purchaseValue"], Decimal("34.16"))
 
     def test_spinoff_adds_zero_basis_holding(self):
         portfolios.record_transaction(self.user_id, self.portfolio_id, {
@@ -457,7 +457,7 @@ class PortfolioLedgerTests(unittest.TestCase):
         self.assertEqual(holding["purchaseValue"], Decimal("0"))
 
     def test_extra_cost_reduces_cash_balance(self):
-        self._deposit_cash(200)
+        self._deposit_cash(200, transaction_date="2024-07-01")
         portfolios.record_transaction(self.user_id, self.portfolio_id, {
             "type": "EXTRA_COST",
             "value": Decimal("174.48"),
