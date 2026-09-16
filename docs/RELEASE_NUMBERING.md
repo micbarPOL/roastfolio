@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `11.6.1`  
+**Current Release:** `11.6.2`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -57,11 +57,12 @@ A Service release (also called patch or maintenance release) is dedicated exclus
 
 ## 3. Current Release Status
 
-* **Current Active Release:** `11.6.1`
+* **Current Active Release:** `11.6.2`
   * **Major 11:** Multi-asset portfolio intelligence, Coping Diary, and Monthly Recaps.
   * **Minor 6:** Negative cash balance invariant validation across ledger history, snapshot reuse optimization for cash transaction edits, asynchronous background snapshot recalculation, and prominent UI error presentation.
-  * **Service Release 1:** Present transaction validation errors in dedicated modal popup dialogs instead of inline table rows.
+  * **Service Release 2:** Continuous calendar day snapshot backfilling from earliest historical transaction dates (e.g. 2021), fast incremental XIRR/TWR recalculation, and background async worker dispatch for all transaction modifications.
 * **Prior Releases:**
+  * **11.6.1:** Present transaction validation errors in dedicated modal popup dialogs instead of inline table rows.
   * **11.6.0:** Base release for Minor tier 6 (cash invariant validation and snapshot reuse).
   * **11.5.1:** Fix monthly wrap production authentication by enabling Authorization Bearer header fallback when API Gateway authorizer claims are omitted.
   * **11.5.0:** Base release for Minor tier 5 (Monthly Recap UX redesigns).
