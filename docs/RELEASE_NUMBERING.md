@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `13.0.0`  
-*Target Release Numbering Standard — v13.0.0*
+**Current Release:** `13.0.1`  
+*Target Release Numbering Standard — v13.0.1*
 
 ---
 
@@ -52,11 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `13.0.0`
+* **Current Active Release:** `13.0.1`
   * **Major 13:** Spotify Wrapped & Revolut-style monthly audit email template redesign featuring inline SVG cumulative journey chart with dynamic green/red outperformance fill, 7-column calendar heatmap, Who Moved Your Month leader & anchor asset highlights, global benchmarks table, conditional seasonality analysis, and trailing 12-month turnover comparison.
   * **Minor 0:** Baseline for Major tier 13.
-  * **Service Release 0:** Baseline for Major tier 13.
+  * **Service Release 1:** Fix email recap benchmark return discrepancy by prioritizing canonical market_context close-to-close returns, trim journey chart points strictly to calendar month (ending on month-end, e.g. Jun 30), clarify 0% baseline label, add compact nominal change formatting and solid email-compatible hex colors to calendar heatmap, and add dynamic snapshot fallback for missing daily moves.
 * **Prior Releases:**
+  * **13.0.0:** Baseline release for Major tier 13.
   * **12.1.0:** Added user privacy preference to mask PLN cash flow and nominal positions in notification emails (`hideCashInNotifications`), integrated share dialog privacy checkbox with email dispatch, and resolved journey & market context benchmark return extraction.
   * **12.0.5:** Complete AWS SES domain & DKIM verification for `roastfolio.app` and update dev environment sender to `notifications@roastfolio.app`.
   * **12.0.4:** Update default notification sender address and domain references to `roastfolio.app` (`notifications@roastfolio.app`).
