@@ -336,7 +336,27 @@ def send_monthly_recap_email(
         return {"success": True, "message_id": message_id, "recipients": recipients}
     except ClientError as err:
         logger.error("SES ClientError sending recap email: %s", err)
-        return {"success": False, "error": str(err), "recipients": recipients}
+        raw_msg = str(err)
+        error_code = err.response.get("Error", {}).get("Code", "")
+        error_text = err.response.get("Error", {}).get("Message", raw_msg)
+        is_unverified = (
+            error_code == "MessageRejected"
+            or "Email address is not verified" in raw_msg
+            or "Email address is not verified" in error_text
+        )
+        if is_unverified:
+            user_msg = (
+                f"Email delivery failed: Email address is not verified in AWS SES (Sandbox mode). "
+                f"Both sender ({from_email}) and recipient addresses must be verified identities."
+            )
+            return {
+                "success": False,
+                "error": user_msg,
+                "raw_error": raw_msg,
+                "unverified": True,
+                "recipients": recipients,
+            }
+        return {"success": False, "error": raw_msg, "recipients": recipients}
     except Exception as exc:
         logger.error("Unexpected error sending recap email: %s", exc)
         return {"success": False, "error": str(exc), "recipients": recipients}

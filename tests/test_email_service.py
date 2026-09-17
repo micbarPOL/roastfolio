@@ -127,6 +127,7 @@ def test_send_monthly_recap_email_handles_ses_client_error():
     )
 
     assert res["success"] is False
+    assert res["unverified"] is True
     assert "Email address is not verified" in res["error"]
 
 

@@ -29,7 +29,7 @@ region = "us-west-2"
 confirm_changeset = false
 capabilities = "CAPABILITY_IAM"
 disable_rollback = true
-parameter_overrides = "BucketName=\"micbarfund-website\" Environment=\"dev\""
+parameter_overrides = "BucketName=\"micbarfund-website\" Environment=\"dev\" NotificationFromEmail=\"michal.bardadyn@gmail.com\""
 image_repositories = []
 
 [dev.global.parameters]

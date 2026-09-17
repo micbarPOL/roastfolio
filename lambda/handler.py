@@ -2412,7 +2412,8 @@ def monthly_wrap_send_email_handler(event: dict) -> dict:
 
     result = email_service.send_monthly_recap_email(user_profile, item, recipients=recipients)
     if not result.get("success"):
-        return _resp(500, {"error": result.get("error", "Failed to send recap email")})
+        status_code = 422 if result.get("unverified") else 500
+        return _resp(status_code, {"error": result.get("error", "Failed to send recap email")})
 
     return _resp(200, {
         "status": "ok",

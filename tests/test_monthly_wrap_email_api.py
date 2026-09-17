@@ -114,3 +114,39 @@ def test_monthly_wrap_send_email_success():
     assert "user@example.com" in body["recipients"]
     assert "extra@example.com" in body["recipients"]
     mock_send.assert_called_once()
+
+
+def test_monthly_wrap_send_email_unverified_ses_returns_422():
+    wrap_item = {
+        "PK": "USER#user-123",
+        "SK": "WRAP#MONTH#2026-08",
+        "period": "2026-08",
+        "overall_twr_pct": Decimal("3.5"),
+    }
+    user_profile = {
+        "userId": "user-123",
+        "email": "user@example.com",
+    }
+    table = _MockWrapTable(item=wrap_item)
+    mock_send = MagicMock(return_value={
+        "success": False,
+        "unverified": True,
+        "error": "Email delivery failed: Email address is not verified in AWS SES (Sandbox mode).",
+    })
+
+    event = {
+        "httpMethod": "POST",
+        "path": "/monthly-wraps/email",
+        "requestContext": {"authorizer": {"claims": {"sub": "user-123"}}},
+        "body": json.dumps({"period": "2026-08"}),
+    }
+
+    with patch.object(handler.boto3, "resource", return_value=_MockDynamoResource(table)), \
+         patch.object(handler.db, "get_user", return_value=user_profile), \
+         patch("email_service.send_monthly_recap_email", mock_send):
+        resp = handler.monthly_wrap_send_email_handler(event)
+
+    assert resp["statusCode"] == 422
+    body = json.loads(resp["body"])
+    assert "Email address is not verified" in body["error"]
+
