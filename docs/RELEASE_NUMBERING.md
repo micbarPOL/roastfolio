@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `11.8.0`  
+**Current Release:** `12.0.0`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -38,21 +38,29 @@ A Minor version increment indicates **changes, improvements, or redesigns to exi
 
 * **Triggers:**
   * UI/UX layout redesigns of existing screens (e.g., Editorial Bento layout for Monthly Summaries, reworked transactions table, enhanced candlestick/sparkline components).
-  * Significant improvements to user flows, form controls, calculations, or interactive charts.
-* **Reset Rules:** When the Minor version increases, the Service number resets to zero (e.g., `11.2.1` $\rightarrow$ `11.3.0`).
+  * New filter modes, date ranges, or aggregation toggles within existing tabs.
+  * Non-breaking adjustments to calculation models or third-party quote ingestion heuristics.
+* **Reset Rules:** Resets Service to zero (e.g., `11.2.1` $\rightarrow$ `11.3.0`).
 
 ### 2.3 Service Releases (`MAJOR.MINOR.SERVICE`)
-A Service release indicates **bug fixes, security patches, performance tuning, and non-breaking corrections**.
+A Service release increment indicates **defect corrections, stability fixes, or performance optimizations**.
+
+* **Triggers:**
+  * Bug fixes (e.g., timezone parsing discrepancies, rounding errors, layout clipping on mobile).
+  * Performance tuning (e.g., DynamoDB batch optimizations, client-side asset caching).
+  * Security patches and dependency updates.
+* **Increment Rules:** Service increments by 1; Major and Minor remain untouched.
 
 ---
 
-## 3. Current Release Status
+## 3. Active Release State
 
-* **Current Active Release:** `11.8.0`
-  * **Major 11:** Multi-asset portfolio intelligence, Coping Diary, and Monthly Recaps.
-  * **Minor 8:** Added interactive daily returns calendar widget to The Milestones section on Monthly Summaries, featuring positive/negative return day coloring, hover tooltip with PLN and % returns, Best Day and Worst Day indicators, and celebratory All-Time High (ATH) styling with radiant gold pulsing halo and trophy badge.
-  * **Service Release 0:** Baseline for Minor tier 8.
+* **Current Active Release:** `12.0.0`
+  * **Major 12:** Automated monthly report email notification engine, multi-recipient user settings configuration, and on-demand email dispatch directly from the "Share your recap" popup dialog via AWS SES.
+  * **Minor 0:** Baseline for Major tier 12.
+  * **Service Release 0:** Baseline for Major tier 12.
 * **Prior Releases:**
+  * **11.8.0:** Added interactive daily returns calendar widget to The Milestones section on Monthly Summaries, featuring positive/negative return day coloring, hover tooltip with PLN and % returns, Best Day and Worst Day indicators, and celebratory All-Time High (ATH) styling with radiant gold pulsing halo and trophy badge.
   * **11.7.0:** Floating interactive hover tooltip directly on The Journey chart in Summaries (replacing static under-chart display section) showing detailed date, portfolio return, and benchmark return with indicator swatches and bounds clamping.
   * **11.6.2:** Continuous calendar day snapshot backfilling from earliest historical transaction dates (e.g. 2021), fast incremental XIRR/TWR recalculation, and background async worker dispatch for all transaction modifications.
   * **11.6.1:** Present transaction validation errors in dedicated modal popup dialogs instead of inline table rows.
