@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `12.0.2`  
+**Current Release:** `12.0.3`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -22,25 +22,23 @@ Example: **`11.2.1`**
 
 ---
 
-## 2. Release Tier Definitions
+## 2. Release Numbering Scheme
 
-### 2.1 Major Versions (`MAJOR.0.0`)
-A Major version increment indicates the introduction of **entirely new features or capabilities** to Roastfolio.
-
-* **Triggers:**
-  * Launch of a brand-new tab, screen, or tool (e.g., Coping Diary, Retirement Plan Simulator, Monthly Recaps, Asset Analysis).
-  * Introduction of a new asset class or data engine (e.g., options tracking, crypto staking analytics).
-  * Major architectural additions (e.g., native PDF/Canvas export engines, multi-portfolio consolidation engine).
-* **Reset Rules:** When the Major version increases, the Minor and Service numbers reset to zero (e.g., `11.2.1` $\rightarrow$ `12.0.0`).
-
-### 2.2 Minor Versions (`MAJOR.MINOR.0`)
-A Minor version increment indicates **changes, improvements, or redesigns to existing features**.
+### 2.1 Major Releases (`MAJOR.0.0`)
+A Major release represents **monumental architectural milestones, new fundamental sub-systems, or complete paradigm shifts**.
 
 * **Triggers:**
-  * UI/UX layout redesigns of existing screens (e.g., Editorial Bento layout for Monthly Summaries, reworked transactions table, enhanced candlestick/sparkline components).
-  * New filter modes, date ranges, or aggregation toggles within existing tabs.
-  * Non-breaking adjustments to calculation models or third-party quote ingestion heuristics.
-* **Reset Rules:** Resets Service to zero (e.g., `11.2.1` $\rightarrow$ `11.3.0`).
+  * Introducing a brand new core capability (e.g., automated monthly performance summaries, Monte Carlo retirement modeling engine, multi-wallet ledger reconciliation, or tax accounting overhaul).
+  * Major breaking database schema transitions or protocol overhauls.
+* **Increment Rules:** Major increments by 1; Minor and Service reset to 0.
+
+### 2.2 Minor Releases (`MAJOR.MINOR.0`)
+A Minor release introduces **significant functional enhancements, redesigned user journeys, or new views within existing modules**.
+
+* **Triggers:**
+  * Enhancements to existing features (e.g., interactive milestone calendars, floating tooltip charts, custom date filters, enhanced CSV export formats).
+  * Non-breaking data structure enrichments.
+* **Increment Rules:** Minor increments by 1; Service resets to 0.
 
 ### 2.3 Service Releases (`MAJOR.MINOR.SERVICE`)
 A Service release increment indicates **defect corrections, stability fixes, or performance optimizations**.
@@ -55,11 +53,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `12.0.2`
+* **Current Active Release:** `12.0.3`
   * **Major 12:** Automated monthly report email notification engine, multi-recipient user settings configuration, and on-demand email dispatch directly from the "Share your recap" popup dialog via AWS SES.
   * **Minor 0:** Baseline for Major tier 12.
-  * **Service Release 2:** Client-side exponential backoff retry on transient 5xx server errors, graceful fallback caching in `portfolios.js`, and comprehensive exception resilience for `/benchmark-returns`.
+  * **Service Release 3:** AWS SES sandbox verification error detection with user-friendly actionable status messages, HTTP 422 unverified identity response, and configurable dev environment SES notification sender address.
 * **Prior Releases:**
+  * **12.0.2:** Client-side exponential backoff retry on transient 5xx server errors, graceful fallback caching in `portfolios.js`, and comprehensive exception resilience for `/benchmark-returns`.
   * **12.0.1:** Register `/monthly-wraps/email` in CloudFormation/SAM template to resolve API Gateway CORS preflight failure for email recap dispatches.
   * **12.0.0:** Baseline release for Major tier 12 (automated report email engine, multi-recipient notification preferences, and share dialog email recap trigger).
   * **11.8.0:** Added interactive daily returns calendar widget to The Milestones section on Monthly Summaries, featuring positive/negative return day coloring, hover tooltip with PLN and % returns, Best Day and Worst Day indicators, and celebratory All-Time High (ATH) styling with radiant gold pulsing halo and trophy badge.
