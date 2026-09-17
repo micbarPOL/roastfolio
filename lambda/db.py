@@ -157,6 +157,7 @@ def _default_settings() -> dict:
         "notifications":      False,
         "emailNotifications": False,
         "notificationEmails": [],
+        "hideCashInNotifications": False,
         "benchmark":          DEFAULT_BENCHMARK,
         "roastIntensity":     "sarcastic",
     }

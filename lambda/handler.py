@@ -987,7 +987,7 @@ def _get_caller_identity(event: dict) -> tuple[str, str, str]:
 
 ALLOWED_SETTINGS_KEYS = {
     "theme", "currency", "defaultWallet", "notifications",
-    "emailNotifications", "notificationEmails", "benchmark", "roastIntensity"
+    "emailNotifications", "notificationEmails", "hideCashInNotifications", "benchmark", "roastIntensity"
 }
 
 
@@ -1091,6 +1091,9 @@ def profile_handler(event: dict) -> dict:
                         val = bool(v)
                         merged["emailNotifications"] = val
                         merged["notifications"] = val
+                        continue
+                    if k == "hideCashInNotifications":
+                        merged[k] = bool(v)
                         continue
                     if k == "notificationEmails":
                         if not isinstance(v, list):
@@ -2410,7 +2413,10 @@ def monthly_wrap_send_email_handler(event: dict) -> dict:
     if not recipients:
         return _resp(400, {"error": "No recipient email configured for user"})
 
-    result = email_service.send_monthly_recap_email(user_profile, item, recipients=recipients)
+    hide_cash_override = payload.get("hideCash") if isinstance(payload.get("hideCash"), bool) else None
+    result = email_service.send_monthly_recap_email(
+        user_profile, item, recipients=recipients, hide_cash=hide_cash_override
+    )
     if not result.get("success"):
         status_code = 422 if result.get("unverified") else 500
         return _resp(status_code, {"error": result.get("error", "Failed to send recap email")})

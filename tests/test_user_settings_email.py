@@ -16,6 +16,7 @@ def test_default_settings_contains_email_notifications_disabled():
     settings = db._default_settings()
     assert settings["emailNotifications"] is False
     assert settings["notifications"] is False
+    assert settings["hideCashInNotifications"] is False
     assert settings["notificationEmails"] == []
 
 
@@ -39,6 +40,7 @@ def test_profile_handler_updates_email_notifications_and_recipients():
         "body": json.dumps({
             "settings": {
                 "emailNotifications": True,
+                "hideCashInNotifications": True,
                 "notificationEmails": [
                     "WORK@Company.com",
                     " work@company.com ",  # duplicate
@@ -63,4 +65,5 @@ def test_profile_handler_updates_email_notifications_and_recipients():
     saved_settings = updated_storage["settings"]
     assert saved_settings["emailNotifications"] is True
     assert saved_settings["notifications"] is True
+    assert saved_settings["hideCashInNotifications"] is True
     assert saved_settings["notificationEmails"] == ["work@company.com", "personal@gmail.com"]

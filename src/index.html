@@ -3038,6 +3038,19 @@
             <p style="font-size: 11px; color: var(--text-muted, #94a3b8); margin: 4px 0 0 0;">
               Automatically delivers newly generated monthly performance audits. Off by default.
             </p>
+
+            <div class="mgmt-benchmark-row" style="align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="user-hide-cash-notifications-toggle"
+                       onchange="window._mgmt.saveHideCashInNotifications(this.checked)"
+                       style="width: 18px; height: 18px; cursor: pointer; accent-color: #3b82f6;">
+                <span id="user-hide-cash-notifications-label" style="font-size: 13px;">Hide cash &amp; PLN amounts in recap emails</span>
+              </label>
+              <span id="user-hide-cash-notifications-saved" class="mgmt-benchmark-saved" style="display:none">✓ Saved</span>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted, #94a3b8); margin: 4px 0 0 0;">
+              Replaces monetary gains, cash flows, and wallet profit numbers with &ldquo;&mdash;&rdquo; in email summaries for privacy.
+            </p>
           </div>
 
           <div class="user-field-group">

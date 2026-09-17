@@ -97,8 +97,12 @@
         return payload;
     }
 
-    async function sendRecapEmail(period) {
-        return await postJson('/monthly-wraps/email', { period });
+    async function sendRecapEmail(period, options = {}) {
+        const payload = { period };
+        if (options && typeof options.hideCash === 'boolean') {
+            payload.hideCash = options.hideCash;
+        }
+        return await postJson('/monthly-wraps/email', payload);
     }
     window.sendMonthlyRecapEmail = sendRecapEmail;
 
@@ -1058,7 +1062,7 @@
                 msci: resolveMarketReturn(item, 'MSCI_WORLD'),
             };
             window.MonthlyAuditShare.open(item, {
-                onEmail: () => sendRecapEmail(item.period),
+                onEmail: (emailOpts) => sendRecapEmail(item.period, emailOpts),
             });
         }
     };

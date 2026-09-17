@@ -3499,12 +3499,14 @@
 
   async function _loadEmailNotificationSettings() {
     const toggle = document.getElementById('user-email-notifications-toggle');
+    const hideCashToggle = document.getElementById('user-hide-cash-notifications-toggle');
     if (!window.UserProfile) return;
     try {
       const profile = await UserProfile.get();
       if (profile && profile.settings) {
         const isEnabled = Boolean(profile.settings.emailNotifications || profile.settings.notifications);
         if (toggle) toggle.checked = isEnabled;
+        if (hideCashToggle) hideCashToggle.checked = Boolean(profile.settings.hideCashInNotifications);
       }
       _renderNotificationEmails(profile);
     } catch (_) {}
@@ -3522,6 +3524,21 @@
       }
     } catch (e) {
       console.error('[email-notifications] save failed', e);
+    }
+  }
+
+  async function saveHideCashInNotifications(enabled) {
+    if (!window.UserProfile) return;
+    const savedEl = document.getElementById('user-hide-cash-notifications-saved');
+    try {
+      await UserProfile.updateHideCashInNotifications(enabled);
+      UserProfile.clearCache();
+      if (savedEl) {
+        savedEl.style.display = 'inline';
+        setTimeout(() => { savedEl.style.display = 'none'; }, 2500);
+      }
+    } catch (e) {
+      console.error('[hide-cash-notifications] save failed', e);
     }
   }
 
@@ -3676,6 +3693,7 @@
     saveBenchmark,
     saveRoastIntensity,
     saveEmailNotifications,
+    saveHideCashInNotifications,
     addNotificationEmail,
     removeNotificationEmail,
     _loadEmailNotificationSettings,

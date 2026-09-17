@@ -347,10 +347,11 @@
                 status.textContent = 'Sending recap email…';
                 try {
                     let res = null;
+                    const emailOpts = { hideCash: Boolean(privacy && privacy.checked) };
                     if (options && typeof options.onEmail === 'function') {
-                        res = await options.onEmail();
+                        res = await options.onEmail(emailOpts);
                     } else if (typeof window.sendMonthlyRecapEmail === 'function') {
-                        res = await window.sendMonthlyRecapEmail(item.period);
+                        res = await window.sendMonthlyRecapEmail(item.period, emailOpts);
                     } else {
                         throw new Error('Email notification handler unavailable.');
                     }

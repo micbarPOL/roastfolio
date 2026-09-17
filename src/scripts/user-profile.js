@@ -270,6 +270,10 @@
         return updateSettings({ notificationEmails: Array.isArray(emails) ? emails : [] });
     }
 
+    function updateHideCashInNotifications(hide) {
+        return updateSettings({ hideCashInNotifications: Boolean(hide) });
+    }
+
     // ── Expose globally ─────────────────────────────────────────
 
     window.UserProfile = {
@@ -290,7 +294,8 @@
         getRoastIntensity:   getRoastIntensity,
         updateRoastIntensity: updateRoastIntensity,
         updateEmailNotifications: updateEmailNotifications,
-        updateNotificationEmails: updateNotificationEmails
+        updateNotificationEmails: updateNotificationEmails,
+        updateHideCashInNotifications: updateHideCashInNotifications
     };
 
     // Auto-apply role guard once DOM is ready
