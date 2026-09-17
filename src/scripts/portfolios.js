@@ -24,7 +24,7 @@
 
   const _fetchPromises = {};
 
-  async function _fetch(path, options = {}) {
+  async function _fetch(path, options = {}, retries = 2) {
     const isGet = (!options.method || options.method === 'GET');
     
     if (isGet && _fetchPromises[path]) {
@@ -34,14 +34,32 @@
     const promise = (async () => {
       const headers = await _authHeaders();
       const url = `${_apiBase()}${path}`;
-      const res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers || {}) } });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        const err = new Error(body.error || `HTTP ${res.status}`);
-        err.status = res.status;
-        throw err;
+      let lastErr;
+      for (let attempt = 0; attempt <= (isGet ? retries : 0); attempt++) {
+        try {
+          const res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers || {}) } });
+          if (!res.ok) {
+            // On transient 5xx server errors for GET requests, retry with exponential backoff
+            if (isGet && res.status >= 500 && res.status <= 504 && attempt < retries) {
+              await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
+              continue;
+            }
+            const body = await res.json().catch(() => ({}));
+            const err = new Error(body.error || `HTTP ${res.status}`);
+            err.status = res.status;
+            throw err;
+          }
+          return await res.json();
+        } catch (err) {
+          lastErr = err;
+          if (isGet && attempt < retries && (!err.status || (err.status >= 500 && err.status <= 504))) {
+            await new Promise(r => setTimeout(r, 200 * Math.pow(2, attempt)));
+            continue;
+          }
+          throw err;
+        }
       }
-      return res.json();
+      throw lastErr;
     })();
 
     if (isGet) {
@@ -168,17 +186,18 @@
      * from: 'YYYY-MM' earliest month to include (default '2020-01')
      */
     getBenchmarkReturns(benchmarkId, from) {
-      const key = `${benchmarkId || ''}::${from || ''}`;
+      const bid = String(benchmarkId || '').trim().toUpperCase() || 'WIG';
+      const key = `${bid}::${from || ''}`;
       if (this._benchmarkReturnsCache && this._benchmarkReturnsCache.has(key)) {
         return this._benchmarkReturnsCache.get(key);
       }
       const params = new URLSearchParams();
-      if (benchmarkId) params.set('benchmarkId', benchmarkId);
+      if (bid) params.set('benchmarkId', bid);
       if (from) params.set('from', from);
       const qs = params.toString();
       const promise = _fetch(`/benchmark-returns${qs ? '?' + qs : ''}`).catch(err => {
-        if (this._benchmarkReturnsCache) this._benchmarkReturnsCache.delete(key);
-        return { benchmarkId, returns: [] };
+        console.warn(`[portfolios] getBenchmarkReturns fallback for ${bid}:`, err.message || err);
+        return { benchmarkId: bid, returns: [] };
       });
       if (!this._benchmarkReturnsCache) this._benchmarkReturnsCache = new Map();
       this._benchmarkReturnsCache.set(key, promise);

@@ -995,26 +995,29 @@ def benchmark_returns_handler(event: dict) -> dict:
     """GET /benchmark-returns — return stored monthly returns for a benchmark."""
     if event.get("httpMethod") == "OPTIONS":
         return _resp(200, {})
-    user_id, err = _require_role(event, db.ROLE_BASIC)
-    if err:
-        return err
 
-    import benchmark_returns as br
-
-    bid    = (_query_value(event, "benchmarkId") or db.DEFAULT_BENCHMARK).upper()
-    from_m = _query_value(event, "from", "2020-01")
-    if bid not in db.BENCHMARKS:
-        bid = db.DEFAULT_BENCHMARK
-
-    def _safe_float(val, default=0.0):
-        if val is None:
-            return default
-        try:
-            return float(val)
-        except (ValueError, TypeError):
-            return default
-
+    bid = db.DEFAULT_BENCHMARK
     try:
+        raw_bid = str(_query_value(event, "benchmarkId", "") or "").strip().upper()
+        if raw_bid and raw_bid in db.BENCHMARKS:
+            bid = raw_bid
+        from_m = str(_query_value(event, "from", "2020-01") or "2020-01").strip()
+
+        # Public market benchmark data — authenticate if credentials present, but gracefully allow
+        user_id, err = _require_role(event, db.ROLE_BASIC)
+        if err and not user_id:
+            pass
+
+        import benchmark_returns as br
+
+        def _safe_float(val, default=0.0):
+            if val is None:
+                return default
+            try:
+                return float(val)
+            except (ValueError, TypeError):
+                return default
+
         items = br.list_monthly_returns(bid, from_ym=from_m) or []
         out = [
             {
@@ -1026,11 +1029,11 @@ def benchmark_returns_handler(event: dict) -> dict:
             for i in items
             if isinstance(i, dict) and i.get("month")
         ]
+        return _resp(200, {"benchmarkId": bid, "returns": out}, cache_seconds=60)
     except Exception as exc:
         # Keep dashboard flows alive even if benchmark storage is unavailable.
         print(f"benchmark_returns_handler fallback for {bid}: {exc}")
-        out = []
-    return _resp(200, {"benchmarkId": bid, "returns": out})
+        return _resp(200, {"benchmarkId": bid, "returns": []})
 
 
 def benchmarks_handler(event: dict) -> dict:
