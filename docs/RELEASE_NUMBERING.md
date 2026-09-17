@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `12.0.3`  
-**Standard:** Custom Three-Tier Semantic Release Standard
+**Current Release:** `12.0.4`  
+*Target Release Numbering Standard — v12.0.4*
 
 ---
 
@@ -53,11 +53,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `12.0.3`
+* **Current Active Release:** `12.0.4`
   * **Major 12:** Automated monthly report email notification engine, multi-recipient user settings configuration, and on-demand email dispatch directly from the "Share your recap" popup dialog via AWS SES.
   * **Minor 0:** Baseline for Major tier 12.
-  * **Service Release 3:** AWS SES sandbox verification error detection with user-friendly actionable status messages, HTTP 422 unverified identity response, and configurable dev environment SES notification sender address.
+  * **Service Release 4:** Update default notification sender address and domain references to `roastfolio.app` (`notifications@roastfolio.app`).
 * **Prior Releases:**
+  * **12.0.3:** AWS SES sandbox verification error detection with user-friendly actionable status messages, HTTP 422 unverified identity response, and configurable dev environment SES notification sender address.
   * **12.0.2:** Client-side exponential backoff retry on transient 5xx server errors, graceful fallback caching in `portfolios.js`, and comprehensive exception resilience for `/benchmark-returns`.
   * **12.0.1:** Register `/monthly-wraps/email` in CloudFormation/SAM template to resolve API Gateway CORS preflight failure for email recap dispatches.
   * **12.0.0:** Baseline release for Major tier 12 (automated report email engine, multi-recipient notification preferences, and share dialog email recap trigger).
