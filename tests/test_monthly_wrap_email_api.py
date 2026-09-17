@@ -28,6 +28,17 @@ class _MockDynamoResource:
         return self.table
 
 
+def test_monthly_wrap_send_email_options_preflight():
+    event = {
+        "httpMethod": "OPTIONS",
+        "path": "/monthly-wraps/email",
+    }
+    resp = handler.monthly_wrap_send_email_handler(event)
+    assert resp["statusCode"] == 200
+    assert resp["headers"]["Access-Control-Allow-Origin"] == "*"
+    assert "Authorization" in resp["headers"]["Access-Control-Allow-Headers"]
+
+
 def test_monthly_wrap_send_email_rejects_unauthenticated():
     event = {
         "httpMethod": "POST",

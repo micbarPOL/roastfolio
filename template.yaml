@@ -583,6 +583,16 @@ Resources:
               - IsDev
               - !Ref AWS::NoValue
               - Authorizer: MonthlyWrapCognito
+        MonthlyWrapsEmailPost:
+          Type: Api
+          Properties:
+            Path: /monthly-wraps/email
+            Method: POST
+            RestApiId: !Ref PricesApi
+            Auth: !If
+              - IsDev
+              - !Ref AWS::NoValue
+              - Authorizer: MonthlyWrapCognito
         WidgetGet:
           Type: Api
           Properties:
