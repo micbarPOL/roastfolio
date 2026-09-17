@@ -2741,6 +2741,9 @@
                         const designGuideLink = document.getElementById('design-guide-link');
                         if (designGuideLink) designGuideLink.style.display = role === 'ADVANCED' ? '' : 'none';
                     }
+                    if (window._mgmt && typeof window._mgmt._loadEmailNotificationSettings === 'function') {
+                        window._mgmt._loadEmailNotificationSettings();
+                    }
                 }
             }
         }
@@ -3018,6 +3021,37 @@
                 </select>
                 <span id="mgmt-roast-saved" class="mgmt-benchmark-saved" style="display:none">✓ Saved</span>
             </div>
+          </div>
+
+          <!-- Email notifications & recipients -->
+          <div class="user-field-group">
+            <label class="user-field-label">Email Notifications</label>
+            <div class="mgmt-benchmark-row" style="align-items: center; justify-content: space-between;">
+              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="user-email-notifications-toggle"
+                       onchange="window._mgmt.saveEmailNotifications(this.checked)"
+                       style="width: 18px; height: 18px; cursor: pointer; accent-color: #3b82f6;">
+                <span id="user-email-notifications-label" style="font-size: 13px;">Receive monthly report emails</span>
+              </label>
+              <span id="user-email-notifications-saved" class="mgmt-benchmark-saved" style="display:none">✓ Saved</span>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted, #94a3b8); margin: 4px 0 0 0;">
+              Automatically delivers newly generated monthly performance audits. Off by default.
+            </p>
+          </div>
+
+          <div class="user-field-group">
+            <label class="user-field-label">Notification Recipients</label>
+            <div id="user-notification-emails-container" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+              <!-- Rendered dynamically -->
+            </div>
+            <div class="user-field-row">
+              <input id="user-add-email-input" type="email" class="user-field-input"
+                     placeholder="Add another email address…"
+                     onkeydown="if(event.key==='Enter'){event.preventDefault();window._mgmt.addNotificationEmail();}">
+              <button class="user-save-btn" type="button" onclick="window._mgmt.addNotificationEmail()">Add</button>
+            </div>
+            <div id="user-email-flash" class="user-flash" style="display:none"></div>
           </div>
 
         </div>

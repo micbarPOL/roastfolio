@@ -3465,6 +3465,144 @@
     }
   }
 
+  function _renderNotificationEmails(profile) {
+    const container = document.getElementById('user-notification-emails-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const primaryEmail = (profile && profile.email) || '';
+    if (primaryEmail) {
+      const primaryDiv = document.createElement('div');
+      primaryDiv.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; font-size: 13px;';
+      primaryDiv.innerHTML = `
+        <span style="font-family: monospace; color: #f8fafc;">${_esc(primaryEmail)}</span>
+        <span style="font-size: 11px; padding: 2px 6px; background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-radius: 4px; font-weight: 600;">Default</span>
+      `;
+      container.appendChild(primaryDiv);
+    }
+
+    const additional = (profile && profile.settings && profile.settings.notificationEmails) || [];
+    additional.forEach(email => {
+      const emailDiv = document.createElement('div');
+      emailDiv.style.cssText = 'display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; font-size: 13px;';
+      emailDiv.innerHTML = `
+        <span style="font-family: monospace; color: #cbd5e1;">${_esc(email)}</span>
+        <button type="button" class="user-email-remove-btn" title="Remove email" style="background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 0 4px; line-height: 1;">✕</button>
+      `;
+      const btn = emailDiv.querySelector('.user-email-remove-btn');
+      if (btn) {
+        btn.addEventListener('click', () => removeNotificationEmail(email));
+      }
+      container.appendChild(emailDiv);
+    });
+  }
+
+  async function _loadEmailNotificationSettings() {
+    const toggle = document.getElementById('user-email-notifications-toggle');
+    if (!window.UserProfile) return;
+    try {
+      const profile = await UserProfile.get();
+      if (profile && profile.settings) {
+        const isEnabled = Boolean(profile.settings.emailNotifications || profile.settings.notifications);
+        if (toggle) toggle.checked = isEnabled;
+      }
+      _renderNotificationEmails(profile);
+    } catch (_) {}
+  }
+
+  async function saveEmailNotifications(enabled) {
+    if (!window.UserProfile) return;
+    const savedEl = document.getElementById('user-email-notifications-saved');
+    try {
+      await UserProfile.updateEmailNotifications(enabled);
+      UserProfile.clearCache();
+      if (savedEl) {
+        savedEl.style.display = 'inline';
+        setTimeout(() => { savedEl.style.display = 'none'; }, 2500);
+      }
+    } catch (e) {
+      console.error('[email-notifications] save failed', e);
+    }
+  }
+
+  async function addNotificationEmail() {
+    const input = document.getElementById('user-add-email-input');
+    const flash = document.getElementById('user-email-flash');
+    if (!input || !window.UserProfile) return;
+    const newEmail = (input.value || '').trim().toLowerCase();
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    if (!emailRegex.test(newEmail)) {
+      if (flash) {
+        flash.textContent = 'Please enter a valid email address.';
+        flash.style.display = 'block';
+        flash.style.color = '#ef4444';
+        setTimeout(() => { flash.style.display = 'none'; }, 3000);
+      }
+      return;
+    }
+
+    try {
+      const profile = await UserProfile.get();
+      const primary = (profile && profile.email || '').toLowerCase();
+      if (newEmail === primary) {
+        if (flash) {
+          flash.textContent = 'This is already your default account email.';
+          flash.style.display = 'block';
+          flash.style.color = '#eab308';
+          setTimeout(() => { flash.style.display = 'none'; }, 3000);
+        }
+        return;
+      }
+
+      const currentList = (profile && profile.settings && profile.settings.notificationEmails) || [];
+      if (currentList.includes(newEmail)) {
+        if (flash) {
+          flash.textContent = 'This email is already in your recipient list.';
+          flash.style.display = 'block';
+          flash.style.color = '#eab308';
+          setTimeout(() => { flash.style.display = 'none'; }, 3000);
+        }
+        return;
+      }
+
+      const updated = [...currentList, newEmail];
+      await UserProfile.updateNotificationEmails(updated);
+      UserProfile.clearCache();
+      input.value = '';
+      const refreshed = await UserProfile.get(true);
+      _renderNotificationEmails(refreshed);
+      if (flash) {
+        flash.textContent = '✓ Email added to notifications';
+        flash.style.display = 'block';
+        flash.style.color = '#22c55e';
+        setTimeout(() => { flash.style.display = 'none'; }, 2500);
+      }
+    } catch (e) {
+      console.error('[notification-emails] add failed', e);
+      if (flash) {
+        flash.textContent = 'Failed to save email. Please try again.';
+        flash.style.display = 'block';
+        flash.style.color = '#ef4444';
+        setTimeout(() => { flash.style.display = 'none'; }, 3000);
+      }
+    }
+  }
+
+  async function removeNotificationEmail(emailToRemove) {
+    if (!window.UserProfile) return;
+    try {
+      const profile = await UserProfile.get();
+      const currentList = (profile && profile.settings && profile.settings.notificationEmails) || [];
+      const updated = currentList.filter(e => e.toLowerCase() !== emailToRemove.toLowerCase());
+      await UserProfile.updateNotificationEmails(updated);
+      UserProfile.clearCache();
+      const refreshed = await UserProfile.get(true);
+      _renderNotificationEmails(refreshed);
+    } catch (e) {
+      console.error('[notification-emails] remove failed', e);
+    }
+  }
+
   // ── Expose globals ───────────────────────────────────────────
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && _isTransactionsPanelOpen()) closeTransactionsPanel();
@@ -3484,6 +3622,7 @@
     if (feedback) feedback.style.display = 'none';
     _loadBenchmarkSetting();
     _loadRoastIntensitySetting();
+    _loadEmailNotificationSettings();
   });
   window.addEventListener('pagehide', () => {
     _benchmarkPageActive = false;
@@ -3494,6 +3633,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     _loadBenchmarkSetting();
     _loadRoastIntensitySetting();
+    _loadEmailNotificationSettings();
   });
   window.addEventListener('resize', () => {
     _setWalletSelectorOpen(!_isCompactWalletSelector(), { force: true });
@@ -3535,6 +3675,10 @@
     setTransactionsPanelMode,
     saveBenchmark,
     saveRoastIntensity,
+    saveEmailNotifications,
+    addNotificationEmail,
+    removeNotificationEmail,
+    _loadEmailNotificationSettings,
     toggleQuickEntry,
     onQuickEntryInput,
     applyQeTemplate,

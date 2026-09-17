@@ -78,6 +78,30 @@
         return payload;
     }
 
+    async function postJson(path, body) {
+        const token = window.AuthGuard && AuthGuard.getIdToken ? AuthGuard.getIdToken() : '';
+        const response = await fetch(`${apiBase()}${path}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify(body),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const error = new Error(payload.error || `HTTP ${response.status}`);
+            error.status = response.status;
+            throw error;
+        }
+        return payload;
+    }
+
+    async function sendRecapEmail(period) {
+        return await postJson('/monthly-wraps/email', { period });
+    }
+    window.sendMonthlyRecapEmail = sendRecapEmail;
+
     function ingestItems(items) {
         (Array.isArray(items) ? items : []).forEach(item => {
             const period = String(item?.period || item?.SK?.replace('WRAP#MONTH#', '') || '');
@@ -1033,7 +1057,9 @@
                 wig: resolveMarketReturn(item, 'WIG'),
                 msci: resolveMarketReturn(item, 'MSCI_WORLD'),
             };
-            window.MonthlyAuditShare.open(item);
+            window.MonthlyAuditShare.open(item, {
+                onEmail: () => sendRecapEmail(item.period),
+            });
         }
     };
 

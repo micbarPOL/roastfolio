@@ -308,7 +308,7 @@
     }
 
     let activeDialog = null;
-    function open(item) {
+    function open(item, options = {}) {
         if (activeDialog) return;
         const opener = document.activeElement;
         const dialog = document.createElement('dialog');
@@ -325,6 +325,7 @@
                     <p>Only this image is shared. Nothing is uploaded automatically.</p>
                     <button type="button" data-share disabled>Share image</button>
                     <button type="button" data-download disabled>Download PNG</button>
+                    <button type="button" data-email>Email recap</button>
                     <p class="monthly-share-status" role="status" aria-live="polite">Preparing your image…</p>
                 </div></div>`;
         document.body.appendChild(dialog);
@@ -332,10 +333,37 @@
         const privacy = dialog.querySelector('[data-private]');
         const share = dialog.querySelector('[data-share]');
         const download = dialog.querySelector('[data-download]');
+        const emailBtn = dialog.querySelector('[data-email]');
         const status = dialog.querySelector('[role="status"]');
         let file = null;
         let generation = 0;
         let sharing = false;
+        let emailing = false;
+        if (emailBtn) {
+            emailBtn.addEventListener('click', async () => {
+                if (emailing) return;
+                emailing = true;
+                emailBtn.disabled = true;
+                status.textContent = 'Sending recap email…';
+                try {
+                    let res = null;
+                    if (options && typeof options.onEmail === 'function') {
+                        res = await options.onEmail();
+                    } else if (typeof window.sendMonthlyRecapEmail === 'function') {
+                        res = await window.sendMonthlyRecapEmail(item.period);
+                    } else {
+                        throw new Error('Email notification handler unavailable.');
+                    }
+                    const msg = (res && res.message) || 'Recap email sent to configured recipient(s).';
+                    status.textContent = `✓ ${msg}`;
+                } catch (error) {
+                    status.textContent = error.message || 'Failed to send recap email.';
+                } finally {
+                    emailing = false;
+                    emailBtn.disabled = false;
+                }
+            });
+        }
         const prepare = () => {
             const version = ++generation;
             file = null; share.disabled = download.disabled = true;
