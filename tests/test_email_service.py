@@ -162,3 +162,71 @@ def test_send_monthly_recap_email_if_enabled():
     assert res_enabled["success"] is True
     assert res_enabled["message_id"] == "msg-ok"
     mock_ses.send_email.assert_called_once()
+
+
+def test_render_monthly_recap_email_benchmark_resolution_from_journey_and_market_context():
+    profile = {"userId": "user-1", "email": "test@example.com"}
+    # Wrap without top-level benchmark_return_pct, but with journey.benchmark_return_pct
+    wrap_with_journey = {
+        "period": "2026-08",
+        "journey": {
+            "benchmark_id": "WIG",
+            "benchmark_return_pct": 2.9465,
+        },
+    }
+    subject, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap_with_journey)
+    assert "Benchmark (WIG):           +2.95%" in text_body
+    assert "+2.95%" in html_body
+
+    # Wrap where benchmark is in market_context
+    wrap_with_market_context = {
+        "period": "2026-08",
+        "benchmark_id": "SP500",
+        "market_context": [
+            {"id": "WIG", "name": "WIG Index", "return_pct": 1.5},
+            {"id": "SP500", "name": "S&P 500", "return_pct": -0.85},
+        ],
+    }
+    subject2, text_body2, html_body2 = email_service.render_monthly_recap_email(profile, wrap_with_market_context)
+    assert "Benchmark (SP500):" in text_body2
+    assert "-0.85%" in text_body2
+    assert "-0.85%" in html_body2
+
+
+def test_render_monthly_recap_email_hide_cash_explicit_and_settings():
+    profile_with_settings = {
+        "userId": "user-1",
+        "email": "test@example.com",
+        "settings": {"hideCashInNotifications": True},
+    }
+    wrap = {
+        "period": "2026-08",
+        "overall_twr_pct": 3.2,
+        "overall_nominal_change_pln": 5400,
+        "cash_flow_pln": 0,
+        "deposits_pln": 0,
+        "withdrawals_pln": 0,
+        "primary_profit_engine_wallet": {"name": "Główny", "nominal_change_pln": 5400},
+    }
+
+    # Hide cash derived from profile settings
+    _, text_body, html_body = email_service.render_monthly_recap_email(profile_with_settings, wrap)
+    assert "• Nominal Change:              --- (amounts hidden)" in text_body
+    assert "• Net Cash Flow:               --- (amounts hidden)" in text_body
+    assert "Primary Profit Engine:       Główny (---)" in text_body
+    assert "5 400 PLN" not in text_body
+    assert "5 400 PLN" not in html_body
+    assert "privacy mode" in html_body
+
+    # Explicit override hide_cash=False overrules settings
+    _, text_body2, html_body2 = email_service.render_monthly_recap_email(profile_with_settings, wrap, hide_cash=False)
+    assert "+5 400 PLN" in text_body2
+    assert "+5 400 PLN" in html_body2
+    assert "privacy mode" not in html_body2
+
+    # Explicit override hide_cash=True when setting is False
+    profile_default = {"userId": "user-1", "email": "test@example.com", "settings": {"hideCashInNotifications": False}}
+    _, text_body3, html_body3 = email_service.render_monthly_recap_email(profile_default, wrap, hide_cash=True)
+    assert "• Nominal Change:              --- (amounts hidden)" in text_body3
+    assert "privacy mode" in html_body3
+

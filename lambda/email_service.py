@@ -95,36 +95,65 @@ def _period_display(period: str | None) -> str:
         return dt.strftime("%B %Y")
     except ValueError:
         return str(period)
-
-
-def render_monthly_recap_email(user_profile: dict, wrap_document: dict) -> tuple[str, str, str]:
+def render_monthly_recap_email(
+    user_profile: dict,
+    wrap_document: dict,
+    hide_cash: bool | None = None,
+) -> tuple[str, str, str]:
     """
     Render subject, plaintext body, and HTML body for a monthly recap email.
+    If hide_cash is True (or enabled in user_profile settings), monetary PLN
+    amounts are masked with '---' for privacy.
     """
     period = wrap_document.get("period", "")
     period_title = _period_display(period)
     nickname = user_profile.get("nickname") or "Investor"
 
+    if hide_cash is None:
+        settings = (user_profile.get("settings") or {}) if isinstance(user_profile, dict) else {}
+        hide_cash = bool(settings.get("hideCashInNotifications") or settings.get("hideAmountsInNotifications"))
+
     overall_twr = wrap_document.get("overall_twr_pct")
     twr_str = _fmt_pct(overall_twr, show_sign=True)
 
     nominal_change = wrap_document.get("overall_nominal_change_pln")
-    nominal_str = _fmt_money(nominal_change, show_sign=True)
+    nominal_str = "---" if hide_cash else _fmt_money(nominal_change, show_sign=True)
 
     cash_flow = wrap_document.get("cash_flow_pln")
-    cash_flow_str = _fmt_money(cash_flow, show_sign=True)
+    cash_flow_str = "---" if hide_cash else _fmt_money(cash_flow, show_sign=True)
 
     deposits = wrap_document.get("deposits_pln")
-    deposits_str = _fmt_money(deposits, show_sign=False)
+    deposits_str = "---" if hide_cash else _fmt_money(deposits, show_sign=False)
 
     withdrawals = wrap_document.get("withdrawals_pln")
-    withdrawals_str = _fmt_money(withdrawals, show_sign=False)
+    withdrawals_str = "---" if hide_cash else _fmt_money(withdrawals, show_sign=False)
 
     max_dd = wrap_document.get("max_drawdown_pct")
     max_dd_str = _fmt_pct(max_dd, show_sign=False)
 
-    benchmark_id = wrap_document.get("benchmark_id") or "WIG"
+    # Benchmark resolution:
+    # 1. wrap_document top-level benchmark_return_pct
+    # 2. wrap_document["journey"]["benchmark_return_pct"]
+    # 3. Match in wrap_document["market_context"]
+    journey = wrap_document.get("journey") or {}
+    benchmark_id = (
+        wrap_document.get("benchmark_id")
+        or journey.get("benchmark_id")
+        or (user_profile.get("settings") or {}).get("benchmark")
+        or "WIG"
+    )
+    benchmark_name = journey.get("benchmark_name") or benchmark_id
+
     benchmark_ret = wrap_document.get("benchmark_return_pct")
+    if benchmark_ret is None:
+        benchmark_ret = journey.get("benchmark_return_pct")
+    if benchmark_ret is None and isinstance(wrap_document.get("market_context"), list):
+        for ctx in wrap_document["market_context"]:
+            if ctx.get("id") == benchmark_id and ctx.get("return_pct") is not None:
+                benchmark_ret = ctx.get("return_pct")
+                if not benchmark_name or benchmark_name == benchmark_id:
+                    benchmark_name = ctx.get("name") or benchmark_id
+                break
     benchmark_str = _fmt_pct(benchmark_ret, show_sign=True)
 
     best_wallet = wrap_document.get("best_efficiency_wallet") or {}
@@ -133,9 +162,9 @@ def render_monthly_recap_email(user_profile: dict, wrap_document: dict) -> tuple
 
     profit_wallet = wrap_document.get("primary_profit_engine_wallet") or {}
     profit_wallet_name = profit_wallet.get("name") or "—"
-    profit_wallet_nominal = _fmt_money(profit_wallet.get("nominal_change_pln"), show_sign=True)
+    profit_wallet_nominal = "---" if hide_cash else _fmt_money(profit_wallet.get("nominal_change_pln"), show_sign=True)
 
-    app_url = os.environ.get("APP_URL", "https://roastfolio.com")
+    app_url = os.environ.get("APP_URL", "https://roastfolio.app")
 
     # Direction styling
     try:
@@ -157,6 +186,15 @@ def render_monthly_recap_email(user_profile: dict, wrap_document: dict) -> tuple
     subject = f"Roastfolio Monthly Recap — {period_title} ({twr_str})"
 
     # Plain text version
+    if hide_cash:
+        cash_flow_line = "• Net Cash Flow:               --- (amounts hidden)"
+        nominal_line = "• Nominal Change:              --- (amounts hidden)"
+        profit_wallet_line = f"• Primary Profit Engine:       {profit_wallet_name} (---)"
+    else:
+        cash_flow_line = f"• Net Cash Flow:               {cash_flow_str} (Deposits: {deposits_str}, Withdrawals: {withdrawals_str})"
+        nominal_line = f"• Nominal Change:              {nominal_str}"
+        profit_wallet_line = f"• Primary Profit Engine:       {profit_wallet_name} ({profit_wallet_nominal})"
+
     text_lines = [
         f"ROASTFOLIO MONTHLY RECAP: {period_title.upper()}",
         "=" * 44,
@@ -165,14 +203,14 @@ def render_monthly_recap_email(user_profile: dict, wrap_document: dict) -> tuple
         headline,
         "",
         f"• Time-Weighted Return (TWR): {twr_str}",
-        f"• Nominal Change:              {nominal_str}",
-        f"• Net Cash Flow:               {cash_flow_str} (Deposits: {deposits_str}, Withdrawals: {withdrawals_str})",
+        nominal_line,
+        cash_flow_line,
         f"• Benchmark ({benchmark_id}):           {benchmark_str}",
         f"• Maximum Drawdown:            {max_dd_str}",
         "",
         "PORTFOLIO HIGHLIGHTS:",
         f"• Best Return Wallet:          {best_wallet_name} ({best_wallet_twr})",
-        f"• Primary Profit Engine:       {profit_wallet_name} ({profit_wallet_nominal})",
+        profit_wallet_line,
         "",
         f"View your interactive audit & shareable card: {app_url}",
         "",
@@ -181,6 +219,10 @@ def render_monthly_recap_email(user_profile: dict, wrap_document: dict) -> tuple
         "You can manage your email notification settings and recipients anytime in User Settings.",
     ]
     text_body = "\n".join(text_lines)
+
+    # Subtitles for cards in privacy mode vs normal mode
+    nominal_sub = '<div style="font-size: 11px; color: #64748b; margin-top: 2px;">Amounts hidden (privacy mode)</div>' if hide_cash else ''
+    cash_flow_sub = '<div style="font-size: 11px; color: #64748b; margin-top: 2px;">Amounts hidden (privacy mode)</div>' if hide_cash else f'<div style="font-size: 11px; color: #64748b; margin-top: 2px;">+{deposits_str} / -{withdrawals_str}</div>'
 
     # HTML version
     html_body = f"""<!DOCTYPE html>
@@ -225,6 +267,7 @@ def render_monthly_recap_email(user_profile: dict, wrap_document: dict) -> tuple
             <td width="50%" style="background-color: #1a233a; border-radius: 12px; padding: 16px; border: 1px solid #24304d;">
               <div style="font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Nominal Gain/Loss</div>
               <div style="font-size: 20px; font-weight: 700; color: #f8fafc; margin-top: 4px;">{nominal_str}</div>
+              {nominal_sub}
             </td>
             <td width="50%" style="background-color: #1a233a; border-radius: 12px; padding: 16px; border: 1px solid #24304d;">
               <div style="font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Benchmark ({benchmark_id})</div>
@@ -235,7 +278,7 @@ def render_monthly_recap_email(user_profile: dict, wrap_document: dict) -> tuple
             <td width="50%" style="background-color: #1a233a; border-radius: 12px; padding: 16px; border: 1px solid #24304d;">
               <div style="font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Net Cash Flow</div>
               <div style="font-size: 17px; font-weight: 700; color: #f8fafc; margin-top: 4px;">{cash_flow_str}</div>
-              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">+{deposits_str} / -{withdrawals_str}</div>
+              {cash_flow_sub}
             </td>
             <td width="50%" style="background-color: #1a233a; border-radius: 12px; padding: 16px; border: 1px solid #24304d;">
               <div style="font-size: 12px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Max Drawdown</div>
@@ -297,6 +340,7 @@ def send_monthly_recap_email(
     wrap_document: dict,
     recipients: list[str] | None = None,
     ses_client: Any = None,
+    hide_cash: bool | None = None,
 ) -> dict:
     """
     Deliver the monthly recap email to the specified recipients,
@@ -310,7 +354,9 @@ def send_monthly_recap_email(
         return {"success": False, "error": "No recipient emails found"}
 
     from_email = os.environ.get("NOTIFICATION_FROM_EMAIL", DEFAULT_FROM_EMAIL)
-    subject, text_body, html_body = render_monthly_recap_email(user_profile, wrap_document)
+    subject, text_body, html_body = render_monthly_recap_email(
+        user_profile, wrap_document, hide_cash=hide_cash
+    )
 
     client = ses_client or boto3.client("ses", region_name=os.environ.get("AWS_REGION", "eu-central-1"))
 
@@ -366,6 +412,7 @@ def send_monthly_recap_email_if_enabled(
     user_profile: dict,
     wrap_document: dict,
     ses_client: Any = None,
+    hide_cash: bool | None = None,
 ) -> dict:
     """
     Check if the user has email notifications turned on in settings.
@@ -381,4 +428,6 @@ def send_monthly_recap_email_if_enabled(
         )
         return {"success": False, "skipped": True, "reason": "Notifications disabled"}
 
-    return send_monthly_recap_email(user_profile, wrap_document, ses_client=ses_client)
+    return send_monthly_recap_email(
+        user_profile, wrap_document, ses_client=ses_client, hide_cash=hide_cash
+    )
