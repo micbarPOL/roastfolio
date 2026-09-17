@@ -249,14 +249,37 @@
         const cursor = chart.querySelector('.ma-return-cursor');
         const tooltip = document.getElementById('ma-journey-value');
         let index = 0;
-        const show = next => {
+        const show = (next, pointerEvent) => {
             index = Math.max(0, Math.min(points.length - 1, next));
             const point = points[index];
             const x = 60 + (dates[index] - first) / (last - first) * 560;
             chart.setAttribute('aria-valuenow', String(index));
             chart.setAttribute('aria-valuetext', journeyLabel(point, benchmarkName));
-            tooltip.textContent = journeyLabel(point, benchmarkName);
+
+            const hasP = finite(point.portfolio_pct);
+            const pVal = hasP ? Number(point.portfolio_pct) : null;
+            const pClass = pVal != null ? (pVal > 0 ? 'is-positive' : (pVal < 0 ? 'is-negative' : 'is-neutral')) : 'is-neutral';
+            const pText = hasP ? formatPct(point.portfolio_pct, true) : 'No data';
+
+            const hasB = finite(point.benchmark_pct);
+            const bVal = hasB ? Number(point.benchmark_pct) : null;
+            const bClass = bVal != null ? (bVal > 0 ? 'is-positive' : (bVal < 0 ? 'is-negative' : 'is-neutral')) : 'is-neutral';
+            const bText = hasB ? formatPct(point.benchmark_pct, true) : 'No data';
+
+            tooltip.innerHTML = `
+                <div class="ma-tooltip-date">${escapeHtml(storedDate(point.date))}</div>
+                <div class="ma-tooltip-body">
+                    <div class="ma-tooltip-row">
+                        <span class="ma-tooltip-key"><span class="ma-tooltip-dot ma-dot-portfolio"></span>My Portfolio</span>
+                        <span class="ma-tooltip-val ${pClass}">${escapeHtml(pText)}</span>
+                    </div>
+                    <div class="ma-tooltip-row">
+                        <span class="ma-tooltip-key"><span class="ma-tooltip-dot ma-dot-benchmark"></span>${escapeHtml(benchmarkName || 'Benchmark')}</span>
+                        <span class="ma-tooltip-val ${bClass}">${escapeHtml(bText)}</span>
+                    </div>
+                </div>`;
             tooltip.hidden = false;
+
             cursor.setAttribute('visibility', 'visible');
             cursor.querySelector('path').setAttribute('d', `M${x} 22 V190`);
             ['portfolio_pct', 'benchmark_pct'].forEach((key, i) => {
@@ -265,6 +288,53 @@
                 dot.setAttribute('cx', String(x));
                 if (finite(point[key])) dot.setAttribute('cy', String(y(Number(point[key]))));
             });
+
+            const container = chart.parentElement;
+            if (container) {
+                const containerRect = container.getBoundingClientRect();
+                const matrix = chart.getScreenCTM();
+                let pixelX = 0;
+                let pixelY = 0;
+                const primarySvgY = hasP ? y(pVal) : (hasB ? y(bVal) : 106);
+
+                if (matrix && containerRect) {
+                    const screenPt = new DOMPoint(x, primarySvgY).matrixTransform(matrix);
+                    pixelX = screenPt.x - containerRect.left;
+                    if (pointerEvent && Number.isFinite(pointerEvent.clientY)) {
+                        pixelY = pointerEvent.clientY - containerRect.top;
+                    } else {
+                        pixelY = screenPt.y - containerRect.top;
+                    }
+                } else if (containerRect) {
+                    const chartRect = chart.getBoundingClientRect();
+                    pixelX = chartRect.left - containerRect.left + ((x + 32) / 672) * chartRect.width;
+                    pixelY = chartRect.top - containerRect.top + (primarySvgY / 228) * chartRect.height;
+                }
+
+                const tooltipWidth = tooltip.offsetWidth || 180;
+                const tooltipHeight = tooltip.offsetHeight || 64;
+                const containerWidth = containerRect ? containerRect.width : 500;
+                const containerHeight = containerRect ? containerRect.height : 230;
+
+                let posX = pixelX + 14;
+                if (posX + tooltipWidth > containerWidth - 8) {
+                    posX = pixelX - 14 - tooltipWidth;
+                }
+                if (posX < 8) posX = 8;
+                if (posX + tooltipWidth > containerWidth - 8) {
+                    posX = Math.max(8, containerWidth - tooltipWidth - 8);
+                }
+
+                let posY = pixelY - tooltipHeight / 2;
+                if (posY < 8) posY = 8;
+                if (posY + tooltipHeight > containerHeight - 8) {
+                    posY = Math.max(8, containerHeight - tooltipHeight - 8);
+                }
+
+                tooltip.style.left = `${Math.round(posX)}px`;
+                tooltip.style.top = `${Math.round(posY)}px`;
+                tooltip.style.transform = 'none';
+            }
         };
         const hide = () => {
             cursor.setAttribute('visibility', 'hidden');
@@ -276,7 +346,7 @@
             if (!matrix) return;
             const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
             const date = first + Math.max(0, Math.min(1, (local.x - 60) / 560)) * (last - first);
-            show(dates.reduce((best, current, i) => Math.abs(current - date) < Math.abs(dates[best] - date) ? i : best, 0));
+            show(dates.reduce((best, current, i) => Math.abs(current - date) < Math.abs(dates[best] - date) ? i : best, 0), event);
         };
         chart.setAttribute('aria-valuetext', journeyLabel(points[0], benchmarkName));
         chart.addEventListener('pointermove', inspectPointer);

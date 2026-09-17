@@ -150,7 +150,11 @@ def test_missing_sparse_and_long_values(page):
     page.keyboard.press('ArrowRight')
     page.keyboard.press('ArrowRight')
     assert page.locator(".trajectory-line").count() == 2
-    assert page.locator("#ma-journey-value").inner_text() == "2026-08-10 · Portfolio -1.50% · MSCI World · IWDA proxy +0.50%"
+    val_text = page.locator("#ma-journey-value").inner_text()
+    assert "2026-08-10" in val_text
+    assert "-1.50%" in val_text
+    assert "MSCI World · IWDA proxy" in val_text
+    assert "+0.50%" in val_text
 
 
 def render_case(page, overrides):
@@ -230,7 +234,9 @@ def test_journey_uses_real_dates_return_values_and_independent_null_gaps(page):
     assert before == after
     page.locator(".ma-return-chart").focus()
     page.keyboard.press("ArrowRight")
-    assert "2026-08-04 · Portfolio +2.10%" in page.locator("#ma-journey-value").inner_text()
+    val_text = page.locator("#ma-journey-value").inner_text()
+    assert "2026-08-04" in val_text
+    assert "+2.10%" in val_text
     legend = page.locator(".ma-return-legend").inner_text()
     assert "Portfolio · cumulative TWR" in legend and "MSCI World" in legend and "EUR" in legend
     assert "not converted to PLN" in page.locator(".ma-journey").inner_text()

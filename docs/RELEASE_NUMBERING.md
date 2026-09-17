@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `11.6.2`  
+**Current Release:** `11.7.0`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -38,30 +38,22 @@ A Minor version increment indicates **changes, improvements, or redesigns to exi
 
 * **Triggers:**
   * UI/UX layout redesigns of existing screens (e.g., Editorial Bento layout for Monthly Summaries, reworked transactions table, enhanced candlestick/sparkline components).
-  * Enhancements to existing calculations (e.g., switching Average Cost Basis (AVCO) display models, adding new benchmark indices, adjusting time-weighted return charts).
-  * Workflow changes or new configuration options within existing settings (e.g., roast intensity toggles, benchmark selector updates).
+  * Significant improvements to user flows, form controls, calculations, or interactive charts.
 * **Reset Rules:** When the Minor version increases, the Service number resets to zero (e.g., `11.2.1` $\rightarrow$ `11.3.0`).
 
 ### 2.3 Service Releases (`MAJOR.MINOR.SERVICE`)
-A Service release (also called patch or maintenance release) is dedicated exclusively to **bug fixes, reliability improvements, and corrections**.
-
-* **Triggers:**
-  * Bug fixes in calculation formulas, time-zone alignment, or date boundaries.
-  * Visual regression fixes, CSS alignment, or responsive mobile glitch corrections.
-  * Browser compatibility fixes (e.g., Safari iOS rendering quirks, dialog focus management).
-  * Performance optimizations, memory leak fixes, or caching corrections.
-  * Security patches and dependency maintenance.
-* **Reset Rules:** The Service number increments by 1 for each bug fix deployment (e.g., `11.2.0` $\rightarrow$ `11.2.1`).
+A Service release indicates **bug fixes, security patches, performance tuning, and non-breaking corrections**.
 
 ---
 
 ## 3. Current Release Status
 
-* **Current Active Release:** `11.6.2`
+* **Current Active Release:** `11.7.0`
   * **Major 11:** Multi-asset portfolio intelligence, Coping Diary, and Monthly Recaps.
-  * **Minor 6:** Negative cash balance invariant validation across ledger history, snapshot reuse optimization for cash transaction edits, asynchronous background snapshot recalculation, and prominent UI error presentation.
-  * **Service Release 2:** Continuous calendar day snapshot backfilling from earliest historical transaction dates (e.g. 2021), fast incremental XIRR/TWR recalculation, and background async worker dispatch for all transaction modifications.
+  * **Minor 7:** Floating interactive hover tooltip directly on The Journey chart in Summaries (replacing static under-chart display section) showing detailed date, portfolio return, and benchmark return with indicator swatches and bounds clamping.
+  * **Service Release 0:** Baseline for Minor tier 7.
 * **Prior Releases:**
+  * **11.6.2:** Continuous calendar day snapshot backfilling from earliest historical transaction dates (e.g. 2021), fast incremental XIRR/TWR recalculation, and background async worker dispatch for all transaction modifications.
   * **11.6.1:** Present transaction validation errors in dedicated modal popup dialogs instead of inline table rows.
   * **11.6.0:** Base release for Minor tier 6 (cash invariant validation and snapshot reuse).
   * **11.5.1:** Fix monthly wrap production authentication by enabling Authorization Bearer header fallback when API Gateway authorizer claims are omitted.
