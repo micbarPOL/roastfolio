@@ -230,3 +230,166 @@ def test_render_monthly_recap_email_hide_cash_explicit_and_settings():
     assert "• Nominal Change:              --- (amounts hidden)" in text_body3
     assert "privacy mode" in html_body3
 
+
+def test_render_monthly_recap_email_svg_journey_chart():
+    profile = {"userId": "user-1", "email": "test@example.com"}
+    wrap = {
+        "period": "2026-08",
+        "benchmark_id": "WIG",
+        "journey": {
+            "benchmark_id": "WIG",
+            "points": [
+                {"date": "2026-08-01", "portfolio_pct": 0.0, "benchmark_pct": 0.0},
+                {"date": "2026-08-10", "portfolio_pct": 2.5, "benchmark_pct": 1.2},
+                {"date": "2026-08-20", "portfolio_pct": 1.8, "benchmark_pct": 2.1},
+                {"date": "2026-08-31", "portfolio_pct": 4.5, "benchmark_pct": 2.8},
+            ],
+        },
+    }
+
+    _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
+    assert "<svg" in html_body
+    assert "<polygon" in html_body
+    assert "<!--[if !mso]><!-->" in html_body
+    assert "<!--[if mso]>" in html_body
+    assert "CUMULATIVE JOURNEY" in html_body
+    assert "BEAT BENCHMARK BY +1.70%" in html_body
+    assert "+4.50%" in html_body
+    assert "+2.80%" in html_body
+    assert "Beat benchmark by +1.70%" in text_body
+
+
+def test_render_monthly_recap_email_calendar_heatmap():
+    profile = {"userId": "user-1", "email": "test@example.com"}
+    wrap = {
+        "period": "2026-08",
+        "daily_moves": [
+            {"date": "2026-08-03", "change_pct": 1.25, "is_ath": False},
+            {"date": "2026-08-04", "change_pct": -0.85, "is_ath": False},
+            {"date": "2026-08-05", "change_pct": 2.10, "is_ath": True},
+        ],
+    }
+
+    _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
+    assert "DAILY CALENDAR HEATMAP" in html_body
+    assert "+1.2%" in html_body
+    assert "-0.8%" in html_body  # round half-to-even in Python float formatting
+    assert "+2.1%" in html_body
+    assert "#f59e0b" in html_body  # ATH highlight border
+    assert "Best day:" in html_body
+    assert "08-05 (+2.10%)" in html_body
+    assert "Worst day:" in html_body
+    assert "08-04 (-0.85%)" in html_body
+    assert "Best day 08-05 (+2.10%)" in text_body
+    assert "Worst day 08-04 (-0.85%)" in text_body
+
+
+def test_render_monthly_recap_email_leader_and_anchor():
+    profile = {"userId": "user-1", "email": "test@example.com"}
+    wrap = {
+        "period": "2026-08",
+        "carry": {
+            "ticker": "CDR.WA",
+            "name": "CD Projekt",
+            "net_contribution_pln": 3240,
+            "context_note": "Pure price move",
+        },
+        "anchor": {
+            "ticker": "TSGAMES.WA",
+            "name": "Ten Square Games",
+            "net_contribution_pln": -1890,
+            "context_note": "Sold 2,500 PLN",
+        },
+    }
+
+    _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
+    assert "WHO MOVED YOUR MONTH" in html_body
+    assert "MONTH LEADER" in html_body
+    assert "CDR.WA" in html_body
+    assert "+3 240 PLN" in html_body
+    assert "Pure price move" in html_body
+    assert "MONTH ANCHOR" in html_body
+    assert "TSGAMES.WA" in html_body
+    assert "-1 890 PLN" in html_body
+    assert "Sold 2,500 PLN" in html_body
+    assert "Month Leader: CDR.WA (+3 240 PLN) - Pure price move" in text_body
+    assert "Month Anchor: TSGAMES.WA (-1 890 PLN) - Sold 2,500 PLN" in text_body
+
+
+def test_render_monthly_recap_email_market_context_and_seasonality():
+    profile = {"userId": "user-1", "email": "test@example.com"}
+    wrap = {
+        "period": "2026-09",
+        "market_context": [
+            {"id": "WIG", "name": "WIG", "return_pct": 3.22},
+            {"id": "DAX", "name": "DAX", "return_pct": 1.87},
+            {"id": "SP500", "name": "S&P 500", "return_pct": 2.14},
+            {"id": "NASDAQ", "name": "NASDAQ", "return_pct": 3.61},
+            {"id": "FTSE100", "name": "FTSE 100", "return_pct": -0.42},
+            {"id": "MSCI_WORLD", "name": "MSCI World", "return_pct": 2.14},
+        ],
+        "historical_years_count": 3,
+        "negative_years_count": 1,
+        "positive_years_count": 2,
+        "avg_negative_pct": -1.2,
+        "avg_positive_pct": 2.8,
+        "outperformed_seasonal_history": True,
+    }
+
+    _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
+    assert "WIG (Poland)" in html_body
+    assert "+3.22%" in html_body
+    assert "DAX (Germany)" in html_body
+    assert "S&P 500 (US)" in html_body
+    assert "MSCI World" in html_body
+    assert "SEASONALITY &bull; SEPTEMBER" in html_body
+    assert "September was negative in 1 of 3 observations" in html_body
+    assert "Current result beat seasonal history" in html_body
+    assert "Beat seasonal history" in text_body
+
+    # Test seasonality omitted when historical_years_count <= 1
+    wrap_no_seasonality = dict(wrap)
+    wrap_no_seasonality["historical_years_count"] = 1
+    _, text_body2, html_body2 = email_service.render_monthly_recap_email(profile, wrap_no_seasonality)
+    assert "SEASONALITY" not in html_body2
+    assert "Seasonality" not in text_body2
+
+
+def test_render_monthly_recap_email_trading_activity_and_privacy():
+    profile = {"userId": "user-1", "email": "test@example.com"}
+    wrap = {
+        "period": "2026-08",
+        "trading_activity": {
+            "turnover_pln": 45000,
+            "avg_12m_turnover_pln": 30000,
+            "buy_total_pln": 28000,
+            "sell_total_pln": 17000,
+            "largest_transactions": [
+                {"date": "2026-08-05", "type": "BUY", "ticker": "CDR.WA", "value_pln": 12500},
+                {"date": "2026-08-18", "type": "SELL", "ticker": "PKO.WA", "value_pln": 8200},
+            ],
+        },
+    }
+
+    # Normal mode
+    _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap, hide_cash=False)
+    assert "TRADING ACTIVITY" in html_body
+    assert "45 000 PLN" in html_body
+    assert "30 000 PLN" in html_body
+    assert "28 000 PLN" in html_body
+    assert "17 000 PLN" in html_body
+    assert "TOP 5 TRANSACTIONS" in html_body
+    assert "CDR.WA" in html_body
+    assert "12 500 PLN" in html_body
+    assert "BUY" in html_body
+    assert "SELL" in html_body
+
+    # Privacy mode: all PLN numbers masked with ---
+    _, text_body_priv, html_body_priv = email_service.render_monthly_recap_email(profile, wrap, hide_cash=True)
+    assert "Turnover: ---" in html_body_priv
+    assert "45 000 PLN" not in html_body_priv
+    assert "30 000 PLN" not in html_body_priv
+    assert "12 500 PLN" not in html_body_priv
+    assert "---" in html_body_priv
+
+
