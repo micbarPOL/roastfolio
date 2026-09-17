@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `12.0.1`  
+**Current Release:** `12.0.2`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -55,11 +55,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `12.0.1`
+* **Current Active Release:** `12.0.2`
   * **Major 12:** Automated monthly report email notification engine, multi-recipient user settings configuration, and on-demand email dispatch directly from the "Share your recap" popup dialog via AWS SES.
   * **Minor 0:** Baseline for Major tier 12.
-  * **Service Release 1:** Register `/monthly-wraps/email` in CloudFormation/SAM template to resolve API Gateway CORS preflight failure for email recap dispatches.
+  * **Service Release 2:** Client-side exponential backoff retry on transient 5xx server errors, graceful fallback caching in `portfolios.js`, and comprehensive exception resilience for `/benchmark-returns`.
 * **Prior Releases:**
+  * **12.0.1:** Register `/monthly-wraps/email` in CloudFormation/SAM template to resolve API Gateway CORS preflight failure for email recap dispatches.
   * **12.0.0:** Baseline release for Major tier 12 (automated report email engine, multi-recipient notification preferences, and share dialog email recap trigger).
   * **11.8.0:** Added interactive daily returns calendar widget to The Milestones section on Monthly Summaries, featuring positive/negative return day coloring, hover tooltip with PLN and % returns, Best Day and Worst Day indicators, and celebratory All-Time High (ATH) styling with radiant gold pulsing halo and trophy badge.
   * **11.7.0:** Floating interactive hover tooltip directly on The Journey chart in Summaries (replacing static under-chart display section) showing detailed date, portfolio return, and benchmark return with indicator swatches and bounds clamping.
