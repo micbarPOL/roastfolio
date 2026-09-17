@@ -80,6 +80,7 @@ def test_market_month_returns_are_calendar_close_to_close_and_keep_missing(monke
             "2026-09-30": Decimal(110), "2026-10-01": Decimal(120),
         }
     monkeypatch.setattr(wraps, "_benchmark_daily", history)
+    monkeypatch.setattr(wraps, "_stored_benchmark_return", lambda bid, ym: None)
     result = wraps._market_comparison("u", [snap("2026-09-01", 100), snap("2026-10-01", 110)],
                                      date(2026, 9, 1), date(2026, 10, 1))
     assert len(calls) == 6  # selected benchmark shared with market context

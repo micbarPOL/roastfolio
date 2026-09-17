@@ -108,14 +108,19 @@ def _color_for_value(value: Any, positive: str = "#4ade80", negative: str = "#f8
         return neutral
 
 
-def _render_svg_journey_chart(journey: dict, benchmark_id: str = "WIG") -> tuple[str, str]:
+def _render_svg_journey_chart(
+    journey: dict,
+    benchmark_id: str = "WIG",
+    period: str = "",
+    benchmark_return_pct: float | None = None,
+) -> tuple[str, str]:
     """Render inline SVG comparing daily portfolio return vs benchmark return with gradient/fill."""
-    points = journey.get("points") or []
-    if len(points) < 2:
+    raw_points = journey.get("points") or []
+    if len(raw_points) < 2:
         return "", ""
 
     parsed_points = []
-    for pt in points:
+    for pt in raw_points:
         date_str = str(pt.get("date") or "")
         try:
             p_val = float(pt.get("portfolio_pct") or 0.0)
@@ -127,7 +132,23 @@ def _render_svg_journey_chart(journey: dict, benchmark_id: str = "WIG") -> tuple
             b_val = 0.0
         parsed_points.append({"date": date_str, "p": p_val, "b": b_val})
 
+    # If period (YYYY-MM) is provided, strictly keep points belonging to this calendar month.
+    # Otherwise, if points spill over into the 1st of next month, trim to the audit month.
+    if re.match(r"^\d{4}-(0[1-9]|1[0-2])$", period):
+        month_pts = [pt for pt in parsed_points if pt["date"].startswith(period)]
+        if len(month_pts) >= 2:
+            parsed_points = month_pts
+    elif parsed_points:
+        first_ym = parsed_points[0]["date"][:7]
+        if parsed_points[-1]["date"][:7] != first_ym:
+            month_pts = [pt for pt in parsed_points if pt["date"][:7] == first_ym]
+            if len(month_pts) >= 2:
+                parsed_points = month_pts
+
     n = len(parsed_points)
+    if n < 2:
+        return "", ""
+
     p_vals = [pt["p"] for pt in parsed_points]
     b_vals = [pt["b"] for pt in parsed_points]
 
@@ -142,11 +163,11 @@ def _render_svg_journey_chart(journey: dict, benchmark_id: str = "WIG") -> tuple
     y_max = max_val + pad
 
     width = 516
-    height = 200
+    height = 205
     x_left = 42.0
     x_right = 500.0
     y_top = 26.0
-    y_bottom = 162.0
+    y_bottom = 160.0
 
     def get_x(i: int) -> float:
         return x_left + i * (x_right - x_left) / max(n - 1, 1)
@@ -199,7 +220,8 @@ def _render_svg_journey_chart(journey: dict, benchmark_id: str = "WIG") -> tuple
     last_pt = parsed_points[-1]
     first_pt = parsed_points[0]
     p_last = last_pt["p"]
-    b_last = last_pt["b"]
+    # If canonical benchmark return (e.g. from market_context) is supplied, use it
+    b_last = float(benchmark_return_pct) if benchmark_return_pct is not None else last_pt["b"]
     p_sign = "+" if p_last > 0 else ""
     b_sign = "+" if b_last > 0 else ""
     p_last_str = f"{p_sign}{p_last:.2f}%"
@@ -229,9 +251,9 @@ def _render_svg_journey_chart(journey: dict, benchmark_id: str = "WIG") -> tuple
     end_date_label = _format_short_date(last_pt["date"])
 
     svg_markup = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="{height}" style="display: block; max-width: {width}px; margin: 0 auto; overflow: visible;">
-      <!-- Zero baseline -->
-      <line x1="{x_left}" y1="{y_zero:.1f}" x2="{x_right}" y2="{y_zero:.1f}" stroke="rgba(148, 163, 184, 0.25)" stroke-dasharray="4,5" stroke-width="1" />
-      <text x="{x_left - 6:.1f}" y="{y_zero + 3:.1f}" fill="#64748b" font-size="9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" text-anchor="end">0%</text>
+      <!-- Zero baseline reference -->
+      <line x1="{x_left}" y1="{y_zero:.1f}" x2="{x_right}" y2="{y_zero:.1f}" stroke="#334155" stroke-dasharray="4,4" stroke-width="1" />
+      <text x="{x_left + 4:.1f}" y="{y_zero - 4:.1f}" fill="#64748b" font-size="9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600">0% baseline</text>
 
       <!-- Fill polygons (green outperformance, red underperformance) -->
       {' '.join(polygons)}
@@ -246,9 +268,10 @@ def _render_svg_journey_chart(journey: dict, benchmark_id: str = "WIG") -> tuple
       <circle cx="{coords[-1][0]:.1f}" cy="{coords[-1][2]:.1f}" r="3.5" fill="#a78bfa" />
       <circle cx="{coords[-1][0]:.1f}" cy="{coords[-1][1]:.1f}" r="4.5" fill="#4ade80" />
 
-      <!-- X-axis date labels -->
-      <text x="{x_left}" y="188" fill="#64748b" font-size="10" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" text-anchor="start">{start_date_label}</text>
-      <text x="{x_right}" y="188" fill="#64748b" font-size="10" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" text-anchor="end">{end_date_label}</text>
+      <!-- X-axis baseline divider & date labels -->
+      <line x1="{x_left}" y1="{y_bottom}" x2="{x_right}" y2="{y_bottom}" stroke="#1e293b" stroke-width="1" />
+      <text x="{x_left}" y="186" fill="#94a3b8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" text-anchor="start">{start_date_label}</text>
+      <text x="{x_right}" y="186" fill="#94a3b8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" text-anchor="end">{end_date_label}</text>
     </svg>"""
 
     mso_fallback = f"""<!--[if mso]>
@@ -292,8 +315,94 @@ def _render_svg_journey_chart(journey: dict, benchmark_id: str = "WIG") -> tuple
     return html_block, text_block
 
 
-def _render_calendar_heatmap(wrap_document: dict) -> tuple[str, str]:
-    """Render 7-column calendar table with daily performance cells, ATH highlight, and best/worst days."""
+def _fmt_compact_money(val: Any) -> str:
+    """Format nominal change compactly for calendar cells (e.g. +9.9k, -15k, +374)."""
+    try:
+        f = float(val or 0.0)
+    except (ValueError, TypeError):
+        return "—"
+    if abs(f) < 0.01:
+        return "0"
+    sign = "+" if f > 0 else "-"
+    abs_f = abs(f)
+    if abs_f >= 1_000_000:
+        return f"{sign}{abs_f / 1_000_000:.1f}M"
+    if abs_f >= 10_000:
+        return f"{sign}{abs_f / 1_000:.0f}k"
+    if abs_f >= 1_000:
+        return f"{sign}{abs_f / 1_000:.1f}k"
+    return f"{sign}{abs_f:.0f}"
+
+
+def _resolve_daily_moves(wrap_document: dict) -> list[dict]:
+    """Fallback to resolve or compute daily moves from snapshots table or journey points."""
+    user_id = wrap_document.get("userId") or wrap_document.get("user_id") or ""
+    if not user_id and "PK" in wrap_document:
+        pk = str(wrap_document["PK"])
+        if pk.startswith("USER#"):
+            user_id = pk[5:]
+    period = str(wrap_document.get("period") or "")
+    if user_id and re.match(r"^\d{4}-(0[1-9]|1[0-2])$", period):
+        try:
+            year, month = int(period[:4]), int(period[5:7])
+            start_date = date(year, month, 1)
+            next_m = date(year + 1, 1, 1) if month == 12 else date(year, month + 1, 1)
+            prev_day = (start_date - timedelta(days=1)).isoformat()
+            last_day = (next_m - timedelta(days=1)).isoformat()
+
+            import boto3
+            from boto3.dynamodb.conditions import Key
+            tbl_name = os.environ.get("SNAPSHOTS_TABLE", "roastfolio-snapshots")
+            table = boto3.resource("dynamodb").Table(tbl_name)
+            resp = table.query(
+                KeyConditionExpression=Key("userId").eq(user_id)
+                & Key("sk").between(f"PORTFOLIO#summary#SNAPSHOT#{prev_day}", f"PORTFOLIO#summary#SNAPSHOT#{last_day}")
+            )
+            items = sorted(resp.get("Items", []), key=lambda x: x.get("sk", ""))
+            if len(items) >= 2:
+                moves = []
+                for i in range(1, len(items)):
+                    dt = items[i]["sk"].split("#")[-1]
+                    if not dt.startswith(period):
+                        continue
+                    p_curr = float(items[i].get("portfolioValue") or 0)
+                    p_prev = float(items[i - 1].get("portfolioValue") or 0)
+                    diff = p_curr - p_prev
+                    pct = (diff / p_prev * 100.0) if p_prev > 0 else 0.0
+                    moves.append({
+                        "date": dt,
+                        "change_pln": diff,
+                        "change_pct": pct,
+                        "is_ath": False,
+                    })
+                if moves:
+                    return moves
+        except Exception as exc:
+            print(f"_resolve_daily_moves snapshot query fallback error: {exc}")
+
+    # Fallback to journey points
+    journey = wrap_document.get("journey") or {}
+    points = journey.get("points") or []
+    if len(points) >= 2:
+        moves = []
+        for i in range(1, len(points)):
+            dt = str(points[i].get("date") or "")
+            pct_curr = float(points[i].get("portfolio_pct") or 0.0)
+            pct_prev = float(points[i - 1].get("portfolio_pct") or 0.0)
+            day_pct = pct_curr - pct_prev
+            moves.append({
+                "date": dt,
+                "change_pln": 0.0,
+                "change_pct": day_pct,
+                "is_ath": False,
+            })
+        return moves
+
+    return []
+
+
+def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tuple[str, str]:
+    """Render 7-column calendar table with daily performance cells, solid color styling, nominal change, and ATH highlights."""
     period = str(wrap_document.get("period") or "")
     if re.match(r"^\d{4}-(0[1-9]|1[0-2])$", period):
         year, month = int(period[:4]), int(period[5:7])
@@ -302,6 +411,9 @@ def _render_calendar_heatmap(wrap_document: dict) -> tuple[str, str]:
         year, month = now.year, now.month
 
     daily_moves = wrap_document.get("daily_moves") or []
+    if not daily_moves:
+        daily_moves = _resolve_daily_moves(wrap_document)
+
     moves_by_day = {}
     best_day = None
     worst_day = None
@@ -347,34 +459,45 @@ def _render_calendar_heatmap(wrap_document: dict) -> tuple[str, str]:
                 cells_html.append('<td width="14.28%" style="padding: 3px;"></td>')
             else:
                 move = moves_by_day.get(d)
-                if move and move.get("change_pct") is not None:
-                    chg_val = float(move["change_pct"])
+                if move and (move.get("change_pct") is not None or move.get("change_pln") is not None):
+                    chg_val = float(move.get("change_pct") or 0.0)
+                    chg_pln = float(move.get("change_pln") or 0.0)
                     sign = "+" if chg_val > 0 else ""
                     pct_str = f"{sign}{chg_val:.1f}%"
-                    if chg_val > 0:
-                        bg = "rgba(74, 222, 128, 0.16)"
-                        border = "rgba(74, 222, 128, 0.35)"
+                    nom_str = _fmt_compact_money(chg_pln)
+
+                    if chg_val > 0.05 or chg_pln > 1.0:
+                        bg = "#143828"
+                        border = "#1f6b45"
                         color = "#4ade80"
-                    elif chg_val < 0:
-                        bg = "rgba(248, 113, 113, 0.14)"
-                        border = "rgba(248, 113, 113, 0.30)"
+                        pct_color = "#86efac"
+                    elif chg_val < -0.05 or chg_pln < -1.0:
+                        bg = "#38191e"
+                        border = "#75242d"
                         color = "#f87171"
+                        pct_color = "#fca5a5"
                     else:
                         bg = "#1a233a"
                         border = "#24304d"
                         color = "#94a3b8"
+                        pct_color = "#64748b"
+
+                    if hide_cash:
+                        val_content = f'<div style="font-size: 10px; font-weight: 700; color: {color}; margin-top: 3px; line-height: 1.1;">{pct_str}</div>'
+                    else:
+                        val_content = f'<div style="font-size: 10px; font-weight: 700; color: {color}; margin-top: 3px; line-height: 1.1;">{nom_str}</div><div style="font-size: 8px; font-weight: 500; color: {pct_color}; margin-top: 1px; line-height: 1.1;">{pct_str}</div>'
                 else:
                     bg = "#161e31"
                     border = "#1f2a44"
                     color = "#475569"
-                    pct_str = "&nbsp;"
+                    val_content = '<div style="font-size: 10px; color: #475569; margin-top: 3px; line-height: 1.1;">&nbsp;</div>'
 
                 ath_border = "border: 1px solid #f59e0b;" if (move and move.get("is_ath")) else f"border: 1px solid {border};"
 
                 cell = f"""<td width="14.28%" style="padding: 3px; text-align: center; vertical-align: top;">
-                  <div style="background-color: {bg}; {ath_border} border-radius: 6px; padding: 4px 1px; min-height: 38px;">
+                  <div style="background-color: {bg}; {ath_border} border-radius: 6px; padding: 5px 1px; min-height: 42px;">
                     <div style="font-size: 11px; font-weight: 700; color: #f8fafc; line-height: 1.1;">{d}</div>
-                    <div style="font-size: 9px; font-weight: 600; color: {color}; margin-top: 2px; line-height: 1.1;">{pct_str}</div>
+                    {val_content}
                   </div>
                 </td>"""
                 cells_html.append(cell)
@@ -383,16 +506,25 @@ def _render_calendar_heatmap(wrap_document: dict) -> tuple[str, str]:
     best_str = "—"
     worst_str = "—"
     chips_html = ""
-    if best_day and best_day.get("change_pct") is not None:
+    if best_day and (best_day.get("change_pct") is not None or best_day.get("change_pln") is not None):
         b_dt = str(best_day.get("date") or "")[5:]
-        b_val = float(best_day["change_pct"])
+        b_val = float(best_day.get("change_pct") or 0.0)
+        b_pln = float(best_day.get("change_pln") or 0.0)
         b_sign = "+" if b_val > 0 else ""
-        best_str = f"{b_dt} ({b_sign}{b_val:.2f}%)"
-    if worst_day and worst_day.get("change_pct") is not None:
+        if hide_cash or b_pln == 0:
+            best_str = f"{b_dt} ({b_sign}{b_val:.2f}%)"
+        else:
+            best_str = f"{b_dt} (+{_fmt_money(b_pln, show_sign=False)} / {b_sign}{b_val:.2f}%)"
+
+    if worst_day and (worst_day.get("change_pct") is not None or worst_day.get("change_pln") is not None):
         w_dt = str(worst_day.get("date") or "")[5:]
-        w_val = float(worst_day["change_pct"])
+        w_val = float(worst_day.get("change_pct") or 0.0)
+        w_pln = float(worst_day.get("change_pln") or 0.0)
         w_sign = "+" if w_val > 0 else ""
-        worst_str = f"{w_dt} ({w_sign}{w_val:.2f}%)"
+        if hide_cash or w_pln == 0:
+            worst_str = f"{w_dt} ({w_sign}{w_val:.2f}%)"
+        else:
+            worst_str = f"{w_dt} ({_fmt_money(w_pln, show_sign=True)} / {w_sign}{w_val:.2f}%)"
 
     if best_day or worst_day:
         chips_html = f"""<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #1e293b; font-size: 12px; color: #94a3b8;">
@@ -755,16 +887,21 @@ def render_monthly_recap_email(
     )
     benchmark_name = journey.get("benchmark_name") or benchmark_id
 
-    benchmark_ret = wrap_document.get("benchmark_return_pct")
-    if benchmark_ret is None:
-        benchmark_ret = journey.get("benchmark_return_pct")
-    if benchmark_ret is None and isinstance(wrap_document.get("market_context"), list):
+    # Benchmark resolution: prioritize canonical market_context close-to-close monthly return
+    benchmark_ret = None
+    if isinstance(wrap_document.get("market_context"), list):
         for ctx in wrap_document["market_context"]:
             if ctx.get("id") == benchmark_id and ctx.get("return_pct") is not None:
                 benchmark_ret = ctx.get("return_pct")
                 if not benchmark_name or benchmark_name == benchmark_id:
                     benchmark_name = ctx.get("name") or benchmark_id
                 break
+
+    # Fall back to root or journey benchmark_return_pct if not in market_context
+    if benchmark_ret is None:
+        benchmark_ret = wrap_document.get("benchmark_return_pct")
+    if benchmark_ret is None:
+        benchmark_ret = journey.get("benchmark_return_pct")
     benchmark_str = _fmt_pct(benchmark_ret, show_sign=True)
 
     # World benchmark from market_context
@@ -806,8 +943,16 @@ def render_monthly_recap_email(
     subject = f"Roastfolio Monthly Recap — {period_title} ({twr_str})"
 
     # Render modular sections
-    journey_html, journey_text = _render_svg_journey_chart(journey, benchmark_id)
-    calendar_html, calendar_text = _render_calendar_heatmap(wrap_document)
+    period_key = str(wrap_document.get("period") or "")
+    journey_html, journey_text = _render_svg_journey_chart(
+        journey,
+        benchmark_id=benchmark_id,
+        period=period_key,
+        benchmark_return_pct=benchmark_ret,
+    )
+    calendar_html, calendar_text = _render_calendar_heatmap(
+        wrap_document, hide_cash=hide_cash
+    )
     leader_anchor_html, leader_anchor_text = _render_leader_anchor(
         wrap_document.get("carry"), wrap_document.get("anchor"), hide_cash
     )

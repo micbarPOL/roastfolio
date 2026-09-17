@@ -264,24 +264,67 @@ def test_render_monthly_recap_email_calendar_heatmap():
     wrap = {
         "period": "2026-08",
         "daily_moves": [
-            {"date": "2026-08-03", "change_pct": 1.25, "is_ath": False},
-            {"date": "2026-08-04", "change_pct": -0.85, "is_ath": False},
-            {"date": "2026-08-05", "change_pct": 2.10, "is_ath": True},
+            {"date": "2026-08-03", "change_pln": 1250, "change_pct": 1.25, "is_ath": False},
+            {"date": "2026-08-04", "change_pln": -850, "change_pct": -0.85, "is_ath": False},
+            {"date": "2026-08-05", "change_pln": 2100, "change_pct": 2.10, "is_ath": True},
         ],
     }
 
-    _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
+    # Normal mode: nominal changes displayed compactly, solid colors used
+    _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap, hide_cash=False)
     assert "DAILY CALENDAR HEATMAP" in html_body
+    assert "+1.2k" in html_body
+    assert "-850" in html_body
+    assert "+2.1k" in html_body
     assert "+1.2%" in html_body
-    assert "-0.8%" in html_body  # round half-to-even in Python float formatting
+    assert "-0.8%" in html_body
     assert "+2.1%" in html_body
+    assert "#143828" in html_body  # solid dark emerald green
+    assert "#38191e" in html_body  # solid dark crimson red
     assert "#f59e0b" in html_body  # ATH highlight border
     assert "Best day:" in html_body
-    assert "08-05 (+2.10%)" in html_body
+    assert "08-05 (+2 100 PLN / +2.10%)" in html_body
     assert "Worst day:" in html_body
-    assert "08-04 (-0.85%)" in html_body
-    assert "Best day 08-05 (+2.10%)" in text_body
-    assert "Worst day 08-04 (-0.85%)" in text_body
+    assert "08-04 (-850 PLN / -0.85%)" in html_body
+
+    # Privacy mode: nominal numbers masked, percentage displayed
+    _, text_body_priv, html_body_priv = email_service.render_monthly_recap_email(profile, wrap, hide_cash=True)
+    assert "+1.2k" not in html_body_priv
+    assert "+2 100 PLN" not in html_body_priv
+    assert "08-05 (+2.10%)" in html_body_priv
+    assert "08-04 (-0.85%)" in html_body_priv
+
+
+def test_render_monthly_recap_email_journey_chart_period_trimming():
+    profile = {"userId": "user-1", "email": "test@example.com"}
+    wrap = {
+        "period": "2026-06",
+        "market_context": [
+            {"id": "WIG", "name": "WIG", "return_pct": -0.99},
+        ],
+        "journey": {
+            "benchmark_id": "WIG",
+            "benchmark_return_pct": 1.20,  # Stored journey may have different calculation
+            "points": [
+                {"date": "2026-06-01", "portfolio_pct": 0.0, "benchmark_pct": 0.0},
+                {"date": "2026-06-15", "portfolio_pct": 0.5, "benchmark_pct": 2.0},
+                {"date": "2026-06-30", "portfolio_pct": -3.3, "benchmark_pct": -0.99},
+                {"date": "2026-07-01", "portfolio_pct": -1.0, "benchmark_pct": 1.20},  # Boundary spillover
+            ],
+        },
+    }
+
+    _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
+    # Bento card prefers canonical market_context return (-0.99%) over journey (+1.20%)
+    assert "-0.99%" in html_body
+    assert "Benchmark (WIG)" in html_body
+    # Journey chart trimmed to June: starts Jun 01, ends Jun 30, never Jul 01
+    assert "Jun 01" in html_body
+    assert "Jun 30" in html_body
+    assert "Jul 01" not in html_body
+    # 0% baseline label clearly distinct
+    assert "0% baseline" in html_body
+
 
 
 def test_render_monthly_recap_email_leader_and_anchor():
