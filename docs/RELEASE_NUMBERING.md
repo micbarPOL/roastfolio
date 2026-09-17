@@ -1,7 +1,7 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `11.7.0`  
+**Current Release:** `11.8.0`  
 **Standard:** Custom Three-Tier Semantic Release Standard
 
 ---
@@ -48,11 +48,12 @@ A Service release indicates **bug fixes, security patches, performance tuning, a
 
 ## 3. Current Release Status
 
-* **Current Active Release:** `11.7.0`
+* **Current Active Release:** `11.8.0`
   * **Major 11:** Multi-asset portfolio intelligence, Coping Diary, and Monthly Recaps.
-  * **Minor 7:** Floating interactive hover tooltip directly on The Journey chart in Summaries (replacing static under-chart display section) showing detailed date, portfolio return, and benchmark return with indicator swatches and bounds clamping.
-  * **Service Release 0:** Baseline for Minor tier 7.
+  * **Minor 8:** Added interactive daily returns calendar widget to The Milestones section on Monthly Summaries, featuring positive/negative return day coloring, hover tooltip with PLN and % returns, Best Day and Worst Day indicators, and celebratory All-Time High (ATH) styling with radiant gold pulsing halo and trophy badge.
+  * **Service Release 0:** Baseline for Minor tier 8.
 * **Prior Releases:**
+  * **11.7.0:** Floating interactive hover tooltip directly on The Journey chart in Summaries (replacing static under-chart display section) showing detailed date, portfolio return, and benchmark return with indicator swatches and bounds clamping.
   * **11.6.2:** Continuous calendar day snapshot backfilling from earliest historical transaction dates (e.g. 2021), fast incremental XIRR/TWR recalculation, and background async worker dispatch for all transaction modifications.
   * **11.6.1:** Present transaction validation errors in dedicated modal popup dialogs instead of inline table rows.
   * **11.6.0:** Base release for Minor tier 6 (cash invariant validation and snapshot reuse).
