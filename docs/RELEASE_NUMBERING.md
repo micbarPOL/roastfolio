@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `12.0.5`  
-*Target Release Numbering Standard — v12.0.5*
+**Current Release:** `12.1.0`  
+*Target Release Numbering Standard — v12.1.0*
 
 ---
 
@@ -16,7 +16,7 @@ Example: **`11.2.1`**
 
 | Tier | Name | Purpose | Example Transition |
 | :--- | :--- | :--- | :--- |
-| **X** | **Major Version** | **New features & capabilities** added to the application | `11.2.1` $\rightarrow$ `12.0.0` |
+| **X** | **Major Version** | **New features** & capabilities added to the application | `11.2.1` $\rightarrow$ `12.0.0` |
 | **Y** | **Minor Version** | **Changes to existing features** (refinements, UX redesigns, logic updates) | `11.2.1` $\rightarrow$ `11.3.0` |
 | **Z** | **Service Release** | **Bug fixes**, performance improvements, security hotfixes | `11.2.1` $\rightarrow$ `11.2.2` |
 
@@ -36,13 +36,12 @@ A Major release represents **monumental architectural milestones, new fundamenta
 A Minor release introduces **significant functional enhancements, redesigned user journeys, or new views within existing modules**.
 
 * **Triggers:**
-  * Enhancements to existing features (e.g., interactive milestone calendars, floating tooltip charts, custom date filters, enhanced CSV export formats).
+  * Enhancements to existing features (e.g., hiding cash/PLN amounts in email notifications, interactive milestone calendars, floating tooltip charts).
   * Non-breaking data structure enrichments.
 * **Increment Rules:** Minor increments by 1; Service resets to 0.
 
 ### 2.3 Service Releases (`MAJOR.MINOR.SERVICE`)
 A Service release increment indicates **defect corrections, stability fixes, or performance optimizations**.
-
 * **Triggers:**
   * Bug fixes (e.g., timezone parsing discrepancies, rounding errors, layout clipping on mobile).
   * Performance tuning (e.g., DynamoDB batch optimizations, client-side asset caching).
@@ -53,11 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `12.0.5`
+* **Current Active Release:** `12.1.0`
   * **Major 12:** Automated monthly report email notification engine, multi-recipient user settings configuration, and on-demand email dispatch directly from the "Share your recap" popup dialog via AWS SES.
-  * **Minor 0:** Baseline for Major tier 12.
-  * **Service Release 5:** Complete AWS SES domain & DKIM verification for `roastfolio.app` and update dev environment sender to `notifications@roastfolio.app`.
+  * **Minor 1:** Added user privacy preference to mask PLN cash flow and nominal positions in notification emails (`hideCashInNotifications`), integrated share dialog privacy checkbox with email dispatch, and resolved journey & market context benchmark return extraction.
+  * **Service Release 0:** Baseline for Minor tier 1.
 * **Prior Releases:**
+  * **12.0.5:** Complete AWS SES domain & DKIM verification for `roastfolio.app` and update dev environment sender to `notifications@roastfolio.app`.
   * **12.0.4:** Update default notification sender address and domain references to `roastfolio.app` (`notifications@roastfolio.app`).
   * **12.0.3:** AWS SES sandbox verification error detection with user-friendly actionable status messages, HTTP 422 unverified identity response, and configurable dev environment SES notification sender address.
   * **12.0.2:** Client-side exponential backoff retry on transient 5xx server errors, graceful fallback caching in `portfolios.js`, and comprehensive exception resilience for `/benchmark-returns`.
