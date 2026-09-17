@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `12.1.0`  
-*Target Release Numbering Standard — v12.1.0*
+**Current Release:** `13.0.0`  
+*Target Release Numbering Standard — v13.0.0*
 
 ---
 
@@ -52,11 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `12.1.0`
-  * **Major 12:** Automated monthly report email notification engine, multi-recipient user settings configuration, and on-demand email dispatch directly from the "Share your recap" popup dialog via AWS SES.
-  * **Minor 1:** Added user privacy preference to mask PLN cash flow and nominal positions in notification emails (`hideCashInNotifications`), integrated share dialog privacy checkbox with email dispatch, and resolved journey & market context benchmark return extraction.
-  * **Service Release 0:** Baseline for Minor tier 1.
+* **Current Active Release:** `13.0.0`
+  * **Major 13:** Spotify Wrapped & Revolut-style monthly audit email template redesign featuring inline SVG cumulative journey chart with dynamic green/red outperformance fill, 7-column calendar heatmap, Who Moved Your Month leader & anchor asset highlights, global benchmarks table, conditional seasonality analysis, and trailing 12-month turnover comparison.
+  * **Minor 0:** Baseline for Major tier 13.
+  * **Service Release 0:** Baseline for Major tier 13.
 * **Prior Releases:**
+  * **12.1.0:** Added user privacy preference to mask PLN cash flow and nominal positions in notification emails (`hideCashInNotifications`), integrated share dialog privacy checkbox with email dispatch, and resolved journey & market context benchmark return extraction.
   * **12.0.5:** Complete AWS SES domain & DKIM verification for `roastfolio.app` and update dev environment sender to `notifications@roastfolio.app`.
   * **12.0.4:** Update default notification sender address and domain references to `roastfolio.app` (`notifications@roastfolio.app`).
   * **12.0.3:** AWS SES sandbox verification error detection with user-friendly actionable status messages, HTTP 422 unverified identity response, and configurable dev environment SES notification sender address.
