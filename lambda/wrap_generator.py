@@ -635,6 +635,42 @@ def _dynamodb_value(value: Any) -> Any:
     return value
 
 
+def _trailing_turnover_average(user_id: str, year: int, month: int) -> Decimal | None:
+    """Calculate the trailing 12-month average turnover from stored wrap documents."""
+    periods = []
+    y, m = int(year), int(month)
+    for _ in range(12):
+        m -= 1
+        if m == 0:
+            y -= 1
+            m = 12
+        periods.append(f"{y:04d}-{m:02d}")
+
+    try:
+        table = _wrap_table()
+        if not hasattr(table, "get_item"):
+            return None
+    except Exception:
+        return None
+
+    turnovers: list[Decimal] = []
+    for period in periods:
+        try:
+            res = table.get_item(Key={"PK": f"USER#{user_id}", "SK": f"WRAP#MONTH#{period}"})
+            item = res.get("Item")
+            if item:
+                ta = item.get("trading_activity") or {}
+                turnover = ta.get("turnover_pln")
+                if turnover is not None:
+                    turnovers.append(Decimal(str(turnover)))
+        except Exception:
+            pass
+
+    if not turnovers:
+        return None
+    return _money(sum(turnovers) / Decimal(len(turnovers)))
+
+
 def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: str | None = None) -> dict:
     """Compile and persist one complete monthly audit document."""
     if not str(user_id or "").strip():
@@ -677,6 +713,11 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
 
     best_wallet = max(wallet_performance, key=lambda item: item["twr_pct"], default=None)
     profit_engine = max(wallet_performance, key=lambda item: abs(item["nominal_change_pln"]), default=None)
+    trading_act = _trading_activity([
+        transaction for rows in monthly_transactions.values() for transaction in rows
+    ])
+    trading_act["avg_12m_turnover_pln"] = _trailing_turnover_average(user_id, int(year), int(month))
+
     document = {
         "PK": f"USER#{user_id}",
         "SK": f"WRAP#MONTH#{period_key}",
@@ -693,9 +734,7 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
         "start_value_pln": overall["start_value_pln"],
         "end_value_pln": overall["end_value_pln"],
         **_market_comparison(user_id, summary_snapshots, start, next_month, benchmark_id),
-        "trading_activity": _trading_activity([
-            transaction for rows in monthly_transactions.values() for transaction in rows
-        ]),
+        "trading_activity": trading_act,
         "wallet_performance": wallet_performance,
         "best_efficiency_wallet": best_wallet,
         "primary_profit_engine_wallet": profit_engine,
