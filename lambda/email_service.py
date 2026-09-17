@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-DEFAULT_FROM_EMAIL = "notifications@roastfolio.com"
+DEFAULT_FROM_EMAIL = "notifications@roastfolio.app"
 
 
 def is_valid_email(email: str | None) -> bool:

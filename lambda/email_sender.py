@@ -143,7 +143,7 @@ def render_periodic_recap_email(payload: dict[str, Any]) -> str:
     anchor_name = _safe_text((payload.get("anchor") or {}).get("name", "Weakest asset"))
     anchor_value = _format_signed_pct((payload.get("anchor") or {}).get("value", 0))
     diary_html = _diary_rows(payload.get("diary") or []) if period == "monthly" else ""
-    cta_url = payload.get("cta_url") or "https://app.roastfolio.com/dashboard"
+    cta_url = payload.get("cta_url") or "https://app.roastfolio.app/dashboard"
 
     template = _TEMPLATE.read_text(encoding="utf-8")
     replacements = {

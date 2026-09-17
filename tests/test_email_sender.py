@@ -27,7 +27,7 @@ def test_render_weekly_email_contains_privacy_safe_sections():
         ],
         "carry": {"name": "XTB.WA", "value": 12.4},
         "anchor": {"name": "CDR.WA", "value": -8.2},
-        "cta_url": "https://app.roastfolio.com/dashboard?source=email"
+        "cta_url": "https://app.roastfolio.app/dashboard?source=email"
     }
 
     html = render_periodic_recap_email(payload)
@@ -40,7 +40,7 @@ def test_render_weekly_email_contains_privacy_safe_sections():
     assert "XTB.WA" in html
     assert "CDR.WA" in html
     assert "PLN" not in html
-    assert "https://app.roastfolio.com/dashboard?source=email" in html
+    assert "https://app.roastfolio.app/dashboard?source=email" in html
 
 
 def test_render_monthly_email_uses_monthly_title_and_diary_statuses():

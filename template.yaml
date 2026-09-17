@@ -22,7 +22,7 @@ Parameters:
 
   NotificationFromEmail:
     Type: String
-    Default: notifications@roastfolio.com
+    Default: notifications@roastfolio.app
     Description: Verified SES sender email address for recap notifications
 
 Conditions:
