@@ -20,6 +20,11 @@ Parameters:
     AllowedValues: [prod, dev]
     Description: Deployment environment — prod uses existing bucket/CF, dev creates isolated stack
 
+  NotificationFromEmail:
+    Type: String
+    Default: notifications@roastfolio.com
+    Description: Verified SES sender email address for recap notifications
+
 Conditions:
   IsDev: !Equals [!Ref Environment, dev]
 
@@ -420,8 +425,14 @@ Resources:
           ADVANCED_USER_EMAILS: "michal.bardadyn@gmail.com,michal.bardadyn@syncron.com"
           ALLOW_DEV_AUTH_HEADER: !If [IsDev, "true", "false"]
           MONTHLY_WRAP_FUNCTION_NAME: !Ref MonthlyWrapFunction
+          NOTIFICATION_FROM_EMAIL: !Ref NotificationFromEmail
       Policies:
         - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"
             - Effect: Allow
               Action: lambda:InvokeFunction
               Resource: !GetAtt MonthlyWrapFunction.Arn
@@ -874,8 +885,14 @@ Resources:
           WRAPS_TABLE: !Ref DiaryTable
           CACHE_BUCKET: !If [IsDev, !Ref DevStaticBucket, !Ref BucketName]
           MONTHLY_WRAP_FUNCTION_NAME: !If [IsDev, dev-roastfolio-monthly-wrap, roastfolio-monthly-wrap]
+          NOTIFICATION_FROM_EMAIL: !Ref NotificationFromEmail
       Policies:
         - Statement:
+            - Effect: Allow
+              Action:
+                - ses:SendEmail
+                - ses:SendRawEmail
+              Resource: "*"
             - Effect: Allow
               Action: lambda:InvokeFunction
               Resource: !Sub

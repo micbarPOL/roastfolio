@@ -327,6 +327,13 @@ def generate_previous_month_wraps(
                 previous_month_last_day.year,
                 previous_month_last_day.month,
             )
+            try:
+                import email_service
+                user_profile = db.get_user(user_id)
+                if user_profile:
+                    email_service.send_monthly_recap_email_if_enabled(user_profile, document)
+            except Exception as mail_exc:
+                print(f"Monthly wrap email notification failed for {user_id}: {mail_exc}")
             results.append({"userId": user_id, "period": document["period"], "status": "ok"})
         except Exception as exc:
             print(f"Monthly wrap failed for {user_id}: {exc}")
