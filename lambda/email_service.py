@@ -395,23 +395,24 @@ def _render_journey_chart(
                     "borderColor": p_col,
                     "backgroundColor": bg_col,
                     "fill": True,
-                    "borderWidth": 3,
+                    "borderWidth": 2,
                     "pointRadius": 0,
-                    "lineTension": 0.4
+                    "lineTension": 0.1
                 },
                 {
                     "data": b_vals,
                     "borderColor": "#a78bfa",
-                    "borderWidth": 2,
-                    "borderDash": [5, 4],
+                    "borderWidth": 1.5,
+                    "borderDash": [4, 4],
                     "fill": False,
                     "pointRadius": 0,
-                    "lineTension": 0.4
+                    "lineTension": 0.1
                 }
             ]
         },
         "options": {
             "legend": {"display": False},
+            "defaultFontFamily": "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif",
             "scales": {
                 "xAxes": [{
                     "display": True,
