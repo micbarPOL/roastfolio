@@ -1103,6 +1103,7 @@
           <li><a href="#ds-motion">Motion</a></li>
           <li><a href="#ds-mobile-ux">Mobile UX Quality</a></li>
           <li><a href="#ds-ux-audit">Gamification UX Audit</a></li>
+          <li><a href="#ds-use-cases">Component Specification by Use Case</a></li>
         </ul>
       </div>
     </nav>
@@ -1926,7 +1927,7 @@
     <p>Roastfolio is built and maintained by <strong>TOMINEX</strong>. To provide full transparency and predictable updates, our releases follow a three-tier semantic versioning structure:</p>
 
     <div class="callout ok">
-      <p><strong>Current Active Release:</strong> <code>v13.1.11</code> &mdash; Powered by <strong>TOMINEX</strong></p>
+      <p><strong>Current Active Release:</strong> <code>v13.1.12</code> &mdash; Powered by <strong>TOMINEX</strong></p>
     </div>
 
     <p>Every release follows the <code>MAJOR.MINOR.SERVICE</code> pattern (e.g. <code>11.5.0</code>), with each component signaling a distinct scope of changes:</p>
@@ -2311,10 +2312,84 @@
       </tbody>
     </table>
 
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-use-cases">Component Specification by Use Case</h3>
+    <p>Roastfolio UI components are designed to serve specific user stories. Below is the mapping of components to their primary use cases.</p>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">1. Dashboard &amp; Overview</h4>
+    <p><em>"As a user, I want to review my today return and compare it to the benchmark."</em></p>
+    <ul>
+      <li><code>.bento-box</code> / <code>.metrics-grid</code>: Layout containers for top-level financial summaries.</li>
+      <li><code>.metric-value</code> / <code>.trend-indicator</code>: Display formatted numeric returns (green/red) and percentage changes.</li>
+      <li><code>.chart-canvas</code>: The main interactive performance graph on the dashboard.</li>
+      <li><code>.benchmark-selector</code>: Segmented control to toggle the active benchmark (e.g., WIG, S&amp;P 500).</li>
+      <li><code>.wallet-pill</code> / <code>.wallet-dropdown</code>: Navigational components to switch context between different portfolios.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">2. Holdings Management</h4>
+    <p><em>"As a user, I want to review my current investments."</em></p>
+    <ul>
+      <li><code>.holding-card</code>: The main container for an asset position, styled with a 16px radius and top inner-shadow.</li>
+      <li><code>.holding-header</code> / <code>.holding-name</code>: Displays the cleaned asset name alongside the raw ticker.</li>
+      <li><code>.holding-allocation</code>: A visual bar or text element showing portfolio weight.</li>
+      <li><code>.buy-chip</code> / <code>.sell-chip</code>: Inline quick-action buttons on the holding card for entering trades.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">3. Transaction Entry</h4>
+    <p><em>"As a user, I want to add a transaction to my wallet."</em></p>
+    <ul>
+      <li><code>.fab</code> (Floating Action Button): The omnipresent primary action trigger on mobile for adding new data.</li>
+      <li><code>.bottom-sheet</code> (<code>.sheet-overlay</code>, <code>.sheet-content</code>): The modal presentation layer for mobile-native data entry.</li>
+      <li><code>.form-group</code> / <code>.input-field</code>: Standardized inputs for ticker, date, price, and unit amount.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">4. Transaction History &amp; Turnover</h4>
+    <p><em>"As a user, I want to see when I made transactions and how big was my turnover."</em></p>
+    <ul>
+      <li><code>.tx-list</code> / <code>.tx-row</code>: Structured list layouts for chronological trades.</li>
+      <li><code>.tx-badge</code>: Colored tags (e.g., BUY in green, SELL in red) indicating trade direction.</li>
+      <li><code>.turnover-bar</code>: A horizontal bar chart component comparing current month's turnover to the 12-month average.</li>
+      <li><code>.filter-pill</code>: Toggle controls to filter the history view by asset or transaction type.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">5. Monthly Recap &amp; Audit</h4>
+    <p><em>"As a user, I want to review my past month's performance in detail."</em></p>
+    <ul>
+      <li><code>.audit-bento-grid</code> / <code>.audit-bento-card</code>: Modular containers for presenting end-of-month statistics.</li>
+      <li><code>.journey-chart-container</code>: Renders the month-long performance timeline against a benchmark.</li>
+      <li><code>.calendar-heatmap</code> / <code>.heatmap-day</code>: A visual grid summarizing daily profit/loss.</li>
+      <li><code>.leader-anchor-card</code>: Typographic blocks highlighting the best (Leader) and worst (Anchor) performing assets of the month.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">6. Asset Analysis</h4>
+    <p><em>"As a user, I want to analyze a specific asset before buying."</em></p>
+    <ul>
+      <li><code>.analysis-sheet</code>: A specialized, full-screen bottom sheet tailored for deep-dive asset research.</li>
+      <li><code>.analysis-fin-tab</code>: Navigation tabs for exploring fundamental data (Income Statement, Balance Sheet, etc.).</li>
+      <li><code>.fin-table</code>: Dense data tables optimized for displaying financial metrics.</li>
+      <li><code>.ai-summary-box</code>: Callout containers highlighting AI-generated insights or sentiment analysis.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">7. Coping Diary</h4>
+    <p><em>"As a user, I want to log my investment thesis and evaluate my biases."</em></p>
+    <ul>
+      <li><code>.coping-card</code>: The container for a single behavioral finance journal entry.</li>
+      <li><code>.coping-status-badge</code>: Status indicators (<code>.status-pending</code>, <code>.status-true</code>, <code>.status-false</code>) tracking the thesis outcome.</li>
+      <li><code>.coping-audit-prompt</code>: A targeted alert component asking the user to retrospectively verify a past thesis.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">8. Achievements &amp; Gamification</h4>
+    <p><em>"As a user, I want to track my milestones and gamified progress."</em></p>
+    <ul>
+      <li><code>.ach-xp-card</code> / <code>.ach-xp-track</code>: Progress bars and containers showing current investor level and XP.</li>
+      <li><code>.ach-badge</code>: Visual nodes representing unlockable achievement tiers.</li>
+      <li><code>.ach-streaks-scroll</code>: A horizontally scrollable list showing consecutive days/months of active portfolio management.</li>
+    </ul>
+
     </div><!-- /[data-guide-advanced] Design System -->
 
     <footer class="guide-footer">
-      <p>Roastfolio <code>v13.1.11</code> &middot; Powered by <strong>TOMINEX</strong> &middot; &copy; 2026 TOMINEX. All rights reserved.</p>
+      <p>Roastfolio <code>v13.1.12</code> &middot; Powered by <strong>TOMINEX</strong> &middot; &copy; 2026 TOMINEX. All rights reserved.</p>
     </footer>
 
   </main>
