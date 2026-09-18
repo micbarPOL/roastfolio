@@ -463,7 +463,7 @@ def _render_svg_journey_chart(
         f'<span style="font-size:12px;color:#94a3b8;vertical-align:middle;">{benchmark_id}</span>'
         f'<strong style="font-size:13px;color:#a78bfa;margin-left:4px;vertical-align:middle;">{b_last_str}</strong>'
         '</td>'
-        f'<td align="right"><span style="background-color:{badge_bg};border:1px solid {badge_border};color:{badge_color};padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:0.5px;">{badge_text}</span></td>'
+        f'<td align="right" valign="middle" style="padding-left:8px;"><span style="display:inline-block;white-space:nowrap;background-color:{badge_bg};border:1px solid {badge_border};color:{badge_color};padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:0.5px;">{badge_text}</span></td>'
         '</tr></table>'
     )
 
