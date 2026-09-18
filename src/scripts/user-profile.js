@@ -262,6 +262,18 @@
 
     }
 
+    function updateEmailNotifications(enabled) {
+        return updateSettings({ emailNotifications: Boolean(enabled), notifications: Boolean(enabled) });
+    }
+
+    function updateNotificationEmails(emails) {
+        return updateSettings({ notificationEmails: Array.isArray(emails) ? emails : [] });
+    }
+
+    function updateHideCashInNotifications(hide) {
+        return updateSettings({ hideCashInNotifications: Boolean(hide) });
+    }
+
     // ── Expose globally ─────────────────────────────────────────
 
     window.UserProfile = {
@@ -280,7 +292,10 @@
         recalculateMonthlySummaries: recalculateMonthlySummaries,
         getMonthlyRecalculationStatus: getMonthlyRecalculationStatus,
         getRoastIntensity:   getRoastIntensity,
-        updateRoastIntensity: updateRoastIntensity
+        updateRoastIntensity: updateRoastIntensity,
+        updateEmailNotifications: updateEmailNotifications,
+        updateNotificationEmails: updateNotificationEmails,
+        updateHideCashInNotifications: updateHideCashInNotifications
     };
 
     // Auto-apply role guard once DOM is ready

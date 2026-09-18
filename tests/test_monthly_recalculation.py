@@ -263,7 +263,7 @@ def test_sam_routes_auth_cache_and_worker_permissions():
                                  else loader.construct_sequence(node))
     resources = yaml.load((ROOT / "template.yaml").read_text(), Loader=Loader)["Resources"]
     prices = resources["PricesFunction"]["Properties"]
-    for name in ("MonthlyWrapsGet", "MonthlyWrapsRecalculatePost", "MonthlyWrapsRecalculateGet"):
+    for name in ("MonthlyWrapsGet", "MonthlyWrapsRecalculatePost", "MonthlyWrapsRecalculateGet", "MonthlyWrapsEmailPost"):
         auth = prices["Events"][name]["Properties"]["Auth"]
         if isinstance(auth, list):
             auth = next((item for item in auth if isinstance(item, dict) and "Authorizer" in item), {})

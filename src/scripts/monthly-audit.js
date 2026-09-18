@@ -78,6 +78,34 @@
         return payload;
     }
 
+    async function postJson(path, body) {
+        const token = window.AuthGuard && AuthGuard.getIdToken ? AuthGuard.getIdToken() : '';
+        const response = await fetch(`${apiBase()}${path}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify(body),
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const error = new Error(payload.error || `HTTP ${response.status}`);
+            error.status = response.status;
+            throw error;
+        }
+        return payload;
+    }
+
+    async function sendRecapEmail(period, options = {}) {
+        const payload = { period };
+        if (options && typeof options.hideCash === 'boolean') {
+            payload.hideCash = options.hideCash;
+        }
+        return await postJson('/monthly-wraps/email', payload);
+    }
+    window.sendMonthlyRecapEmail = sendRecapEmail;
+
     function ingestItems(items) {
         (Array.isArray(items) ? items : []).forEach(item => {
             const period = String(item?.period || item?.SK?.replace('WRAP#MONTH#', '') || '');
@@ -249,14 +277,37 @@
         const cursor = chart.querySelector('.ma-return-cursor');
         const tooltip = document.getElementById('ma-journey-value');
         let index = 0;
-        const show = next => {
+        const show = (next, pointerEvent) => {
             index = Math.max(0, Math.min(points.length - 1, next));
             const point = points[index];
             const x = 60 + (dates[index] - first) / (last - first) * 560;
             chart.setAttribute('aria-valuenow', String(index));
             chart.setAttribute('aria-valuetext', journeyLabel(point, benchmarkName));
-            tooltip.textContent = journeyLabel(point, benchmarkName);
+
+            const hasP = finite(point.portfolio_pct);
+            const pVal = hasP ? Number(point.portfolio_pct) : null;
+            const pClass = pVal != null ? (pVal > 0 ? 'is-positive' : (pVal < 0 ? 'is-negative' : 'is-neutral')) : 'is-neutral';
+            const pText = hasP ? formatPct(point.portfolio_pct, true) : 'No data';
+
+            const hasB = finite(point.benchmark_pct);
+            const bVal = hasB ? Number(point.benchmark_pct) : null;
+            const bClass = bVal != null ? (bVal > 0 ? 'is-positive' : (bVal < 0 ? 'is-negative' : 'is-neutral')) : 'is-neutral';
+            const bText = hasB ? formatPct(point.benchmark_pct, true) : 'No data';
+
+            tooltip.innerHTML = `
+                <div class="ma-tooltip-date">${escapeHtml(storedDate(point.date))}</div>
+                <div class="ma-tooltip-body">
+                    <div class="ma-tooltip-row">
+                        <span class="ma-tooltip-key"><span class="ma-tooltip-dot ma-dot-portfolio"></span>My Portfolio</span>
+                        <span class="ma-tooltip-val ${pClass}">${escapeHtml(pText)}</span>
+                    </div>
+                    <div class="ma-tooltip-row">
+                        <span class="ma-tooltip-key"><span class="ma-tooltip-dot ma-dot-benchmark"></span>${escapeHtml(benchmarkName || 'Benchmark')}</span>
+                        <span class="ma-tooltip-val ${bClass}">${escapeHtml(bText)}</span>
+                    </div>
+                </div>`;
             tooltip.hidden = false;
+
             cursor.setAttribute('visibility', 'visible');
             cursor.querySelector('path').setAttribute('d', `M${x} 22 V190`);
             ['portfolio_pct', 'benchmark_pct'].forEach((key, i) => {
@@ -265,6 +316,53 @@
                 dot.setAttribute('cx', String(x));
                 if (finite(point[key])) dot.setAttribute('cy', String(y(Number(point[key]))));
             });
+
+            const container = chart.parentElement;
+            if (container) {
+                const containerRect = container.getBoundingClientRect();
+                const matrix = chart.getScreenCTM();
+                let pixelX = 0;
+                let pixelY = 0;
+                const primarySvgY = hasP ? y(pVal) : (hasB ? y(bVal) : 106);
+
+                if (matrix && containerRect) {
+                    const screenPt = new DOMPoint(x, primarySvgY).matrixTransform(matrix);
+                    pixelX = screenPt.x - containerRect.left;
+                    if (pointerEvent && Number.isFinite(pointerEvent.clientY)) {
+                        pixelY = pointerEvent.clientY - containerRect.top;
+                    } else {
+                        pixelY = screenPt.y - containerRect.top;
+                    }
+                } else if (containerRect) {
+                    const chartRect = chart.getBoundingClientRect();
+                    pixelX = chartRect.left - containerRect.left + ((x + 32) / 672) * chartRect.width;
+                    pixelY = chartRect.top - containerRect.top + (primarySvgY / 228) * chartRect.height;
+                }
+
+                const tooltipWidth = tooltip.offsetWidth || 180;
+                const tooltipHeight = tooltip.offsetHeight || 64;
+                const containerWidth = containerRect ? containerRect.width : 500;
+                const containerHeight = containerRect ? containerRect.height : 230;
+
+                let posX = pixelX + 14;
+                if (posX + tooltipWidth > containerWidth - 8) {
+                    posX = pixelX - 14 - tooltipWidth;
+                }
+                if (posX < 8) posX = 8;
+                if (posX + tooltipWidth > containerWidth - 8) {
+                    posX = Math.max(8, containerWidth - tooltipWidth - 8);
+                }
+
+                let posY = pixelY - tooltipHeight / 2;
+                if (posY < 8) posY = 8;
+                if (posY + tooltipHeight > containerHeight - 8) {
+                    posY = Math.max(8, containerHeight - tooltipHeight - 8);
+                }
+
+                tooltip.style.left = `${Math.round(posX)}px`;
+                tooltip.style.top = `${Math.round(posY)}px`;
+                tooltip.style.transform = 'none';
+            }
         };
         const hide = () => {
             cursor.setAttribute('visibility', 'hidden');
@@ -276,7 +374,7 @@
             if (!matrix) return;
             const local = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
             const date = first + Math.max(0, Math.min(1, (local.x - 60) / 560)) * (last - first);
-            show(dates.reduce((best, current, i) => Math.abs(current - date) < Math.abs(dates[best] - date) ? i : best, 0));
+            show(dates.reduce((best, current, i) => Math.abs(current - date) < Math.abs(dates[best] - date) ? i : best, 0), event);
         };
         chart.setAttribute('aria-valuetext', journeyLabel(points[0], benchmarkName));
         chart.addEventListener('pointermove', inspectPointer);
@@ -330,6 +428,314 @@
         return card('Your money, in motion.', 'Cash flows & wallets', body, 'ma-flows');
     }
 
+    const formatPLN2 = (value, showSign = false) => {
+        if (value == null || value === '' || !Number.isFinite(Number(value))) return 'No data';
+        const amount = number(value);
+        const sign = amount < -0.005 ? '-' : showSign && amount > 0.005 ? '+' : '';
+        const formatted = Math.abs(amount).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return `${sign}${formatted} PLN`;
+    };
+
+    function getMonthDaysMap(item) {
+        const daysMap = new Map();
+        if (!item?.period) return daysMap;
+
+        // 1. Primary source: item.daily_moves from wrap
+        if (Array.isArray(item.daily_moves) && item.daily_moves.length > 0) {
+            for (const move of item.daily_moves) {
+                if (!move?.date) continue;
+                daysMap.set(move.date, {
+                    date: move.date,
+                    change_pln: Number(move.change_pln || 0),
+                    change_pct: move.change_pct != null ? Number(move.change_pct) : null,
+                    is_ath: Boolean(move.is_ath),
+                    has_data: true,
+                });
+            }
+        } else {
+            // Fallback: check cached history snapshots if available
+            const cachedSnapshots = (typeof window !== 'undefined' && typeof window._getHistorySnapshotCache === 'function')
+                ? window._getHistorySnapshotCache()?.summary
+                : null;
+            if (Array.isArray(cachedSnapshots) && cachedSnapshots.length > 0) {
+                const ym = item.period;
+                const prior = [...cachedSnapshots].reverse().find(s => s.date && s.date < `${ym}-01`);
+                const monthSnaps = cachedSnapshots.filter(s => s.date && s.date.startsWith(ym));
+                let prevVal = prior ? Number(prior.value || 0) : null;
+                let prevInv = prior ? Number(prior.investment || 0) : null;
+
+                for (const snap of monthSnaps) {
+                    const curVal = Number(snap.value || 0);
+                    const curInv = Number(snap.investment || 0);
+                    let changePln = 0;
+                    let changePct = 0;
+                    if (prevVal != null && prevVal > 0) {
+                        const flow = curInv - (prevInv ?? curInv);
+                        changePln = curVal - prevVal - flow;
+                        changePct = (changePln / prevVal) * 100;
+                    }
+                    daysMap.set(snap.date, {
+                        date: snap.date,
+                        change_pln: changePln,
+                        change_pct: changePct,
+                        is_ath: Boolean(snap.isAthPeak),
+                        has_data: true,
+                    });
+                    prevVal = curVal;
+                    prevInv = curInv;
+                }
+            }
+        }
+
+        // 2. Overlay ath_dates
+        const athDates = new Set(Array.isArray(item.ath_dates) ? item.ath_dates : []);
+        if (item.is_new_ath && item.ath_date) athDates.add(item.ath_date);
+        for (const date of athDates) {
+            const existing = daysMap.get(date) || { date, change_pln: 0, change_pct: null, has_data: false };
+            existing.is_ath = true;
+            daysMap.set(date, existing);
+        }
+
+        // 3. Overlay best_day and worst_day
+        if (item.best_day?.date) {
+            const existing = daysMap.get(item.best_day.date) || { date: item.best_day.date, has_data: true };
+            if (item.best_day.change_pln != null) existing.change_pln = Number(item.best_day.change_pln);
+            if (item.best_day.change_pct != null) existing.change_pct = Number(item.best_day.change_pct);
+            if (item.best_day.is_ath != null) existing.is_ath = Boolean(item.best_day.is_ath);
+            existing.is_best = true;
+            existing.has_data = true;
+            daysMap.set(item.best_day.date, existing);
+        }
+        if (item.worst_day?.date) {
+            const existing = daysMap.get(item.worst_day.date) || { date: item.worst_day.date, has_data: true };
+            if (item.worst_day.change_pln != null) existing.change_pln = Number(item.worst_day.change_pln);
+            if (item.worst_day.change_pct != null) existing.change_pct = Number(item.worst_day.change_pct);
+            existing.is_worst = true;
+            existing.has_data = true;
+            daysMap.set(item.worst_day.date, existing);
+        }
+
+        return daysMap;
+    }
+
+    function monthCalendarWidget(item) {
+        if (!item?.period) return '';
+        const [yearStr, monthStr] = item.period.split('-');
+        const year = parseInt(yearStr, 10);
+        const month = parseInt(monthStr, 10);
+        if (isNaN(year) || isNaN(month)) return '';
+
+        const daysMap = getMonthDaysMap(item);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const firstDow = new Date(year, month - 1, 1).getDay();
+        const offset = (firstDow + 6) % 7;
+
+        let hasAnyAth = false;
+        for (const val of daysMap.values()) {
+            if (val.is_ath) { hasAnyAth = true; break; }
+        }
+
+        const DOW_LABELS = [
+            { short: 'M', full: 'Monday' },
+            { short: 'T', full: 'Tuesday' },
+            { short: 'W', full: 'Wednesday' },
+            { short: 'T', full: 'Thursday' },
+            { short: 'F', full: 'Friday' },
+            { short: 'S', full: 'Saturday' },
+            { short: 'S', full: 'Sunday' },
+        ];
+
+        let cellsHtml = '';
+        for (let i = 0; i < offset; i++) {
+            cellsHtml += '<span class="ma-cal-day is-empty" aria-hidden="true"></span>';
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dayStr = String(day).padStart(2, '0');
+            const dateStr = `${item.period}-${dayStr}`;
+            const info = daysMap.get(dateStr);
+
+            const hasData = Boolean(info && (info.has_data || info.change_pln != null));
+            const changePln = info?.change_pln != null ? Number(info.change_pln) : null;
+            const changePct = info?.change_pct != null ? Number(info.change_pct) : null;
+            const isAth = Boolean(info?.is_ath);
+            const isBest = Boolean(info?.is_best || (item.best_day?.date === dateStr));
+            const isWorst = Boolean(info?.is_worst || (item.worst_day?.date === dateStr));
+
+            let returnClass = 'is-neutral';
+            if (hasData && changePln != null) {
+                if (changePln > 0.005) returnClass = 'is-positive';
+                else if (changePln < -0.005) returnClass = 'is-negative';
+                else returnClass = 'is-flat';
+            }
+
+            const classes = [
+                'ma-cal-day',
+                hasData ? 'has-data' : 'no-data',
+                returnClass,
+                isBest ? 'is-best' : '',
+                isWorst ? 'is-worst' : '',
+                isAth ? 'is-ath' : '',
+            ].filter(Boolean).join(' ');
+
+            const dObj = new Date(year, month - 1, day);
+            const dateReadable = dObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+            let returnDesc = 'No trading data';
+            if (hasData && changePln != null) {
+                const sign = changePln >= 0 ? '+' : '';
+                returnDesc = `${sign}${formatPLN(changePln, true)}`;
+                if (changePct != null) returnDesc += ` (${formatPct(changePct, true)})`;
+            }
+            const badgesDesc = [
+                isAth ? 'All-Time High' : '',
+                isBest ? 'Best Day' : '',
+                isWorst ? 'Worst Day' : '',
+            ].filter(Boolean).join(', ');
+            const ariaLabel = `${dateReadable}: ${returnDesc}${badgesDesc ? ` · ${badgesDesc}` : ''}`;
+
+            cellsHtml += `
+                <button type="button" class="${classes}"
+                    data-cal-date="${dateStr}"
+                    data-cal-day="${day}"
+                    data-cal-pln="${changePln != null ? changePln : ''}"
+                    data-cal-pct="${changePct != null ? changePct : ''}"
+                    data-cal-ath="${isAth ? '1' : '0'}"
+                    data-cal-best="${isBest ? '1' : '0'}"
+                    data-cal-worst="${isWorst ? '1' : '0'}"
+                    data-cal-hasdata="${hasData ? '1' : '0'}"
+                    aria-label="${escapeHtml(ariaLabel)}">
+                    <span class="ma-cal-num">${day}</span>
+                    ${isAth ? '<span class="ma-cal-ath-trophy" aria-hidden="true" title="All-Time High">🏆</span>' : ''}
+                    ${isBest ? '<span class="ma-cal-tag is-best" aria-hidden="true" title="Best day">★</span>' : ''}
+                    ${isWorst && !isBest ? '<span class="ma-cal-tag is-worst" aria-hidden="true" title="Worst day">▼</span>' : ''}
+                </button>`;
+        }
+
+        return `
+            <div class="ma-calendar-section" id="ma-milestones-calendar">
+                <div class="ma-calendar-header">
+                    <span class="ma-calendar-title">Daily returns</span>
+                    <div class="ma-calendar-legend">
+                        <span class="ma-cal-legend-item"><span class="ma-cal-swatch is-positive"></span>Gain</span>
+                        <span class="ma-cal-legend-item"><span class="ma-cal-swatch is-negative"></span>Loss</span>
+                        ${hasAnyAth ? '<span class="ma-cal-legend-item"><span class="ma-cal-ath-legend">🏆</span>ATH</span>' : ''}
+                    </div>
+                </div>
+                <div class="ma-cal-grid" role="region" aria-label="Monthly daily performance calendar">
+                    <div class="ma-cal-dow-row" role="row">
+                        ${DOW_LABELS.map(dow => `<span class="ma-cal-dow" role="columnheader" aria-label="${dow.full}">${dow.short}</span>`).join('')}
+                    </div>
+                    <div class="ma-cal-days">
+                        ${cellsHtml}
+                    </div>
+                </div>
+                <div class="ma-chart-tooltip ma-cal-tooltip" id="ma-cal-tooltip" hidden></div>
+            </div>`;
+    }
+
+    function bindMilestones(item) {
+        const root = document.getElementById('ma-milestones-calendar');
+        if (!root) return;
+        const tooltip = root.querySelector('#ma-cal-tooltip');
+        if (!tooltip) return;
+
+        const show = (btn) => {
+            const dateStr = btn.dataset.calDate;
+            if (!dateStr) return;
+            const hasData = btn.dataset.calHasdata === '1';
+            const plnStr = btn.dataset.calPln;
+            const pctStr = btn.dataset.calPct;
+            const isAth = btn.dataset.calAth === '1';
+            const isBest = btn.dataset.calBest === '1';
+            const isWorst = btn.dataset.calWorst === '1';
+
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            const formattedDate = dateObj.toLocaleDateString('en-GB', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+            });
+
+            let returnHtml = '';
+            if (hasData && plnStr !== '') {
+                const pln = Number(plnStr);
+                const pct = pctStr !== '' ? Number(pctStr) : null;
+                const sign = pln > 0 ? '+' : '';
+                const pctFormatted = pct != null ? ` (${formatPct(pct, true)})` : '';
+                const valTone = pln > 0.005 ? 'is-positive' : (pln < -0.005 ? 'is-negative' : 'is-neutral');
+
+                returnHtml = `
+                    <div class="ma-tooltip-row">
+                        <span class="ma-tooltip-key">Daily return</span>
+                        <strong class="ma-tooltip-val ${valTone}">${sign}${formatPLN2(pln, true)}${pctFormatted}</strong>
+                    </div>`;
+            } else {
+                returnHtml = `
+                    <div class="ma-tooltip-row">
+                        <span class="ma-tooltip-key" style="color:var(--ma-muted); font-style:italic;">No trading activity</span>
+                    </div>`;
+            }
+
+            let badgesHtml = '';
+            if (isAth) {
+                badgesHtml += `<div class="ma-cal-tooltip-badge is-ath">🏆 All-Time High</div>`;
+            }
+            if (isBest) {
+                badgesHtml += `<div class="ma-cal-tooltip-badge is-best">🌟 Best Day of Month</div>`;
+            }
+            if (isWorst) {
+                badgesHtml += `<div class="ma-cal-tooltip-badge is-worst">🔻 Worst Day of Month</div>`;
+            }
+
+            tooltip.innerHTML = `
+                <div class="ma-tooltip-date">${escapeHtml(formattedDate)}</div>
+                <div class="ma-tooltip-body">
+                    ${returnHtml}
+                    ${badgesHtml ? `<div class="ma-cal-tooltip-badges">${badgesHtml}</div>` : ''}
+                </div>`;
+
+            tooltip.hidden = false;
+
+            const rootRect = root.getBoundingClientRect();
+            const btnRect = btn.getBoundingClientRect();
+            const tipWidth = tooltip.offsetWidth || 190;
+            const tipHeight = tooltip.offsetHeight || 64;
+
+            let left = (btnRect.left + btnRect.width / 2) - rootRect.left - (tipWidth / 2);
+            if (left < 4) left = 4;
+            if (left + tipWidth > rootRect.width - 4) {
+                left = Math.max(4, rootRect.width - tipWidth - 4);
+            }
+
+            let top = (btnRect.top - rootRect.top) - tipHeight - 8;
+            if (top < 0) {
+                top = (btnRect.bottom - rootRect.top) + 8;
+            }
+
+            tooltip.style.left = `${Math.round(left)}px`;
+            tooltip.style.top = `${Math.round(top)}px`;
+            tooltip.style.transform = 'none';
+        };
+
+        const hide = () => {
+            tooltip.hidden = true;
+        };
+
+        root.querySelectorAll('.ma-cal-day:not(.is-empty)').forEach(btn => {
+            btn.addEventListener('mouseenter', () => show(btn));
+            btn.addEventListener('focus', () => show(btn));
+            btn.addEventListener('mouseleave', hide);
+            btn.addEventListener('blur', hide);
+            btn.addEventListener('touchstart', () => {
+                show(btn);
+            }, { passive: true });
+        });
+
+        root.addEventListener('mouseleave', hide);
+    }
+
     function extremesCard(item) {
         const athValue = item.is_new_ath ? formatPLN(item.ath_value_pln) : 'No new ATH';
         const athDetail = item.is_new_ath ? `${formatDate(item.ath_date)} · new peak` : 'Peak was not exceeded';
@@ -339,7 +745,8 @@
                 ${stat('Days since ATH', item.days_since_ath == null ? 'No data' : `${number(item.days_since_ath)} days`, 'State at month end')}
                 ${stat('Best day', formatPLN(item.best_day?.change_pln, true), formatDate(item.best_day?.date), 'is-positive')}
                 ${stat('Worst day', formatPLN(item.worst_day?.change_pln), formatDate(item.worst_day?.date), 'is-negative')}
-            </div>`;
+            </div>
+            ${monthCalendarWidget(item)}`;
         return card('Moments that mattered.', 'The milestones', body, 'ma-milestones');
     }
 
@@ -644,6 +1051,7 @@
                 ${item ? [journeyCard(item), extremesCard(item), carryCard(item), retirementCard(item), seasonalityCard(item), flowsCard(item), tradingCard(item)].join('') : renderEmpty(state.selectedPeriod)}
             </div><p class="ma-footer">A month in perspective. Not investment advice.</p>`;
             bindJourney(item);
+            bindMilestones(item);
     }
 
     window.shareMonthlyAudit = () => {
@@ -653,7 +1061,9 @@
                 wig: resolveMarketReturn(item, 'WIG'),
                 msci: resolveMarketReturn(item, 'MSCI_WORLD'),
             };
-            window.MonthlyAuditShare.open(item);
+            window.MonthlyAuditShare.open(item, {
+                onEmail: (emailOpts) => sendRecapEmail(item.period, emailOpts),
+            });
         }
     };
 

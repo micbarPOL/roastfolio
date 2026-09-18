@@ -949,6 +949,11 @@ def _fetch_price_history_range(
                 except Exception:
                     price_history[symbol] = {}
 
+        if batch_history is not None:
+            for symbol in all_symbols:
+                if symbol not in price_history:
+                    price_history[symbol] = {}
+
     for symbol in all_symbols:
         if symbol in price_history:
             continue
@@ -1125,73 +1130,114 @@ def recalculate_portfolio_snapshots_from_date(
         key=portfolios._tx_sort_key,
     )
     all_snapshots = list_snapshots(user_id, portfolio_id)
-    xirr_history = [dict(s) for s in all_snapshots]
-    xirr_history_by_date = {str(s["snapshotDate"]): s for s in xirr_history}
-    snapshots_to_update = sorted(
-        [s for s in all_snapshots if str(s.get("snapshotDate", "")) >= from_date],
-        key=lambda s: s["snapshotDate"],
-    )
-    if not snapshots_to_update:
+    existing_snapshots_by_date = {
+        str(s["snapshotDate"])[:10]: s
+        for s in all_snapshots
+        if s.get("snapshotDate")
+    }
+
+    start_date = str(from_date).strip()[:10]
+    candidate_end_dates = list(existing_snapshots_by_date.keys())
+    candidate_end_dates.extend([str(t["transactionDate"])[:10] for t in all_transactions if t.get("transactionDate")])
+    if not candidate_end_dates:
         portfolio_avco.persist_portfolio_avco(user_id, portfolio_id, all_transactions)
         return {"updated": 0, "fromDate": from_date, "portfolioId": portfolio_id}
 
-    max_date = snapshots_to_update[-1]["snapshotDate"]
+    end_date = max(candidate_end_dates)
+    if start_date > end_date:
+        end_date = start_date
 
-    if is_cash_only:
-        price_history = {}
-        old_val = _to_decimal(old_transaction.get("value", 0)) if old_transaction else Decimal("0")
-        old_date = str(old_transaction.get("transactionDate") or "")[:10] if old_transaction else ""
-        old_type = str(old_transaction.get("type", "")).upper() if old_transaction else ""
-        old_is_inflow = old_type in {"DEPOSIT", "CASH_ADJUSTMENT", "DIVIDEND"}
+    cur_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
+    end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
+    target_dates = []
+    while cur_dt <= end_dt:
+        target_dates.append(cur_dt.isoformat())
+        cur_dt += timedelta(days=1)
 
-        new_val = _to_decimal(new_transaction.get("value", 0)) if new_transaction else Decimal("0")
-        new_date = str(new_transaction.get("transactionDate") or "")[:10] if new_transaction else ""
-        new_type = str(new_transaction.get("type", "")).upper() if new_transaction else ""
-        new_is_inflow = new_type in {"DEPOSIT", "CASH_ADJUSTMENT", "DIVIDEND"}
+    if not target_dates:
+        portfolio_avco.persist_portfolio_avco(user_id, portfolio_id, all_transactions)
+        return {"updated": 0, "fromDate": from_date, "portfolioId": portfolio_id}
 
-        def _calc_cash_delta(d: str) -> Decimal:
-            old_eff = Decimal("0")
-            if old_date and d >= old_date:
-                old_eff = old_val if old_is_inflow else -old_val
-            new_eff = Decimal("0")
-            if new_date and d >= new_date:
-                new_eff = new_val if new_is_inflow else -new_val
-            return new_eff - old_eff
+    max_date = target_dates[-1]
 
-        def _calc_inv_delta(d: str) -> Decimal:
-            old_eff = Decimal("0")
-            if old_date and d >= old_date and old_type in {"DEPOSIT", "WITHDRAWAL"}:
-                old_eff = old_val if old_type == "DEPOSIT" else -old_val
-            new_eff = Decimal("0")
-            if new_date and d >= new_date and new_type in {"DEPOSIT", "WITHDRAWAL"}:
-                new_eff = new_val if new_type == "DEPOSIT" else -new_val
-            return new_eff - old_eff
+    old_val = _to_decimal(old_transaction.get("value", 0)) if old_transaction else Decimal("0")
+    old_date = str(old_transaction.get("transactionDate") or "")[:10] if old_transaction else ""
+    old_type = str(old_transaction.get("type", "")).upper() if old_transaction else ""
+    old_is_inflow = old_type in {"DEPOSIT", "CASH_ADJUSTMENT", "DIVIDEND"}
+
+    new_val = _to_decimal(new_transaction.get("value", 0)) if new_transaction else Decimal("0")
+    new_date = str(new_transaction.get("transactionDate") or "")[:10] if new_transaction else ""
+    new_type = str(new_transaction.get("type", "")).upper() if new_transaction else ""
+    new_is_inflow = new_type in {"DEPOSIT", "CASH_ADJUSTMENT", "DIVIDEND"}
+
+    def _calc_cash_delta(d: str) -> Decimal:
+        old_eff = Decimal("0")
+        if old_date and d >= old_date:
+            old_eff = old_val if old_is_inflow else -old_val
+        new_eff = Decimal("0")
+        if new_date and d >= new_date:
+            new_eff = new_val if new_is_inflow else -new_val
+        return new_eff - old_eff
+
+    def _calc_inv_delta(d: str) -> Decimal:
+        old_eff = Decimal("0")
+        if old_date and d >= old_date and old_type in {"DEPOSIT", "WITHDRAWAL"}:
+            old_eff = old_val if old_type == "DEPOSIT" else -old_val
+        new_eff = Decimal("0")
+        if new_date and d >= new_date and new_type in {"DEPOSIT", "WITHDRAWAL"}:
+            new_eff = new_val if new_type == "DEPOSIT" else -new_val
+        return new_eff - old_eff
+
+    yf_tickers: set = set()
+    yf_currencies: set = set()
+    for tx in all_transactions:
+        ticker = tx.get("ticker")
+        if ticker and not str(ticker).upper().startswith("TFI:"):
+            yf_tickers.add(str(ticker))
+        currency = tx.get("currency") or "PLN"
+        if currency and currency != "PLN":
+            yf_currencies.add(str(currency))
+
+    profile = db.get_user(user_id) or {}
+    benchmark_id = profile.get("settings", {}).get("benchmark", db.DEFAULT_BENCHMARK)
+    if benchmark_id not in db.BENCHMARKS:
+        benchmark_id = db.DEFAULT_BENCHMARK
+    benchmark_ticker = db.BENCHMARKS.get(benchmark_id, {}).get("ticker")
+
+    missing_dates = [d for d in target_dates if d not in existing_snapshots_by_date]
+    needs_price_history = (not is_cash_only) or (len(missing_dates) > 0 and len(yf_tickers) > 0)
+
+    if benchmark_ticker and needs_price_history:
+        yf_tickers.add(str(benchmark_ticker))
+
+    if needs_price_history and yf_tickers:
+        price_history = _fetch_price_history_range(yf_tickers, yf_currencies, start_date, max_date)
     else:
-        # Collect yfinance-compatible tickers and FX currencies
-        yf_tickers: set = set()
-        yf_currencies: set = set()
-        for tx in all_transactions:
-            ticker = tx.get("ticker")
-            if ticker and not str(ticker).upper().startswith("TFI:"):
-                yf_tickers.add(str(ticker))
-            currency = tx.get("currency") or "PLN"
-            if currency and currency != "PLN":
-                yf_currencies.add(str(currency))
-
-        price_history = _fetch_price_history_range(yf_tickers, yf_currencies, from_date, max_date)
+        price_history = {}
 
     now = _now_iso()
     updated = 0
-    prev_value: "Decimal | None" = None  # for dailyReturn
     net_cash_flow_by_date = _build_net_cash_flow_by_date(all_transactions)
 
     historical_before_from = sorted(
-        [s for s in all_snapshots if str(s.get("snapshotDate", "")) < from_date],
+        [s for s in all_snapshots if str(s.get("snapshotDate", "")) < start_date],
         key=lambda s: s["snapshotDate"],
     )
     twr_prev_value: Decimal | None = None
     twr_prev_unit_price: Decimal | None = None
+    prev_value: Decimal | None = None
+    cashflows_so_far: list[tuple[str, float]] = []
+    prev_inv: Decimal | None = None
+
     if historical_before_from:
+        prev_value = _to_decimal(historical_before_from[-1].get("portfolioValue", 0))
+        for s in historical_before_from:
+            s_date = str(s.get("snapshotDate", ""))[:10]
+            inv = _to_decimal(s.get("investmentValue") or 0)
+            delta = inv if prev_inv is None else inv - prev_inv
+            if abs(delta) >= _TWOPLACES:
+                cashflows_so_far.append((s_date, float(-delta)))
+            prev_inv = inv
         seed_rows = [
             {
                 "date": s["snapshotDate"],
@@ -1205,17 +1251,31 @@ def recalculate_portfolio_snapshots_from_date(
             seed_last = seed_series[-1]
             twr_prev_value = _to_decimal(seed_last["ending_value"])
             twr_prev_unit_price = _to_decimal(seed_last["unit_price"])
+    else:
+        earlier_txs = [t for t in all_transactions if str(t.get("transactionDate") or "")[:10] < start_date]
+        if earlier_txs:
+            by_date_inv = {}
+            for t in earlier_txs:
+                d = str(t.get("transactionDate") or "")[:10]
+                if d not in by_date_inv:
+                    by_date_inv[d] = _investment_total_at_date(all_transactions, d)
+            for d in sorted(by_date_inv.keys()):
+                inv = by_date_inv[d]
+                delta = inv if prev_inv is None else inv - prev_inv
+                if abs(delta) >= _TWOPLACES:
+                    cashflows_so_far.append((d, float(-delta)))
+                prev_inv = inv
 
     portfolio_item = portfolios.get_portfolio(user_id, portfolio_id) or {}
     portfolio_currency = str(portfolio_item.get("currency") or "PLN")
 
     with _table().batch_writer() as batch:
-        for snapshot in snapshots_to_update:
-            snap_date = snapshot["snapshotDate"]
+        for snap_date in target_dates:
+            existing_snap = existing_snapshots_by_date.get(snap_date)
 
-            if is_cash_only:
-                portfolio_value = _quantize_money(_to_decimal(snapshot.get("portfolioValue", 0)) + _calc_cash_delta(snap_date))
-                investment_value = _quantize_money(_to_decimal(snapshot.get("investmentValue", 0)) + _calc_inv_delta(snap_date))
+            if is_cash_only and existing_snap is not None:
+                portfolio_value = _quantize_money(_to_decimal(existing_snap.get("portfolioValue", 0)) + _calc_cash_delta(snap_date))
+                investment_value = _quantize_money(_to_decimal(existing_snap.get("investmentValue", 0)) + _calc_inv_delta(snap_date))
             else:
                 holdings = _holdings_at_date(all_transactions, snap_date, portfolio_currency=portfolio_currency)
 
@@ -1264,8 +1324,8 @@ def recalculate_portfolio_snapshots_from_date(
             daily_return = Decimal("0")
             if prev_value is not None and prev_value > 0:
                 daily_return = _quantize_pct(((portfolio_value - prev_value) / prev_value) * 100)
-            elif snapshot.get("dailyReturn") not in (None, ""):
-                daily_return = _to_decimal(snapshot["dailyReturn"])
+            elif existing_snap and existing_snap.get("dailyReturn") not in (None, ""):
+                daily_return = _to_decimal(existing_snap["dailyReturn"])
             prev_value = portfolio_value
 
             twr_step = _virtual_unit_step(
@@ -1276,12 +1336,22 @@ def recalculate_portfolio_snapshots_from_date(
             )
             twr_prev_value = portfolio_value
             twr_prev_unit_price = _to_decimal(twr_step["unit_price"])
-            
-            xirr_snapshot = xirr_history_by_date.get(str(snap_date))
-            if xirr_snapshot is not None:
-                xirr_snapshot["portfolioValue"] = portfolio_value
-                xirr_snapshot["investmentValue"] = investment_value
-            snap_xirr = _xirr_from_investment_history(xirr_history, snap_date)
+
+            delta = investment_value if prev_inv is None else investment_value - prev_inv
+            if abs(delta) >= _TWOPLACES:
+                cashflows_so_far.append((snap_date, float(-delta)))
+            prev_inv = investment_value
+
+            day_flows = list(cashflows_so_far)
+            day_flows.append((snap_date, float(portfolio_value)))
+            snap_xirr = Decimal(str(round(portfolios.calculate_xirr(day_flows), 4)))
+
+            snap_bench_id = existing_snap.get("benchmarkId") if existing_snap else benchmark_id
+            snap_bench_val = existing_snap.get("benchmarkValue") if existing_snap else None
+            if snap_bench_val is None and benchmark_ticker:
+                bench_price = _price_at_or_before(price_history, benchmark_ticker, snap_date)
+                if bench_price is not None:
+                    snap_bench_val = bench_price
 
             item: dict = {
                 "userId": user_id,
@@ -1298,12 +1368,12 @@ def recalculate_portfolio_snapshots_from_date(
                 "xirr": snap_xirr,
                 "xirrVersion": _XIRR_CALCULATION_VERSION,
                 "updatedAt": now,
-                "createdAt": snapshot.get("createdAt", now),
+                "createdAt": existing_snap.get("createdAt", now) if existing_snap else now,
             }
-            if snapshot.get("benchmarkId"):
-                item["benchmarkId"] = snapshot["benchmarkId"]
-            if snapshot.get("benchmarkValue") not in (None, ""):
-                item["benchmarkValue"] = _quantize_money(snapshot["benchmarkValue"])
+            if snap_bench_id:
+                item["benchmarkId"] = snap_bench_id
+            if snap_bench_val not in (None, ""):
+                item["benchmarkValue"] = _quantize_money(snap_bench_val)
 
             batch.put_item(Item=item)
             updated += 1
@@ -1339,43 +1409,74 @@ def recalculate_summary_snapshots_from_date(user_id: str, from_date: str) -> int
         if p.get("portfolioId") != "summary"
     ]
     all_summary_snapshots = list_snapshots(user_id, "summary")
-    xirr_history = [dict(s) for s in all_summary_snapshots]
-    xirr_history_by_date = {str(s["snapshotDate"]): s for s in xirr_history}
-    summary_snapshots = sorted(
-        [s for s in all_summary_snapshots if str(s.get("snapshotDate", "")) >= from_date],
-        key=lambda s: s["snapshotDate"],
-    )
-    if not summary_snapshots:
-        return 0
+    existing_summary_by_date = {
+        str(s["snapshotDate"])[:10]: s
+        for s in all_summary_snapshots
+        if s.get("snapshotDate")
+    }
 
     # Build a lookup: portfolioId -> {date_str -> snapshot}
     portfolio_snap_map: dict = {}
     for p in user_portfolios:
         pid = p["portfolioId"]
         snaps = list_snapshots(user_id, pid)
-        portfolio_snap_map[pid] = {str(s["snapshotDate"]): s for s in snaps}
+        portfolio_snap_map[pid] = {str(s["snapshotDate"])[:10]: s for s in snaps if s.get("snapshotDate")}
+
+    start_date = str(from_date).strip()[:10]
+    candidate_dates = set(existing_summary_by_date.keys())
+    for snaps_by_date in portfolio_snap_map.values():
+        candidate_dates.update(snaps_by_date.keys())
+
+    if not candidate_dates:
+        return 0
+
+    end_date = max(candidate_dates)
+    if start_date > end_date:
+        end_date = start_date
+
+    cur_dt = datetime.strptime(start_date, "%Y-%m-%d").date()
+    end_dt = datetime.strptime(end_date, "%Y-%m-%d").date()
+    summary_dates = []
+    while cur_dt <= end_dt:
+        summary_dates.append(cur_dt.isoformat())
+        cur_dt += timedelta(days=1)
+
+    if not summary_dates:
+        return 0
+
+    profile = db.get_user(user_id) or {}
+    benchmark_id = profile.get("settings", {}).get("benchmark", db.DEFAULT_BENCHMARK)
+    if benchmark_id not in db.BENCHMARKS:
+        benchmark_id = db.DEFAULT_BENCHMARK
 
     now = _now_iso()
     updated = 0
 
     historical_before_from = sorted(
-        [s for s in all_summary_snapshots if str(s.get("snapshotDate", "")) < from_date],
+        [s for s in all_summary_snapshots if str(s.get("snapshotDate", "")) < start_date],
         key=lambda s: s["snapshotDate"],
     )
     twr_prev_value: Decimal | None = None
     twr_prev_unit_price: Decimal | None = None
-    prev_seed_investment: Decimal | None = None
+    prev_total_investment: Decimal | None = None
+    prev_summary_value: Decimal | None = None
+    cashflows_so_far: list[tuple[str, float]] = []
+
     if historical_before_from:
+        prev_summary_value = _to_decimal(historical_before_from[-1].get("portfolioValue", 0))
         seed_rows = []
         for s in historical_before_from:
+            s_date = str(s.get("snapshotDate", ""))[:10]
             current_investment = _to_decimal(s.get("investmentValue", 0))
-            inferred_flow = current_investment if prev_seed_investment is None else (current_investment - prev_seed_investment)
+            delta = current_investment if prev_total_investment is None else (current_investment - prev_total_investment)
+            if abs(delta) >= _TWOPLACES:
+                cashflows_so_far.append((s_date, float(-delta)))
             seed_rows.append({
                 "date": s["snapshotDate"],
                 "ending_value": _to_decimal(s.get("portfolioValue", 0)),
-                "net_cash_flow": _to_decimal(s.get("netCashFlow", inferred_flow)),
+                "net_cash_flow": _to_decimal(s.get("netCashFlow", delta)),
             })
-            prev_seed_investment = current_investment
+            prev_total_investment = current_investment
         seed_series = calculate_virtual_unit_series(seed_rows)
         if seed_series:
             seed_last = seed_series[-1]
@@ -1383,23 +1484,47 @@ def recalculate_summary_snapshots_from_date(user_id: str, from_date: str) -> int
             twr_prev_unit_price = _to_decimal(seed_last["unit_price"])
 
     with _table().batch_writer() as batch:
-        prev_total_investment: Decimal | None = None
-        for summary_snap in summary_snapshots:
-            snap_date = summary_snap["snapshotDate"]
+        for snap_date in summary_dates:
             total_portfolio_value = Decimal("0")
             total_investment_value = Decimal("0")
             total_net_cash_flow = Decimal("0")
+            has_portfolio_data = False
             for snaps_by_date in portfolio_snap_map.values():
                 day_snap = snaps_by_date.get(snap_date)
                 if day_snap:
+                    has_portfolio_data = True
                     total_portfolio_value += _to_decimal(day_snap.get("portfolioValue", 0))
                     total_investment_value += _to_decimal(day_snap.get("investmentValue", 0))
                     total_net_cash_flow += _to_decimal(day_snap.get("netCashFlow", 0))
 
+            if not has_portfolio_data and snap_date in existing_summary_by_date:
+                prev_s = existing_summary_by_date[snap_date]
+                total_portfolio_value = _to_decimal(prev_s.get("portfolioValue", 0))
+                total_investment_value = _to_decimal(prev_s.get("investmentValue", 0))
+                total_net_cash_flow = _to_decimal(prev_s.get("netCashFlow", 0))
+
+            total_portfolio_value = _quantize_money(total_portfolio_value)
+            total_investment_value = _quantize_money(total_investment_value)
+
+            delta = total_investment_value if prev_total_investment is None else (total_investment_value - prev_total_investment)
             if total_net_cash_flow == 0:
-                inferred_flow = total_investment_value if prev_total_investment is None else (total_investment_value - prev_total_investment)
-                total_net_cash_flow = inferred_flow
+                total_net_cash_flow = delta
+            total_net_cash_flow = _quantize_money(total_net_cash_flow)
             prev_total_investment = total_investment_value
+
+            if abs(delta) >= _TWOPLACES:
+                cashflows_so_far.append((snap_date, float(-delta)))
+
+            day_flows = list(cashflows_so_far)
+            day_flows.append((snap_date, float(total_portfolio_value)))
+            snap_xirr = Decimal(str(round(portfolios.calculate_xirr(day_flows), 4)))
+
+            daily_return = Decimal("0")
+            if prev_summary_value is not None and prev_summary_value > 0:
+                daily_return = _quantize_pct(((total_portfolio_value - prev_summary_value) / prev_summary_value) * 100)
+            elif existing_summary_by_date.get(snap_date, {}).get("dailyReturn") not in (None, ""):
+                daily_return = _to_decimal(existing_summary_by_date[snap_date]["dailyReturn"])
+            prev_summary_value = total_portfolio_value
 
             twr_step = _virtual_unit_step(
                 ending_value=total_portfolio_value,
@@ -1410,34 +1535,31 @@ def recalculate_summary_snapshots_from_date(user_id: str, from_date: str) -> int
             twr_prev_value = total_portfolio_value
             twr_prev_unit_price = _to_decimal(twr_step["unit_price"])
 
-            xirr_snapshot = xirr_history_by_date.get(str(snap_date))
-            if xirr_snapshot is not None:
-                xirr_snapshot["portfolioValue"] = total_portfolio_value
-                xirr_snapshot["investmentValue"] = total_investment_value
-            snap_xirr = _xirr_from_investment_history(xirr_history, snap_date)
+            existing_s = existing_summary_by_date.get(snap_date)
+            snap_bench_id = existing_s.get("benchmarkId") if existing_s else benchmark_id
+            snap_bench_val = existing_s.get("benchmarkValue") if existing_s else None
 
             item: dict = {
                 "userId": user_id,
                 "sk": _snapshot_sk("summary", snap_date),
                 "portfolioId": "summary",
                 "snapshotDate": snap_date,
-                "portfolioValue": _quantize_money(total_portfolio_value),
-                "investmentValue": _quantize_money(total_investment_value),
-                "netCashFlow": _quantize_money(total_net_cash_flow),
+                "portfolioValue": total_portfolio_value,
+                "investmentValue": total_investment_value,
+                "dailyReturn": daily_return,
+                "netCashFlow": total_net_cash_flow,
                 "unitPrice": twr_step["unit_price"],
                 "unitCount": twr_step["unit_count"],
                 "cumulativeReturnPct": twr_step["cumulative_return_pct"],
                 "xirr": snap_xirr,
                 "xirrVersion": _XIRR_CALCULATION_VERSION,
                 "updatedAt": now,
-                "createdAt": summary_snap.get("createdAt", now),
+                "createdAt": existing_s.get("createdAt", now) if existing_s else now,
             }
-            if summary_snap.get("benchmarkId"):
-                item["benchmarkId"] = summary_snap["benchmarkId"]
-            if summary_snap.get("benchmarkValue") not in (None, ""):
-                item["benchmarkValue"] = _quantize_money(summary_snap["benchmarkValue"])
-            if summary_snap.get("dailyReturn") not in (None, ""):
-                item["dailyReturn"] = _to_decimal(summary_snap["dailyReturn"])
+            if snap_bench_id:
+                item["benchmarkId"] = snap_bench_id
+            if snap_bench_val not in (None, ""):
+                item["benchmarkValue"] = _quantize_money(snap_bench_val)
 
             batch.put_item(Item=item)
             updated += 1

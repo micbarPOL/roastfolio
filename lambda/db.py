@@ -151,12 +151,15 @@ DEFAULT_BENCHMARK = "WIG"
 
 def _default_settings() -> dict:
     return {
-        "theme":         "dark",
-        "currency":      "PLN",
-        "defaultWallet": "Emerytura",
-        "notifications": False,
-        "benchmark":     DEFAULT_BENCHMARK,
-        "roastIntensity": "sarcastic",
+        "theme":              "dark",
+        "currency":           "PLN",
+        "defaultWallet":      "Emerytura",
+        "notifications":      False,
+        "emailNotifications": False,
+        "notificationEmails": [],
+        "hideCashInNotifications": False,
+        "benchmark":          DEFAULT_BENCHMARK,
+        "roastIntensity":     "sarcastic",
     }
 
 

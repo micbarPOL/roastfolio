@@ -1,5 +1,6 @@
 const _historyCharts = {};
 let _historyLoadPromise = null;
+let _cachedHistoryData = null;
 let _historyRange = 'ALL';
 let _historyReturnMode = 'pct';
 let _historyMonthlyMetric = 'gain'; // 'gain' | 'deposit'
@@ -216,6 +217,7 @@ function _renderWalletBtns(walletNames) {
 
 async function _loadHistorySnapshots(force = false) {
     if (!window.PortfolioClient) return { summary: [], wallets: {} };
+    if (_cachedHistoryData && !force) return _cachedHistoryData;
     if (_historyLoadPromise && !force) return _historyLoadPromise;
 
     _historyLoadPromise = (async () => {
@@ -318,10 +320,11 @@ async function _loadHistorySnapshots(force = false) {
             wallets[name] = walletRows;
         });
 
-        return {
+        _cachedHistoryData = {
             summary: summaryRows,
             wallets,
         };
+        return _cachedHistoryData;
     })();
 
     try {
@@ -941,6 +944,8 @@ async function renderHistoryTab(force = false) {
 }
 
 window.renderHistoryTab = renderHistoryTab;
+window._loadHistorySnapshots = _loadHistorySnapshots;
+window._getHistorySnapshotCache = () => _cachedHistoryData;
 window.setHistoryWallet = function setHistoryWallet(key) {
     _historyWalletKey = key || 'summary';
     // Update button active state immediately for snappy feel

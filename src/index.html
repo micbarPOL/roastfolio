@@ -112,7 +112,7 @@
     <!-- User profile: fetch/cache profile from DynamoDB via /profile API -->
     <script src="scripts/user-profile.js?v=20260915-recap2"></script>
     <!-- Portfolio client: DynamoDB portfolios + holdings CRUD + migration trigger -->
-    <script src="scripts/portfolios.js?v=20260630a"></script>
+    <script src="scripts/portfolios.js?v=20260917a"></script>
     <script src="scripts/ledger-transactions.js?v=20260630c"></script>
     <script src="scripts/live-data.js?v=20260709b"></script>
 </head>
@@ -234,7 +234,7 @@
         </div>
         <div class="sidenav-bottom-brand">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="sidenav-version-tag">v11.6.1</span>
+            <span class="sidenav-version-tag">v13.1.10</span>
         </div>
     </aside>
 
@@ -1758,7 +1758,7 @@
                     <span class="app-footer-version-pill" title="Current Release Version">
                         <span class="app-footer-status-indicator" aria-hidden="true"></span>
                         <span class="app-footer-version-prefix">Version</span>
-                        <strong id="app-version-display" class="app-footer-version-code">11.6.1</strong>
+                        <strong id="app-version-display" class="app-footer-version-code">13.1.10</strong>
                     </span>
                     <a href="guide.html#release-numbering" class="app-footer-release-link">
                         <span>Release Policy &amp; Notes</span>
@@ -2741,6 +2741,9 @@
                         const designGuideLink = document.getElementById('design-guide-link');
                         if (designGuideLink) designGuideLink.style.display = role === 'ADVANCED' ? '' : 'none';
                     }
+                    if (window._mgmt && typeof window._mgmt._loadEmailNotificationSettings === 'function') {
+                        window._mgmt._loadEmailNotificationSettings();
+                    }
                 }
             }
         }
@@ -3020,18 +3023,62 @@
             </div>
           </div>
 
+          <!-- Email notifications & recipients -->
+          <div class="user-field-group">
+            <label class="user-field-label">Email Notifications</label>
+            <div class="mgmt-benchmark-row" style="align-items: center; justify-content: space-between;">
+              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="user-email-notifications-toggle"
+                       onchange="window._mgmt.saveEmailNotifications(this.checked)"
+                       style="width: 18px; height: 18px; cursor: pointer; accent-color: #3b82f6;">
+                <span id="user-email-notifications-label" style="font-size: 13px;">Receive monthly report emails</span>
+              </label>
+              <span id="user-email-notifications-saved" class="mgmt-benchmark-saved" style="display:none">✓ Saved</span>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted, #94a3b8); margin: 4px 0 0 0;">
+              Automatically delivers newly generated monthly performance audits. Off by default.
+            </p>
+
+            <div class="mgmt-benchmark-row" style="align-items: center; justify-content: space-between; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="user-hide-cash-notifications-toggle"
+                       onchange="window._mgmt.saveHideCashInNotifications(this.checked)"
+                       style="width: 18px; height: 18px; cursor: pointer; accent-color: #3b82f6;">
+                <span id="user-hide-cash-notifications-label" style="font-size: 13px;">Hide cash &amp; PLN amounts in recap emails</span>
+              </label>
+              <span id="user-hide-cash-notifications-saved" class="mgmt-benchmark-saved" style="display:none">✓ Saved</span>
+            </div>
+            <p style="font-size: 11px; color: var(--text-muted, #94a3b8); margin: 4px 0 0 0;">
+              Replaces monetary gains, cash flows, and wallet profit numbers with &ldquo;&mdash;&rdquo; in email summaries for privacy.
+            </p>
+          </div>
+
+          <div class="user-field-group">
+            <label class="user-field-label">Notification Recipients</label>
+            <div id="user-notification-emails-container" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+              <!-- Rendered dynamically -->
+            </div>
+            <div class="user-field-row">
+              <input id="user-add-email-input" type="email" class="user-field-input"
+                     placeholder="Add another email address…"
+                     onkeydown="if(event.key==='Enter'){event.preventDefault();window._mgmt.addNotificationEmail();}">
+              <button class="user-save-btn" type="button" onclick="window._mgmt.addNotificationEmail()">Add</button>
+            </div>
+            <div id="user-email-flash" class="user-flash" style="display:none"></div>
+          </div>
+
         </div>
         <div class="user-modal-footer" style="flex-wrap: wrap; gap: 12px; justify-content: space-between;">
           <div class="user-modal-branding">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="user-modal-version">v11.6.1</span>
+            <span class="user-modal-version">v13.1.10</span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <a href="guide.html" class="user-guide-link">
               <span aria-hidden="true">📖</span> User Guide
             </a>
             <a href="guide.html#release-numbering" class="user-guide-link">
-              <span aria-hidden="true">🏷️</span> Release v11.6.1
+              <span aria-hidden="true">🏷️</span> Release v13.1.10
             </a>
             <a href="guide.html#design-system" class="user-guide-link" id="design-guide-link" style="display:none">
               <span aria-hidden="true">🎨</span> Design Guide

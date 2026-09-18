@@ -95,3 +95,35 @@ def test_monthly_share_is_local_preview_first_and_private_by_default():
     assert "URL.revokeObjectURL" in script
     assert "AbortError" in script
     assert "fetch(" not in script
+
+
+def test_milestones_calendar_widget_and_ath_celebration_contract():
+    js = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
+    css = (ROOT / "src" / "styles" / "monthly-audit.css").read_text()
+    chart_js = (ROOT / "src" / "scripts" / "chart.js").read_text()
+
+    # Extremes card integrates monthCalendarWidget and binds milestone hover
+    assert "monthCalendarWidget(item)" in js
+    assert "bindMilestones(item)" in js
+    assert "ma-milestones-calendar" in js
+    assert "ma-cal-grid" in js
+    assert "ma-cal-days" in js
+    assert "ma-cal-dow-row" in js
+    assert "ma-cal-tooltip" in js
+    assert "Daily returns" in js
+    assert "is-ath" in js
+    assert "is-best" in js
+    assert "is-worst" in js
+    assert "🏆" in js
+
+    # CSS has required classes and pulse animation for ATH
+    assert ".ma-calendar-section" in css
+    assert ".ma-cal-day.is-ath" in css
+    assert ".ma-cal-day.is-best" in css
+    assert ".ma-cal-day.is-worst" in css
+    assert "@keyframes ma-ath-pulse" in css
+    assert ".ma-cal-tooltip" in css
+
+    # Chart.js exposes snapshots caching functions for cross-tab availability
+    assert "window._loadHistorySnapshots" in chart_js
+    assert "window._getHistorySnapshotCache" in chart_js

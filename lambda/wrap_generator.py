@@ -320,6 +320,14 @@ def _extremes(items: list[dict], transactions: list[dict], start: date, next_mon
     monthly_ath_value = _decimal(monthly_ath_item.get("portfolioValue"))
     is_new_ath = monthly_ath_value > previous_ath
 
+    running_ath = previous_ath
+    ath_dates = []
+    for item in month_items:
+        val = _decimal(item.get("portfolioValue"))
+        if val > running_ath:
+            running_ath = val
+            ath_dates.append(_snapshot_date(item))
+
     running_value_ath = Decimal("-Infinity")
     last_ath_date = None
     running_unit_ath = ZERO
@@ -354,12 +362,19 @@ def _extremes(items: list[dict], transactions: list[dict], start: date, next_mon
         if item_date < start_key or index == 0:
             continue
         previous = through_month[index - 1]
+        prev_val = _decimal(previous.get("portfolioValue"))
         move = (
             _decimal(item.get("portfolioValue"))
-            - _decimal(previous.get("portfolioValue"))
+            - prev_val
             - cash_flow_by_date.get(item_date, ZERO)
         )
-        daily_moves.append({"date": item_date, "change_pln": _money(move)})
+        pct = (move / prev_val * Decimal("100")) if prev_val > 0 else ZERO
+        daily_moves.append({
+            "date": item_date,
+            "change_pln": _money(move),
+            "change_pct": _pct(pct),
+            "is_ath": item_date in ath_dates,
+        })
 
     best_day = max(daily_moves, key=lambda item: item["change_pln"]) if daily_moves else None
     worst_day = min(daily_moves, key=lambda item: item["change_pln"]) if daily_moves else None
@@ -376,6 +391,8 @@ def _extremes(items: list[dict], transactions: list[dict], start: date, next_mon
         "drawdown_trajectory_pct": [_pct(drawdown) for _, drawdown in month_drawdowns],
         "best_day": best_day,
         "worst_day": worst_day,
+        "daily_moves": daily_moves,
+        "ath_dates": ath_dates,
     }
 
 
@@ -618,6 +635,42 @@ def _dynamodb_value(value: Any) -> Any:
     return value
 
 
+def _trailing_turnover_average(user_id: str, year: int, month: int) -> Decimal | None:
+    """Calculate the trailing 12-month average turnover from stored wrap documents."""
+    periods = []
+    y, m = int(year), int(month)
+    for _ in range(12):
+        m -= 1
+        if m == 0:
+            y -= 1
+            m = 12
+        periods.append(f"{y:04d}-{m:02d}")
+
+    try:
+        table = _wrap_table()
+        if not hasattr(table, "get_item"):
+            return None
+    except Exception:
+        return None
+
+    turnovers: list[Decimal] = []
+    for period in periods:
+        try:
+            res = table.get_item(Key={"PK": f"USER#{user_id}", "SK": f"WRAP#MONTH#{period}"})
+            item = res.get("Item")
+            if item:
+                ta = item.get("trading_activity") or {}
+                turnover = ta.get("turnover_pln")
+                if turnover is not None:
+                    turnovers.append(Decimal(str(turnover)))
+        except Exception:
+            pass
+
+    if not turnovers:
+        return None
+    return _money(sum(turnovers) / Decimal(len(turnovers)))
+
+
 def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: str | None = None) -> dict:
     """Compile and persist one complete monthly audit document."""
     if not str(user_id or "").strip():
@@ -660,6 +713,11 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
 
     best_wallet = max(wallet_performance, key=lambda item: item["twr_pct"], default=None)
     profit_engine = max(wallet_performance, key=lambda item: abs(item["nominal_change_pln"]), default=None)
+    trading_act = _trading_activity([
+        transaction for rows in monthly_transactions.values() for transaction in rows
+    ])
+    trading_act["avg_12m_turnover_pln"] = _trailing_turnover_average(user_id, int(year), int(month))
+
     document = {
         "PK": f"USER#{user_id}",
         "SK": f"WRAP#MONTH#{period_key}",
@@ -676,9 +734,7 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
         "start_value_pln": overall["start_value_pln"],
         "end_value_pln": overall["end_value_pln"],
         **_market_comparison(user_id, summary_snapshots, start, next_month, benchmark_id),
-        "trading_activity": _trading_activity([
-            transaction for rows in monthly_transactions.values() for transaction in rows
-        ]),
+        "trading_activity": trading_act,
         "wallet_performance": wallet_performance,
         "best_efficiency_wallet": best_wallet,
         "primary_profit_engine_wallet": profit_engine,

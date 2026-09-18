@@ -91,8 +91,20 @@ def test_extremes_tracks_ath_drawdown_trajectory_and_daily_moves():
         Decimal("-18.1818"),
         Decimal("0.0000"),
     ]
-    assert result["best_day"] == {"date": "2026-09-20", "change_pln": Decimal("500.00")}
-    assert result["worst_day"] == {"date": "2026-09-10", "change_pln": Decimal("-300.00")}
+    assert result["best_day"] == {
+        "date": "2026-09-20",
+        "change_pln": Decimal("500.00"),
+        "change_pct": Decimal("55.5556"),
+        "is_ath": True,
+    }
+    assert result["worst_day"] == {
+        "date": "2026-09-10",
+        "change_pln": Decimal("-300.00"),
+        "change_pct": Decimal("-25.0000"),
+        "is_ath": False,
+    }
+    assert result["ath_dates"] == ["2026-09-02", "2026-09-20"]
+    assert len(result["daily_moves"]) == 4
 
 
 def test_seasonality_compares_prior_same_calendar_months():

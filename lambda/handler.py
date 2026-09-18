@@ -985,33 +985,39 @@ def _get_caller_identity(event: dict) -> tuple[str, str, str]:
 
 # ── Profile route handlers ────────────────────────────────────
 
-ALLOWED_SETTINGS_KEYS = {"theme", "currency", "defaultWallet", "notifications", "benchmark", "roastIntensity"}
+ALLOWED_SETTINGS_KEYS = {
+    "theme", "currency", "defaultWallet", "notifications",
+    "emailNotifications", "notificationEmails", "hideCashInNotifications", "benchmark", "roastIntensity"
+}
 
 
 def benchmark_returns_handler(event: dict) -> dict:
     """GET /benchmark-returns — return stored monthly returns for a benchmark."""
     if event.get("httpMethod") == "OPTIONS":
         return _resp(200, {})
-    user_id, err = _require_role(event, db.ROLE_BASIC)
-    if err:
-        return err
 
-    import benchmark_returns as br
-
-    bid    = (_query_value(event, "benchmarkId") or db.DEFAULT_BENCHMARK).upper()
-    from_m = _query_value(event, "from", "2020-01")
-    if bid not in db.BENCHMARKS:
-        bid = db.DEFAULT_BENCHMARK
-
-    def _safe_float(val, default=0.0):
-        if val is None:
-            return default
-        try:
-            return float(val)
-        except (ValueError, TypeError):
-            return default
-
+    bid = db.DEFAULT_BENCHMARK
     try:
+        raw_bid = str(_query_value(event, "benchmarkId", "") or "").strip().upper()
+        if raw_bid and raw_bid in db.BENCHMARKS:
+            bid = raw_bid
+        from_m = str(_query_value(event, "from", "2020-01") or "2020-01").strip()
+
+        # Public market benchmark data — authenticate if credentials present, but gracefully allow
+        user_id, err = _require_role(event, db.ROLE_BASIC)
+        if err and not user_id:
+            pass
+
+        import benchmark_returns as br
+
+        def _safe_float(val, default=0.0):
+            if val is None:
+                return default
+            try:
+                return float(val)
+            except (ValueError, TypeError):
+                return default
+
         items = br.list_monthly_returns(bid, from_ym=from_m) or []
         out = [
             {
@@ -1023,11 +1029,11 @@ def benchmark_returns_handler(event: dict) -> dict:
             for i in items
             if isinstance(i, dict) and i.get("month")
         ]
+        return _resp(200, {"benchmarkId": bid, "returns": out}, cache_seconds=60)
     except Exception as exc:
         # Keep dashboard flows alive even if benchmark storage is unavailable.
         print(f"benchmark_returns_handler fallback for {bid}: {exc}")
-        out = []
-    return _resp(200, {"benchmarkId": bid, "returns": out})
+        return _resp(200, {"benchmarkId": bid, "returns": []})
 
 
 def benchmarks_handler(event: dict) -> dict:
@@ -1080,6 +1086,25 @@ def profile_handler(event: dict) -> dict:
             for k, v in body["settings"].items():
                 if k in ALLOWED_SETTINGS_KEYS:
                     if k == "roastIntensity" and v not in ("gentle", "sarcastic", "brutal", "degen"):
+                        continue
+                    if k in ("emailNotifications", "notifications"):
+                        val = bool(v)
+                        merged["emailNotifications"] = val
+                        merged["notifications"] = val
+                        continue
+                    if k == "hideCashInNotifications":
+                        merged[k] = bool(v)
+                        continue
+                    if k == "notificationEmails":
+                        if not isinstance(v, list):
+                            continue
+                        clean_emails = []
+                        for item in v:
+                            if isinstance(item, str):
+                                s = item.strip().lower()
+                                if re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", s) and s not in clean_emails:
+                                    clean_emails.append(s)
+                        merged[k] = clean_emails
                         continue
                     merged[k] = v
             updates["settings"] = merged
@@ -1725,19 +1750,46 @@ def portfolios_handler(event: dict) -> dict:
                 if from_date:
                     tx_type = str(tx.get("type") or "").upper()
                     is_cash_tx = tx_type in {"DEPOSIT", "WITHDRAWAL", "EXTRA_COST", "CASH_ADJUSTMENT"}
-                    try:
-                        tx["recalculated"] = snapshots.recalculate_portfolio_snapshots_from_date(
-                            user_id,
-                            portfolio_id,
-                            from_date,
-                            is_cash_only=is_cash_tx,
-                            old_transaction=None,
-                            new_transaction=tx,
-                        )
-                        tx["summaryUpdated"] = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
-                    except Exception as recalc_exc:
-                        # Transaction write succeeded; return warning so clients can surface stale-history risk.
-                        tx["historyRecalcWarning"] = str(recalc_exc)
+                    fn_name = os.environ.get("MONTHLY_WRAP_FUNCTION_NAME")
+                    dispatched_async = False
+                    if fn_name:
+                        try:
+                            import boto3
+                            payload = {
+                                "action": "recalculate_snapshots",
+                                "user_id": user_id,
+                                "portfolio_id": portfolio_id,
+                                "from_date": from_date,
+                                "is_cash_only": is_cash_tx,
+                                "old_transaction": None,
+                                "new_transaction": tx,
+                            }
+                            boto3.client("lambda").invoke(
+                                FunctionName=fn_name,
+                                InvocationType="Event",
+                                Payload=json.dumps(payload, default=str).encode("utf-8"),
+                            )
+                            dispatched_async = True
+                        except Exception as async_exc:
+                            print(f"Async dispatch error: {async_exc}")
+
+                    if dispatched_async:
+                        tx["recalculated"] = {"status": "dispatched_background", "fromDate": from_date}
+                        tx["summaryUpdated"] = "dispatched_background"
+                    else:
+                        try:
+                            tx["recalculated"] = snapshots.recalculate_portfolio_snapshots_from_date(
+                                user_id,
+                                portfolio_id,
+                                from_date,
+                                is_cash_only=is_cash_tx,
+                                old_transaction=None,
+                                new_transaction=tx,
+                            )
+                            tx["summaryUpdated"] = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
+                        except Exception as recalc_exc:
+                            # Transaction write succeeded; return warning so clients can surface stale-history risk.
+                            tx["historyRecalcWarning"] = str(recalc_exc)
                 return _resp(200, tx)
             except ValueError as e:
                 return _resp(400, {"error": str(e)})
@@ -1755,7 +1807,7 @@ def portfolios_handler(event: dict) -> dict:
 
                 fn_name = os.environ.get("MONTHLY_WRAP_FUNCTION_NAME")
                 dispatched_async = False
-                if fn_name and not is_cash_only:
+                if fn_name:
                     try:
                         import boto3
                         payload = {
@@ -1820,6 +1872,30 @@ def portfolios_handler(event: dict) -> dict:
             if not from_date or len(from_date) < 10 or from_date[4:5] != "-" or from_date[7:8] != "-":
                 return _resp(400, {"error": "fromDate must be YYYY-MM-DD"})
             from_date = from_date[:10]
+            fn_name = os.environ.get("MONTHLY_WRAP_FUNCTION_NAME")
+            if fn_name:
+                try:
+                    import boto3
+                    payload = {
+                        "action": "recalculate_snapshots",
+                        "user_id": user_id,
+                        "portfolio_id": portfolio_id,
+                        "from_date": from_date,
+                        "is_cash_only": False,
+                    }
+                    boto3.client("lambda").invoke(
+                        FunctionName=fn_name,
+                        InvocationType="Event",
+                        Payload=json.dumps(payload, default=str).encode("utf-8"),
+                    )
+                    return _resp(200, {
+                        "updated": "dispatched_background",
+                        "fromDate": from_date,
+                        "portfolioId": portfolio_id,
+                        "summaryUpdated": "dispatched_background",
+                    })
+                except Exception as async_exc:
+                    print(f"Async dispatch error: {async_exc}")
             try:
                 result = snapshots.recalculate_portfolio_snapshots_from_date(user_id, portfolio_id, from_date)
                 summary_updated = snapshots.recalculate_summary_snapshots_from_date(user_id, from_date)
@@ -2295,6 +2371,64 @@ def monthly_wraps_handler(event: dict) -> dict:
     return _resp(200, {"items": items})
 
 
+def monthly_wrap_send_email_handler(event: dict) -> dict:
+    """POST /monthly-wraps/email — send monthly audit recap via email."""
+    if event.get("httpMethod") == "OPTIONS":
+        return _resp(200, {})
+    if event.get("httpMethod") != "POST":
+        return _resp(405, {"error": "Method not allowed"})
+
+    user_id, error = _monthly_wrap_identity(event)
+    if error:
+        return error
+
+    body = event.get("body") or "{}"
+    if event.get("isBase64Encoded"):
+        try:
+            body = base64.b64decode(body, validate=True).decode("utf-8")
+        except Exception:
+            return _resp(400, {"error": "Invalid payload encoding"})
+    try:
+        payload = json.loads(body) if isinstance(body, str) else body
+    except Exception:
+        return _resp(400, {"error": "Invalid JSON body"})
+
+    period = str(payload.get("period") or "").strip()
+    if not re.fullmatch(r"\d{4}-(0[1-9]|1[0-2])", period):
+        return _resp(400, {"error": "period must use YYYY-MM format"})
+
+    table_name = os.environ.get("WRAPS_TABLE", os.environ.get("DIARY_TABLE", "roastfolio-diary"))
+    table = boto3.resource("dynamodb").Table(table_name)
+    partition_key = f"USER#{user_id}"
+    item = table.get_item(Key={"PK": partition_key, "SK": f"WRAP#MONTH#{period}"}).get("Item")
+    if not item:
+        return _resp(404, {"error": "Monthly audit not found", "period": period})
+
+    user_profile = db.get_user(user_id)
+    if not user_profile:
+        return _resp(404, {"error": "User profile not found"})
+
+    import email_service
+    recipients = email_service.get_recipient_emails(user_profile)
+    if not recipients:
+        return _resp(400, {"error": "No recipient email configured for user"})
+
+    hide_cash_override = payload.get("hideCash") if isinstance(payload.get("hideCash"), bool) else None
+    result = email_service.send_monthly_recap_email(
+        user_profile, item, recipients=recipients, hide_cash=hide_cash_override
+    )
+    if not result.get("success"):
+        status_code = 422 if result.get("unverified") else 500
+        return _resp(status_code, {"error": result.get("error", "Failed to send recap email")})
+
+    return _resp(200, {
+        "status": "ok",
+        "message": f"Recap email sent to {len(recipients)} recipient(s)",
+        "recipients": recipients,
+        "period": period,
+    })
+
+
 
 # ── Lambda entry point ────────────────────────────────────────
 
@@ -2358,6 +2492,8 @@ def handler(event, context):
         # Route /monthly-wraps
         if path.endswith("/monthly-wraps/recalculate"):
             return monthly_wrap_recalculate_handler(event)
+        if path.endswith("/monthly-wraps/email") or path.endswith("/monthly-wraps/send-email"):
+            return monthly_wrap_send_email_handler(event)
         if path.endswith("/monthly-wraps"):
             return monthly_wraps_handler(event)
 
