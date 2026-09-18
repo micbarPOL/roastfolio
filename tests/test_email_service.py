@@ -350,8 +350,8 @@ def test_render_monthly_recap_email_leader_and_anchor():
     assert "TSGAMES.WA" in html_body
     assert "-1\u00a0890 PLN" in html_body
     assert "Sold 2,500 PLN" in html_body
-    assert "Month Leader: CDR.WA (+3\u00a0240 PLN) - Pure price move" in text_body
-    assert "Month Anchor: TSGAMES.WA (-1\u00a0890 PLN) - Sold 2,500 PLN" in text_body
+    assert "Month Leader: CD Projekt (+3\u00a0240 PLN) - Pure price move" in text_body
+    assert "Month Anchor: Ten Square Games (-1\u00a0890 PLN) - Sold 2,500 PLN" in text_body
 
 
 def test_render_monthly_recap_email_market_context_and_seasonality():

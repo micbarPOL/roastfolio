@@ -163,6 +163,16 @@ def _generate_journey_narrative(
     return f"You matched {benchmark_id} exactly this month."
 
 
+def _clean_holding_name(name: str) -> str:
+    """Strip Polish 'S.A.' suffixes and clean up the holding name."""
+    if not name:
+        return ""
+    import re
+    cleaned = re.sub(r'[, ]*S\.?\s*A\.?\s*$', '', name, flags=re.IGNORECASE).strip()
+    return cleaned if cleaned else name
+
+
+
 def _generate_calendar_narrative(best_day: dict | None, worst_day: dict | None) -> str:
     """Return a one-sentence editorial about the best/worst trading day."""
     if not best_day and not worst_day:
@@ -765,35 +775,41 @@ def _render_leader_anchor(carry: dict | None, anchor: dict | None, hide_cash: bo
     anchor_text = "None"
 
     if carry:
-        ticker = carry.get("ticker") or carry.get("name") or "\u2014"
-        name = carry.get("name") or ticker
+        raw_ticker = carry.get("ticker") or carry.get("name") or "\u2014"
+        raw_name = carry.get("name") or raw_ticker
+        display_name = _clean_holding_name(raw_name)
+        subtitle = raw_ticker if raw_ticker and raw_ticker != display_name else ""
         val_str = "---" if hide_cash else _fmt_money(carry.get("net_contribution_pln"), show_sign=True)
         note = carry.get("context_note") or ""
-        leader_text = f"{ticker} ({val_str}) - {note}"
+        leader_text = f"{display_name} ({val_str}) - {note}"
         note_html = f'<div style="font-size:12px;color:#64748b;font-style:italic;margin-top:4px;">{note}</div>' if note else ""
+        subtitle_html = f'<div style="font-size:13px;color:#a7f3d0;margin:3px 0 6px;">{subtitle}</div>' if subtitle else '<div style="margin-top:6px;"></div>'
         leader_html = (
             '<div style="border-left:3px solid #4ade80;padding-left:16px;margin-bottom:24px;">'
             '<div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#4ade80;margin-bottom:6px;">&#9650; MONTH LEADER</div>'
-            f'<div style="font-size:22px;font-weight:800;color:#f0fdf4;line-height:1.1;">{ticker}</div>'
-            f'<div style="font-size:13px;color:#a7f3d0;margin:3px 0 6px;">{name}</div>'
-            f'<div style="font-size:18px;font-weight:700;color:#4ade80;">{val_str}</div>'
+            f'<div style="font-size:22px;font-weight:800;color:#f0fdf4;line-height:1.1;">{display_name}</div>'
+            + subtitle_html
+            + f'<div style="font-size:18px;font-weight:700;color:#4ade80;">{val_str}</div>'
             + note_html
             + "</div>"
         )
 
     if anchor:
-        ticker = anchor.get("ticker") or anchor.get("name") or "\u2014"
-        name = anchor.get("name") or ticker
+        raw_ticker = anchor.get("ticker") or anchor.get("name") or "\u2014"
+        raw_name = anchor.get("name") or raw_ticker
+        display_name = _clean_holding_name(raw_name)
+        subtitle = raw_ticker if raw_ticker and raw_ticker != display_name else ""
         val_str = "---" if hide_cash else _fmt_money(anchor.get("net_contribution_pln"), show_sign=True)
         note = anchor.get("context_note") or ""
-        anchor_text = f"{ticker} ({val_str}) - {note}"
+        anchor_text = f"{display_name} ({val_str}) - {note}"
         note_html = f'<div style="font-size:12px;color:#64748b;font-style:italic;margin-top:4px;">{note}</div>' if note else ""
+        subtitle_html = f'<div style="font-size:13px;color:#fecaca;margin:3px 0 6px;">{subtitle}</div>' if subtitle else '<div style="margin-top:6px;"></div>'
         anchor_html = (
             '<div style="border-left:3px solid #f87171;padding-left:16px;margin-bottom:8px;">'
             '<div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#f87171;margin-bottom:6px;">&#9660; MONTH ANCHOR</div>'
-            f'<div style="font-size:22px;font-weight:800;color:#fff1f2;line-height:1.1;">{ticker}</div>'
-            f'<div style="font-size:13px;color:#fecaca;margin:3px 0 6px;">{name}</div>'
-            f'<div style="font-size:18px;font-weight:700;color:#f87171;">{val_str}</div>'
+            f'<div style="font-size:22px;font-weight:800;color:#fff1f2;line-height:1.1;">{display_name}</div>'
+            + subtitle_html
+            + f'<div style="font-size:18px;font-weight:700;color:#f87171;">{val_str}</div>'
             + note_html
             + "</div>"
         )
@@ -1006,7 +1022,8 @@ def _render_trading_activity(trading_activity: dict | None, hide_cash: bool) -> 
     for tx in largest_txs[:5]:
         d = str(tx.get("date") or "")
         k = str(tx.get("type") or "").upper()
-        ticker = str(tx.get("ticker") or "\u2014")
+        raw_name = tx.get("name") or tx.get("ticker") or "\u2014"
+        display_name = _clean_holding_name(raw_name)
         v = tx.get("value_pln")
         v_str = "---" if hide_cash else _fmt_money(v, show_sign=False)
         badge_bg = "#132d1f" if k == "BUY" else "#2e1115"
@@ -1016,12 +1033,12 @@ def _render_trading_activity(trading_activity: dict | None, hide_cash: bool) -> 
             f'<td style="padding:8px 0;font-size:12px;color:#64748b;border-top:1px solid #1a2540;width:80px;">{d}</td>'
             f'<td style="padding:8px 6px;border-top:1px solid #1a2540;width:50px;">'
             f'<span style="background-color:{badge_bg};color:{badge_color};padding:2px 8px;border-radius:4px;font-size:10px;font-weight:800;">{k}</span></td>'
-            f'<td style="padding:8px 0;font-size:13px;font-weight:600;color:#f8fafc;border-top:1px solid #1a2540;">{ticker}</td>'
+            f'<td style="padding:8px 0;font-size:13px;font-weight:600;color:#f8fafc;border-top:1px solid #1a2540;">{display_name}</td>'
             f'<td align="right" style="padding:8px 0;font-size:12px;color:#94a3b8;border-top:1px solid #1a2540;">{v_str}</td>'
             '</tr>'
         )
         tx_rows_html.append(row)
-        tx_text_lines.append(f"  - {d} {k} {ticker}: {v_str}")
+        tx_text_lines.append(f"  - {d} {k} {display_name}: {v_str}")
 
     if tx_rows_html:
         tx_table_html = (
