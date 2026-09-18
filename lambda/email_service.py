@@ -423,6 +423,7 @@ def _render_svg_journey_chart(
 
     polys_str = " ".join(polygons)
     svg_markup = (
+        '<div style="font-size:0px;color:#07091A;line-height:0;mso-hide:all;">\n'
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="{height}"'
         ' style="display: block; max-width: 516px; margin: 0 auto; overflow: visible;">'
         f'<line x1="{x_left}" y1="{y_zero:.1f}" x2="{x_right}" y2="{y_zero:.1f}" stroke="#1e293b" stroke-dasharray="4,4" stroke-width="1" />'
@@ -440,7 +441,7 @@ def _render_svg_journey_chart(
         + f'</text><text x="{x_right}" y="184" fill="#64748b" font-size="10"'
         ' font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif" font-weight="600" text-anchor="end">'
         + end_date_label
-        + '</text></svg>'
+        + '</text></svg>\n</div>'
     )
 
     mso_fallback = (
