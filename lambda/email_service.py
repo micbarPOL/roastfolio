@@ -287,7 +287,10 @@ def _render_journey_chart(
     benchmark_return_pct: float | None = None,
     portfolio_twr_pct: float | None = None,
 ) -> tuple[str, str]:
-    """Render inline HTML table bar chart comparing daily portfolio return vs benchmark return."""
+    """Render inline image chart using QuickChart.io comparing daily portfolio return vs benchmark return."""
+    import urllib.parse
+    import json
+
     raw_points = journey.get("points") or []
     if len(raw_points) < 2:
         return "", ""
@@ -320,91 +323,13 @@ def _render_journey_chart(
     if n < 2:
         return "", ""
 
-    p_vals = [pt["p"] for pt in parsed_points]
-    b_vals = [pt["b"] for pt in parsed_points]
-
-    min_val = min(min(p_vals), min(b_vals), 0.0)
-    max_val = max(max(p_vals), max(b_vals), 0.0)
-    if max_val == min_val:
-        max_val += 1.0
-        min_val -= 1.0
-
-    pad = (max_val - min_val) * 0.05
-    y_min = min_val - pad
-    y_max = max_val + pad
-
-    chart_height = 140
-    range_val = y_max - y_min
-    if range_val <= 0:
-        range_val = 1.0
-
-    row1_height = int((y_max / range_val) * chart_height) if y_max > 0 else 0
-    row2_height = chart_height - row1_height
-
-    cols = len(parsed_points)
-    col_width = 100.0 / cols if cols > 0 else 100
-
-    bar_html = f'<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="table-layout: fixed; border-collapse: collapse; max-width: 516px; margin: 0 auto;">'
-    
-    # ROW 1: POSITIVE VALUES
-    if row1_height > 0:
-        bar_html += f'<tr height="{row1_height}">'
-        for pt in parsed_points:
-            p = pt["p"]
-            b = pt["b"]
-            
-            if p >= 0:
-                h_px = int((p / y_max) * row1_height)
-                h_px = max(h_px, 1) if p > 0 else 0
-                
-                # Color logic: Bright Green if beating benchmark, else Muted Green
-                bar_color = "#4ade80" if p >= b else "#14532d"
-                    
-                if h_px > 0:
-                    bar_html += f'<td valign="bottom" width="{col_width}%" style="padding: 0 1px;">'
-                    bar_html += f'<div style="width: 100%; height: {h_px}px; background-color: {bar_color}; border-top-left-radius: 2px; border-top-right-radius: 2px;"></div>'
-                    bar_html += '</td>'
-                else:
-                    bar_html += f'<td width="{col_width}%" style="padding: 0 1px;"></td>'
-            else:
-                bar_html += f'<td width="{col_width}%" style="padding: 0 1px;"></td>'
-        bar_html += '</tr>'
-        
-    # ZERO LINE ROW
-    bar_html += f'<tr height="1"><td colspan="{cols}" style="background-color: #1e293b; line-height: 1px; font-size: 1px;">&nbsp;</td></tr>'
-    
-    # ROW 2: NEGATIVE VALUES
-    if row2_height > 0:
-        bar_html += f'<tr height="{row2_height}">'
-        for pt in parsed_points:
-            p = pt["p"]
-            b = pt["b"]
-            if p < 0:
-                h_px = int((p / y_min) * row2_height)
-                h_px = max(h_px, 1)
-                
-                # Color logic: Muted Red if beating benchmark (less negative), else Bright Red
-                bar_color = "#7f1d1d" if p >= b else "#f87171"
-                    
-                bar_html += f'<td valign="top" width="{col_width}%" style="padding: 0 1px;">'
-                bar_html += f'<div style="width: 100%; height: {h_px}px; background-color: {bar_color}; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px;"></div>'
-                bar_html += '</td>'
-            else:
-                bar_html += f'<td width="{col_width}%" style="padding: 0 1px;"></td>'
-        bar_html += '</tr>'
-        
-    bar_html += '</table>'
-
-    def _format_short_date(dt_s: str) -> str:
-        try:
-            return datetime.strptime(dt_s[:10], "%Y-%m-%d").strftime("%b %d")
-        except ValueError:
-            return dt_s[5:] if len(dt_s) >= 10 else dt_s
-
-    start_date_label = _format_short_date(parsed_points[0]["date"])
-    end_date_label = _format_short_date(parsed_points[-1]["date"])
-
-    labels_html = f'<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 516px; margin: 4px auto 0;"><tr><td style="font-size:10px;color:#64748b;font-weight:600;">{start_date_label}</td><td align="right" style="font-size:10px;color:#64748b;font-weight:600;">{end_date_label}</td></tr></table>'
+    labels = []
+    p_vals = []
+    b_vals = []
+    for pt in parsed_points:
+        labels.append(pt["date"])
+        p_vals.append(pt["p"])
+        b_vals.append(pt["b"])
 
     last_pt = parsed_points[-1]
     p_last = float(portfolio_twr_pct) if portfolio_twr_pct is not None else last_pt["p"]
@@ -418,6 +343,69 @@ def _render_journey_chart(
     diff_str = f"{diff_sign}{diff:.2f}%"
 
     p_col = "#4ade80" if p_last >= 0 else "#f87171"
+    bg_col = "rgba(74,222,128,0.15)" if p_last >= 0 else "rgba(248,113,113,0.15)"
+
+    chart_config = {
+        "type": "line",
+        "data": {
+            "labels": labels,
+            "datasets": [
+                {
+                    "data": p_vals,
+                    "borderColor": p_col,
+                    "backgroundColor": bg_col,
+                    "fill": True,
+                    "borderWidth": 3,
+                    "pointRadius": 0,
+                    "lineTension": 0.4
+                },
+                {
+                    "data": b_vals,
+                    "borderColor": "#a78bfa",
+                    "borderWidth": 2,
+                    "borderDash": [5, 4],
+                    "fill": False,
+                    "pointRadius": 0,
+                    "lineTension": 0.4
+                }
+            ]
+        },
+        "options": {
+            "legend": {"display": False},
+            "scales": {
+                "xAxes": [{"display": False}],
+                "yAxes": [{"display": False}]
+            },
+            "layout": {
+                "padding": {"left": -10, "right": -10, "top": 10, "bottom": 10}
+            },
+            "annotation": {
+                "annotations": [{
+                    "type": "line",
+                    "mode": "horizontal",
+                    "scaleID": "y-axis-0",
+                    "value": 0,
+                    "borderColor": "#1e293b",
+                    "borderWidth": 1,
+                    "borderDash": [4, 4]
+                }]
+            }
+        }
+    }
+
+    encoded_config = urllib.parse.quote(json.dumps(chart_config))
+    img_src = f"https://quickchart.io/chart?w=516&h=160&format=png&bkg=transparent&c={encoded_config}"
+
+    def _format_short_date(dt_s: str) -> str:
+        try:
+            return datetime.strptime(dt_s[:10], "%Y-%m-%d").strftime("%b %d")
+        except ValueError:
+            return dt_s[5:] if len(dt_s) >= 10 else dt_s
+
+    start_date_label = _format_short_date(labels[0])
+    end_date_label = _format_short_date(labels[-1])
+
+    labels_html = f'<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 516px; margin: 4px auto 0;"><tr><td style="font-size:10px;color:#64748b;font-weight:600;">{start_date_label}</td><td align="right" style="font-size:10px;color:#64748b;font-weight:600;">{end_date_label}</td></tr></table>'
 
     if diff > 0:
         badge_bg = "#143828"
@@ -453,10 +441,10 @@ def _render_journey_chart(
     chapter_hdr = _chapter_header("RETURNS, SIDE BY SIDE", "The journey.", narrative)
 
     html_block = (
-        "\n    <!-- Chapter 2: Journey Chart (HTML Bar Chart) -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        "\n    <!-- Chapter 2: Journey Chart (QuickChart Image) -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
         + chapter_hdr
         + legend_html
-        + bar_html
+        + f'<img src="{img_src}" alt="Journey Chart" width="100%" style="display:block; max-width: 516px; margin: 0 auto; border: 0;" />'
         + labels_html
         + "\n      </td>\n    </tr>"
     )

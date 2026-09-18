@@ -247,8 +247,7 @@ def test_render_monthly_recap_email_svg_journey_chart():
     }
 
     _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
-    assert "<table role=\"presentation\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;" in html_body
-    assert "<tr height=" in html_body
+    assert "quickchart.io/chart" in html_body
     assert "vs WIG" in html_body
     assert "RETURNS, SIDE BY SIDE" in html_body
     # Badge shows beat amount: BEAT BY +1.70%
