@@ -280,14 +280,14 @@ def _chapter_separator() -> str:
 # Journey chart (wrapped style)
 # ---------------------------------------------------------------------------
 
-def _render_svg_journey_chart(
+def _render_journey_chart(
     journey: dict,
     benchmark_id: str = "WIG",
     period: str = "",
     benchmark_return_pct: float | None = None,
     portfolio_twr_pct: float | None = None,
 ) -> tuple[str, str]:
-    """Render inline SVG comparing daily portfolio return vs benchmark return."""
+    """Render inline HTML table bar chart comparing daily portfolio return vs benchmark return."""
     raw_points = journey.get("points") or []
     if len(raw_points) < 2:
         return "", ""
@@ -329,61 +329,84 @@ def _render_svg_journey_chart(
         max_val += 1.0
         min_val -= 1.0
 
-    pad = (max_val - min_val) * 0.12
+    pad = (max_val - min_val) * 0.05
     y_min = min_val - pad
     y_max = max_val + pad
 
-    width = 516
-    height = 200
-    x_left = 42.0
-    x_right = 500.0
-    y_top = 20.0
-    y_bottom = 158.0
+    chart_height = 140
+    range_val = y_max - y_min
+    if range_val <= 0:
+        range_val = 1.0
 
-    def get_x(i: int) -> float:
-        return x_left + i * (x_right - x_left) / max(n - 1, 1)
+    row1_height = int((y_max / range_val) * chart_height) if y_max > 0 else 0
+    row2_height = chart_height - row1_height
 
-    def get_y(val: float) -> float:
-        ratio = (val - y_min) / (y_max - y_min)
-        return y_bottom - ratio * (y_bottom - y_top)
+    cols = len(parsed_points)
+    col_width = 100.0 / cols if cols > 0 else 100
 
-    y_zero = get_y(0.0)
+    bar_html = f'<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="table-layout: fixed; border-collapse: collapse; max-width: 516px; margin: 0 auto;">'
+    
+    # ROW 1: POSITIVE VALUES
+    if row1_height > 0:
+        bar_html += f'<tr height="{row1_height}">'
+        for pt in parsed_points:
+            p = pt["p"]
+            b = pt["b"]
+            
+            if p >= 0:
+                h_px = int((p / y_max) * row1_height)
+                h_px = max(h_px, 1) if p > 0 else 0
+                
+                # Color logic: Bright Green if beating benchmark, else Muted Green
+                bar_color = "#4ade80" if p >= b else "#14532d"
+                    
+                if h_px > 0:
+                    bar_html += f'<td valign="bottom" width="{col_width}%" style="padding: 0 1px;">'
+                    bar_html += f'<div style="width: 100%; height: {h_px}px; background-color: {bar_color}; border-top-left-radius: 2px; border-top-right-radius: 2px;"></div>'
+                    bar_html += '</td>'
+                else:
+                    bar_html += f'<td width="{col_width}%" style="padding: 0 1px;"></td>'
+            else:
+                bar_html += f'<td width="{col_width}%" style="padding: 0 1px;"></td>'
+        bar_html += '</tr>'
+        
+    # ZERO LINE ROW
+    bar_html += f'<tr height="1"><td colspan="{cols}" style="background-color: #1e293b; line-height: 1px; font-size: 1px;">&nbsp;</td></tr>'
+    
+    # ROW 2: NEGATIVE VALUES
+    if row2_height > 0:
+        bar_html += f'<tr height="{row2_height}">'
+        for pt in parsed_points:
+            p = pt["p"]
+            b = pt["b"]
+            if p < 0:
+                h_px = int((p / y_min) * row2_height)
+                h_px = max(h_px, 1)
+                
+                # Color logic: Muted Red if beating benchmark (less negative), else Bright Red
+                bar_color = "#7f1d1d" if p >= b else "#f87171"
+                    
+                bar_html += f'<td valign="top" width="{col_width}%" style="padding: 0 1px;">'
+                bar_html += f'<div style="width: 100%; height: {h_px}px; background-color: {bar_color}; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px;"></div>'
+                bar_html += '</td>'
+            else:
+                bar_html += f'<td width="{col_width}%" style="padding: 0 1px;"></td>'
+        bar_html += '</tr>'
+        
+    bar_html += '</table>'
 
-    coords = []
-    for i, pt in enumerate(parsed_points):
-        x = get_x(i)
-        yp = get_y(pt["p"])
-        yb = get_y(pt["b"])
-        coords.append((x, yp, yb, pt["p"], pt["b"]))
+    def _format_short_date(dt_s: str) -> str:
+        try:
+            return datetime.strptime(dt_s[:10], "%Y-%m-%d").strftime("%b %d")
+        except ValueError:
+            return dt_s[5:] if len(dt_s) >= 10 else dt_s
 
-    polygons = []
-    for i in range(n - 1):
-        x0, yp0, yb0, p0, b0 = coords[i]
-        x1, yp1, yb1, p1, b1 = coords[i + 1]
-        d0 = p0 - b0
-        d1 = p1 - b1
-        if (d0 > 0 and d1 < 0) or (d0 < 0 and d1 > 0):
-            denom = abs(d0) + abs(d1)
-            t = abs(d0) / denom if denom > 0 else 0.5
-            xc = x0 + t * (x1 - x0)
-            val_c = p0 + t * (p1 - p0)
-            yc = get_y(val_c)
-            col1 = "#1d4a30" if d0 > 0 else "#4a1d22"
-            poly1 = f"{x0:.1f},{yp0:.1f} {xc:.1f},{yc:.1f} {x0:.1f},{yb0:.1f}"
-            polygons.append(f'<polygon points="{poly1}" fill="{col1}" />')
-            col2 = "#1d4a30" if d1 > 0 else "#4a1d22"
-            poly2 = f"{xc:.1f},{yc:.1f} {x1:.1f},{yp1:.1f} {x1:.1f},{yb1:.1f}"
-            polygons.append(f'<polygon points="{poly2}" fill="{col2}" />')
-        else:
-            col = "#1d4a30" if (d0 + d1) >= 0 else "#4a1d22"
-            poly = f"{x0:.1f},{yp0:.1f} {x1:.1f},{yp1:.1f} {x1:.1f},{yb1:.1f} {x0:.1f},{yb0:.1f}"
-            polygons.append(f'<polygon points="{poly}" fill="{col}" />')
+    start_date_label = _format_short_date(parsed_points[0]["date"])
+    end_date_label = _format_short_date(parsed_points[-1]["date"])
 
-    port_d = "M " + " L ".join(f"{c[0]:.1f},{c[1]:.1f}" for c in coords)
-    bench_d = "M " + " L ".join(f"{c[0]:.1f},{c[2]:.1f}" for c in coords)
+    labels_html = f'<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 516px; margin: 4px auto 0;"><tr><td style="font-size:10px;color:#64748b;font-weight:600;">{start_date_label}</td><td align="right" style="font-size:10px;color:#64748b;font-weight:600;">{end_date_label}</td></tr></table>'
 
     last_pt = parsed_points[-1]
-    first_pt = parsed_points[0]
     p_last = float(portfolio_twr_pct) if portfolio_twr_pct is not None else last_pt["p"]
     b_last = float(benchmark_return_pct) if benchmark_return_pct is not None else last_pt["b"]
     p_sign = "+" if p_last > 0 else ""
@@ -412,55 +435,14 @@ def _render_svg_journey_chart(
         badge_color = "#94a3b8"
         badge_text = "MATCHED"
 
-    def _format_short_date(dt_s: str) -> str:
-        try:
-            return datetime.strptime(dt_s[:10], "%Y-%m-%d").strftime("%b %d")
-        except ValueError:
-            return dt_s[5:] if len(dt_s) >= 10 else dt_s
-
-    start_date_label = _format_short_date(first_pt["date"])
-    end_date_label = _format_short_date(last_pt["date"])
-
-    polys_str = " ".join(polygons)
-    svg_markup = (
-        '<div style="font-size:0px;color:#07091A;line-height:0;mso-hide:all;">\n'
-        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="{height}"'
-        ' style="display: block; max-width: 516px; margin: 0 auto; overflow: visible;">'
-        f'<line x1="{x_left}" y1="{y_zero:.1f}" x2="{x_right}" y2="{y_zero:.1f}" stroke="#1e293b" stroke-dasharray="4,4" stroke-width="1" />'
-        f'<text x="{x_left + 4:.1f}" y="{y_zero - 4:.1f}" fill="#475569" font-size="9"'
-        ' font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif" font-weight="600">0%</text>'
-        + polys_str
-        + f'<path d="{bench_d}" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="5,4" stroke-linejoin="round" />'
-        f'<path d="{port_d}" fill="none" stroke="{p_col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />'
-        f'<circle cx="{coords[-1][0]:.1f}" cy="{coords[-1][2]:.1f}" r="3" fill="#a78bfa" />'
-        f'<circle cx="{coords[-1][0]:.1f}" cy="{coords[-1][1]:.1f}" r="4.5" fill="{p_col}" />'
-        f'<line x1="{x_left}" y1="{y_bottom}" x2="{x_right}" y2="{y_bottom}" stroke="#1e293b" stroke-width="1" />'
-        f'<text x="{x_left}" y="184" fill="#64748b" font-size="10"'
-        ' font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif" font-weight="600" text-anchor="start">'
-        + start_date_label
-        + f'</text><text x="{x_right}" y="184" fill="#64748b" font-size="10"'
-        ' font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif" font-weight="600" text-anchor="end">'
-        + end_date_label
-        + '</text></svg>\n</div>'
-    )
-
-    mso_fallback = (
-        "<!--[if mso]>"
-        '<table role="presentation" width="100%" border="0" cellpadding="8" cellspacing="0">'
-        f'<tr><td style="font-size:12px;color:#94a3b8;">Portfolio: <strong style="color:{p_col};">{p_last_str}</strong></td>'
-        f'<td align="right" style="font-size:12px;color:#94a3b8;">Benchmark ({benchmark_id}): <strong style="color:#a78bfa;">{b_last_str}</strong></td></tr>'
-        "</table><![endif]-->"
-    )
-
     legend_html = (
-        '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">'
+        '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 20px;">'
         '<tr><td>'
-        f'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:{p_col};vertical-align:middle;margin-right:6px;"></span>'
+        f'<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background-color:{p_col};vertical-align:middle;margin-right:6px;"></span>'
         f'<span style="font-size:12px;color:#94a3b8;vertical-align:middle;">Portfolio</span>'
         f'<strong style="font-size:13px;color:{p_col};margin-left:4px;vertical-align:middle;">{p_last_str}</strong>'
         '&nbsp;&nbsp;'
-        '<span style="display:inline-block;width:16px;height:2px;background-color:#a78bfa;vertical-align:middle;margin-right:6px;margin-bottom:2px;"></span>'
-        f'<span style="font-size:12px;color:#94a3b8;vertical-align:middle;">{benchmark_id}</span>'
+        f'<span style="font-size:12px;color:#94a3b8;vertical-align:middle;">vs {benchmark_id}</span>'
         f'<strong style="font-size:13px;color:#a78bfa;margin-left:4px;vertical-align:middle;">{b_last_str}</strong>'
         '</td>'
         f'<td align="right" valign="middle" style="padding-left:8px;"><span style="display:inline-block;white-space:nowrap;background-color:{badge_bg};border:1px solid {badge_border};color:{badge_color};padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:0.5px;">{badge_text}</span></td>'
@@ -471,18 +453,17 @@ def _render_svg_journey_chart(
     chapter_hdr = _chapter_header("RETURNS, SIDE BY SIDE", "The journey.", narrative)
 
     html_block = (
-        "\n    <!-- Chapter 2: Journey Chart -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        "\n    <!-- Chapter 2: Journey Chart (HTML Bar Chart) -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
         + chapter_hdr
         + legend_html
-        + "<!--[if !mso]><!-->"
-        + svg_markup
-        + "<!--<![endif]-->"
-        + mso_fallback
+        + bar_html
+        + labels_html
         + "\n      </td>\n    </tr>"
     )
 
     text_block = f"\u2022 Cumulative Journey: Portfolio {p_last_str} vs {benchmark_id} {b_last_str} ({diff_str})"
     return html_block, text_block
+
 
 
 # ---------------------------------------------------------------------------
@@ -1139,7 +1120,7 @@ def render_monthly_recap_email(
     subject = f"Roastfolio Monthly Recap \u2014 {period_title} ({twr_str})"
 
     period_key = str(wrap_document.get("period") or "")
-    journey_html, journey_text = _render_svg_journey_chart(
+    journey_html, journey_text = _render_journey_chart(
         journey,
         benchmark_id=benchmark_id,
         period=period_key,

@@ -247,10 +247,9 @@ def test_render_monthly_recap_email_svg_journey_chart():
     }
 
     _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
-    assert "<svg" in html_body
-    assert "<polygon" in html_body
-    assert "<!--[if !mso]><!-->" in html_body
-    assert "<!--[if mso]>" in html_body
+    assert "<table role=\"presentation\" width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" style=\"table-layout: fixed;" in html_body
+    assert "<tr height=" in html_body
+    assert "vs WIG" in html_body
     assert "RETURNS, SIDE BY SIDE" in html_body
     # Badge shows beat amount: BEAT BY +1.70%
     assert "BEAT BY" in html_body
@@ -318,13 +317,12 @@ def test_render_monthly_recap_email_journey_chart_period_trimming():
     _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
     # Bento card prefers canonical market_context return (-0.99%) over journey (+1.20%)
     assert "-0.99%" in html_body
-    assert "Benchmark (WIG)" in html_body
+    assert "vs WIG" in html_body
     # Journey chart trimmed to June: starts Jun 01, ends Jun 30, never Jul 01
     assert "Jun 01" in html_body
     assert "Jun 30" in html_body
     assert "Jul 01" not in html_body
-    # 0% zero label present in SVG
-    assert ">0%<" in html_body
+    # 0% zero label no longer present in HTML chart
 
 
 
