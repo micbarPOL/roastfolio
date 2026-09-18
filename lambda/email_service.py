@@ -1327,6 +1327,8 @@ def send_monthly_recap_email(
         return {"success": False, "error": "No recipient emails found"}
 
     from_email = os.environ.get("NOTIFICATION_FROM_EMAIL", DEFAULT_FROM_EMAIL)
+    if "<" not in from_email:
+        from_email = f"Roastfolio <{from_email}>"
     subject, text_body, html_body = render_monthly_recap_email(
         user_profile, wrap_document, hide_cash=hide_cash
     )
