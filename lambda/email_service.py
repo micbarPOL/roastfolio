@@ -290,6 +290,7 @@ def _render_journey_chart(
     """Render inline image chart using QuickChart.io comparing daily portfolio return vs benchmark return."""
     import urllib.parse
     import json
+    import re
 
     raw_points = journey.get("points") or []
     if len(raw_points) < 2:
@@ -460,7 +461,11 @@ def _render_journey_chart(
         }
     }
 
-    encoded_config = urllib.parse.quote(json.dumps(chart_config))
+    raw_json = json.dumps(chart_config)
+    js_config = re.sub(r'"(function\([^)]*\)\s*\{.*?\})"', r'\1', raw_json)
+    js_config = re.sub(r'"(getGradientFillHelper\([^)]*\))"', r'\1', js_config)
+
+    encoded_config = urllib.parse.quote(js_config)
     img_src = f"https://quickchart.io/chart?w=516&h=180&format=png&bkg=transparent&c={encoded_config}"
 
     if diff > 0:
