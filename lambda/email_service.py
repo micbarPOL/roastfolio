@@ -343,7 +343,10 @@ def _render_journey_chart(
     diff_str = f"{diff_sign}{diff:.2f}%"
 
     p_col = "#4ade80" if p_last >= 0 else "#f87171"
-    bg_col = "rgba(74,222,128,0.15)" if p_last >= 0 else "rgba(248,113,113,0.15)"
+    if p_last >= 0:
+        bg_col = "getGradientFillHelper('vertical', ['rgba(74,222,128,0.3)', 'rgba(74,222,128,0.0)'])"
+    else:
+        bg_col = "getGradientFillHelper('vertical', ['rgba(248,113,113,0.0)', 'rgba(248,113,113,0.3)'])"
 
     chart_config = {
         "type": "line",
