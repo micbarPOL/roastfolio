@@ -348,10 +348,47 @@ def _render_journey_chart(
     else:
         bg_col = "getGradientFillHelper('vertical', ['rgba(248,113,113,0.0)', 'rgba(248,113,113,0.3)'])"
 
+    all_vals = p_vals + b_vals
+    max_val = max(max(all_vals), 0.0)
+    min_val = min(min(all_vals), 0.0)
+    ticks_list = []
+    if max_val > 0:
+        ticks_list.append(round(max_val, 2))
+    ticks_list.append(0)
+    if min_val < 0:
+        ticks_list.append(round(min_val, 2))
+    
+    n_pts = len(labels)
+    labels_display = [""] * n_pts
+    if n_pts > 0:
+        labels_display[0] = str(int(labels[0][-2:]))
+        labels_display[-1] = str(int(labels[-1][-2:]))
+        
+        idx_8 = -1
+        for i, date_str in enumerate(labels):
+            if int(date_str[-2:]) >= 8 and i != 0 and i != n_pts - 1:
+                idx_8 = i
+                break
+        if idx_8 != -1:
+            labels_display[idx_8] = str(int(labels[idx_8][-2:]))
+            
+        idx_15 = -1
+        for i, date_str in enumerate(labels):
+            if int(date_str[-2:]) >= 15 and i != 0 and i != n_pts - 1 and i != idx_8:
+                idx_15 = i
+                break
+        if idx_15 != -1:
+            labels_display[idx_15] = str(int(labels[idx_15][-2:]))
+
+    try:
+        month_name = datetime.strptime(labels[0][:10], "%Y-%m-%d").strftime("%B")
+    except Exception:
+        month_name = ""
+
     chart_config = {
         "type": "line",
         "data": {
-            "labels": labels,
+            "labels": labels_display,
             "datasets": [
                 {
                     "data": p_vals,
@@ -376,11 +413,37 @@ def _render_journey_chart(
         "options": {
             "legend": {"display": False},
             "scales": {
-                "xAxes": [{"display": False}],
-                "yAxes": [{"display": False}]
+                "xAxes": [{
+                    "display": True,
+                    "gridLines": {"display": False, "drawBorder": False},
+                    "ticks": {
+                        "fontColor": "#64748b",
+                        "fontSize": 10,
+                        "autoSkip": False,
+                        "maxRotation": 0
+                    },
+                    "scaleLabel": {
+                        "display": True if month_name else False,
+                        "labelString": month_name,
+                        "fontColor": "#64748b",
+                        "fontSize": 11,
+                        "fontStyle": "bold",
+                        "padding": {"top": 4}
+                    }
+                }],
+                "yAxes": [{
+                    "display": True,
+                    "gridLines": {"display": False, "drawBorder": False},
+                    "ticks": {
+                        "fontColor": "#64748b",
+                        "fontSize": 10,
+                        "callback": "function(value) { return value + '%'; }"
+                    },
+                    "afterBuildTicks": f"function(scale) {{ scale.ticks = {json.dumps(ticks_list)}; return scale.ticks; }}"
+                }]
             },
             "layout": {
-                "padding": {"left": -10, "right": -10, "top": 10, "bottom": 10}
+                "padding": {"left": 0, "right": 10, "top": 10, "bottom": 0}
             },
             "annotation": {
                 "annotations": [{
@@ -397,18 +460,7 @@ def _render_journey_chart(
     }
 
     encoded_config = urllib.parse.quote(json.dumps(chart_config))
-    img_src = f"https://quickchart.io/chart?w=516&h=160&format=png&bkg=transparent&c={encoded_config}"
-
-    def _format_short_date(dt_s: str) -> str:
-        try:
-            return datetime.strptime(dt_s[:10], "%Y-%m-%d").strftime("%b %d")
-        except ValueError:
-            return dt_s[5:] if len(dt_s) >= 10 else dt_s
-
-    start_date_label = _format_short_date(labels[0])
-    end_date_label = _format_short_date(labels[-1])
-
-    labels_html = f'<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width: 516px; margin: 4px auto 0;"><tr><td style="font-size:10px;color:#64748b;font-weight:600;">{start_date_label}</td><td align="right" style="font-size:10px;color:#64748b;font-weight:600;">{end_date_label}</td></tr></table>'
+    img_src = f"https://quickchart.io/chart?w=516&h=180&format=png&bkg=transparent&c={encoded_config}"
 
     if diff > 0:
         badge_bg = "#143828"
@@ -448,7 +500,6 @@ def _render_journey_chart(
         + chapter_hdr
         + legend_html
         + f'<img src="{img_src}" alt="Journey Chart" width="100%" style="display:block; max-width: 516px; margin: 0 auto; border: 0;" />'
-        + labels_html
         + "\n      </td>\n    </tr>"
     )
 
