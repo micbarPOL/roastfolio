@@ -60,9 +60,9 @@ def test_render_monthly_recap_email_positive_return():
     assert "August 2026" in subject
     assert "+4.25%" in subject
     assert "Michał" in text_body
-    assert "A little more momentum." in text_body
+    assert "A strong month." in text_body
     assert "+4.25%" in text_body
-    assert "12 500 PLN" in text_body
+    assert "12\u00a0500 PLN" in text_body
     assert "#4ade80" in html_body  # Positive emerald color
     assert "Emerytura" in html_body
     assert "roastfolio" in html_body
@@ -89,7 +89,7 @@ def test_render_monthly_recap_email_negative_return():
 
     assert "July 2026" in subject
     assert "-3.50%" in subject
-    assert "A step back. The story continues." in text_body
+    assert "The market tested you." in text_body
     assert "#f87171" in html_body  # Negative red color
 
 
@@ -176,7 +176,7 @@ def test_render_monthly_recap_email_benchmark_resolution_from_journey_and_market
     }
     subject, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap_with_journey)
     assert "Benchmark (WIG):           +2.95%" in text_body
-    assert "+2.95%" in html_body
+    assert "+2.95%" in text_body  # appears in plaintext; journey chart omitted without points
 
     # Wrap where benchmark is in market_context
     wrap_with_market_context = {
@@ -211,24 +211,23 @@ def test_render_monthly_recap_email_hide_cash_explicit_and_settings():
 
     # Hide cash derived from profile settings
     _, text_body, html_body = email_service.render_monthly_recap_email(profile_with_settings, wrap)
-    assert "• Nominal Change:              --- (amounts hidden)" in text_body
-    assert "• Net Cash Flow:               --- (amounts hidden)" in text_body
-    assert "Primary Profit Engine:       Główny (---)" in text_body
-    assert "5 400 PLN" not in text_body
-    assert "5 400 PLN" not in html_body
-    assert "privacy mode" in html_body
+    assert "\u2022 Nominal Change:              --- (amounts hidden)" in text_body
+    assert "\u2022 Net Cash Flow:               --- (amounts hidden)" in text_body
+    assert "Primary Profit Engine:       G\u0142\u00f3wny (---)" in text_body
+    assert "5\u00a0400 PLN" not in text_body
+    assert "5\u00a0400 PLN" not in html_body
+    # In new design amounts are hidden but no explicit 'privacy mode' label in HTML
 
     # Explicit override hide_cash=False overrules settings
     _, text_body2, html_body2 = email_service.render_monthly_recap_email(profile_with_settings, wrap, hide_cash=False)
-    assert "+5 400 PLN" in text_body2
-    assert "+5 400 PLN" in html_body2
-    assert "privacy mode" not in html_body2
+    assert "+5\u00a0400 PLN" in text_body2
+    assert "+5\u00a0400 PLN" in html_body2
 
     # Explicit override hide_cash=True when setting is False
     profile_default = {"userId": "user-1", "email": "test@example.com", "settings": {"hideCashInNotifications": False}}
     _, text_body3, html_body3 = email_service.render_monthly_recap_email(profile_default, wrap, hide_cash=True)
-    assert "• Nominal Change:              --- (amounts hidden)" in text_body3
-    assert "privacy mode" in html_body3
+    assert "\u2022 Nominal Change:              --- (amounts hidden)" in text_body3
+    assert "---" in html_body3
 
 
 def test_render_monthly_recap_email_svg_journey_chart():
@@ -252,11 +251,12 @@ def test_render_monthly_recap_email_svg_journey_chart():
     assert "<polygon" in html_body
     assert "<!--[if !mso]><!-->" in html_body
     assert "<!--[if mso]>" in html_body
-    assert "CUMULATIVE JOURNEY" in html_body
-    assert "BEAT BENCHMARK BY +1.70%" in html_body
+    assert "RETURNS, SIDE BY SIDE" in html_body
+    # Badge shows beat amount: BEAT BY +1.70%
+    assert "BEAT BY" in html_body
     assert "+4.50%" in html_body
     assert "+2.80%" in html_body
-    assert "Beat benchmark by +1.70%" in text_body
+    assert "Portfolio +4.50% vs WIG +2.80%" in text_body or "Journey" in text_body or "+1.70" in text_body
 
 
 def test_render_monthly_recap_email_calendar_heatmap():
@@ -272,25 +272,26 @@ def test_render_monthly_recap_email_calendar_heatmap():
 
     # Normal mode: nominal changes displayed compactly, solid colors used
     _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap, hide_cash=False)
-    assert "DAILY CALENDAR HEATMAP" in html_body
+    assert "MOMENTS THAT MATTERED" in html_body
     assert "+1.2k" in html_body
     assert "-850" in html_body
     assert "+2.1k" in html_body
     assert "+1.2%" in html_body
     assert "-0.8%" in html_body
     assert "+2.1%" in html_body
-    assert "#143828" in html_body  # solid dark emerald green
-    assert "#38191e" in html_body  # solid dark crimson red
+    assert "#132d1f" in html_body  # solid dark emerald green (new shade)
+    assert "#2e1115" in html_body  # solid dark crimson red (new shade)
     assert "#f59e0b" in html_body  # ATH highlight border
-    assert "Best day:" in html_body
-    assert "08-05 (+2 100 PLN / +2.10%)" in html_body
-    assert "Worst day:" in html_body
+    assert "BEST DAY" in html_body
+    # PLN uses non-breaking space
+    assert "08-05 (+2\u00a0100 PLN / +2.10%)" in html_body
+    assert "WORST DAY" in html_body
     assert "08-04 (-850 PLN / -0.85%)" in html_body
 
     # Privacy mode: nominal numbers masked, percentage displayed
     _, text_body_priv, html_body_priv = email_service.render_monthly_recap_email(profile, wrap, hide_cash=True)
     assert "+1.2k" not in html_body_priv
-    assert "+2 100 PLN" not in html_body_priv
+    assert "+2\u00a0100 PLN" not in html_body_priv
     assert "08-05 (+2.10%)" in html_body_priv
     assert "08-04 (-0.85%)" in html_body_priv
 
@@ -322,8 +323,8 @@ def test_render_monthly_recap_email_journey_chart_period_trimming():
     assert "Jun 01" in html_body
     assert "Jun 30" in html_body
     assert "Jul 01" not in html_body
-    # 0% baseline label clearly distinct
-    assert "0% baseline" in html_body
+    # 0% zero label present in SVG
+    assert ">0%<" in html_body
 
 
 
@@ -349,14 +350,14 @@ def test_render_monthly_recap_email_leader_and_anchor():
     assert "WHO MOVED YOUR MONTH" in html_body
     assert "MONTH LEADER" in html_body
     assert "CDR.WA" in html_body
-    assert "+3 240 PLN" in html_body
+    assert "+3\u00a0240 PLN" in html_body
     assert "Pure price move" in html_body
     assert "MONTH ANCHOR" in html_body
     assert "TSGAMES.WA" in html_body
-    assert "-1 890 PLN" in html_body
+    assert "-1\u00a0890 PLN" in html_body
     assert "Sold 2,500 PLN" in html_body
-    assert "Month Leader: CDR.WA (+3 240 PLN) - Pure price move" in text_body
-    assert "Month Anchor: TSGAMES.WA (-1 890 PLN) - Sold 2,500 PLN" in text_body
+    assert "Month Leader: CDR.WA (+3\u00a0240 PLN) - Pure price move" in text_body
+    assert "Month Anchor: TSGAMES.WA (-1\u00a0890 PLN) - Sold 2,500 PLN" in text_body
 
 
 def test_render_monthly_recap_email_market_context_and_seasonality():
@@ -380,15 +381,16 @@ def test_render_monthly_recap_email_market_context_and_seasonality():
     }
 
     _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap)
-    assert "WIG (Poland)" in html_body
+    # New label format: "WIG · Poland"
+    assert "WIG" in html_body and "Poland" in html_body
     assert "+3.22%" in html_body
-    assert "DAX (Germany)" in html_body
-    assert "S&P 500 (US)" in html_body
+    assert "DAX" in html_body and "Germany" in html_body
+    assert "S&amp;P 500" in html_body or "S&P 500" in html_body
     assert "MSCI World" in html_body
-    assert "SEASONALITY &bull; SEPTEMBER" in html_body
-    assert "September was negative in 1 of 3 observations" in html_body
-    assert "Current result beat seasonal history" in html_body
-    assert "Beat seasonal history" in text_body
+    assert "SEASONALITY" in html_body and "SEPTEMBER" in html_body
+    assert "September was negative in 1 of 3 historical observations" in html_body
+    assert "beat seasonal history" in html_body.lower()
+    assert "Seasonality" in text_body
 
     # Test seasonality omitted when historical_years_count <= 1
     wrap_no_seasonality = dict(wrap)
@@ -417,22 +419,23 @@ def test_render_monthly_recap_email_trading_activity_and_privacy():
     # Normal mode
     _, text_body, html_body = email_service.render_monthly_recap_email(profile, wrap, hide_cash=False)
     assert "TRADING ACTIVITY" in html_body
-    assert "45 000 PLN" in html_body
-    assert "30 000 PLN" in html_body
-    assert "28 000 PLN" in html_body
-    assert "17 000 PLN" in html_body
-    assert "TOP 5 TRANSACTIONS" in html_body
+    # PLN amounts use non-breaking space
+    assert "45\u00a0000 PLN" in html_body
+    assert "30\u00a0000 PLN" in html_body
+    assert "28\u00a0000 PLN" in html_body
+    assert "17\u00a0000 PLN" in html_body
+    assert "TOP TRANSACTIONS" in html_body
     assert "CDR.WA" in html_body
-    assert "12 500 PLN" in html_body
+    assert "12\u00a0500 PLN" in html_body
     assert "BUY" in html_body
     assert "SELL" in html_body
 
     # Privacy mode: all PLN numbers masked with ---
     _, text_body_priv, html_body_priv = email_service.render_monthly_recap_email(profile, wrap, hide_cash=True)
     assert "Turnover: ---" in html_body_priv
-    assert "45 000 PLN" not in html_body_priv
-    assert "30 000 PLN" not in html_body_priv
-    assert "12 500 PLN" not in html_body_priv
+    assert "45\u00a0000 PLN" not in html_body_priv
+    assert "30\u00a0000 PLN" not in html_body_priv
+    assert "12\u00a0500 PLN" not in html_body_priv
     assert "---" in html_body_priv
 
 

@@ -12,7 +12,7 @@ import calendar
 import logging
 import os
 import re
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -83,7 +83,7 @@ def _fmt_money(value: Any, currency: str = "PLN", show_sign: bool = True) -> str
     try:
         num = round(float(value))
         sign = "+" if (show_sign and num > 0) else ""
-        return f"{sign}{num:,} {currency}".replace(",", " ")
+        return f"{sign}{num:,} {currency}".replace(",", "\u00a0")
     except (ValueError, TypeError):
         return f"0 {currency}"
 
@@ -96,6 +96,8 @@ def _period_display(period: str | None) -> str:
         return dt.strftime("%B %Y")
     except ValueError:
         return str(period)
+
+
 def _color_for_value(value: Any, positive: str = "#4ade80", negative: str = "#f87171", neutral: str = "#94a3b8") -> str:
     try:
         val = float(value)
@@ -108,13 +110,184 @@ def _color_for_value(value: Any, positive: str = "#4ade80", negative: str = "#f8
         return neutral
 
 
+def _fmt_compact_money(val: Any) -> str:
+    """Format nominal change compactly for calendar cells (e.g. +9.9k, -15k, +374)."""
+    try:
+        f = float(val or 0.0)
+    except (ValueError, TypeError):
+        return "\u2014"
+    if abs(f) < 0.01:
+        return "0"
+    sign = "+" if f > 0 else "-"
+    abs_f = abs(f)
+    if abs_f >= 1_000_000:
+        return f"{sign}{abs_f / 1_000_000:.1f}M"
+    if abs_f >= 10_000:
+        return f"{sign}{abs_f / 1_000:.0f}k"
+    if abs_f >= 1_000:
+        return f"{sign}{abs_f / 1_000:.1f}k"
+    return f"{sign}{abs_f:.0f}"
+
+
+# ---------------------------------------------------------------------------
+# Narrative sentence generators
+# ---------------------------------------------------------------------------
+
+def _generate_journey_narrative(
+    portfolio_pct: float | None,
+    benchmark_pct: float | None,
+    benchmark_id: str,
+) -> str:
+    """Return a one-sentence editorial about the benchmark comparison."""
+    if portfolio_pct is None or benchmark_pct is None:
+        return "Your portfolio journey through the month."
+    try:
+        p = float(portfolio_pct)
+        b = float(benchmark_pct)
+    except (ValueError, TypeError):
+        return "Your portfolio journey through the month."
+    diff = p - b
+    diff_str = f"{abs(diff):.2f}pp"
+    if diff > 0:
+        if p >= 0 and b < 0:
+            return f"You stayed positive while {benchmark_id} turned negative \u2014 beating it by {diff_str}."
+        if p < 0:
+            return f"A difficult month, but you weathered it better than {benchmark_id} by {diff_str}."
+        return f"You beat {benchmark_id} by {diff_str} \u2014 the green line tells the story."
+    elif diff < 0:
+        if p > 0 and b < 0:
+            return f"Both you and {benchmark_id} stayed positive this month. The market edged you by {diff_str}."
+        if p < 0 and b >= 0:
+            return f"A tough month. {benchmark_id} held positive territory while you dipped \u2014 trailing by {diff_str}."
+        return f"The market ran harder this month \u2014 {benchmark_id} outpaced you by {diff_str}."
+    return f"You matched {benchmark_id} exactly this month."
+
+
+def _generate_calendar_narrative(best_day: dict | None, worst_day: dict | None) -> str:
+    """Return a one-sentence editorial about the best/worst trading day."""
+    if not best_day and not worst_day:
+        return "Every day in the calendar tells part of the story."
+    best_date = ""
+    best_pct_str = ""
+    if best_day:
+        raw_date = str(best_day.get("date") or "")
+        try:
+            best_date = datetime.strptime(raw_date[:10], "%Y-%m-%d").strftime("%b %d")
+        except ValueError:
+            best_date = raw_date[5:] if len(raw_date) >= 7 else raw_date
+        try:
+            bp = float(best_day.get("change_pct") or 0.0)
+            best_pct_str = f"+{bp:.1f}%"
+        except (ValueError, TypeError):
+            best_pct_str = ""
+    worst_date = ""
+    if worst_day:
+        raw_date = str(worst_day.get("date") or "")
+        try:
+            worst_date = datetime.strptime(raw_date[:10], "%Y-%m-%d").strftime("%b %d")
+        except ValueError:
+            worst_date = raw_date[5:] if len(raw_date) >= 7 else raw_date
+    if best_date and worst_date:
+        suffix = f" \u2014 a {best_pct_str} gain in one session." if best_pct_str else "."
+        return f"Your best day was {best_date}{suffix} Your worst? {worst_date}. But you kept going."
+    if best_date:
+        suffix = f" \u2014 {best_pct_str} in a single session." if best_pct_str else "."
+        return f"Your standout day was {best_date}{suffix}"
+    if worst_date:
+        return f"A challenging month \u2014 {worst_date} was the hardest day."
+    return "Every day in the calendar tells part of the story."
+
+
+def _generate_mover_narrative(carry: dict | None, anchor: dict | None, hide_cash: bool) -> str:
+    """Return a one-sentence editorial about the carry and anchor assets."""
+    if not carry and not anchor:
+        return "Every holding played a role this month."
+    c_ticker = (carry.get("ticker") or carry.get("name") or "One position") if carry else None
+    a_ticker = (anchor.get("ticker") or anchor.get("name") or "Another position") if anchor else None
+    if c_ticker and a_ticker:
+        if not hide_cash:
+            c_pln = carry.get("net_contribution_pln")
+            a_pln = anchor.get("net_contribution_pln")
+            if c_pln is not None and a_pln is not None:
+                try:
+                    c_str = _fmt_compact_money(float(c_pln))
+                    a_str = _fmt_compact_money(float(a_pln))
+                    return f"{c_ticker} carried you ({c_str} PLN). {a_ticker} held you back ({a_str} PLN)."
+                except (ValueError, TypeError):
+                    pass
+        return f"{c_ticker} carried you this month. {a_ticker} was the drag."
+    if c_ticker:
+        return f"{c_ticker} was the engine that drove your returns this month."
+    if a_ticker:
+        return f"{a_ticker} was the month\u2019s heaviest drag on your portfolio."
+    return "Every holding played a role this month."
+
+
+def _generate_global_narrative(
+    portfolio_pct: float | None,
+    msci_pct: float | None,
+) -> str:
+    """Return a one-sentence editorial about performance vs the global market."""
+    if portfolio_pct is None or msci_pct is None:
+        return "Here\u2019s how the world\u2019s markets fared this month."
+    try:
+        p = float(portfolio_pct)
+        m = float(msci_pct)
+    except (ValueError, TypeError):
+        return "Here\u2019s how the world\u2019s markets fared this month."
+    diff = p - m
+    diff_str = f"{abs(diff):.2f}pp"
+    if abs(diff) < 0.05:
+        return "You matched the global market \u2014 pacing neck and neck with the MSCI World benchmark."
+    if diff > 0:
+        if p >= 0 and m < 0:
+            return f"You outpaced the entire global market \u2014 staying positive while MSCI World slipped ({diff_str} alpha)."
+        if p < 0:
+            return f"You held up better than the global market \u2014 weathering the drop {diff_str} above MSCI World."
+        return f"You outpaced the global market by {diff_str} \u2014 beating MSCI World this month."
+    if p < 0 and m >= 0:
+        return f"The global market held positive territory while you dipped \u2014 trailing MSCI World by {diff_str}."
+    if p >= 0:
+        return f"A positive month, but the global market ran faster \u2014 MSCI World beat you by {diff_str}."
+    return f"A tough month. The global pullback weighed on you more than MSCI World by {diff_str}."
+
+
+# ---------------------------------------------------------------------------
+# Chapter header helper
+# ---------------------------------------------------------------------------
+
+def _chapter_header(eyebrow: str, title: str, narrative: str) -> str:
+    """Render the eyebrow + chapter title + narrative sentence block."""
+    return (
+        '<div style="font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #64748b; margin-bottom: 10px;">'
+        + eyebrow
+        + '</div>'
+        + '<div style="font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 8px; letter-spacing: -0.5px; line-height: 1.2;">'
+        + title
+        + '</div>'
+        + '<div style="font-size: 14px; color: #94a3b8; margin-bottom: 22px; line-height: 1.6;">'
+        + narrative
+        + '</div>'
+    )
+
+
+def _chapter_separator() -> str:
+    """Full-bleed thin horizontal rule between chapters."""
+    return "\n    <!-- Chapter separator -->\n    <tr><td style=\"padding: 0;\"><div style=\"height: 1px; background-color: #1a2540; margin: 0;\"></div></td></tr>"
+
+
+# ---------------------------------------------------------------------------
+# Journey chart (wrapped style)
+# ---------------------------------------------------------------------------
+
 def _render_svg_journey_chart(
     journey: dict,
     benchmark_id: str = "WIG",
     period: str = "",
     benchmark_return_pct: float | None = None,
+    portfolio_twr_pct: float | None = None,
 ) -> tuple[str, str]:
-    """Render inline SVG comparing daily portfolio return vs benchmark return with gradient/fill."""
+    """Render inline SVG comparing daily portfolio return vs benchmark return."""
     raw_points = journey.get("points") or []
     if len(raw_points) < 2:
         return "", ""
@@ -132,8 +305,6 @@ def _render_svg_journey_chart(
             b_val = 0.0
         parsed_points.append({"date": date_str, "p": p_val, "b": b_val})
 
-    # If period (YYYY-MM) is provided, strictly keep points belonging to this calendar month.
-    # Otherwise, if points spill over into the 1st of next month, trim to the audit month.
     if re.match(r"^\d{4}-(0[1-9]|1[0-2])$", period):
         month_pts = [pt for pt in parsed_points if pt["date"].startswith(period)]
         if len(month_pts) >= 2:
@@ -163,11 +334,11 @@ def _render_svg_journey_chart(
     y_max = max_val + pad
 
     width = 516
-    height = 205
+    height = 200
     x_left = 42.0
     x_right = 500.0
-    y_top = 26.0
-    y_bottom = 160.0
+    y_top = 20.0
+    y_bottom = 158.0
 
     def get_x(i: int) -> float:
         return x_left + i * (x_right - x_left) / max(n - 1, 1)
@@ -185,32 +356,26 @@ def _render_svg_journey_chart(
         yb = get_y(pt["b"])
         coords.append((x, yp, yb, pt["p"], pt["b"]))
 
-    # Shaded fill polygons between portfolio and benchmark
     polygons = []
     for i in range(n - 1):
         x0, yp0, yb0, p0, b0 = coords[i]
         x1, yp1, yb1, p1, b1 = coords[i + 1]
-
         d0 = p0 - b0
         d1 = p1 - b1
-
-        # Segment crossing check
         if (d0 > 0 and d1 < 0) or (d0 < 0 and d1 > 0):
             denom = abs(d0) + abs(d1)
             t = abs(d0) / denom if denom > 0 else 0.5
             xc = x0 + t * (x1 - x0)
             val_c = p0 + t * (p1 - p0)
             yc = get_y(val_c)
-
-            col1 = "rgba(74, 222, 128, 0.20)" if d0 > 0 else "rgba(248, 113, 113, 0.16)"
+            col1 = "#1d4a30" if d0 > 0 else "#4a1d22"
             poly1 = f"{x0:.1f},{yp0:.1f} {xc:.1f},{yc:.1f} {x0:.1f},{yb0:.1f}"
             polygons.append(f'<polygon points="{poly1}" fill="{col1}" />')
-
-            col2 = "rgba(74, 222, 128, 0.20)" if d1 > 0 else "rgba(248, 113, 113, 0.16)"
+            col2 = "#1d4a30" if d1 > 0 else "#4a1d22"
             poly2 = f"{xc:.1f},{yc:.1f} {x1:.1f},{yp1:.1f} {x1:.1f},{yb1:.1f}"
             polygons.append(f'<polygon points="{poly2}" fill="{col2}" />')
         else:
-            col = "rgba(74, 222, 128, 0.20)" if (d0 + d1) >= 0 else "rgba(248, 113, 113, 0.16)"
+            col = "#1d4a30" if (d0 + d1) >= 0 else "#4a1d22"
             poly = f"{x0:.1f},{yp0:.1f} {x1:.1f},{yp1:.1f} {x1:.1f},{yb1:.1f} {x0:.1f},{yb0:.1f}"
             polygons.append(f'<polygon points="{poly}" fill="{col}" />')
 
@@ -219,8 +384,7 @@ def _render_svg_journey_chart(
 
     last_pt = parsed_points[-1]
     first_pt = parsed_points[0]
-    p_last = last_pt["p"]
-    # If canonical benchmark return (e.g. from market_context) is supplied, use it
+    p_last = float(portfolio_twr_pct) if portfolio_twr_pct is not None else last_pt["p"]
     b_last = float(benchmark_return_pct) if benchmark_return_pct is not None else last_pt["b"]
     p_sign = "+" if p_last > 0 else ""
     b_sign = "+" if b_last > 0 else ""
@@ -230,17 +394,24 @@ def _render_svg_journey_chart(
     diff_sign = "+" if diff > 0 else ""
     diff_str = f"{diff_sign}{diff:.2f}%"
 
-    if diff > 0:
-        win_badge = f'<span style="background-color: rgba(74, 222, 128, 0.15); border: 1px solid rgba(74, 222, 128, 0.35); color: #4ade80; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">★ BEAT BENCHMARK BY {diff_str}</span>'
-        text_status = f"Beat benchmark by {diff_str}"
-    elif diff < 0:
-        win_badge = f'<span style="background-color: rgba(248, 113, 113, 0.12); border: 1px solid rgba(248, 113, 113, 0.30); color: #f87171; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">LAGGED BENCHMARK BY {diff_str}</span>'
-        text_status = f"Lagged benchmark by {diff_str}"
-    else:
-        win_badge = f'<span style="background-color: #1e293b; color: #94a3b8; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px;">MATCHED BENCHMARK</span>'
-        text_status = "Matched benchmark"
+    p_col = "#4ade80" if p_last >= 0 else "#f87171"
 
-    # Date formatting for labels
+    if diff > 0:
+        badge_bg = "#143828"
+        badge_border = "#1f6b45"
+        badge_color = "#4ade80"
+        badge_text = f"BEAT BY {diff_str}"
+    elif diff < 0:
+        badge_bg = "#38191e"
+        badge_border = "#75242d"
+        badge_color = "#f87171"
+        badge_text = f"BEHIND BY {abs(diff):.2f}%"
+    else:
+        badge_bg = "#1e293b"
+        badge_border = "#334155"
+        badge_color = "#94a3b8"
+        badge_text = "MATCHED"
+
     def _format_short_date(dt_s: str) -> str:
         try:
             return datetime.strptime(dt_s[:10], "%Y-%m-%d").strftime("%b %d")
@@ -250,89 +421,72 @@ def _render_svg_journey_chart(
     start_date_label = _format_short_date(first_pt["date"])
     end_date_label = _format_short_date(last_pt["date"])
 
-    svg_markup = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="{height}" style="display: block; max-width: {width}px; margin: 0 auto; overflow: visible;">
-      <!-- Zero baseline reference -->
-      <line x1="{x_left}" y1="{y_zero:.1f}" x2="{x_right}" y2="{y_zero:.1f}" stroke="#334155" stroke-dasharray="4,4" stroke-width="1" />
-      <text x="{x_left + 4:.1f}" y="{y_zero - 4:.1f}" fill="#64748b" font-size="9" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600">0% baseline</text>
+    polys_str = " ".join(polygons)
+    svg_markup = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="100%" height="{height}"'
+        ' style="display: block; max-width: 516px; margin: 0 auto; overflow: visible;">'
+        f'<line x1="{x_left}" y1="{y_zero:.1f}" x2="{x_right}" y2="{y_zero:.1f}" stroke="#1e293b" stroke-dasharray="4,4" stroke-width="1" />'
+        f'<text x="{x_left + 4:.1f}" y="{y_zero - 4:.1f}" fill="#475569" font-size="9"'
+        ' font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif" font-weight="600">0%</text>'
+        + polys_str
+        + f'<path d="{bench_d}" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="5,4" stroke-linejoin="round" />'
+        f'<path d="{port_d}" fill="none" stroke="{p_col}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />'
+        f'<circle cx="{coords[-1][0]:.1f}" cy="{coords[-1][2]:.1f}" r="3" fill="#a78bfa" />'
+        f'<circle cx="{coords[-1][0]:.1f}" cy="{coords[-1][1]:.1f}" r="4.5" fill="{p_col}" />'
+        f'<line x1="{x_left}" y1="{y_bottom}" x2="{x_right}" y2="{y_bottom}" stroke="#1e293b" stroke-width="1" />'
+        f'<text x="{x_left}" y="184" fill="#64748b" font-size="10"'
+        ' font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif" font-weight="600" text-anchor="start">'
+        + start_date_label
+        + f'</text><text x="{x_right}" y="184" fill="#64748b" font-size="10"'
+        ' font-family="-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif" font-weight="600" text-anchor="end">'
+        + end_date_label
+        + '</text></svg>'
+    )
 
-      <!-- Fill polygons (green outperformance, red underperformance) -->
-      {' '.join(polygons)}
+    mso_fallback = (
+        "<!--[if mso]>"
+        '<table role="presentation" width="100%" border="0" cellpadding="8" cellspacing="0">'
+        f'<tr><td style="font-size:12px;color:#94a3b8;">Portfolio: <strong style="color:{p_col};">{p_last_str}</strong></td>'
+        f'<td align="right" style="font-size:12px;color:#94a3b8;">Benchmark ({benchmark_id}): <strong style="color:#a78bfa;">{b_last_str}</strong></td></tr>'
+        "</table><![endif]-->"
+    )
 
-      <!-- Benchmark line (dashed purple) -->
-      <path d="{bench_d}" fill="none" stroke="#a78bfa" stroke-width="2" stroke-dasharray="5,4" stroke-linejoin="round" />
+    legend_html = (
+        '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 16px;">'
+        '<tr><td>'
+        f'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background-color:{p_col};vertical-align:middle;margin-right:6px;"></span>'
+        f'<span style="font-size:12px;color:#94a3b8;vertical-align:middle;">Portfolio</span>'
+        f'<strong style="font-size:13px;color:{p_col};margin-left:4px;vertical-align:middle;">{p_last_str}</strong>'
+        '&nbsp;&nbsp;'
+        '<span style="display:inline-block;width:16px;height:2px;background-color:#a78bfa;vertical-align:middle;margin-right:6px;margin-bottom:2px;"></span>'
+        f'<span style="font-size:12px;color:#94a3b8;vertical-align:middle;">{benchmark_id}</span>'
+        f'<strong style="font-size:13px;color:#a78bfa;margin-left:4px;vertical-align:middle;">{b_last_str}</strong>'
+        '</td>'
+        f'<td align="right"><span style="background-color:{badge_bg};border:1px solid {badge_border};color:{badge_color};padding:4px 12px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:0.5px;">{badge_text}</span></td>'
+        '</tr></table>'
+    )
 
-      <!-- Portfolio line (solid green) -->
-      <path d="{port_d}" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    narrative = _generate_journey_narrative(p_last, b_last, benchmark_id)
+    chapter_hdr = _chapter_header("RETURNS, SIDE BY SIDE", "The journey.", narrative)
 
-      <!-- End circles -->
-      <circle cx="{coords[-1][0]:.1f}" cy="{coords[-1][2]:.1f}" r="3.5" fill="#a78bfa" />
-      <circle cx="{coords[-1][0]:.1f}" cy="{coords[-1][1]:.1f}" r="4.5" fill="#4ade80" />
+    html_block = (
+        "\n    <!-- Chapter 2: Journey Chart -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        + chapter_hdr
+        + legend_html
+        + "<!--[if !mso]><!-->"
+        + svg_markup
+        + "<!--<![endif]-->"
+        + mso_fallback
+        + "\n      </td>\n    </tr>"
+    )
 
-      <!-- X-axis baseline divider & date labels -->
-      <line x1="{x_left}" y1="{y_bottom}" x2="{x_right}" y2="{y_bottom}" stroke="#1e293b" stroke-width="1" />
-      <text x="{x_left}" y="186" fill="#94a3b8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" text-anchor="start">{start_date_label}</text>
-      <text x="{x_right}" y="186" fill="#94a3b8" font-size="10" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" text-anchor="end">{end_date_label}</text>
-    </svg>"""
-
-    mso_fallback = f"""<!--[if mso]>
-    <table role="presentation" width="100%" border="0" cellpadding="8" cellspacing="0" style="background-color: #1a233a; border-radius: 8px; border: 1px solid #24304d;">
-      <tr>
-        <td style="font-size: 12px; color: #94a3b8;">Portfolio: <strong style="color: #4ade80;">{p_last_str}</strong></td>
-        <td align="right" style="font-size: 12px; color: #94a3b8;">Benchmark ({benchmark_id}): <strong style="color: #a78bfa;">{b_last_str}</strong></td>
-      </tr>
-    </table>
-    <![endif]-->"""
-
-    html_block = f"""
-    <!-- Section 3: Journey Chart -->
-    <tr>
-      <td style="padding: 0 24px 24px;">
-        <div style="background-color: #131d33; border: 1px solid #24304d; border-radius: 12px; padding: 20px 18px 16px;">
-          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
-            <tr>
-              <td>
-                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">CUMULATIVE JOURNEY</div>
-                <div style="font-size: 13px; color: #cbd5e1; margin-top: 4px;">
-                  <span style="color: #4ade80; font-weight: 700;">●</span> Portfolio ({p_last_str}) &nbsp;&bull;&nbsp;
-                  <span style="color: #a78bfa; font-weight: 700;">◦</span> {benchmark_id} ({b_last_str})
-                </div>
-              </td>
-              <td align="right" valign="top">
-                {win_badge}
-              </td>
-            </tr>
-          </table>
-
-          <!--[if !mso]><!-->
-          {svg_markup}
-          <!--<![endif]-->
-          {mso_fallback}
-        </div>
-      </td>
-    </tr>"""
-
-    text_block = f"• Cumulative Journey: Portfolio {p_last_str} vs {benchmark_id} {b_last_str} ({text_status})"
+    text_block = f"\u2022 Cumulative Journey: Portfolio {p_last_str} vs {benchmark_id} {b_last_str} ({diff_str})"
     return html_block, text_block
 
 
-def _fmt_compact_money(val: Any) -> str:
-    """Format nominal change compactly for calendar cells (e.g. +9.9k, -15k, +374)."""
-    try:
-        f = float(val or 0.0)
-    except (ValueError, TypeError):
-        return "—"
-    if abs(f) < 0.01:
-        return "0"
-    sign = "+" if f > 0 else "-"
-    abs_f = abs(f)
-    if abs_f >= 1_000_000:
-        return f"{sign}{abs_f / 1_000_000:.1f}M"
-    if abs_f >= 10_000:
-        return f"{sign}{abs_f / 1_000:.0f}k"
-    if abs_f >= 1_000:
-        return f"{sign}{abs_f / 1_000:.1f}k"
-    return f"{sign}{abs_f:.0f}"
-
+# ---------------------------------------------------------------------------
+# Resolve daily moves fallback
+# ---------------------------------------------------------------------------
 
 def _resolve_daily_moves(wrap_document: dict) -> list[dict]:
     """Fallback to resolve or compute daily moves from snapshots table or journey points."""
@@ -350,10 +504,10 @@ def _resolve_daily_moves(wrap_document: dict) -> list[dict]:
             prev_day = (start_date - timedelta(days=1)).isoformat()
             last_day = (next_m - timedelta(days=1)).isoformat()
 
-            import boto3
+            import boto3 as _boto3
             from boto3.dynamodb.conditions import Key
             tbl_name = os.environ.get("SNAPSHOTS_TABLE", "roastfolio-snapshots")
-            table = boto3.resource("dynamodb").Table(tbl_name)
+            table = _boto3.resource("dynamodb").Table(tbl_name)
             resp = table.query(
                 KeyConditionExpression=Key("userId").eq(user_id)
                 & Key("sk").between(f"PORTFOLIO#summary#SNAPSHOT#{prev_day}", f"PORTFOLIO#summary#SNAPSHOT#{last_day}")
@@ -369,40 +523,40 @@ def _resolve_daily_moves(wrap_document: dict) -> list[dict]:
                     p_prev = float(items[i - 1].get("portfolioValue") or 0)
                     diff = p_curr - p_prev
                     pct = (diff / p_prev * 100.0) if p_prev > 0 else 0.0
-                    moves.append({
-                        "date": dt,
-                        "change_pln": diff,
-                        "change_pct": pct,
-                        "is_ath": False,
-                    })
+                    moves.append({"date": dt, "change_pln": diff, "change_pct": pct, "is_ath": False})
                 if moves:
                     return moves
         except Exception as exc:
             print(f"_resolve_daily_moves snapshot query fallback error: {exc}")
 
-    # Fallback to journey points
     journey = wrap_document.get("journey") or {}
     points = journey.get("points") or []
     if len(points) >= 2:
+        # Derive the period from first point if not directly available
+        _period_filter = period if re.match(r"^\d{4}-(0[1-9]|1[0-2])$", period) else (
+            str(points[0].get("date") or "")[:7]
+        )
         moves = []
         for i in range(1, len(points)):
             dt = str(points[i].get("date") or "")
+            # Skip points that fall outside the audit month
+            if _period_filter and not dt.startswith(_period_filter):
+                continue
             pct_curr = float(points[i].get("portfolio_pct") or 0.0)
             pct_prev = float(points[i - 1].get("portfolio_pct") or 0.0)
             day_pct = pct_curr - pct_prev
-            moves.append({
-                "date": dt,
-                "change_pln": 0.0,
-                "change_pct": day_pct,
-                "is_ath": False,
-            })
+            moves.append({"date": dt, "change_pln": 0.0, "change_pct": day_pct, "is_ath": False})
         return moves
 
     return []
 
 
+# ---------------------------------------------------------------------------
+# Calendar heatmap
+# ---------------------------------------------------------------------------
+
 def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tuple[str, str]:
-    """Render 7-column calendar table with daily performance cells, solid color styling, nominal change, and ATH highlights."""
+    """Render 7-column calendar heatmap with narrative header, no card box wrapper."""
     period = str(wrap_document.get("period") or "")
     if re.match(r"^\d{4}-(0[1-9]|1[0-2])$", period):
         year, month = int(period[:4]), int(period[5:7])
@@ -414,7 +568,7 @@ def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tu
     if not daily_moves:
         daily_moves = _resolve_daily_moves(wrap_document)
 
-    moves_by_day = {}
+    moves_by_day: dict[int, dict] = {}
     best_day = None
     worst_day = None
 
@@ -431,10 +585,10 @@ def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tu
         except (ValueError, TypeError, IndexError):
             continue
 
-    first_weekday, num_days = calendar.monthrange(year, month)  # 0=Mon, 6=Sun
+    first_weekday, num_days = calendar.monthrange(year, month)
 
     weeks = []
-    current_week = [None] * first_weekday
+    current_week: list = [None] * first_weekday
     for d in range(1, num_days + 1):
         current_week.append(d)
         if len(current_week) == 7:
@@ -447,7 +601,7 @@ def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tu
 
     headers = ["M", "T", "W", "T", "F", "S", "S"]
     header_cells = "".join(
-        f'<th width="14.28%" style="padding: 4px; font-size: 10px; font-weight: 700; color: #64748b; text-align: center;">{h}</th>'
+        f'<th width="14.28%" style="padding: 4px 2px; font-size: 10px; font-weight: 700; color: #475569; text-align: center;">{h}</th>'
         for h in headers
     )
 
@@ -456,7 +610,7 @@ def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tu
         cells_html = []
         for d in week:
             if d is None:
-                cells_html.append('<td width="14.28%" style="padding: 3px;"></td>')
+                cells_html.append('<td width="14.28%" style="padding: 2px;"></td>')
             else:
                 move = moves_by_day.get(d)
                 if move and (move.get("change_pct") is not None or move.get("change_pln") is not None):
@@ -467,45 +621,51 @@ def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tu
                     nom_str = _fmt_compact_money(chg_pln)
 
                     if chg_val > 0.05 or chg_pln > 1.0:
-                        bg = "#143828"
+                        bg = "#132d1f"
                         border = "#1f6b45"
                         color = "#4ade80"
                         pct_color = "#86efac"
+                        num_color = "#f0fdf4"
                     elif chg_val < -0.05 or chg_pln < -1.0:
-                        bg = "#38191e"
+                        bg = "#2e1115"
                         border = "#75242d"
                         color = "#f87171"
                         pct_color = "#fca5a5"
+                        num_color = "#fff1f2"
                     else:
-                        bg = "#1a233a"
-                        border = "#24304d"
+                        bg = "#141c30"
+                        border = "#1e293b"
                         color = "#94a3b8"
                         pct_color = "#64748b"
+                        num_color = "#f8fafc"
 
                     if hide_cash:
-                        val_content = f'<div style="font-size: 10px; font-weight: 700; color: {color}; margin-top: 3px; line-height: 1.1;">{pct_str}</div>'
+                        val_content = f'<div style="font-size:9px;font-weight:700;color:{color};margin-top:2px;line-height:1.1;">{pct_str}</div>'
                     else:
-                        val_content = f'<div style="font-size: 10px; font-weight: 700; color: {color}; margin-top: 3px; line-height: 1.1;">{nom_str}</div><div style="font-size: 8px; font-weight: 500; color: {pct_color}; margin-top: 1px; line-height: 1.1;">{pct_str}</div>'
+                        val_content = (
+                            f'<div style="font-size:9px;font-weight:800;color:{color};margin-top:2px;line-height:1.1;">{nom_str}</div>'
+                            f'<div style="font-size:7px;font-weight:500;color:{pct_color};margin-top:1px;line-height:1.1;">{pct_str}</div>'
+                        )
                 else:
-                    bg = "#161e31"
-                    border = "#1f2a44"
-                    color = "#475569"
-                    val_content = '<div style="font-size: 10px; color: #475569; margin-top: 3px; line-height: 1.1;">&nbsp;</div>'
+                    bg = "#0f1624"
+                    border = "#1a2540"
+                    num_color = "#374151"
+                    val_content = '<div style="font-size:9px;color:#374151;margin-top:2px;line-height:1.1;">&nbsp;</div>'
 
                 ath_border = "border: 1px solid #f59e0b;" if (move and move.get("is_ath")) else f"border: 1px solid {border};"
-
-                cell = f"""<td width="14.28%" style="padding: 3px; text-align: center; vertical-align: top;">
-                  <div style="background-color: {bg}; {ath_border} border-radius: 6px; padding: 5px 1px; min-height: 42px;">
-                    <div style="font-size: 11px; font-weight: 700; color: #f8fafc; line-height: 1.1;">{d}</div>
-                    {val_content}
-                  </div>
-                </td>"""
+                cell = (
+                    f'<td width="14.28%" style="padding: 2px; text-align: center; vertical-align: top;">'
+                    f'<div style="background-color:{bg};{ath_border}border-radius:5px;padding:4px 1px;min-height:40px;">'
+                    f'<div style="font-size:10px;font-weight:700;color:{num_color};line-height:1.1;">{d}</div>'
+                    + val_content
+                    + "</div></td>"
+                )
                 cells_html.append(cell)
         rows_html.append(f"<tr>{''.join(cells_html)}</tr>")
 
-    best_str = "—"
-    worst_str = "—"
-    chips_html = ""
+    best_str = "\u2014"
+    worst_str = "\u2014"
+
     if best_day and (best_day.get("change_pct") is not None or best_day.get("change_pln") is not None):
         b_dt = str(best_day.get("date") or "")[5:]
         b_val = float(best_day.get("change_pct") or 0.0)
@@ -526,33 +686,46 @@ def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tu
         else:
             worst_str = f"{w_dt} ({_fmt_money(w_pln, show_sign=True)} / {w_sign}{w_val:.2f}%)"
 
+    chips_html = ""
     if best_day or worst_day:
-        chips_html = f"""<div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #1e293b; font-size: 12px; color: #94a3b8;">
-          <span style="color: #4ade80; font-weight: 600;">★ Best day:</span> {best_str} &nbsp;&bull;&nbsp;
-          <span style="color: #f87171; font-weight: 600;">▼ Worst day:</span> {worst_str}
-        </div>"""
+        chips_html = (
+            '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-top:18px;">'
+            '<tr>'
+            '<td style="padding-right:16px;">'
+            '<div style="font-size:10px;font-weight:700;color:#4ade80;letter-spacing:0.5px;margin-bottom:2px;">&#9733; BEST DAY</div>'
+            f'<div style="font-size:13px;font-weight:600;color:#f0fdf4;">{best_str}</div>'
+            '</td>'
+            '<td>'
+            '<div style="font-size:10px;font-weight:700;color:#f87171;letter-spacing:0.5px;margin-bottom:2px;">&#9660; WORST DAY</div>'
+            f'<div style="font-size:13px;font-weight:600;color:#fff1f2;">{worst_str}</div>'
+            '</td>'
+            '</tr></table>'
+        )
 
-    html_block = f"""
-    <!-- Section 4: Daily Calendar Heatmap -->
-    <tr>
-      <td style="padding: 0 24px 24px;">
-        <div style="background-color: #131d33; border: 1px solid #24304d; border-radius: 12px; padding: 18px 16px 14px;">
-          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 12px;">DAILY CALENDAR HEATMAP</div>
-          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="table-layout: fixed;">
-            <thead><tr>{header_cells}</tr></thead>
-            <tbody>{''.join(rows_html)}</tbody>
-          </table>
-          {chips_html}
-        </div>
-      </td>
-    </tr>"""
+    narrative = _generate_calendar_narrative(best_day, worst_day)
+    chapter_hdr = _chapter_header("MOMENTS THAT MATTERED", "The milestones.", narrative)
 
-    text_block = f"• Calendar Highlights: Best day {best_str} | Worst day {worst_str}"
+    html_block = (
+        "\n    <!-- Chapter 3: Calendar Heatmap -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        + chapter_hdr
+        + '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="table-layout: fixed;">'
+        + f'<thead><tr>{header_cells}</tr></thead>'
+        + f'<tbody>{"".join(rows_html)}</tbody>'
+        + '</table>'
+        + chips_html
+        + "\n      </td>\n    </tr>"
+    )
+
+    text_block = f"\u2022 Calendar Highlights: Best day {best_str} | Worst day {worst_str}"
     return html_block, text_block
 
 
+# ---------------------------------------------------------------------------
+# Leader / Anchor - typographic left-border rows
+# ---------------------------------------------------------------------------
+
 def _render_leader_anchor(carry: dict | None, anchor: dict | None, hide_cash: bool) -> tuple[str, str]:
-    """Render Who Moved Your Month cards for leader and anchor assets."""
+    """Render Who Moved Your Month as typographic left-border rows."""
     if not carry and not anchor:
         return "", ""
 
@@ -562,74 +735,79 @@ def _render_leader_anchor(carry: dict | None, anchor: dict | None, hide_cash: bo
     anchor_text = "None"
 
     if carry:
-        ticker = carry.get("ticker") or carry.get("name") or "—"
+        ticker = carry.get("ticker") or carry.get("name") or "\u2014"
         name = carry.get("name") or ticker
         val_str = "---" if hide_cash else _fmt_money(carry.get("net_contribution_pln"), show_sign=True)
         note = carry.get("context_note") or ""
         leader_text = f"{ticker} ({val_str}) - {note}"
-        leader_html = f"""<td width="50%" valign="top" style="padding: 0 4px 0 0;" class="stack-mobile-cell">
-          <div style="background-color: #0b3a30; border: 1px solid #1d7a67; border-radius: 12px; padding: 16px;">
-            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4ade80;">▲ MONTH LEADER</div>
-            <div style="font-size: 18px; font-weight: 800; color: #f0fdf4; margin-top: 6px;">{ticker}</div>
-            <div style="font-size: 12px; color: #a7f3d0; margin-bottom: 8px;">{name}</div>
-            <div style="font-size: 15px; font-weight: 700; color: #4ade80;">{val_str}</div>
-            <div style="font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 4px;">{note}</div>
-          </div>
-        </td>"""
+        note_html = f'<div style="font-size:12px;color:#64748b;font-style:italic;margin-top:4px;">{note}</div>' if note else ""
+        leader_html = (
+            '<div style="border-left:3px solid #4ade80;padding-left:16px;margin-bottom:24px;">'
+            '<div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#4ade80;margin-bottom:6px;">&#9650; MONTH LEADER</div>'
+            f'<div style="font-size:22px;font-weight:800;color:#f0fdf4;line-height:1.1;">{ticker}</div>'
+            f'<div style="font-size:13px;color:#a7f3d0;margin:3px 0 6px;">{name}</div>'
+            f'<div style="font-size:18px;font-weight:700;color:#4ade80;">{val_str}</div>'
+            + note_html
+            + "</div>"
+        )
 
     if anchor:
-        ticker = anchor.get("ticker") or anchor.get("name") or "—"
+        ticker = anchor.get("ticker") or anchor.get("name") or "\u2014"
         name = anchor.get("name") or ticker
         val_str = "---" if hide_cash else _fmt_money(anchor.get("net_contribution_pln"), show_sign=True)
         note = anchor.get("context_note") or ""
         anchor_text = f"{ticker} ({val_str}) - {note}"
-        anchor_html = f"""<td width="50%" valign="top" style="padding: 0 0 0 4px;" class="stack-mobile-cell">
-          <div style="background-color: #3a1f20; border: 1px solid #7f3d3d; border-radius: 12px; padding: 16px;">
-            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #f87171;">▼ MONTH ANCHOR</div>
-            <div style="font-size: 18px; font-weight: 800; color: #fff1f2; margin-top: 6px;">{ticker}</div>
-            <div style="font-size: 12px; color: #fecaca; margin-bottom: 8px;">{name}</div>
-            <div style="font-size: 15px; font-weight: 700; color: #f87171;">{val_str}</div>
-            <div style="font-size: 11px; color: #94a3b8; font-style: italic; margin-top: 4px;">{note}</div>
-          </div>
-        </td>"""
+        note_html = f'<div style="font-size:12px;color:#64748b;font-style:italic;margin-top:4px;">{note}</div>' if note else ""
+        anchor_html = (
+            '<div style="border-left:3px solid #f87171;padding-left:16px;margin-bottom:8px;">'
+            '<div style="font-size:10px;font-weight:800;letter-spacing:1px;color:#f87171;margin-bottom:6px;">&#9660; MONTH ANCHOR</div>'
+            f'<div style="font-size:22px;font-weight:800;color:#fff1f2;line-height:1.1;">{ticker}</div>'
+            f'<div style="font-size:13px;color:#fecaca;margin:3px 0 6px;">{name}</div>'
+            f'<div style="font-size:18px;font-weight:700;color:#f87171;">{val_str}</div>'
+            + note_html
+            + "</div>"
+        )
 
-    if carry and not anchor:
-        inner_table = f"<tr>{leader_html.replace('width=\"50%\"', 'width=\"100%\"').replace('padding: 0 4px 0 0;', '')}</tr>"
-    elif anchor and not carry:
-        inner_table = f"<tr>{anchor_html.replace('width=\"50%\"', 'width=\"100%\"').replace('padding: 0 0 0 4px;', '')}</tr>"
-    else:
-        inner_table = f"<tr>{leader_html}{anchor_html}</tr>"
+    narrative = _generate_mover_narrative(carry, anchor, hide_cash)
+    chapter_hdr = _chapter_header("WHO MOVED YOUR MONTH", "The movers.", narrative)
 
-    html_block = f"""
-    <!-- Section 5: Who Moved Your Month -->
-    <tr>
-      <td style="padding: 0 24px 24px;">
-        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 10px;">WHO MOVED YOUR MONTH</div>
-        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="stack-mobile">
-          {inner_table}
-        </table>
-      </td>
-    </tr>"""
+    html_block = (
+        "\n    <!-- Chapter 4: Who Moved Your Month -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        + chapter_hdr
+        + leader_html
+        + anchor_html
+        + "\n      </td>\n    </tr>"
+    )
 
-    text_block = f"• Month Leader: {leader_text}\n• Month Anchor: {anchor_text}"
+    text_block = f"\u2022 Month Leader: {leader_text}\n\u2022 Month Anchor: {anchor_text}"
     return html_block, text_block
 
 
-def _render_market_context_and_seasonality(wrap_document: dict, period_title: str) -> tuple[str, str]:
-    """Render global benchmarks and conditional seasonality section."""
+# ---------------------------------------------------------------------------
+# Market context & seasonality
+# ---------------------------------------------------------------------------
+
+def _render_market_context_and_seasonality(
+    wrap_document: dict,
+    period_title: str,
+    portfolio_twr_pct: float | None = None,
+) -> tuple[str, str]:
+    """Render global benchmarks as typographic list + optional seasonality bar."""
     market_context = wrap_document.get("market_context") or []
 
     benchmark_labels = {
-        "WIG": "WIG (Poland)",
-        "DAX": "DAX (Germany)",
-        "SP500": "S&P 500 (US)",
-        "NASDAQ": "NASDAQ (US)",
-        "FTSE100": "FTSE 100 (UK)",
-        "MSCI_WORLD": "MSCI World",
+        "WIG": "WIG \u00b7 Poland",
+        "DAX": "DAX \u00b7 Germany",
+        "SP500": "S&amp;P 500 \u00b7 US",
+        "NASDAQ": "NASDAQ \u00b7 US",
+        "FTSE100": "FTSE 100 \u00b7 UK",
+        "MSCI_WORLD": "MSCI World \u00b7 Global",
     }
 
+    msci_ret = None
     bench_rows_html = []
     bench_text_lines = []
+
     for ctx in market_context:
         bid = ctx.get("id") or ""
         label = benchmark_labels.get(bid, ctx.get("name") or bid)
@@ -640,29 +818,32 @@ def _render_market_context_and_seasonality(wrap_document: dict, period_title: st
         except (ValueError, TypeError):
             val = None
 
-        if val is not None:
-            color = "#4ade80" if val > 0 else ("#f87171" if val < 0 else "#94a3b8")
-        else:
-            color = "#64748b"
+        if bid == "MSCI_WORLD" and val is not None:
+            msci_ret = val
 
-        row = f"""<tr>
-          <td style="padding: 9px 12px; font-size: 13px; color: #cbd5e1; border-top: 1px solid #1e293b;">{label}</td>
-          <td align="right" style="padding: 9px 12px; font-size: 13px; font-weight: 700; color: {color}; border-top: 1px solid #1e293b;">{ret_str}</td>
-        </tr>"""
+        color = "#4ade80" if (val is not None and val > 0) else ("#f87171" if (val is not None and val < 0) else "#94a3b8")
+
+        row = (
+            '<tr>'
+            f'<td style="padding:11px 0;font-size:13px;color:#94a3b8;border-top:1px solid #1a2540;">{label}</td>'
+            f'<td align="right" style="padding:11px 0;font-size:14px;font-weight:700;color:{color};border-top:1px solid #1a2540;">{ret_str}</td>'
+            '</tr>'
+        )
         bench_rows_html.append(row)
         bench_text_lines.append(f"  - {label}: {ret_str}")
 
     bench_table_html = ""
     if bench_rows_html:
-        bench_table_html = f"""<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #1a233a; border-radius: 10px; border: 1px solid #24304d; overflow: hidden; margin-bottom: 14px;">
-          {''.join(bench_rows_html)}
-        </table>"""
+        bench_table_html = (
+            '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">'
+            + "".join(bench_rows_html)
+            + "</table>"
+        )
 
     historical_years_count = int(wrap_document.get("historical_years_count") or 0)
     seasonality_html = ""
     seasonality_text = ""
 
-    # User rule: only if we have more than 1 historical record for the same month!
     if historical_years_count > 1:
         month_name = period_title.split()[0] if period_title else "Month"
         neg_count = int(wrap_document.get("negative_years_count") or 0)
@@ -676,50 +857,64 @@ def _render_market_context_and_seasonality(wrap_document: dict, period_title: st
         pos_pct = 100 - neg_pct
 
         if outperformed is True:
-            status_chip = '<span style="color: #4ade80; font-weight: 700;">✓ Current result beat seasonal history</span>'
-            status_text = "Beat seasonal history"
+            status_color = "#4ade80"
+            status_text = "\u2713 You beat seasonal history this month."
         elif outperformed is False:
-            status_chip = '<span style="color: #f59e0b; font-weight: 600;">Current result trailed seasonal history</span>'
-            status_text = "Trailed seasonal history"
+            status_color = "#f59e0b"
+            status_text = "This month trailed your seasonal history."
         else:
-            status_chip = ""
+            status_color = "#94a3b8"
             status_text = ""
 
-        bar_html = f"""<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="height: 10px; border-radius: 5px; overflow: hidden; margin: 10px 0;">
-          <tr>
-            <td width="{neg_pct}%" style="background-color: #f87171; height: 10px;"></td>
-            <td width="{pos_pct}%" style="background-color: #4ade80; height: 10px;"></td>
-          </tr>
-        </table>"""
+        copy_text = (
+            f"{month_name} was negative in {neg_count} of {total} historical observations"
+            f" (avg {avg_neg}) and positive in {pos_count} (avg {avg_pos})."
+        )
 
-        copy_text = f"{month_name} was negative in {neg_count} of {total} observations (avg {avg_neg}) and positive in {pos_count} (avg {avg_pos})."
+        bar_html = (
+            '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"'
+            ' style="height:8px;border-radius:4px;overflow:hidden;margin:12px 0 10px;">'
+            '<tr>'
+            f'<td width="{neg_pct}%" style="background-color:#f87171;height:8px;"></td>'
+            f'<td width="{pos_pct}%" style="background-color:#4ade80;height:8px;"></td>'
+            '</tr></table>'
+        )
 
-        seasonality_html = f"""<div style="background-color: #1a233a; border-radius: 10px; border: 1px solid #24304d; padding: 14px 16px;">
-          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">SEASONALITY &bull; {month_name.upper()}</div>
-          {bar_html}
-          <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px;">{copy_text}</div>
-          <div style="font-size: 11px;">{status_chip}</div>
-        </div>"""
+        status_line = f'<div style="font-size:12px;font-weight:600;color:{status_color};">{status_text}</div>' if status_text else ""
 
-        seasonality_text = f"\n• Seasonality ({month_name}): {copy_text} ({status_text})"
+        seasonality_html = (
+            '<div style="padding-top:20px;border-top:1px solid #1a2540;">'
+            f'<div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:8px;">SEASONALITY \u00b7 {month_name.upper()}</div>'
+            + bar_html
+            + f'<div style="font-size:13px;color:#94a3b8;line-height:1.55;margin-bottom:8px;">{copy_text}</div>'
+            + status_line
+            + "</div>"
+        )
 
-    html_block = f"""
-    <!-- Section 6: The Bigger Picture -->
-    <tr>
-      <td style="padding: 0 24px 24px;">
-        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 10px;">THE BIGGER PICTURE &bull; GLOBAL BENCHMARKS</div>
-        {bench_table_html}
-        {seasonality_html}
-      </td>
-    </tr>"""
+        seasonality_text = f"\n\u2022 Seasonality ({month_name}): {copy_text}"
+
+    narrative = _generate_global_narrative(portfolio_twr_pct, msci_ret)
+    chapter_hdr = _chapter_header("A LITTLE PERSPECTIVE", "The bigger picture.", narrative)
+
+    html_block = (
+        "\n    <!-- Chapter 5: The Bigger Picture -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        + chapter_hdr
+        + bench_table_html
+        + seasonality_html
+        + "\n      </td>\n    </tr>"
+    )
 
     bench_text_joined = "\n".join(bench_text_lines)
-    text_block = f"• Global Benchmarks:\n{bench_text_joined}{seasonality_text}"
+    text_block = f"\u2022 Global Benchmarks:\n{bench_text_joined}{seasonality_text}"
     return html_block, text_block
 
 
+# ---------------------------------------------------------------------------
+# Trading activity
+# ---------------------------------------------------------------------------
+
 def _render_trading_activity(trading_activity: dict | None, hide_cash: bool) -> tuple[str, str]:
-    """Render turnover, 12m average comparison, and top 5 transactions."""
+    """Render turnover, buy/sell totals, and top 5 transactions."""
     if not trading_activity:
         return "", ""
 
@@ -732,7 +927,6 @@ def _render_trading_activity(trading_activity: dict | None, hide_cash: bool) -> 
     turnover_str = "---" if hide_cash else _fmt_money(turnover, show_sign=False)
     buy_str = "---" if hide_cash else _fmt_money(buy_total, show_sign=False)
     sell_str = "---" if hide_cash else _fmt_money(sell_total, show_sign=False)
-    avg_12m_str = "---" if hide_cash else (_fmt_money(avg_12m, show_sign=False) if avg_12m is not None else None)
 
     comp_html = ""
     comp_text = ""
@@ -743,103 +937,97 @@ def _render_trading_activity(trading_activity: dict | None, hide_cash: bool) -> 
             max_v = max(curr_val, avg_val, 1.0)
             curr_pct = max(int((curr_val / max_v) * 100), 4)
             avg_pct = max(int((avg_val / max_v) * 100), 4)
-
             diff_pct = ((curr_val - avg_val) / avg_val * 100) if avg_val > 0 else 0.0
             sign = "+" if diff_pct > 0 else ""
             diff_chip = f"{sign}{diff_pct:.0f}% vs 12m avg"
+            bar_color = "#4ade80" if diff_pct >= 0 else "#94a3b8"
 
-            comp_html = f"""<div style="margin: 12px 0 16px;">
-              <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="4">
-                <tr>
-                  <td width="90" style="font-size: 11px; color: #94a3b8;">This Month</td>
-                  <td>
-                    <div style="background-color: #1e293b; border-radius: 4px; overflow: hidden; height: 12px;">
-                      <div style="background-color: #3b82f6; width: {curr_pct}%; height: 12px; border-radius: 4px;"></div>
-                    </div>
-                  </td>
-                  <td width="90" align="right" style="font-size: 11px; font-weight: 700; color: #f8fafc;">{turnover_str}</td>
-                </tr>
-                <tr>
-                  <td width="90" style="font-size: 11px; color: #64748b;">12m Average</td>
-                  <td>
-                    <div style="background-color: #1e293b; border-radius: 4px; overflow: hidden; height: 12px;">
-                      <div style="background-color: #475569; width: {avg_pct}%; height: 12px; border-radius: 4px;"></div>
-                    </div>
-                  </td>
-                  <td width="90" align="right" style="font-size: 11px; color: #94a3b8;">{avg_12m_str}</td>
-                </tr>
-              </table>
-              <div style="font-size: 10px; color: {'#4ade80' if diff_pct > 0 else '#94a3b8'}; text-align: right; margin-top: 4px;">{diff_chip}</div>
-            </div>"""
+            comp_html = (
+                '<div style="margin:12px 0 16px;">'
+                '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="4">'
+                '<tr>'
+                '<td width="100" style="font-size:11px;color:#94a3b8;">This Month</td>'
+                '<td><div style="background-color:#1a2540;border-radius:3px;overflow:hidden;height:10px;">'
+                f'<div style="background-color:{bar_color};width:{curr_pct}%;height:10px;border-radius:3px;"></div></div></td>'
+                f'<td width="100" align="right" style="font-size:11px;font-weight:700;color:#f8fafc;">{turnover_str}</td>'
+                '</tr>'
+                '<tr>'
+                '<td width="100" style="font-size:11px;color:#64748b;">12m Average</td>'
+                '<td><div style="background-color:#1a2540;border-radius:3px;overflow:hidden;height:10px;">'
+                f'<div style="background-color:#334155;width:{avg_pct}%;height:10px;border-radius:3px;"></div></div></td>'
+                f'<td width="100" align="right" style="font-size:11px;color:#64748b;">{_fmt_money(avg_12m, show_sign=False)}</td>'
+                '</tr></table>'
+                f'<div style="font-size:10px;color:{"#4ade80" if diff_pct >= 0 else "#94a3b8"};text-align:right;margin-top:4px;">{diff_chip}</div>'
+                '</div>'
+            )
             comp_text = f" ({diff_chip})"
         except (ValueError, TypeError):
             pass
 
-    buy_sell_html = f"""<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 12px;">
-      <tr>
-        <td style="font-size: 12px; color: #94a3b8;">
-          BUY total: <strong style="color: #4ade80;">{buy_str}</strong> &nbsp;&bull;&nbsp;
-          SELL total: <strong style="color: #f87171;">{sell_str}</strong>
-        </td>
-      </tr>
-    </table>"""
+    buy_sell_html = (
+        f'<div style="font-size:12px;color:#94a3b8;margin-bottom:14px;">'
+        f'Bought: <strong style="color:#4ade80;">{buy_str}</strong>&nbsp;&bull;&nbsp;'
+        f'Sold: <strong style="color:#f87171;">{sell_str}</strong>'
+        '</div>'
+    )
 
     tx_rows_html = []
     tx_text_lines = []
     for tx in largest_txs[:5]:
         d = str(tx.get("date") or "")
         k = str(tx.get("type") or "").upper()
-        ticker = str(tx.get("ticker") or "—")
+        ticker = str(tx.get("ticker") or "\u2014")
         v = tx.get("value_pln")
         v_str = "---" if hide_cash else _fmt_money(v, show_sign=False)
-
-        badge_bg = "rgba(74, 222, 128, 0.15)" if k == "BUY" else "rgba(248, 113, 113, 0.12)"
+        badge_bg = "#132d1f" if k == "BUY" else "#2e1115"
         badge_color = "#4ade80" if k == "BUY" else "#f87171"
-
-        row = f"""<tr>
-          <td style="padding: 7px 10px; font-size: 12px; color: #94a3b8; border-top: 1px solid #1e293b;">{d}</td>
-          <td style="padding: 7px 10px; font-size: 10px; border-top: 1px solid #1e293b;">
-            <span style="background-color: {badge_bg}; color: {badge_color}; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{k}</span>
-          </td>
-          <td style="padding: 7px 10px; font-size: 12px; font-weight: 600; color: #f8fafc; border-top: 1px solid #1e293b;">{ticker}</td>
-          <td align="right" style="padding: 7px 10px; font-size: 12px; color: #cbd5e1; border-top: 1px solid #1e293b;">{v_str}</td>
-        </tr>"""
+        row = (
+            '<tr>'
+            f'<td style="padding:8px 0;font-size:12px;color:#64748b;border-top:1px solid #1a2540;width:80px;">{d}</td>'
+            f'<td style="padding:8px 6px;border-top:1px solid #1a2540;width:50px;">'
+            f'<span style="background-color:{badge_bg};color:{badge_color};padding:2px 8px;border-radius:4px;font-size:10px;font-weight:800;">{k}</span></td>'
+            f'<td style="padding:8px 0;font-size:13px;font-weight:600;color:#f8fafc;border-top:1px solid #1a2540;">{ticker}</td>'
+            f'<td align="right" style="padding:8px 0;font-size:12px;color:#94a3b8;border-top:1px solid #1a2540;">{v_str}</td>'
+            '</tr>'
+        )
         tx_rows_html.append(row)
         tx_text_lines.append(f"  - {d} {k} {ticker}: {v_str}")
 
     if tx_rows_html:
-        tx_table_html = f"""<div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #94a3b8; margin: 10px 0 8px;">TOP 5 TRANSACTIONS</div>
-        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #1a233a; border-radius: 8px; border: 1px solid #24304d; overflow: hidden;">
-          {''.join(tx_rows_html)}
-        </table>"""
+        tx_table_html = (
+            '<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748b;margin:16px 0 6px;">TOP TRANSACTIONS</div>'
+            '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">'
+            + "".join(tx_rows_html)
+            + "</table>"
+        )
     else:
-        tx_table_html = '<div style="font-size: 12px; color: #64748b; font-style: italic; margin-top: 8px;">No trades executed this month</div>'
+        tx_table_html = '<div style="font-size:12px;color:#475569;font-style:italic;margin-top:8px;">No trades executed this month.</div>'
 
-    html_block = f"""
-    <!-- Section 7: Trading Activity -->
-    <tr>
-      <td style="padding: 0 24px 28px;">
-        <div style="background-color: #131d33; border: 1px solid #24304d; border-radius: 12px; padding: 18px 16px;">
-          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
-            <tr>
-              <td>
-                <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">TRADING ACTIVITY</div>
-                <div style="font-size: 20px; font-weight: 800; color: #f8fafc; margin-top: 4px;">Turnover: {turnover_str}</div>
-              </td>
-            </tr>
-          </table>
-          {comp_html}
-          {buy_sell_html}
-          {tx_table_html}
-        </div>
-      </td>
-    </tr>"""
+    chapter_hdr = _chapter_header(
+        "TRADING ACTIVITY",
+        f"Turnover: {turnover_str}.",
+        f"You moved {turnover_str} through the market this month.",
+    )
 
-    text_block = f"• Trading Activity: Turnover {turnover_str}{comp_text} (Buy: {buy_str}, Sell: {sell_str})\n" + (
-        "• Top Transactions:\n" + "\n".join(tx_text_lines) if tx_text_lines else ""
+    html_block = (
+        "\n    <!-- Chapter 6: Trading Activity -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        + chapter_hdr
+        + comp_html
+        + buy_sell_html
+        + tx_table_html
+        + "\n      </td>\n    </tr>"
+    )
+
+    text_block = (
+        f"\u2022 Trading Activity: Turnover {turnover_str}{comp_text} (Buy: {buy_str}, Sell: {sell_str})\n"
+        + ("".join([f"\n  - {tl}" for tl in tx_text_lines]) if tx_text_lines else "")
     )
     return html_block, text_block
 
+
+# ---------------------------------------------------------------------------
+# Main render function
+# ---------------------------------------------------------------------------
 
 def render_monthly_recap_email(
     user_profile: dict,
@@ -877,7 +1065,6 @@ def render_monthly_recap_email(
     max_dd = wrap_document.get("max_drawdown_pct")
     max_dd_str = _fmt_pct(max_dd, show_sign=False)
 
-    # Benchmark resolution
     journey = wrap_document.get("journey") or {}
     benchmark_id = (
         wrap_document.get("benchmark_id")
@@ -897,14 +1084,12 @@ def render_monthly_recap_email(
                     benchmark_name = ctx.get("name") or benchmark_id
                 break
 
-    # Fall back to root or journey benchmark_return_pct if not in market_context
     if benchmark_ret is None:
         benchmark_ret = wrap_document.get("benchmark_return_pct")
     if benchmark_ret is None:
         benchmark_ret = journey.get("benchmark_return_pct")
     benchmark_str = _fmt_pct(benchmark_ret, show_sign=True)
 
-    # World benchmark from market_context
     world_ret = None
     if isinstance(wrap_document.get("market_context"), list):
         for ctx in wrap_document["market_context"]:
@@ -914,85 +1099,90 @@ def render_monthly_recap_email(
     world_str = _fmt_pct(world_ret, show_sign=True)
 
     best_wallet = wrap_document.get("best_efficiency_wallet") or {}
-    best_wallet_name = best_wallet.get("name") or "—"
+    best_wallet_name = best_wallet.get("name") or "\u2014"
     best_wallet_twr = _fmt_pct(best_wallet.get("twr_pct"), show_sign=True)
+    best_wallet_twr_val = best_wallet.get("twr_pct")
 
     profit_wallet = wrap_document.get("primary_profit_engine_wallet") or {}
-    profit_wallet_name = profit_wallet.get("name") or "—"
+    profit_wallet_name = profit_wallet.get("name") or "\u2014"
     profit_wallet_nominal = "---" if hide_cash else _fmt_money(profit_wallet.get("nominal_change_pln"), show_sign=True)
 
     app_url = os.environ.get("APP_URL", "https://roastfolio.app")
 
-    # Direction styling
     try:
         twr_val = float(overall_twr or 0)
     except (ValueError, TypeError):
         twr_val = 0.0
 
     if twr_val > 0:
-        accent_color = "#4ade80"  # emerald-400
-        headline = "A little more momentum."
+        accent_color = "#4ade80"
+        hero_headline = "A strong month."
+        hero_subline = f"Your portfolio returned {twr_str} in {period_title}."
     elif twr_val < 0:
-        accent_color = "#f87171"  # red-400
-        headline = "A step back. The story continues."
+        accent_color = "#f87171"
+        hero_headline = "The market tested you."
+        hero_subline = f"Your portfolio returned {twr_str} in {period_title}."
     else:
-        accent_color = "#94a3b8"  # slate-400
-        headline = "Holding your ground."
+        accent_color = "#94a3b8"
+        hero_headline = "Holding your ground."
+        hero_subline = f"Your portfolio returned {twr_str} in {period_title}."
 
-    # Subject line
-    subject = f"Roastfolio Monthly Recap — {period_title} ({twr_str})"
+    try:
+        bench_diff = twr_val - float(benchmark_ret or 0)
+        bench_diff_label = f"{'+' if bench_diff > 0 else ''}{bench_diff:.2f}pp vs {benchmark_id}"
+        bench_diff_color = "#4ade80" if bench_diff > 0 else "#f87171"
+    except (ValueError, TypeError):
+        bench_diff_label = benchmark_str
+        bench_diff_color = "#94a3b8"
 
-    # Render modular sections
+    subject = f"Roastfolio Monthly Recap \u2014 {period_title} ({twr_str})"
+
     period_key = str(wrap_document.get("period") or "")
     journey_html, journey_text = _render_svg_journey_chart(
         journey,
         benchmark_id=benchmark_id,
         period=period_key,
         benchmark_return_pct=benchmark_ret,
+        portfolio_twr_pct=twr_val if overall_twr is not None else None,
     )
-    calendar_html, calendar_text = _render_calendar_heatmap(
-        wrap_document, hide_cash=hide_cash
-    )
+    calendar_html, calendar_text = _render_calendar_heatmap(wrap_document, hide_cash=hide_cash)
     leader_anchor_html, leader_anchor_text = _render_leader_anchor(
         wrap_document.get("carry"), wrap_document.get("anchor"), hide_cash
     )
     market_context_html, market_context_text = _render_market_context_and_seasonality(
-        wrap_document, period_title
+        wrap_document, period_title, portfolio_twr_pct=twr_val if overall_twr is not None else None
     )
-    trading_html, trading_text = _render_trading_activity(
-        wrap_document.get("trading_activity"), hide_cash
-    )
+    trading_html, trading_text = _render_trading_activity(wrap_document.get("trading_activity"), hide_cash)
 
-    # Plain text version
+    # Plain text
     if hide_cash:
-        cash_flow_line = "• Net Cash Flow:               --- (amounts hidden)"
-        nominal_line = "• Nominal Change:              --- (amounts hidden)"
-        profit_wallet_line = f"• Primary Profit Engine:       {profit_wallet_name} (---)"
+        cash_flow_line = "\u2022 Net Cash Flow:               --- (amounts hidden)"
+        nominal_line = "\u2022 Nominal Change:              --- (amounts hidden)"
+        profit_wallet_line = f"\u2022 Primary Profit Engine:       {profit_wallet_name} (---)"
     else:
-        cash_flow_line = f"• Net Cash Flow:               {cash_flow_str} (Deposits: {deposits_str}, Withdrawals: {withdrawals_str})"
-        nominal_line = f"• Nominal Change:              {nominal_str}"
-        profit_wallet_line = f"• Primary Profit Engine:       {profit_wallet_name} ({profit_wallet_nominal})"
+        cash_flow_line = f"\u2022 Net Cash Flow:               {cash_flow_str} (Deposits: {deposits_str}, Withdrawals: {withdrawals_str})"
+        nominal_line = f"\u2022 Nominal Change:              {nominal_str}"
+        profit_wallet_line = f"\u2022 Primary Profit Engine:       {profit_wallet_name} ({profit_wallet_nominal})"
 
     text_lines = [
         f"ROASTFOLIO MONTHLY RECAP: {period_title.upper()}",
         "=" * 44,
         f"Hello {nickname},",
         "",
-        headline,
+        hero_headline,
         "",
-        f"• Time-Weighted Return (TWR): {twr_str}",
+        f"\u2022 Time-Weighted Return (TWR): {twr_str}",
         nominal_line,
         cash_flow_line,
-        f"• Benchmark ({benchmark_id}):           {benchmark_str}",
-        f"• World (MSCI World):          {world_str}",
-        f"• Maximum Drawdown:            {max_dd_str}",
+        f"\u2022 Benchmark ({benchmark_id}):           {benchmark_str}",
+        f"\u2022 World (MSCI World):          {world_str}",
+        f"\u2022 Maximum Drawdown:            {max_dd_str}",
         "",
         "PORTFOLIO HIGHLIGHTS:",
-        f"• Best Return Wallet:          {best_wallet_name} ({best_wallet_twr})",
+        f"\u2022 Best Return Wallet:          {best_wallet_name} ({best_wallet_twr})",
         profit_wallet_line,
         "",
     ]
-
     if journey_text:
         text_lines.extend([journey_text, ""])
     if calendar_text:
@@ -1003,7 +1193,6 @@ def render_monthly_recap_email(
         text_lines.extend([market_context_text, ""])
     if trading_text:
         text_lines.extend([trading_text, ""])
-
     text_lines.extend([
         f"View your interactive audit & shareable card: {app_url}",
         "",
@@ -1013,134 +1202,111 @@ def render_monthly_recap_email(
     ])
     text_body = "\n".join(text_lines)
 
-    # Subtitles for cards in privacy mode vs normal mode
-    nominal_sub = '<div style="font-size: 11px; color: #64748b; margin-top: 2px;">Amounts hidden (privacy mode)</div>' if hide_cash else ''
+    # Hero stat pills
+    hero_pills = (
+        '<table role="presentation" border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto; margin-top: 24px;">'
+        '<tr>'
+        '<td style="padding: 0 5px;">'
+        '<div style="background-color:#0d1525;border:1px solid #1a2540;border-radius:20px;padding:8px 16px;text-align:center;">'
+        '<div style="font-size:9px;color:#64748b;font-weight:700;letter-spacing:0.5px;margin-bottom:2px;">GAIN / LOSS</div>'
+        f'<div style="font-size:14px;font-weight:700;color:#f0fdf4;">{nominal_str}</div>'
+        '</div></td>'
+        '<td style="padding: 0 5px;">'
+        '<div style="background-color:#0d1525;border:1px solid #1a2540;border-radius:20px;padding:8px 16px;text-align:center;">'
+        '<div style="font-size:9px;color:#64748b;font-weight:700;letter-spacing:0.5px;margin-bottom:2px;">MAX DRAWDOWN</div>'
+        f'<div style="font-size:14px;font-weight:700;color:#94a3b8;">{max_dd_str}</div>'
+        '</div></td>'
+        '<td style="padding: 0 5px;">'
+        '<div style="background-color:#0d1525;border:1px solid #1a2540;border-radius:20px;padding:8px 16px;text-align:center;">'
+        f'<div style="font-size:9px;color:#64748b;font-weight:700;letter-spacing:0.5px;margin-bottom:2px;">{benchmark_id.upper()}</div>'
+        f'<div style="font-size:14px;font-weight:700;color:{bench_diff_color};">{bench_diff_label}</div>'
+        '</div></td>'
+        '</tr></table>'
+    )
 
-    # HTML version
-    html_body = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{subject}</title>
-  <style>
-    @media only screen and (max-width: 600px) {{
-      .email-container {{ width: 100% !important; border-radius: 0 !important; }}
-      .hero-number {{ font-size: 42px !important; }}
-      .stack-mobile {{ display: block !important; width: 100% !important; }}
-      .stack-mobile-cell {{ display: block !important; width: 100% !important; padding: 0 0 8px 0 !important; }}
-    }}
-  </style>
-</head>
-<body style="margin: 0; padding: 24px 12px; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f1f5f9; -webkit-font-smoothing: antialiased;">
-  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="email-container" style="max-width: 580px; margin: 0 auto; background-color: #131b2e; border-radius: 16px; border: 1px solid #1e293b; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);">
-    <!-- Section 1: Header -->
-    <tr>
-      <td style="padding: 28px 32px 20px; border-bottom: 1px solid #1e293b;">
-        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
-          <tr>
-            <td>
-              <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">roastfolio</span>
-            </td>
-            <td align="right">
-              <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #94a3b8; background-color: #1e293b; padding: 4px 10px; border-radius: 12px;">{period_title}</span>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+    # Wallet mini-strip
+    bw_twr_color = _color_for_value(best_wallet_twr_val)
+    wallet_html = ""
+    if best_wallet_name != "\u2014" or profit_wallet_name != "\u2014":
+        wallet_html = (
+            "\n    <!-- Wallet mini-strip -->\n    <tr>\n      <td style=\"padding: 0 32px 36px;\">"
+            '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">'
+            '<tr><td style="font-size:12px;color:#64748b;padding-bottom:6px;border-top:1px solid #1a2540;padding-top:14px;">'
+            f'Best Return Wallet &mdash; <strong style="color:#94a3b8;">{best_wallet_name}</strong>'
+            f'<span style="color:{bw_twr_color};">&nbsp;{best_wallet_twr}</span>'
+            '</td></tr>'
+            '<tr><td style="font-size:12px;color:#64748b;padding-bottom:4px;">'
+            f'Primary Profit Engine &mdash; <strong style="color:#94a3b8;">{profit_wallet_name}</strong>'
+            f'<span style="color:#94a3b8;">&nbsp;{profit_wallet_nominal}</span>'
+            '</td></tr></table>'
+            "\n      </td>\n    </tr>"
+        )
 
-    <!-- Section 2: Hero Return & Bento Cards -->
-    <tr>
-      <td style="padding: 32px 32px 20px; text-align: center;">
-        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8;">TIME-WEIGHTED RETURN</span>
-        <div class="hero-number" style="font-size: 52px; font-weight: 800; letter-spacing: -2px; color: {accent_color}; margin: 8px 0 4px;">{twr_str}</div>
-        <div style="font-size: 15px; color: #cbd5e1; font-weight: 500;">{headline}</div>
-      </td>
-    </tr>
+    sep = _chapter_separator()
 
-    <!-- Bento Metric Cards (2x2) -->
-    <tr>
-      <td style="padding: 0 24px 20px;">
-        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="8" class="stack-mobile">
-          <tr>
-            <td width="50%" style="background-color: #1a233a; border-radius: 12px; padding: 16px; border: 1px solid #24304d;" class="stack-mobile-cell">
-              <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Nominal Gain/Loss</div>
-              <div style="font-size: 20px; font-weight: 700; color: #f8fafc; margin-top: 4px;">{nominal_str}</div>
-              {nominal_sub}
-            </td>
-            <td width="50%" style="background-color: #1a233a; border-radius: 12px; padding: 16px; border: 1px solid #24304d;" class="stack-mobile-cell">
-              <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Benchmark ({benchmark_id})</div>
-              <div style="font-size: 20px; font-weight: 700; color: #f8fafc; margin-top: 4px;">{benchmark_str}</div>
-              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Selected comparison</div>
-            </td>
-          </tr>
-          <tr>
-            <td width="50%" style="background-color: #1a233a; border-radius: 12px; padding: 16px; border: 1px solid #24304d;" class="stack-mobile-cell">
-              <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">World (MSCI World)</div>
-              <div style="font-size: 20px; font-weight: 700; color: #f8fafc; margin-top: 4px;">{world_str}</div>
-              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Global equities benchmark</div>
-            </td>
-            <td width="50%" style="background-color: #1a233a; border-radius: 12px; padding: 16px; border: 1px solid #24304d;" class="stack-mobile-cell">
-              <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Max Drawdown</div>
-              <div style="font-size: 20px; font-weight: 700; color: #f8fafc; margin-top: 4px;">{max_dd_str}</div>
-              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Peak-to-trough low</div>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-
-    <!-- Wallet Highlights -->
-    <tr>
-      <td style="padding: 0 24px 24px;">
-        <div style="background-color: #182035; border-radius: 12px; padding: 16px 20px; border: 1px solid #24304d;">
-          <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="font-size: 13px; color: #94a3b8; padding-bottom: 6px;">Best Return Wallet</td>
-              <td align="right" style="font-size: 13px; font-weight: 600; color: #f8fafc; padding-bottom: 6px;">{best_wallet_name} <span style="color: #4ade80;">({best_wallet_twr})</span></td>
-            </tr>
-            <tr>
-              <td style="font-size: 13px; color: #94a3b8;">Primary Profit Engine</td>
-              <td align="right" style="font-size: 13px; font-weight: 600; color: #f8fafc;">{profit_wallet_name} <span style="color: #94a3b8;">({profit_wallet_nominal})</span></td>
-            </tr>
-          </table>
-        </div>
-      </td>
-    </tr>
-
-    {journey_html}
-    {calendar_html}
-    {leader_anchor_html}
-    {market_context_html}
-    {trading_html}
-
-    <!-- Section 8: CTA Button -->
-    <tr>
-      <td align="center" style="padding: 8px 32px 36px;">
-        <a href="{app_url}" target="_blank" style="display: inline-block; background-color: #3b82f6; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 700; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);">
-          View Full Recap in Roastfolio &rarr;
-        </a>
-      </td>
-    </tr>
-
-    <!-- Footer -->
-    <tr>
-      <td style="padding: 20px 32px; background-color: #0e1424; border-top: 1px solid #1e293b; text-align: center;">
-        <p style="margin: 0 0 6px; font-size: 12px; color: #64748b;">
-          You received this report because email notifications are enabled for your Roastfolio account.
-        </p>
-        <p style="margin: 0; font-size: 11px; color: #475569;">
-          Powered by TOMINEX &bull; Roastfolio Investment History &bull; Not investment advice.
-        </p>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>"""
+    html_body = (
+        '<!DOCTYPE html>\n<html lang="en">\n<head>\n'
+        '  <meta charset="utf-8">\n'
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        f'  <title>{subject}</title>\n'
+        '  <style>\n'
+        '    @media only screen and (max-width: 600px) {\n'
+        '      .email-container { width: 100% !important; border-radius: 0 !important; }\n'
+        '      .hero-number { font-size: 52px !important; }\n'
+        '    }\n'
+        '  </style>\n'
+        '</head>\n'
+        '<body style="margin:0;padding:20px 12px;background-color:#050813;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;-webkit-font-smoothing:antialiased;">\n'
+        '  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="email-container"'
+        ' style="max-width:600px;margin:0 auto;background-color:#07091A;border-radius:16px;border:1px solid #1a2540;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.6);">\n\n'
+        # HEADER
+        '    <!-- HEADER -->\n'
+        '    <tr>\n      <td style="padding:20px 32px 18px;border-bottom:1px solid #1a2540;">\n'
+        '        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"><tr>\n'
+        '          <td><span style="font-size:18px;font-weight:800;letter-spacing:-0.5px;color:#ffffff;">roastfolio</span></td>\n'
+        f'          <td align="right"><span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748b;">{period_title.upper()}</span></td>\n'
+        '        </tr></table>\n      </td>\n    </tr>\n\n'
+        # HERO
+        '    <!-- CHAPTER 1: HERO -->\n'
+        '    <tr>\n'
+        '      <td style="padding:52px 32px 44px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#0d1d35 0%,#07091A 70%);">\n'
+        f'        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:14px;">YOUR MONTHLY RECAP &bull; {period_title.upper()}</div>\n'
+        f'        <div style="font-size:15px;color:#94a3b8;margin-bottom:10px;">Hello, {nickname}.</div>\n'
+        f'        <div class="hero-number" style="font-size:72px;font-weight:800;letter-spacing:-3px;color:{accent_color};line-height:1;margin-bottom:12px;">{twr_str}</div>\n'
+        f'        <div style="font-size:18px;font-weight:600;color:#f8fafc;margin-bottom:6px;">{hero_headline}</div>\n'
+        f'        <div style="font-size:14px;color:#64748b;margin-bottom:24px;">{hero_subline}</div>\n'
+        f'        {hero_pills}\n'
+        '      </td>\n    </tr>\n\n'
+        + wallet_html
+        + sep + journey_html
+        + sep + calendar_html
+        + (sep + leader_anchor_html if leader_anchor_html else "")
+        + sep + market_context_html
+        + (sep + trading_html if trading_html else "")
+        # CTA
+        + '\n    <!-- CTA -->\n'
+        '    <tr><td style="padding:0;"><div style="height:1px;background-color:#1a2540;"></div></td></tr>\n'
+        '    <tr>\n      <td align="center" style="padding:40px 32px 44px;">\n'
+        '        <div style="font-size:13px;color:#64748b;margin-bottom:20px;">Ready to go deeper?</div>\n'
+        f'        <a href="{app_url}" target="_blank"'
+        ' style="display:inline-block;background-color:#3b82f6;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 36px;border-radius:100px;letter-spacing:0.3px;">'
+        'Open Full Audit &rarr;</a>\n'
+        '      </td>\n    </tr>\n\n'
+        # FOOTER
+        '    <!-- FOOTER -->\n'
+        '    <tr>\n      <td style="padding:20px 32px;background-color:#050813;border-top:1px solid #1a2540;text-align:center;">\n'
+        '        <p style="margin:0 0 4px;font-size:11px;color:#475569;">You received this because email notifications are enabled for your Roastfolio account.</p>\n'
+        '        <p style="margin:0;font-size:10px;color:#334155;">Powered by TOMINEX &bull; Roastfolio Investment History &bull; Not investment advice.</p>\n'
+        '      </td>\n    </tr>\n\n'
+        '  </table>\n</body>\n</html>'
+    )
 
     return subject, text_body, html_body
 
+
+# ---------------------------------------------------------------------------
+# Send helpers
+# ---------------------------------------------------------------------------
 
 def send_monthly_recap_email(
     user_profile: dict,
