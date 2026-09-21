@@ -4,7 +4,8 @@
 - If doing multiple things, divide the changes into separate commits so they can be easily reverted.
 
 ## Branching Strategy
-- You may merge and push changes to the `test` or `prod` branches when explicitly asked to do so by the user. By default, only commit and push directly to the `dev` branch.
+- By default, you should commit and push changes to the `dev` branch, and then merge and push them to the `test` branch.
+- You must wait for explicit permission from the user before merging and pushing to the `prod` branch.
 
 ## Release Versioning & Deployment
 - When deploying/pushing changes to `dev` (and subsequently `test` or `prod`), ALWAYS bump the version according to the release numbering policy:

@@ -1139,10 +1139,8 @@
                 ingestItems(payload.items || []);
             }
             const latest = [...state.items.keys()].sort().pop();
-            state.selectedPeriod = latest || latestExpectedPeriod();
-            state.selectedYear = Number(state.selectedPeriod.slice(0, 4));
             state.initialized = true;
-            renderReport();
+            await window.selectMonthlyAuditPeriod(latest || latestExpectedPeriod());
         } catch (error) {
             renderError(error.message);
         } finally {
