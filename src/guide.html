@@ -1447,6 +1447,9 @@
     <h3 id="interactive-audit">Interactive Audit View</h3>
     <p>Inside the app, you can view past monthly audits under the <strong>History</strong> screen. Selecting a month opens an immersive, full-screen interactive view that mirrors your email report but includes deeper breakdowns and hover interactions for daily data.</p>
 
+    <h3 id="live-mtd">Live Month-to-Date (MTD)</h3>
+    <p>In addition to historical audits, the <strong>History</strong> screen features a <em>Live Month-to-Date</em> report. This report acts exactly like a monthly wrapped audit, but it is generated dynamically using your latest live transactions. It clearly marks itself with a "Live Month-to-Date" badge, keeping you updated on the current month's trajectory in real-time.</p>
+
     <div class="callout info">
       <strong>Pro Tip:</strong> 
       <p>Holdings in your email reports and UI are intelligently cleaned for better readability (e.g., stripping Polish "S.A." suffixes), focusing on the holding's clean name rather than raw ticker symbols whenever possible.</p>
@@ -1927,7 +1930,7 @@
     <p>Roastfolio is built and maintained by <strong>TOMINEX</strong>. To provide full transparency and predictable updates, our releases follow a three-tier semantic versioning structure:</p>
 
     <div class="callout ok">
-      <p><strong>Current Active Release:</strong> <code>v13.2.0</code> &mdash; Powered by <strong>TOMINEX</strong></p>
+      <p><strong>Current Active Release:</strong> <code>v13.2.1</code> &mdash; Powered by <strong>TOMINEX</strong></p>
     </div>
 
     <p>Every release follows the <code>MAJOR.MINOR.SERVICE</code> pattern (e.g. <code>11.5.0</code>), with each component signaling a distinct scope of changes:</p>
@@ -1983,414 +1986,97 @@
       <p><strong>The tone lives in copy, not chrome.</strong> Roastfolio's sarcasm comes from error messages, milestone notifications, and empty states. The UI itself is as premium as Revolut. Users need to trust the app with financial data — humor and visual roughness don't mix well in fintech.</p>
     </div>
 
-    <p>Design inspiration: Revolut · Robinhood · Coinbase · TradingView · Apple Fitness · Linear</p>
-
     <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-colors">Color Palette</h3>
-
-    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Background depth layers</h4>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#090f18"></div><div class="ds-color-meta"><div class="name">bg-base</div><div class="value">#090f18</div><div class="role">Page background — deepest layer</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#0e1a2a"></div><div class="ds-color-meta"><div class="name">bg-surface</div><div class="value">#0e1a2a</div><div class="role">Cards, panels</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#132032"></div><div class="ds-color-meta"><div class="name">bg-surface-raised</div><div class="value">#132032</div><div class="role">Elevated cards, overlays</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#1a2c42"></div><div class="ds-color-meta"><div class="name">bg-surface-strong</div><div class="value">#1a2c42</div><div class="role">Interactive surfaces, hover states</div></div></div>
-
-    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Brand accent</h4>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#2b88cf"></div><div class="ds-color-meta"><div class="name">accent</div><div class="value">#2b88cf</div><div class="role">Primary brand blue — buttons, links, active states</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#36a3f0"></div><div class="ds-color-meta"><div class="name">accent-strong</div><div class="value">#36a3f0</div><div class="role">Hover, active, gradient end</div></div></div>
-
-    <p style="font-size:13px;color:var(--muted);margin-top:8px;">This specific blue — not Robinhood green, not Coinbase deep blue — lands in "trustworthy retail bank that's cooler than your actual bank." Saturated enough to feel premium, desaturated enough to not feel crypto-scammy. Green is avoided as a brand accent because it is semantically loaded in finance (it means <em>profit</em>).</p>
-
-    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Semantic colors</h4>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#27ae60"></div><div class="ds-color-meta"><div class="name">success</div><div class="value">#27ae60</div><div class="role">Profit, positive P/L, confirmations</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#c0392b"></div><div class="ds-color-meta"><div class="name">danger</div><div class="value">#c0392b</div><div class="role">Loss, negative P/L, destructive actions</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#e67e22"></div><div class="ds-color-meta"><div class="name">warning</div><div class="value">#e67e22</div><div class="role">Pending states, caution</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#7fa4c4"></div><div class="ds-color-meta"><div class="name">neutral</div><div class="value">#7fa4c4</div><div class="role">Flat / no-change states</div></div></div>
-
-    <h4 style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 10px;">Text hierarchy</h4>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#e8f0f8;border:1px solid rgba(255,255,255,0.2)"></div><div class="ds-color-meta"><div class="name">text-primary</div><div class="value">#e8f0f8</div><div class="role">Headlines, financial values — blue-tinted white (avoids harsh pure white on OLED)</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#a8c0d8"></div><div class="ds-color-meta"><div class="name">text-secondary</div><div class="value">#a8c0d8</div><div class="role">Labels, captions</div></div></div>
-    <div class="ds-color-swatch"><div class="ds-color-dot" style="background:#6a8ba8"></div><div class="ds-color-meta"><div class="name">text-muted</div><div class="value">#6a8ba8</div><div class="role">Metadata, hints, secondary info</div></div></div>
-
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-typography">Typography</h3>
-    <p>System font stack — <code>ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif</code>. On iPhone, this resolves to SF Pro; on macOS, SF Pro or Helvetica Neue; on Android, Roboto; on Windows, Segoe UI. Zero network cost, perfect rendering, device-tuned letter spacing.</p>
-    <p><code>-webkit-font-smoothing: antialiased</code> and <code>text-rendering: optimizeLegibility</code> are applied globally so text appears sharp on retina and ProMotion displays. <code>font-variant-numeric: tabular-nums</code> is applied to all financial figures — keeping column alignment stable and preventing number-jank during live value updates.</p>
-
-    <div class="ds-type-row">
-      <div class="ds-type-sample" style="font-size:clamp(2.2rem,8vw,3.2rem);font-weight:700;letter-spacing:-0.04em;line-height:1;">143,240.00</div>
-      <div class="ds-type-meta">display · 700 · −0.04em · portfolio total</div>
-    </div>
-    <div class="ds-type-row">
-      <div class="ds-type-sample" style="font-size:clamp(1.5rem,4vw,1.85rem);font-weight:700;letter-spacing:-0.02em;">Wallet Management</div>
-      <div class="ds-type-meta">h1 · 700 · screen titles</div>
-    </div>
-    <div class="ds-type-row">
-      <div class="ds-type-sample" style="font-size:1.2rem;font-weight:700;">Holdings</div>
-      <div class="ds-type-meta">h2 · 700 · card titles</div>
-    </div>
-    <div class="ds-type-row">
-      <div class="ds-type-sample" style="font-size:0.9375rem;">CD Projekt — 10 units</div>
-      <div class="ds-type-meta">body · 15px · primary content</div>
-    </div>
-    <div class="ds-type-row">
-      <div class="ds-type-sample" style="font-size:0.8125rem;color:var(--muted);">CDR.WA · Live holding</div>
-      <div class="ds-type-meta">label · 13px · metadata, captions</div>
-    </div>
-    <div class="ds-type-row">
-      <div class="ds-type-sample" style="font-size:0.6875rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);">Select wallet</div>
-      <div class="ds-type-meta">micro · 11px · all-caps labels</div>
-    </div>
-
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-spacing">Spacing &amp; Grid</h3>
-    <p>4px base unit — matches the iOS and Android native layout grid. Every spacing value is a multiple of 4, which means composed layouts snap to device pixels and feel native rather than web-ported. At 3× pixel density (iPhone 15 Pro), a 4px CSS unit is 12 physical pixels — sharper-than-retina rendering for borders and shadows.</p>
-
-    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:4px"></div><div class="ds-spacing-label">4px — space-1 · micro gap</div></div>
-    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:8px"></div><div class="ds-spacing-label">8px — space-2 · tight gap</div></div>
-    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:12px"></div><div class="ds-spacing-label">12px — space-3 · compact padding</div></div>
-    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:16px"></div><div class="ds-spacing-label">16px — space-4 · base card padding / screen gutter</div></div>
-    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:24px"></div><div class="ds-spacing-label">24px — space-6 · section gaps</div></div>
-    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:32px"></div><div class="ds-spacing-label">32px — space-8 · large section separation</div></div>
-    <div class="ds-spacing-row"><div class="ds-spacing-bar" style="width:44px;background:var(--yellow)"></div><div class="ds-spacing-label">44px — tap-target · iOS minimum touch target (HIG)</div></div>
-
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-cards">Card System</h3>
-    <p>Cards are the primary content container. No raw tables on mobile, no naked lists. Each card uses <code>border-radius: 16px</code> (the Revolut/Apple standard for modern cards), a 1px semi-transparent blue-tinted border, and an inset top-shadow that simulates light catching the upper rim — borrowed from Apple's glass design language.</p>
-
-    <div class="security-grid">
-      <div class="security-card">
-        <div class="icon">🃏</div>
-        <div class="title">Base card</div>
-        <div class="desc"><code>#0e1a2a</code> background · 1px border at 12% opacity · <code>inset 0 1px 0 rgba(255,255,255,0.04)</code> top edge highlight</div>
-      </div>
-      <div class="security-card">
-        <div class="icon">⬆️</div>
-        <div class="title">Elevated card</div>
-        <div class="desc">Raised surface <code>#132032</code> + drop shadow · used for overlays and action panels</div>
-      </div>
-      <div class="security-card">
-        <div class="icon">👆</div>
-        <div class="title">Interactive card</div>
-        <div class="desc"><code>scale(0.992)</code> on tap — registers as "responded" without feeling like a button press. Same micro-interaction as Apple app icons.</div>
-      </div>
-      <div class="security-card">
-        <div class="icon">📊</div>
-        <div class="title">Holding card</div>
-        <div class="desc">2-row grid: identity + value on top, units · allocation + Buy/Sell on footer. Footer separated by 1px border at 6% opacity.</div>
-      </div>
-    </div>
-
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-buttons">Button System</h3>
-
-    <table>
-      <thead>
-        <tr><th>Variant</th><th>Usage rule</th><th>Key traits</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Primary</strong></td>
-          <td>One per screen. High-value action (Sign in, Save, Confirm trade).</td>
-          <td>Gradient <code>accent → accent-strong</code> + colored box-shadow. 44px height. Scale 0.97 on press.</td>
-        </tr>
-        <tr>
-          <td><strong>Secondary</strong></td>
-          <td>Supporting action alongside primary.</td>
-          <td>Ghost with 1px border. 44px height.</td>
-        </tr>
-        <tr>
-          <td><strong>Ghost</strong></td>
-          <td>Tertiary or destructive context.</td>
-          <td>No border, no background. Danger variant turns red.</td>
-        </tr>
-        <tr>
-          <td><strong>FAB</strong></td>
-          <td>One per page. Always-visible primary mobile action (New Transaction).</td>
-          <td>Fixed position above tab bar. <code>bottom: calc(env(safe-area-inset-bottom) + 72px)</code>. Pill shape. Accent gradient + glow shadow.</td>
-        </tr>
-        <tr>
-          <td><strong>Buy / Sell chips</strong></td>
-          <td>Inline on holding cards.</td>
-          <td>32px height. Green/red tinted background + border. 12px bold text.</td>
-        </tr>
-      </tbody>
-    </table>
+    <h3 id="ds-use-cases">Design System &amp; Use Cases Specification</h3>
+    
+    <p>Roastfolio's components are organized by the core user journeys they support. The system uses a strict set of CSS variables and class structures designed for mobile-first interaction (44px touch targets minimum) with 16px corner radii for large cards and 10px for standard elements.</p>
 
     <div class="callout info">
-      <p><strong>Why gradient on primary?</strong> A flat background on a primary button reads as a toggle. The gradient + shadow creates visual mass that communicates "this is the action" without relying on color alone.</p>
+      <p><strong>Use Cases:</strong> All components map to specific user workflows. If a component does not fit one of these flows, its inclusion must be re-evaluated.</p>
     </div>
 
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-sheets">Bottom Sheets &amp; Modals</h3>
-    <p>Bottom sheets are the correct modal pattern for mobile. They emerge from the direction of the thumb, they don't block the full screen (the user still knows where they are), they match iOS/Android native sheet behavior exactly, and they're trivially dismissible (tap backdrop or swipe down).</p>
+    <h4>1. As a user, I want to review my today return and compare it to the benchmark</h4>
+    <p>This is the primary engagement loop. Users want to quickly check how much money they made (or lost) today, relative to the market.</p>
+    
+    <ul class="steps">
+        <li><strong>Glassmorphic Header Cards:</strong> Used at the very top of the Dashboard. These cards (using <code>.glass-card</code> or <code>.hero-stat</code>) display the <code>window.PORTFOLIO_TOTAL_VALUE</code> and Daily Change metrics prominently. The text uses <code>var(--green)</code> or <code>var(--red)</code> to instantly convey direction.</li>
+        <li><strong>Benchmark Carousel:</strong> A horizontal scrolling list of mini-cards (e.g. S&amp;P 500, WIG) using <code>.bm-mobile-only</code> and <code>.bm-mobile-list</code> for quick swipeable comparison on mobile. Desktop uses a dedicated grid.</li>
+        <li><strong>Portfolio History Chart (The Journey):</strong> An interactive Chart.js canvas (<code>.chart-container</code>) with tension=0.15 lines. Hover states highlight the exact day's return compared to the benchmark.</li>
+    </ul>
 
-    <div class="security-grid">
-      <div class="security-card">
-        <div class="icon">📐</div>
-        <div class="title">Max height: 92dvh</div>
-        <div class="desc"><code>dvh</code> (dynamic viewport height) instead of <code>vh</code> fixes the iOS Safari address-bar bug where <code>100vh</code> includes hidden browser chrome.</div>
+    <h4>2. As a user, I want to add a transaction to my wallet</h4>
+    <p>Users need to securely and accurately log their trades. This flow prioritizes clear inputs and immediate visual validation.</p>
+    
+    <ul class="steps">
+        <li><strong>Bottom Sheets (Mobile) / Modals (Desktop):</strong> Uses <code>.bottom-sheet</code> with a drag handle (<code>.drag-handle</code>) on mobile for a native iOS feel. For desktop, it centers as a modal dialog. Contains the transaction form.</li>
+        <li><strong>Input Fields &amp; Toggle Buttons:</strong> Standardized inputs with <code>var(--surface2)</code> backgrounds and 10px borders. Type toggles (BUY/SELL/DEPOSIT) use <code>.wig-type-btn</code> pill groups to easily switch modes.</li>
+        <li><strong>Toast Notifications (Snackbar):</strong> Upon successful entry, a non-blocking toast (<code>.snackbar</code>) appears to confirm the transaction was recorded without disrupting the flow.</li>
+    </ul>
+
+    <h4>3. As a user, I want to see when I made transactions and how big the turnover was</h4>
+    <p>Users analyzing their trading behavior need to see aggregate volume and chronological lists of trades.</p>
+    
+    <ul class="steps">
+        <li><strong>Monthly Audit (History Screen):</strong> Employs <code>.monthly-audit-shell</code> and <code>.ma-card</code> structures to group data into logical blocks.</li>
+        <li><strong>Movers / Turnover Table:</strong> A responsive data table (<code>.holdings-table</code>) with alternating row highlights. On mobile, it collapses into a two-column layout (<code>.two-col-mobile</code>) where each row becomes a self-contained card for readability.</li>
+        <li><strong>Bar Charts (Turnover/Deposits):</strong> Uses Chart.js with solid bars for positive inflows and distinct colors for outflows, allowing quick visual scanning of high-activity periods.</li>
+    </ul>
+
+    <h4>4. As a user, I want to analyze my asset allocation and risks</h4>
+    <p>Advanced users need to see how their portfolio is distributed across currencies, sectors, and individual assets.</p>
+
+    <ul class="steps">
+        <li><strong>Doughnut Charts:</strong> Used in the Analysis tab for asset and currency allocation. Interactive segments with custom tooltips provide exact percentages.</li>
+        <li><strong>Heatmaps:</strong> The <code>.heatmap-cell</code> components visualize monthly returns across years. Cells scale their opacity based on the magnitude of the return (using <code>var(--green)</code> and <code>var(--red)</code> scales), offering instant pattern recognition.</li>
+        <li><strong>Underwater Lakes (Drawdowns):</strong> Visualizes the depth and duration of portfolio drawdowns using distinct visual blocks in the Statistics view to indicate recovery periods.</li>
+    </ul>
+
+    <h4>5. As a user, I want to review my long-term gamification and achievements</h4>
+    <p>Encouraging long-term investing behavior through gamified XP and badges.</p>
+
+    <ul class="steps">
+        <li><strong>Level &amp; XP Progress Bars:</strong> Employs a gradient progress track (<code>.reading-progress-bar</code> style) and prominent tier badges (e.g. Bronze, Silver, Gold).</li>
+        <li><strong>Achievement Grid:</strong> Uses <code>.security-grid</code> layout to display unlocked milestones (e.g. 1 Year Streak, 100k PLN invested) with locked achievements rendered with lower opacity.</li>
+    </ul>
+
+    <!-- ─────────────────────────────────────────────────────── -->
+    <h3 id="ds-tokens">Core CSS Tokens Specification</h3>
+    
+    <p>All UI components in Roastfolio MUST rely on these core CSS tokens for consistency, avoiding hardcoded values.</p>
+
+    <div class="ds-token-grid">
+      <div class="ds-token-card">
+        <div class="ds-token-name">var(--bg)</div>
+        <div class="ds-token-value">Dark: #0f1117 / Light: #eaf6ff</div>
+        <div class="ds-token-desc">The absolute lowest layer. Full-screen backgrounds.</div>
       </div>
-      <div class="security-card">
-        <div class="icon">🌀</div>
-        <div class="title">Spring entry curve</div>
-        <div class="desc"><code>cubic-bezier(0.32, 0.72, 0, 1)</code> — Apple's spring-curve approximation for sheet presentations. Creates natural deceleration that reads as physical.</div>
+      <div class="ds-token-card">
+        <div class="ds-token-name">var(--surface)</div>
+        <div class="ds-token-value">Dark: #1a1d27 / Light: rgba(255, 255, 255, 0.94)</div>
+        <div class="ds-token-desc">The primary card background. Elements sitting directly on the background.</div>
       </div>
-      <div class="security-card">
-        <div class="icon">🫧</div>
-        <div class="title">Backdrop blur</div>
-        <div class="desc"><code>backdrop-filter: blur(4px)</code> on the overlay so the user retains spatial context. Semi-transparent dark overlay at 82% opacity.</div>
+      <div class="ds-token-card">
+        <div class="ds-token-name">var(--surface2)</div>
+        <div class="ds-token-value">Dark: #22263a / Light: rgba(226, 246, 255, 0.92)</div>
+        <div class="ds-token-desc">Elevated surface. Used for inputs, nested cards, and hover states.</div>
       </div>
-      <div class="security-card">
-        <div class="icon">📱</div>
-        <div class="title">Safe area aware</div>
-        <div class="desc">Bottom padding uses <code>env(safe-area-inset-bottom)</code> so content isn't hidden under iPhone home indicator.</div>
+      <div class="ds-token-card">
+        <div class="ds-token-name">var(--accent)</div>
+        <div class="ds-token-value">#4a9fd4</div>
+        <div class="ds-token-desc">Primary brand color. Links, primary buttons, active states.</div>
+      </div>
+      <div class="ds-token-card">
+        <div class="ds-token-name">var(--green)</div>
+        <div class="ds-token-value">#34c97a</div>
+        <div class="ds-token-desc">Semantic success. Positive returns, deposits, checkmarks.</div>
+      </div>
+      <div class="ds-token-card">
+        <div class="ds-token-name">var(--red)</div>
+        <div class="ds-token-value">#f05656</div>
+        <div class="ds-token-desc">Semantic danger. Negative returns, withdrawals, errors.</div>
       </div>
     </div>
 
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-breakpoints">Responsive Breakpoints</h3>
-    <p>Mobile-first: no media query = mobile base. There is <strong>no classical 768px tablet breakpoint</strong>. The app jumps from phone (≤640px) to desktop (≥641px). Tablet-specific layouts add code for an audience that doesn't exist in personal finance apps — retail investors use iPhones and laptops, not iPads for portfolio tracking.</p>
-
-    <div class="ds-breakpoint-row">
-      <div class="ds-bp-range">≤374px</div>
-      <div class="ds-bp-name">Compact mobile</div>
-      <div class="ds-bp-desc">iPhone SE — reduce horizontal padding to 12px</div>
-    </div>
-    <div class="ds-breakpoint-row">
-      <div class="ds-bp-range">375–519px</div>
-      <div class="ds-bp-name">Standard mobile</div>
-      <div class="ds-bp-desc">Base layout — iPhone 14/15 Pro. All decisions start here.</div>
-    </div>
-    <div class="ds-breakpoint-row">
-      <div class="ds-bp-range">≥520px</div>
-      <div class="ds-bp-name">Large mobile</div>
-      <div class="ds-bp-desc">Live-data status labels expand from short form to full text</div>
-    </div>
-    <div class="ds-breakpoint-row">
-      <div class="ds-bp-range">≥641px</div>
-      <div class="ds-bp-name">Desktop</div>
-      <div class="ds-bp-desc">Wallet layout switches: chip strip → dropdown, FAB hidden, overview card shown, holdings table shown</div>
-    </div>
-    <div class="ds-breakpoint-row">
-      <div class="ds-bp-range">≥860px</div>
-      <div class="ds-bp-name">Wide desktop</div>
-      <div class="ds-bp-desc">Wallet selector stays compact; wider layout unlocks</div>
-    </div>
-    <div class="ds-breakpoint-row">
-      <div class="ds-bp-range">≥1024px</div>
-      <div class="ds-bp-name">Full desktop</div>
-      <div class="ds-bp-desc">Screen gutters expand to 24px; two-column layouts available</div>
-    </div>
-
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-tokens">CSS Design Tokens</h3>
-    <p>All design values live as CSS custom properties on <code>:root</code>. Component CSS never uses raw values — always tokens. This means a brand color change is a one-line edit, not a search-and-replace.</p>
-
-    <pre><span class="cm">/* ── Background depth ── */</span>
-<span class="vr">--fintech-bg</span>:             <span class="vl">#090f18</span>;
-<span class="vr">--fintech-surface</span>:        <span class="vl">#0e1a2a</span>;
-<span class="vr">--fintech-surface-raised</span>: <span class="vl">#132032</span>;
-<span class="vr">--fintech-surface-strong</span>: <span class="vl">#1a2c42</span>;
-
-<span class="cm">/* ── Brand ── */</span>
-<span class="vr">--fintech-accent</span>:         <span class="vl">#2b88cf</span>;
-<span class="vr">--fintech-accent-strong</span>:  <span class="vl">#36a3f0</span>;
-
-<span class="cm">/* ── Semantic ── */</span>
-<span class="vr">--fintech-success</span>:        <span class="vl">#27ae60</span>;
-<span class="vr">--fintech-danger</span>:         <span class="vl">#c0392b</span>;
-<span class="vr">--fintech-warning</span>:        <span class="vl">#e67e22</span>;
-
-<span class="cm">/* ── Typography ── */</span>
-<span class="vr">--fintech-text</span>:           <span class="vl">#e8f0f8</span>;
-<span class="vr">--fintech-text-muted</span>:     <span class="vl">#6a8ba8</span>;
-<span class="vr">--fintech-text-subtle</span>:    <span class="vl">#7fa4c4</span>;
-
-<span class="cm">/* ── Shape ── */</span>
-<span class="vr">--fintech-radius-sm</span>:      <span class="vl">8px</span>;
-<span class="vr">--fintech-radius-md</span>:      <span class="vl">12px</span>;
-<span class="vr">--fintech-radius-lg</span>:      <span class="vl">16px</span>;  <span class="cm">/* cards */</span>
-<span class="vr">--fintech-radius-xl</span>:      <span class="vl">20px</span>;  <span class="cm">/* bottom sheets */</span>
-
-<span class="cm">/* ── Shadow ── */</span>
-<span class="vr">--fintech-shadow-sm</span>:      <span class="vl">0 1px 4px rgba(0,0,0,0.3)</span>;
-<span class="vr">--fintech-shadow-md</span>:      <span class="vl">0 4px 16px rgba(0,0,0,0.35)</span>;
-<span class="vr">--fintech-shadow-accent</span>:  <span class="vl">0 8px 24px rgba(43,136,207,0.4)</span>;
-<span class="vr">--fintech-shadow-inset</span>:   <span class="vl">inset 0 1px 0 rgba(255,255,255,0.04)</span>;
-
-<span class="cm">/* ── Borders ── */</span>
-<span class="vr">--fintech-border</span>:         <span class="vl">rgba(74,159,212,0.12)</span>;
-<span class="vr">--fintech-border-strong</span>:  <span class="vl">rgba(74,159,212,0.22)</span>;
-
-<span class="cm">/* ── Spacing ── */</span>
-<span class="vr">--fintech-space-1</span>: <span class="vl">4px</span>;  <span class="vr">--fintech-space-2</span>: <span class="vl">8px</span>;
-<span class="vr">--fintech-space-3</span>: <span class="vl">12px</span>; <span class="vr">--fintech-space-4</span>: <span class="vl">16px</span>;
-<span class="vr">--fintech-space-6</span>: <span class="vl">24px</span>; <span class="vr">--fintech-space-8</span>: <span class="vl">32px</span>;</pre>
-
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-motion">Motion &amp; Animation</h3>
-    <p>Motion communicates confidence. Physical-feeling animations tell the user the UI is responsive and stable. CSS default easing feels like something broke. iOS-native easing feels like money is being handled correctly.</p>
-
-    <div class="ds-motion-row">
-      <div class="ds-motion-key">spring<br><code>cubic-bezier(0.32,0.72,0,1)</code></div>
-      <div class="ds-motion-desc">Apple's sheet presentation curve. Used for bottom drawer entry. Decelerates sharply — reads as physical weight arriving.</div>
-    </div>
-    <div class="ds-motion-row">
-      <div class="ds-motion-key">snappy<br><code>cubic-bezier(0.2,0,0,1)</code></div>
-      <div class="ds-motion-desc">Fast but smooth. Used for chip transitions, card state changes. Responds instantly to touch.</div>
-    </div>
-    <div class="ds-motion-row">
-      <div class="ds-motion-key">duration-fast · <code>120ms</code></div>
-      <div class="ds-motion-desc">Button press, chip active state, micro-interactions. Anything under the threshold of "I notice a delay."</div>
-    </div>
-    <div class="ds-motion-row">
-      <div class="ds-motion-key">duration-base · <code>200ms</code></div>
-      <div class="ds-motion-desc">Card hover, overlay backdrop fade. Standard transition speed.</div>
-    </div>
-    <div class="ds-motion-row">
-      <div class="ds-motion-key">duration-slow · <code>300ms</code></div>
-      <div class="ds-motion-desc">Bottom sheet entry/exit. Long enough to feel intentional, short enough to not feel sluggish.</div>
-    </div>
-    <div class="ds-motion-row">
-      <div class="ds-motion-key">scale-press · <code>0.992</code></div>
-      <div class="ds-motion-desc">Applied to tappable cards on <code>:active</code>. Under 1% scale reduction — registers as "responded" without feeling like a button.</div>
-    </div>
-
-    <div class="callout warn">
-      <p><strong>Never animate layout properties</strong> (width, height, top, left, margin). Animate only <code>transform</code>, <code>opacity</code>, and <code>filter</code>. Layout animations trigger reflow and cause jank on mobile — especially visible during scroll on iPhones with ProMotion displays.</p>
-    </div>
-
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-mobile-ux">Mobile UX Quality Checklist</h3>
-    <p>A reference of intentional decisions that separate native-feel PWAs from desktop-ports-on-mobile. Every item below is implemented in the current build.</p>
-
-    <table>
-      <thead><tr><th>Category</th><th>Decision</th><th>Why it matters</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Font rendering</strong></td><td><code>-webkit-font-smoothing: antialiased</code> + <code>text-rendering: optimizeLegibility</code> on <code>body</code></td><td>Text looks razor-sharp on retina and ProMotion screens. The difference is visible even to non-designers.</td></tr>
-        <tr><td><strong>Font stack</strong></td><td><code>ui-sans-serif, system-ui, -apple-system</code> — full system chain</td><td>SF Pro on iOS, Roboto on Android, Segoe UI on Windows. Zero loading cost, native letter-spacing and ligatures per device.</td></tr>
-        <tr><td><strong>Responsive title</strong></td><td><code>clamp(1.4rem, 5.5vw, 2rem)</code> on the brand title</td><td>Prevents the header from crowding on 320px iPhone SE and smaller Android devices.</td></tr>
-        <tr><td><strong>Tab navigation</strong></td><td>SVG icons instead of emoji in the bottom tab bar</td><td>Emoji renders inconsistently across Android, Windows, and older iOS. SVG icons are crisp at any DPI, visually consistent, and brand-controlled.</td></tr>
-        <tr><td><strong>Touch targets</strong></td><td>Bottom tab bar buttons fill the full width ÷ 7; FAB is 48×48px minimum</td><td>Apple HIG minimum: 44×44pt. Smaller targets cause mis-taps on moving transit.</td></tr>
-        <tr><td><strong>Viewport zoom</strong></td><td><code>viewport-fit=cover</code> without <code>maximum-scale=1.0</code></td><td>Removing <code>maximum-scale=1.0</code> restores accessibility zoom for users with low vision. Safari since iOS 10 handles input zoom prevention natively.</td></tr>
-        <tr><td><strong>Card radius</strong></td><td>Dashboard cards use <code>border-radius: 18px</code>, reducing to 14px on mobile</td><td>Matches iOS native card radius (introduced in iOS 14). Radiused corners read as modern, safe, and touchable.</td></tr>
-        <tr><td><strong>Card shadows</strong></td><td><code>0 4px 24px rgba(31,95,159,0.10), 0 1px 4px rgba(31,95,159,0.06)</code></td><td>Dual-layer shadow creates depth. The tight inner shadow catches ambient light; the wide outer shadow grounds the card. Matches Revolut and Apple Card UI.</td></tr>
-        <tr><td><strong>Safe-area insets</strong></td><td><code>env(safe-area-inset-*)</code> on header padding, FAB bottom, tab bar bottom</td><td>Prevents content from sliding under the Dynamic Island, notch, or home indicator on all iPhone generations from X onward.</td></tr>
-        <tr><td><strong>Overlay scroll</strong></td><td><code>overscroll-behavior: contain</code> on overlay panels</td><td>Prevents bottom-sheet scroll from rubber-banding the page behind it on iOS Safari. Eliminates one of the most jarring mobile web artefacts.</td></tr>
-        <tr><td><strong>Tap highlight</strong></td><td><code>-webkit-tap-highlight-color: transparent</code> on all interactive elements</td><td>Removes the blue flash on tap. iOS apps don't have it; web apps shouldn't either.</td></tr>
-        <tr><td><strong>Touch action</strong></td><td><code>touch-action: manipulation</code> on all buttons</td><td>Eliminates 300ms tap delay on touch devices without disabling scroll. Buttons respond the instant the finger lifts.</td></tr>
-        <tr><td><strong>Inline styles</strong></td><td>Transactions tab layout extracted to <code>.tx-summary-bar</code>, <code>.tx-activity-card</code>, <code>.tx-history-card</code></td><td>Inline styles skip the design-token system and dark-mode overrides. Semantic class names allow responsive and theme overrides.</td></tr>
-        <tr><td><strong>Tab icons</strong></td><td>Statistics headings use plain text, not emoji prefixes</td><td>Emoji in headings breaks screen readers, renders inconsistently between platforms, and undermines the premium brand tone.</td></tr>
-      </tbody>
-    </table>
-
-    <div class="callout info">
-      <p><strong>Ongoing rule:</strong> Every new section of UI must pass the question: <em>does this feel like a native iOS finance app, or like a website that happens to be on a phone?</em> If the answer is the latter, the section is not finished.</p>
-    </div>
-
-    <h3 id="ds-ux-audit">Gamification UX Audit — Applied Fixes</h3>
-    <p>A senior UX audit was applied across the achievements, streaks, milestones, and engagement strip pages. The following issues were identified and fixed.</p>
-
-    <table>
-      <thead><tr><th>Finding</th><th>Fix applied</th><th>Rule</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Viewport zoom blocked on achievements page</strong></td><td>Removed <code>maximum-scale=1.0</code> from <code>achievements.html</code> viewport meta</td><td>Accessibility — users with low vision must be able to zoom. Apply to all pages, not just index.</td></tr>
-        <tr><td><strong>Back button was 36×36px</strong></td><td><code>.ach-back-btn</code> enlarged to 44×44px, added <code>touch-action: manipulation</code> + <code>:active</code> state</td><td>Apple HIG: minimum 44pt touch target on all interactive controls.</td></tr>
-        <tr><td><strong>Filter tabs height ~30px</strong></td><td><code>.ach-filter-btn</code> padding changed to <code>9px 14px</code>, <code>min-height: 40px</code> added, added inset box-shadow on active state</td><td>Segmented control buttons must be ≥40px tall on mobile. The active state should be visually distinct beyond background opacity alone.</td></tr>
-        <tr><td><strong>Badge press scale too aggressive (0.93)</strong></td><td>Changed <code>.ach-badge:active { transform: scale(0.97) }</code>. Hover only activates on <code>hover: hover</code> devices.</td><td>Industry standard for card press-feedback is 0.96–0.97. 0.93 feels like a crush, not a tap. Desktop-only hover effects must not fire on touch devices (<code>@media (hover: hover)</code>).</td></tr>
-        <tr><td><strong>Locked badges opacity 0.3 — nearly invisible</strong></td><td>Increased to <code>opacity: 0.45; filter: grayscale(0.6)</code></td><td>Users should be able to see and identify locked badges so they have something to aim for. Apple Health and Strava use 0.4–0.5 opacity for locked achievements.</td></tr>
-        <tr><td><strong>Badge names 10.5px, tier labels 9px</strong></td><td>Badge names → 11px, tier labels → 10px</td><td>11px is the minimum comfortable legibility on iPhone at arm's length. Font sizes should be on the 4px design grid (8, 10, 11, 12, 13, 14, 15, 16…).</td></tr>
-        <tr><td><strong>Badge progress bar border-radius: 0</strong></td><td>Changed track + fill to <code>border-radius: 3px</code>, height increased from 3px to 4px</td><td>Every other progress bar in the codebase has rounded ends. An angular progress bar is a visual inconsistency that breaks the premium feel. 4px height is the minimum thumb-visible size.</td></tr>
-        <tr><td><strong>Streak card hover causes layout shift on touch</strong></td><td>Removed <code>transform: translateY(-2px)</code> from hover. Moved hover rule inside <code>@media (hover: hover)</code>. Reduced <code>min-width</code> from 122px to 118px.</td><td>CSS hover states fire as ghost-hover on iOS Safari after a tap, causing the card to jump. Touch-safe hover requires the <code>hover: hover</code> media query guard.</td></tr>
-        <tr><td><strong>Streak scroll has no right-edge affordance</strong></td><td>Added <code>mask-image</code> fade on the right edge of <code>.ach-streaks-scroll</code>. Added <code>overscroll-behavior-x: contain</code>.</td><td>Horizontal scrollers must have a visual indicator that more content exists (partial card peek or gradient fade). Without it, users assume all cards are visible.</td></tr>
-        <tr><td><strong>Milestone roast hidden on small screens</strong></td><td>Changed from <code>display: none</code> to <code>-webkit-line-clamp: 2; text-align: left</code> at 520px</td><td>The sarcastic roast is Roastfolio's core personality differentiator. Hiding it entirely on the most common screen size (375px iPhone) removes the key engagement hook.</td></tr>
-        <tr><td><strong>achFadeUp translateY(18px) too dramatic for inline cards</strong></td><td>Reduced to <code>translateY(10px)</code></td><td>Full-page hero entrances use 16–24px. Inline card entrances should use 8–12px. Over-travel reads as heavy and slow on mobile.</td></tr>
-        <tr><td><strong>Infinite animations drain battery on mobile</strong></td><td>Added <code>@media (prefers-reduced-motion: reduce)</code> block disabling <code>achDiamondPulse</code>, <code>achGoldShimmer</code>, <code>achNodePulse</code> and all entrance transitions</td><td>Continuous animations prevent the GPU from entering low-power mode on OLED devices. System preference must always be respected per WCAG 2.3.</td></tr>
-        <tr><td><strong>aria-atomic=&quot;true&quot; on badge grid</strong></td><td>Removed <code>aria-atomic="true"</code> from <code>#ach-badges-grid</code></td><td>With atomic=true, every filter change would read the entire badge grid (22+ items) to screen reader users. Without it, only the changed nodes are announced.</td></tr>
-        <tr><td><strong>Engagement strip horizontal scroll bleeds into page scroll on iOS</strong></td><td>Added <code>overscroll-behavior-x: contain</code> to <code>.eng-strip</code>. Reduced animation from 0.28s to 0.22s.</td><td>Without overscroll containment, reaching the end of a horizontal strip on iOS triggers page rubber-band scroll, breaking the sense of two separate scroll axes.</td></tr>
-        <tr><td><strong>Milestone timeline connector barely visible</strong></td><td>Increased connector opacity from 0.18 → 0.25 (active) / 0.07 → 0.10 (faded)</td><td>The timeline metaphor depends on the connector line being clearly readable. 0.18 opacity on a dark surface is below perceptible threshold on many screens.</td></tr>
-      </tbody>
-    </table>
-
-    <!-- ─────────────────────────────────────────────────────── -->
-    <h3 id="ds-use-cases">Component Specification by Use Case</h3>
-    <p>Roastfolio UI components are designed to serve specific user stories. Below is the mapping of components to their primary use cases.</p>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">1. Dashboard &amp; Overview</h4>
-    <p><em>"As a user, I want to review my today return and compare it to the benchmark."</em></p>
-    <ul>
-      <li><code>.bento-box</code> / <code>.metrics-grid</code>: Layout containers for top-level financial summaries.</li>
-      <li><code>.metric-value</code> / <code>.trend-indicator</code>: Display formatted numeric returns (green/red) and percentage changes.</li>
-      <li><code>.chart-canvas</code>: The main interactive performance graph on the dashboard.</li>
-      <li><code>.benchmark-selector</code>: Segmented control to toggle the active benchmark (e.g., WIG, S&amp;P 500).</li>
-      <li><code>.wallet-pill</code> / <code>.wallet-dropdown</code>: Navigational components to switch context between different portfolios.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">2. Holdings Management</h4>
-    <p><em>"As a user, I want to review my current investments."</em></p>
-    <ul>
-      <li><code>.holding-card</code>: The main container for an asset position, styled with a 16px radius and top inner-shadow.</li>
-      <li><code>.holding-header</code> / <code>.holding-name</code>: Displays the cleaned asset name alongside the raw ticker.</li>
-      <li><code>.holding-allocation</code>: A visual bar or text element showing portfolio weight.</li>
-      <li><code>.buy-chip</code> / <code>.sell-chip</code>: Inline quick-action buttons on the holding card for entering trades.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">3. Transaction Entry</h4>
-    <p><em>"As a user, I want to add a transaction to my wallet."</em></p>
-    <ul>
-      <li><code>.fab</code> (Floating Action Button): The omnipresent primary action trigger on mobile for adding new data.</li>
-      <li><code>.bottom-sheet</code> (<code>.sheet-overlay</code>, <code>.sheet-content</code>): The modal presentation layer for mobile-native data entry.</li>
-      <li><code>.form-group</code> / <code>.input-field</code>: Standardized inputs for ticker, date, price, and unit amount.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">4. Transaction History &amp; Turnover</h4>
-    <p><em>"As a user, I want to see when I made transactions and how big was my turnover."</em></p>
-    <ul>
-      <li><code>.tx-list</code> / <code>.tx-row</code>: Structured list layouts for chronological trades.</li>
-      <li><code>.tx-badge</code>: Colored tags (e.g., BUY in green, SELL in red) indicating trade direction.</li>
-      <li><code>.turnover-bar</code>: A horizontal bar chart component comparing current month's turnover to the 12-month average.</li>
-      <li><code>.filter-pill</code>: Toggle controls to filter the history view by asset or transaction type.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">5. Monthly Recap &amp; Audit</h4>
-    <p><em>"As a user, I want to review my past month's performance in detail."</em></p>
-    <ul>
-      <li><code>.audit-bento-grid</code> / <code>.audit-bento-card</code>: Modular containers for presenting end-of-month statistics.</li>
-      <li><code>.journey-chart-container</code>: Renders the month-long performance timeline against a benchmark.</li>
-      <li><code>.calendar-heatmap</code> / <code>.heatmap-day</code>: A visual grid summarizing daily profit/loss.</li>
-      <li><code>.leader-anchor-card</code>: Typographic blocks highlighting the best (Leader) and worst (Anchor) performing assets of the month.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">6. Asset Analysis</h4>
-    <p><em>"As a user, I want to analyze a specific asset before buying."</em></p>
-    <ul>
-      <li><code>.analysis-sheet</code>: A specialized, full-screen bottom sheet tailored for deep-dive asset research.</li>
-      <li><code>.analysis-fin-tab</code>: Navigation tabs for exploring fundamental data (Income Statement, Balance Sheet, etc.).</li>
-      <li><code>.fin-table</code>: Dense data tables optimized for displaying financial metrics.</li>
-      <li><code>.ai-summary-box</code>: Callout containers highlighting AI-generated insights or sentiment analysis.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">7. Coping Diary</h4>
-    <p><em>"As a user, I want to log my investment thesis and evaluate my biases."</em></p>
-    <ul>
-      <li><code>.coping-card</code>: The container for a single behavioral finance journal entry.</li>
-      <li><code>.coping-status-badge</code>: Status indicators (<code>.status-pending</code>, <code>.status-true</code>, <code>.status-false</code>) tracking the thesis outcome.</li>
-      <li><code>.coping-audit-prompt</code>: A targeted alert component asking the user to retrospectively verify a past thesis.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">8. Achievements &amp; Gamification</h4>
-    <p><em>"As a user, I want to track my milestones and gamified progress."</em></p>
-    <ul>
-      <li><code>.ach-xp-card</code> / <code>.ach-xp-track</code>: Progress bars and containers showing current investor level and XP.</li>
-      <li><code>.ach-badge</code>: Visual nodes representing unlockable achievement tiers.</li>
-      <li><code>.ach-streaks-scroll</code>: A horizontally scrollable list showing consecutive days/months of active portfolio management.</li>
-    </ul>
-
-    </div><!-- /[data-guide-advanced] Design System -->
-
-    <footer class="guide-footer">
-      <p>Roastfolio <code>v13.2.0</code> &middot; Powered by <strong>TOMINEX</strong> &middot; &copy; 2026 TOMINEX. All rights reserved.</p>
-    </footer>
 
   </main>
 
