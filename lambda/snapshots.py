@@ -670,7 +670,7 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
     summary_holdings = []
     summary_investment = Decimal("0")
     
-    user_portfolios = portfolios.list_portfolios(user_id)
+    user_portfolios = [p for p in portfolios.list_portfolios(user_id) if p.get("portfolioId") != "summary"]
 
     for portfolio in user_portfolios:
         portfolio_id = portfolio["portfolioId"]

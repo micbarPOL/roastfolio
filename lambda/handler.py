@@ -2356,6 +2356,8 @@ def monthly_wraps_handler(event: dict) -> dict:
         current_date = datetime.now(timezone.utc)
         if period == current_date.strftime("%Y-%m"):
             try:
+                import snapshots
+                snapshots.generate_user_snapshots(user_id, current_date.strftime("%Y-%m-%d"), overwrite=False)
                 import wrap_generator
                 item = wrap_generator.generate_monthly_wrap(user_id, current_date.year, current_date.month)
                 if item:
