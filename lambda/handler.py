@@ -2351,7 +2351,21 @@ def monthly_wraps_handler(event: dict) -> dict:
     partition_key = f"USER#{user_id}"
 
     if period:
-        item = table.get_item(Key={"PK": partition_key, "SK": f"WRAP#MONTH#{period}"}).get("Item")
+        item = None
+        from datetime import datetime, timezone
+        current_date = datetime.now(timezone.utc)
+        if period == current_date.strftime("%Y-%m"):
+            try:
+                import wrap_generator
+                item = wrap_generator.generate_monthly_wrap(user_id, current_date.year, current_date.month)
+                if item:
+                    item["is_live"] = True
+            except Exception as exc:
+                print(f"Error generating live wrap: {exc}")
+
+        if not item:
+            item = table.get_item(Key={"PK": partition_key, "SK": f"WRAP#MONTH#{period}"}).get("Item")
+            
         if not item:
             return _resp(404, {"error": "Monthly audit not found", "period": period})
         return _resp(200, {"item": item})

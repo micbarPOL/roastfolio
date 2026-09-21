@@ -109,8 +109,18 @@
     function ingestItems(items) {
         (Array.isArray(items) ? items : []).forEach(item => {
             const period = String(item?.period || item?.SK?.replace('WRAP#MONTH#', '') || '');
-            if (/^\d{4}-\d{2}$/.test(period)) state.items.set(period, { ...item, period });
+            if (/^\d{4}-\d{2}$/.test(period)) {
+                if (item.is_live !== undefined || item.overall_twr_pct !== undefined) {
+                    item._isLiveStub = false;
+                }
+                state.items.set(period, { ...item, period });
+            }
         });
+        const current = new Date();
+        const currentPeriod = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}`;
+        if (!state.items.has(currentPeriod)) {
+            state.items.set(currentPeriod, { period: currentPeriod, _isLiveStub: true });
+        }
         state.availableYears = [...new Set([...state.items.keys()].map(period => Number(period.slice(0, 4))))].sort((a, b) => a - b);
     }
 
@@ -144,11 +154,20 @@
     }
 
     function renderEmpty(period) {
+        const item = state.items.get(period);
+        if (item && item._isLiveStub) {
+            return `
+            <div class="monthly-audit-loading" role="status" style="min-height: 300px; display: flex; flex-direction: column; justify-content: center; background: var(--fintech-surface-raised); border-radius: var(--fintech-radius-lg); margin-top: 16px;">
+                <div class="monthly-audit-loader" aria-hidden="true"></div>
+                <strong>Generating Live MTD</strong>
+                <span>Calculating returns net of external cash flows.</span>
+            </div>`;
+        }
         return `
             <div class="monthly-audit-state monthly-audit-empty">
                 <span class="monthly-audit-empty-mark" aria-hidden="true">0</span>
                 <strong>No audit for ${escapeHtml(period)}</strong>
-                <span>This summary appears after month close.</span>
+                <span>There are no recorded transactions or history data for this month.</span>
             </div>`;
     }
 
@@ -1019,13 +1038,14 @@
         if (!root) return;
         const item = state.items.get(state.selectedPeriod);
         const periodTitle = window.MonthlyAuditPresentation.periodTitle(state.selectedPeriod);
-        const wigReturn = item ? resolveMarketReturn(item, 'WIG') : null;
-        const msciReturn = item ? resolveMarketReturn(item, 'MSCI_WORLD') : null;
+        const isReady = item && !item._isLiveStub;
+        const wigReturn = isReady ? resolveMarketReturn(item, 'WIG') : null;
+        const msciReturn = isReady ? resolveMarketReturn(item, 'MSCI_WORLD') : null;
         root.innerHTML = `
             ${timelineMarkup()}
-            ${item ? `<header class="monthly-audit-hero ${tone(item.overall_twr_pct)}">
+            ${isReady ? `<header class="monthly-audit-hero ${tone(item.overall_twr_pct)}">
                 <div class="ma-cover-top"><div class="ma-cover-brand"><span class="ma-wordmark">roastfolio</span><span class="ma-cover-edition">MONTHLY AUDIT</span></div><button type="button" class="ma-share-button" onclick="shareMonthlyAudit()"><span aria-hidden="true">↗</span> Share recap</button></div>
-                <h1>${escapeHtml(periodTitle)}<br><em>Wrapped.</em></h1>
+                <h1>${escapeHtml(periodTitle)}<br><em>${item.is_live ? 'Live MTD.' : 'Wrapped.'}</em></h1>
                 <p class="ma-cover-story">${escapeHtml(window.MonthlyAuditPresentation.headline(item))}</p>
                 <div class="monthly-audit-hero-bottom">
                     <div class="monthly-audit-hero-metrics">
@@ -1048,10 +1068,12 @@
                 </div>
             </header>` : ''}
             <div class="monthly-audit-content">
-                ${item ? [journeyCard(item), extremesCard(item), carryCard(item), retirementCard(item), seasonalityCard(item), flowsCard(item), tradingCard(item)].join('') : renderEmpty(state.selectedPeriod)}
-            </div><p class="ma-footer">A month in perspective. Not investment advice.</p>`;
+                ${isReady ? [journeyCard(item), extremesCard(item), carryCard(item), retirementCard(item), seasonalityCard(item), flowsCard(item), tradingCard(item)].join('') : renderEmpty(state.selectedPeriod)}
+            </div><p class="ma-footer">${item?.is_live ? 'Month to date (Live). Not investment advice.' : 'A month in perspective. Not investment advice.'}</p>`;
+        if (isReady) {
             bindJourney(item);
             bindMilestones(item);
+        }
     }
 
     window.shareMonthlyAudit = () => {
@@ -1068,7 +1090,8 @@
     };
 
     async function loadPeriod(period) {
-        if (state.items.has(period)) return state.items.get(period);
+        const item = state.items.get(period);
+        if (item && !item._isLiveStub) return item;
         try {
             const payload = await fetchJson(`/monthly-wraps?period=${encodeURIComponent(period)}`);
             if (payload.item) ingestItems([payload.item]);
