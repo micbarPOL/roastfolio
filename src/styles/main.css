@@ -13435,12 +13435,34 @@ body.wallet-overlay-open {
 }
 
 .analysis-financials-table-wrapper td:first-child,
-.analysis-financials-table-wrapper th:first-child {
+.analysis-financials-table-wrapper th:first-child,
+.analysis-financials-table-wrapper .analysis-col-metric {
     position: sticky;
     left: 0;
-    background: rgba(7, 12, 18, 0.96);
+    background: rgba(7, 12, 18, 0.98);
     z-index: 2;
-    min-width: 150px;
+    min-width: 180px;
+    max-width: 240px;
+    width: 210px;
+    white-space: normal !important;
+    word-break: normal;
+    overflow-wrap: break-word;
+    line-height: 1.35;
+}
+
+.analysis-financials-table-wrapper td:first-child .metric-tooltip-container,
+.analysis-financials-table-wrapper .analysis-col-metric .metric-tooltip-container {
+    display: inline;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.analysis-financials-table-wrapper td:first-child .metric-tooltip-container::after,
+.analysis-financials-table-wrapper .analysis-col-metric .metric-tooltip-container::after {
+    margin-left: 5px;
+    display: inline-block;
+    vertical-align: baseline;
 }
 
 /* Metric Bar Charts */
@@ -14205,6 +14227,17 @@ body.wallet-overlay-open {
     .analysis-financials-table-wrapper table {
         min-width: 680px;
     }
+    .analysis-financials-table-wrapper th.analysis-col-metric,
+    .analysis-financials-table-wrapper td.analysis-col-metric,
+    .analysis-financials-table-wrapper th:first-child,
+    .analysis-financials-table-wrapper td:first-child {
+        white-space: normal !important;
+        overflow: visible;
+        text-overflow: clip;
+        min-width: 160px;
+        width: 180px;
+        max-width: 220px;
+    }
     #tx-table th:nth-child(2),
     #tx-table td:nth-child(2) {
         width: 34px;
@@ -14837,8 +14870,9 @@ body.wallet-overlay-open {
 :root[data-theme="light"] .bm-td.bm-month,
 :root[data-theme="light"] .bm-td.bm-port,
 :root[data-theme="light"] .analysis-financials-table-wrapper td:first-child,
-:root[data-theme="light"] .analysis-financials-table-wrapper th:first-child {
-    background: rgba(230, 247, 255, 0.96) !important;
+:root[data-theme="light"] .analysis-financials-table-wrapper th:first-child,
+:root[data-theme="light"] .analysis-financials-table-wrapper .analysis-col-metric {
+    background: rgba(230, 247, 255, 0.98) !important;
     color: var(--fintech-text) !important;
     border-color: var(--fintech-border) !important;
 }

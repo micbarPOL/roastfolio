@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `13.4.4`  
-*Target Release Numbering Standard — v13.4.4*
+**Current Release:** `13.4.5`  
+*Target Release Numbering Standard — v13.4.5*
 
 ---
 
