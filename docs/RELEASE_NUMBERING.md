@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `13.4.1`  
-*Target Release Numbering Standard — v13.4.1*
+**Current Release:** `13.4.2`  
+*Target Release Numbering Standard — v13.4.2*
 
 ---
 
@@ -52,7 +52,7 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `13.4.1`
+* **Current Active Release:** `13.4.2`
   * **Major 13:** Spotify Wrapped & Revolut-style monthly audit email template redesign featuring inline SVG cumulative journey chart with dynamic green/red outperformance fill, 7-column calendar heatmap, Who Moved Your Month leader & anchor asset highlights, global benchmarks table, conditional seasonality analysis, and trailing 12-month turnover comparison.
   * **Minor 0:** Baseline for Major tier 13.
   * **Service Release 1:** Fix email recap benchmark return discrepancy by prioritizing canonical market_context close-to-close returns, trim journey chart points strictly to calendar month (ending on month-end, e.g. Jun 30), clarify 0% baseline label, add compact nominal change formatting and solid email-compatible hex colors to calendar heatmap, and add dynamic snapshot fallback for missing daily moves.

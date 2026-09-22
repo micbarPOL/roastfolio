@@ -1946,6 +1946,8 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
                         if (tx.date && tx.date.startsWith(currentMonthStr)) {
                             if (tx.operation === 'Deposit') {
                                 actualMonthlyDeposit += Math.abs(Number(tx.value || 0));
+                            } else if (tx.operation === 'Withdrawal') {
+                                actualMonthlyDeposit -= Math.abs(Number(tx.value || 0));
                             }
                         }
                     }
@@ -1959,9 +1961,14 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
 
             if (depositStatusEl) {
                 depositStatusEl.textContent = actualMonthlyDeposit.toLocaleString('pl-PL', { maximumFractionDigits: 0 }) + ' / ' + monthlyDepositGoal.toLocaleString('pl-PL', { maximumFractionDigits: 0 }) + ' PLN';
+                if (actualMonthlyDeposit < 0) {
+                    depositStatusEl.style.color = 'var(--red)';
+                } else {
+                    depositStatusEl.style.color = '';
+                }
             }
             if (depositBarEl && depositPctEl) {
-                const depPct = monthlyDepositGoal > 0 ? (actualMonthlyDeposit / monthlyDepositGoal * 100) : 0;
+                const depPct = monthlyDepositGoal > 0 ? (Math.max(0, actualMonthlyDeposit) / monthlyDepositGoal * 100) : 0;
                 depositBarEl.style.width = Math.min(100, depPct) + '%';
                 depositPctEl.textContent = Math.round(depPct) + '%';
             }
@@ -2155,6 +2162,8 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
                         if (tx.date && tx.date.startsWith(currentYearStr)) {
                             if (tx.operation === 'Deposit') {
                                 actualYearlyDeposit += Math.abs(Number(tx.value || 0));
+                            } else if (tx.operation === 'Withdrawal') {
+                                actualYearlyDeposit -= Math.abs(Number(tx.value || 0));
                             }
                         }
                     }
@@ -2168,9 +2177,14 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
 
             if (depositStatusEl) {
                 depositStatusEl.textContent = actualYearlyDeposit.toLocaleString('pl-PL', { maximumFractionDigits: 0 }) + ' / ' + yearlyDepositGoal.toLocaleString('pl-PL', { maximumFractionDigits: 0 }) + ' PLN';
+                if (actualYearlyDeposit < 0) {
+                    depositStatusEl.style.color = 'var(--red)';
+                } else {
+                    depositStatusEl.style.color = '';
+                }
             }
             if (depositBarEl && depositPctEl) {
-                const depPct = yearlyDepositGoal > 0 ? (actualYearlyDeposit / yearlyDepositGoal * 100) : 0;
+                const depPct = yearlyDepositGoal > 0 ? (Math.max(0, actualYearlyDeposit) / yearlyDepositGoal * 100) : 0;
                 depositBarEl.style.width = Math.min(100, depPct) + '%';
                 depositPctEl.textContent = Math.round(depPct) + '%';
             }
