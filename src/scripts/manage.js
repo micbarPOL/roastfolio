@@ -1416,7 +1416,7 @@
       const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
       const valueHistoryBody = document.getElementById('mgmt-value-history-body');
       const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
-      const holdingsWrap = document.querySelector('.wallet-table-wrap.wallet-table-wrap-stable');
+      const holdingsWrap = document.querySelector('.wallet-card-holdings');
       if (holdingsWrap) holdingsWrap.classList.add('is-loading');
       _renderHoldingsSkeleton();
       if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
@@ -1498,7 +1498,7 @@
     try {
       return await _walletSelectionPromise;
     } finally {
-      const holdingsWrap = document.querySelector('.wallet-table-wrap.wallet-table-wrap-stable');
+      const holdingsWrap = document.querySelector('.wallet-card-holdings');
       if (holdingsWrap) holdingsWrap.classList.remove('is-loading');
       if (_activePortId === lockKey) {
         _walletSelectionPromise = null;
