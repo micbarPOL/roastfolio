@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Release Summary &amp; Changelog — Roastfolio</title>
+    <title>Release Summary &amp; Changelog — roastfolio</title>
     <meta name="theme-color" content="#070d17">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.0.1">
+    <link rel="shortcut icon" href="favicon.ico?v=14.0.1">
+    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.0.1">
+    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.0.1">
+    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.0.1">
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.0.1">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.0.1">
 
     <script>
         (function() {
@@ -689,13 +692,13 @@
     <!-- ── Sticky Header ─────────────────────────────────────── -->
     <header class="rel-header">
         <div class="rel-header-left">
-            <a href="index.html" class="rel-back-btn" id="rel-back-link" aria-label="Back to Roastfolio">
+            <a href="index.html" class="rel-back-btn" id="rel-back-link" aria-label="Back to roastfolio">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
                 <span>Back to App</span>
             </a>
-            <a href="index.html" class="rel-brand" aria-label="Roastfolio Home">
-                <img src="data/logos/icon-192.png" alt="Roastfolio logo" class="rel-brand-logo">
-                <span class="rel-brand-name">Roastfolio</span>
+            <a href="index.html" class="rel-brand" aria-label="roastfolio Home">
+                <img src="data/logos/icon-192.png" alt="roastfolio logo" class="rel-brand-logo">
+                <span class="rel-brand-name">roastfolio</span>
             </a>
         </div>
         <div class="rel-header-right">
@@ -720,12 +723,12 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v14.0.0</span>
+                    <span>v14.0.1</span>
                 </div>
             </div>
 
             <p class="rel-hero-desc">
-                Welcome to the complete version chronicle for Roastfolio. Every update, architectural milestone, visual enhancement, and stability patch is tracked with full transparency according to our three-tier release numbering standard.
+                Welcome to the complete version chronicle for roastfolio. Every update, architectural milestone, visual enhancement, and stability patch is tracked with full transparency according to our three-tier release numbering standard.
             </p>
 
             <div class="rel-hero-meta">
@@ -736,7 +739,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v14.0.0 (Release Summary &amp; Brand Identity)</strong>
+                    <strong>v14.0.1 (Favicon Resolution &amp; Typography Standardization)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -779,6 +782,30 @@
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
 
+            <!-- v14.0.1 -->
+            <article class="rel-card" data-tier="service" data-version="14.0.1">
+                <div class="rel-node" aria-hidden="true"></div>
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v14.0.1</span>
+                        <span class="rel-tier-badge badge-service">Service Release</span>
+                    </div>
+                    <time class="rel-date">Latest Active</time>
+                </header>
+                <h2 class="rel-title">Browser URL Box Favicon Resolution &amp; Brand Typography Standardization</h2>
+                <div class="rel-tags">
+                    <span class="rel-tag">Favicons</span>
+                    <span class="rel-tag">Browser URL Box</span>
+                    <span class="rel-tag">Brand Typography</span>
+                    <span class="rel-tag">Bug Fixes</span>
+                </div>
+                <ul class="rel-items-list">
+                    <li class="rel-item"><strong>Browser URL Box Favicons:</strong> Resolved stale logo caching in browser URL and address bar tabs by generating a full multi-frame 16/24/32/48/64 ICO binary, dedicated 32x32 and 16x16 PNG fallbacks, and adding cache-busting link tags.</li>
+                    <li class="rel-item"><strong>Root Favicon Sync:</strong> Synchronized <code>favicon.ico</code> and PNG icons to repository root to support local dev servers serving from root.</li>
+                    <li class="rel-item"><strong>Brand Typography Standardization:</strong> Standardized application header and banner brand titles across all views and navigation bars from capitalized "Roastfolio" to lowercase "roastfolio".</li>
+                </ul>
+            </article>
+
             <!-- v14.0.0 -->
             <article class="rel-card" data-tier="major" data-version="14.0.0">
                 <div class="rel-node" aria-hidden="true"></div>
@@ -787,7 +814,7 @@
                         <span class="rel-version-tag">v14.0.0</span>
                         <span class="rel-tier-badge badge-major">Major Release</span>
                     </div>
-                    <time class="rel-date">Latest Active</time>
+                    <time class="rel-date">September 2026</time>
                 </header>
                 <h2 class="rel-title">Dedicated Release Summary Screen &amp; Brand Identity Overhaul</h2>
                 <div class="rel-tags">
@@ -1087,7 +1114,7 @@
                 <a href="guide.html#data-isolation">Privacy &amp; Security</a>
             </div>
             <div class="rel-footer-copy">
-                &copy; 2026 <strong class="tominex-brand-name">TOMINEX</strong>. All rights reserved. Roastfolio is a personal finance tracker &mdash; not financial advice.
+                &copy; 2026 <strong class="tominex-brand-name">TOMINEX</strong>. All rights reserved. roastfolio is a personal finance tracker &mdash; not financial advice.
             </div>
         </div>
     </footer>

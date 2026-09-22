@@ -1,7 +1,7 @@
 {
     "id": "/",
-    "name": "Roastfolio",
-    "short_name": "Roastfolio",
+    "name": "roastfolio",
+    "short_name": "roastfolio",
     "description": "Sarcastic investment portfolio tracker powered by bad decisions and live market data.",
     "start_url": "/",
     "scope": "/",
@@ -15,6 +15,12 @@
     "categories": ["finance", "productivity"],
     "prefer_related_applications": false,
     "icons": [
+        {
+            "src": "data/logos/icon-32.png",
+            "sizes": "32x32",
+            "type": "image/png",
+            "purpose": "any"
+        },
         {
             "src": "data/logos/icon-192.png",
             "sizes": "192x192",
@@ -46,14 +52,14 @@
             "sizes": "1280x720",
             "type": "image/png",
             "form_factor": "wide",
-            "label": "Roastfolio Dashboard — Desktop"
+            "label": "roastfolio Dashboard — Desktop"
         },
         {
             "src": "data/screenshots/screenshot-narrow.png",
             "sizes": "390x844",
             "type": "image/png",
             "form_factor": "narrow",
-            "label": "Roastfolio Dashboard — Mobile"
+            "label": "roastfolio Dashboard — Mobile"
         }
     ],
     "shortcuts": [

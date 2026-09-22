@@ -62,7 +62,7 @@
         sheet.id = 'pwa-install-sheet';
         sheet.setAttribute('role', 'dialog');
         sheet.setAttribute('aria-modal', 'true');
-        sheet.setAttribute('aria-label', 'Install Roastfolio');
+        sheet.setAttribute('aria-label', 'Install roastfolio');
 
         if (platform === 'ios') {
             sheet.innerHTML = `
@@ -72,7 +72,7 @@
                         <img src="data/logos/icon-192.png" alt="" class="pwa-sheet-app-icon">
                         <div>
                             <p class="pwa-sheet-title">Add to Home Screen</p>
-                            <p class="pwa-sheet-sub">Install Roastfolio for instant access.</p>
+                            <p class="pwa-sheet-sub">Install roastfolio for instant access.</p>
                         </div>
                     </div>
                     <ol class="pwa-sheet-steps">
@@ -90,7 +90,7 @@
                     <div class="pwa-sheet-icon-row">
                         <img src="data/logos/icon-192.png" alt="" class="pwa-sheet-app-icon">
                         <div>
-                            <p class="pwa-sheet-title">Install Roastfolio</p>
+                            <p class="pwa-sheet-title">Install roastfolio</p>
                             <p class="pwa-sheet-sub">Add to your home screen for a native experience.</p>
                         </div>
                     </div>

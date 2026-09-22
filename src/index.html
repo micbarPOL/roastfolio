@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Roastfolio</title>
+    <title>roastfolio</title>
 
     <!-- PWA manifest -->
     <link rel="manifest" href="manifest.json">
@@ -16,16 +16,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Roastfolio">
+    <meta name="apple-mobile-web-app-title" content="roastfolio">
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.0.1">
+    <link rel="shortcut icon" href="favicon.ico?v=14.0.1">
+    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.0.1">
+    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.0.1">
+    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.0.1">
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.0.1">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.0.1">
 
     <!-- Open Graph / sharing -->
-    <meta property="og:title" content="Roastfolio">
+    <meta property="og:title" content="roastfolio">
     <meta property="og:description" content="Sarcastic investment portfolio tracker.">
     <meta property="og:image" content="data/logos/icon-512.png">
     <meta property="og:type" content="website">
@@ -121,7 +124,7 @@
     <!-- Splash screen — overlay, hidden after live prices are fetched -->
     <div id="splash-screen" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(160deg,#1a4e82 0%,#0d2136 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);">
         <img src="data/logos/icon-512.png" alt="" class="splash-logo">
-        <p class="splash-title">Roastfolio</p>
+        <p class="splash-title">roastfolio</p>
         <p id="splash-tagline" class="splash-tagline">Loading your worst investments…</p>
         <div class="splash-cl-loader cl-loader cl-loader--lg" style="margin-top:28px;animation:splashFadeUp 0.4s 0.35s ease both;" aria-hidden="true">
             <div class="cl-candles">
@@ -145,11 +148,11 @@
             <button type="button" class="sidenav-toggle-btn" id="sidenav-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidenav">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
-            <button type="button" class="brand-logo-btn" onclick="toggleBrandModal(true)" aria-label="Open Roastfolio logo">
-                <img src="data/logos/icon-512.png" alt="Roastfolio logo" class="brand-logo">
+            <button type="button" class="brand-logo-btn" onclick="toggleBrandModal(true)" aria-label="Open roastfolio logo">
+                <img src="data/logos/icon-512.png" alt="roastfolio logo" class="brand-logo">
             </button>
             <div class="brand-copy">
-                <h1 class="brand-title" style="cursor: pointer;" onclick="if(typeof window.refreshLivePrices==='function') window.refreshLivePrices();" aria-label="Refresh Prices" title="Click to refresh prices">Roastfolio</h1>
+                <h1 class="brand-title" style="cursor: pointer;" onclick="if(typeof window.refreshLivePrices==='function') window.refreshLivePrices();" aria-label="Refresh Prices" title="Click to refresh prices">roastfolio</h1>
                 <div class="brand-sub-row">
                     <div id="live-data-status" class="live-data-status" aria-live="polite"></div>
                 </div>
@@ -164,7 +167,7 @@
         <div class="sidenav-header">
             <img src="data/logos/icon-512.png" alt="" class="sidenav-logo">
             <div>
-                <div class="sidenav-app-name">Roastfolio</div>
+                <div class="sidenav-app-name">roastfolio</div>
                 <div class="sidenav-app-sub" id="sidenav-user-name"></div>
             </div>
             <button type="button" class="sidenav-close-btn" aria-label="Close menu">
@@ -235,7 +238,7 @@
         </div>
         <div class="sidenav-bottom-brand">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="sidenav-version-tag">v14.0.0</span>
+            <span class="sidenav-version-tag">v14.0.1</span>
         </div>
     </aside>
 
@@ -243,7 +246,7 @@
     <div id="brand-logo-modal" class="brand-modal" aria-hidden="true" onclick="if (event.target === this) toggleBrandModal(false)">
         <div class="brand-modal-dialog">
             <button type="button" class="brand-modal-close" onclick="toggleBrandModal(false)" aria-label="Close logo preview">×</button>
-            <img src="data/logos/icon-512.png" alt="Roastfolio logo large preview" class="brand-modal-image">
+            <img src="data/logos/icon-512.png" alt="roastfolio logo large preview" class="brand-modal-image">
         </div>
     </div>
 
@@ -1758,7 +1761,7 @@
             <div class="app-footer-brand-section">
                 <div class="app-footer-logo-row">
                     <img src="data/logos/icon-192.png" alt="" class="app-footer-logo" width="26" height="26">
-                    <span class="app-footer-app-name">Roastfolio</span>
+                    <span class="app-footer-app-name">roastfolio</span>
                     <span class="app-footer-powered-badge">
                         Powered by <strong class="tominex-brand-name">TOMINEX</strong>
                     </span>
@@ -1773,7 +1776,7 @@
                     <span class="app-footer-version-pill" title="Current Release Version">
                         <span class="app-footer-status-indicator" aria-hidden="true"></span>
                         <span class="app-footer-version-prefix">Version</span>
-                        <strong id="app-version-display" class="app-footer-version-code">14.0.0</strong>
+                        <strong id="app-version-display" class="app-footer-version-code">14.0.1</strong>
                     </span>
                     <a href="releases.html" class="app-footer-release-link" id="app-footer-release-link" title="View interactive release summary & changelog">
                         <span>Release Summary &amp; Notes</span>
@@ -1797,7 +1800,7 @@
 
                 <div class="app-footer-legal">
                     <span>&copy; 2026 <strong class="tominex-brand-name">TOMINEX</strong>. All rights reserved.</span>
-                    <span class="app-footer-disclaimer">Roastfolio is a personal portfolio tracking tool — not financial advice.</span>
+                    <span class="app-footer-disclaimer">roastfolio is a personal portfolio tracking tool — not financial advice.</span>
                 </div>
             </div>
         </div>
@@ -3090,11 +3093,11 @@
         <div class="user-modal-footer" style="flex-wrap: wrap; gap: 12px; justify-content: space-between;">
           <div class="user-modal-branding">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="user-modal-version">v14.0.0</span>
+            <span class="user-modal-version">v14.0.1</span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <a href="releases.html" class="user-guide-link">
-              <span aria-hidden="true">🏷️</span> Release Summary v14.0.0
+              <span aria-hidden="true">🏷️</span> Release Summary v14.0.1
             </a>
             <a href="guide.html" class="user-guide-link">
               <span aria-hidden="true">📖</span> User Guide
