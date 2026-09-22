@@ -1394,8 +1394,9 @@
 
 
   // ── Select portfolio → show its holdings ─────────────────────
-  async function selectPortfolio(portfolioId) {
+  async function selectPortfolio(portfolioId, options = {}) {
     const lockKey = portfolioId || 'none';
+    const isRefresh = !!options.isRefresh;
     if (_activePortId === lockKey && _walletSelectionPromise) {
       return _walletSelectionPromise;
     }
@@ -1455,7 +1456,7 @@
           txBody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;padding:20px;">Summary is aggregated across wallets. Open an individual wallet to inspect its transactions.</td></tr>';
         }
         _renderValueHistory(_currentSnapshots);
-        _resetTransactionForm({ keepType: false });
+        if (!isRefresh) _resetTransactionForm({ keepType: false });
         _syncTransactionsPanel();
         return;
       }
@@ -1477,7 +1478,7 @@
         _renderHoldings(portfolioId, holdings, false);
         _renderTransactions(transactions);
         _renderValueHistory(snapshots);
-        _resetTransactionForm({ keepType: false });
+        if (!isRefresh) _resetTransactionForm({ keepType: false });
         _syncTransactionsPanel();
       } catch(e) {
         _currentHoldings = [];
@@ -3708,7 +3709,7 @@
 
     if (_activePortId) {
       try {
-        await selectPortfolio(_activePortId);
+        await selectPortfolio(_activePortId, { isRefresh: true });
       } catch (_) {}
       return;
     }

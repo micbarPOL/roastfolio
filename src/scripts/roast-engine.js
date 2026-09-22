@@ -54,6 +54,10 @@
             "Your portfolio climbed {pct}. The market occasionally rewards patience with small increments. Today was one of those increments.",
             "Up {pct}. By my calculations, you are fractionally less wrong than you were yesterday. Statistically, that is what progress looks like.",
             "Portfolio: {pct}. The second law of thermodynamics suggests entropy increases over time. Today you've temporarily, and I want to stress temporarily, resisted the trend.",
+            "Up {pct}. I suppose in a universe tending toward maximum entropy, any localized increase in value is a statistical anomaly worth a minor physical acknowledgment. Nod.",
+            "A {pct} gain. It\u2019s barely above the margin of error of a rounding function, but I\u2019ll concede it is technically positive. Barely.",
+            "Up {pct}. You've successfully scraped a few pence out of the gutter. Barely worth the effort of adjusting my monocle, you absolute peasant.",
+            "A {pct} gain. Good heavens, don't spend it all at the pub at once, you cheap bastard.",
         ],
 
         // ── POSITIVE: STRONG  (+1 % → +3 %) ──────────────────────────────────
@@ -68,6 +72,10 @@
             "A {pct} return. In controlled conditions, I would include this in a working paper. In the market, I simply note it and continue the observation.",
             "Up {pct}. Even I find this mildly satisfying, and I have an extremely high threshold for satisfaction. That should register as meaningful feedback.",
             "{pct} today. The system is behaving in accordance with the long-term model's projections. 'Eventually' occasionally arrives ahead of schedule.",
+            "Up {pct}. Statistically significant. I would offer you a hot beverage, but I reserve those for emotional distress, and you appear to be experiencing unwarranted euphoria.",
+            "A {pct} increase. Your portfolio is expanding. Unlike the universe, however, this expansion is highly unlikely to be infinite or constant. Enjoy it while the math permits.",
+            "Up {pct}. Must be nice to stumble into a decent return whilst completely pissed. Even a blind squirrel finds a nut occasionally, I suppose.",
+            "A {pct} increase. You've accidentally done something right for once. I'm utterly gobsmacked you didn't manage to cock this up.",
         ],
 
         // ── POSITIVE: EXCEPTIONAL  (> +3 %) ──────────────────────────────────
@@ -82,6 +90,10 @@
             "Portfolio up {pct}. Even by my rigorous analytical standards, this qualifies as 'impressive.' Filed under: exceptions that support the long-run mean rather than contradict it.",
             "Up {pct}. I want to formally state that this is not normal. I also want to formally state that you should enjoy it. Both propositions are simultaneously true.",
             "{pct}. The mathematics of wealth accumulation produced an unusually clear and favorable result today. I find this difficult to criticize, so I've elected not to.",
+            "Up {pct} in a single session. This level of variance is highly irregular. I suggest checking for calculation errors before engaging in any primitive celebratory rituals.",
+            "A {pct} gain. While you may attribute this to your own financial genius, probability theory dictates you merely experienced a favorable tail-event. You're welcome for the reality check.",
+            "Up {pct} in a single session. What an absolute bloody fluke. Try not to let it inflate your already insufferable ego, you twat.",
+            "A {pct} gain. It's like watching a donkey win the Grand National. I'd clap, but I know it's pure, undeserved luck.",
         ],
 
         // ── NEGATIVE: MILD  (−0.1 % → −1 %) ─────────────────────────────────
@@ -96,6 +108,10 @@
             "Down {pct}. The market is periodically testing your commitment to rational decision-making. This particular test has a passing grade, and it is: inaction.",
             "{pct} today. I want to note that I modeled this as one of several possible outcomes. Science routinely produces multiple possible outcomes. This is one of them.",
             "Portfolio: {pct}. Minor turbulence. The statistical equivalent of a delayed departure, not an accident investigation.",
+            "Down {pct}. A negligible contraction. If you are experiencing distress over this, I recommend recalibrating your emotional baseline to account for basic market thermodynamics.",
+            "A {pct} drop. You lost money. Not enough to warrant panic, but certainly enough to remind you that your asset allocation is subject to the whims of lesser minds trading on margin.",
+            "Down {pct}. Just a minor flesh wound, but still enough to prove you're a bit of a tosser at this investing lark.",
+            "A {pct} drop. What a bloody nuisance. Try opening your eyes next time you buy a stock, mate.",
         ],
 
         // ── NEGATIVE: STRONG  (−1 % → −3 %) ─────────────────────────────────
@@ -110,6 +126,10 @@
             "Down {pct}. I'd offer condolences, but that would imply the position has ended. It has not ended. It is open. These are different states.",
             "{pct} today. The market expressed an opinion. You were not required to agree with it. The long-term thesis remains your most defensible counterargument.",
             "Portfolio {pct}. I recommend reviewing your investment thesis rather than your current balance. The thesis is the object that actually contains useful information.",
+            "Down {pct}. This is a statistically notable deviation downward. I'd offer sympathy, but I find mathematics far more comforting than human platitudes.",
+            "A {pct} decline. If your portfolio were a train, it would currently be experiencing a minor derailment. I suggest remaining seated until the variance normalizes.",
+            "Down {pct}. You've absolutely bottled it today. It's like watching a car crash in slow motion, only it's your retirement.",
+            "A {pct} decline. Getting mugged in a dark alley would have been quicker and slightly more dignified, you absolute clown.",
         ],
 
         // ── NEGATIVE: SEVERE  (< −3 %) ───────────────────────────────────────
@@ -124,6 +144,10 @@
             "Portfolio {pct}. Every investor eventually encounters a session like this. Most survive it. The variable that determines survival is not portfolio quality. It's behavior.",
             "{pct}. This is a stress test for your own risk tolerance — not for the quality of your holdings. These are not the same measurement. The distinction matters.",
             "Down {pct}. The market periodically needs to remind participants that certainty belongs to mathematics and not to equities. Consider yourself formally reminded today.",
+            "Down {pct}. Fascinating. Your wealth is evaporating at a rate that almost rivals the half-life of Francium. I am observing this with intense scientific curiosity.",
+            "A {pct} drop. This is a catastrophic localized failure of your asset values. Please ensure you do not make any sudden, emotionally compromised decisions. Or do. The data will be interesting either way.",
+            "Down {pct}. An absolute dog's breakfast of a portfolio. You're haemorrhaging cash like a drunken sailor in a brothel.",
+            "A {pct} drop. Total bloodbath. It's like you charged into cannon fire armed with nothing but a butter knife and a room-temperature IQ.",
         ],
 
         // ── FLAT  (±0.1 %) ────────────────────────────────────────────────────
@@ -136,6 +160,10 @@
             "{pct}. By definition, today's performance was average for a day that produces zero movement. The only correct outcome for a flat day is a flat day.",
             "Neither up nor down. The market achieved the investing equivalent of a held breath. It will exhale eventually. These things have historically resolved.",
             "Portfolio: {pct}. The arithmetic is unambiguous. The market had no strong feelings about your allocation today. I suggest you reciprocate that energy.",
+            "Change: {pct}. Your portfolio achieved a state of perfect inertia today. Sir Isaac Newton would be incredibly proud of your financial stagnation.",
+            "Flat. No movement. The financial equivalent of absolute zero, where all market thermodynamic activity has apparently ceased in your account.",
+            "Change: {pct}. You've done exactly sod all today. As utterly useless as a marzipan dildo.",
+            "Flat. Sitting 'round like a spare prick at a wedding. Do something or bugger off, the suspense is boring me to tears.",
         ],
 
         // ── ALL-TIME HIGH ─────────────────────────────────────────────────────
@@ -148,6 +176,10 @@
             "All-time high reached. I want to note this with appropriate gravity. The accumulation strategy is producing measurable output. The evidence is this specific number.",
             "New peak. The portfolio has no historical precedent for its current value. That is, by definition, the point of long-term compounding. Records exist to be exceeded.",
             "ATH registered. I would advise against excessive emotional response, but some acknowledgment is statistically appropriate given the inputs required to reach this point.",
+            "New All-Time High. You have achieved a local maximum. Statistically speaking, the only mathematically guaranteed direction from a peak is down. Have a nice day.",
+            "ATH reached. I am obligated by social convention to say 'congratulations,' despite the fact that this is merely the expected outcome of an upward-drifting geometric Brownian motion.",
+            "New All-Time High. Enjoy the view from the top, because knowing you, it's going to be a phenomenally steep and painful tumble down.",
+            "ATH reached. Don't get too chuffed, you wanker. It only means you have further to fall when you inevitably balls it all up.",
         ],
 
         // ── MISSED GOAL ───────────────────────────────────────────────────────
@@ -160,6 +192,10 @@
             "Monthly target: unmet. One missed contribution is a rounding error over a long horizon. A pattern of missed contributions is an entirely different calculation. Know which this is.",
             "Deposit fell short this month. The plan was designed to accommodate occasional human inconsistency. What it cannot accommodate is indefinite non-resumption. Resume.",
             "Monthly goal: not reached. I've noted this without judgment. The compound interest model has also noted it, with the cold neutrality that arithmetic consistently provides.",
+            "Deposit goal missed. I have updated my models to account for your behavioral inconsistency. The projected date of your financial independence has been extended accordingly.",
+            "You failed to hit your deposit target. I could explain the long-term impact of interrupted compounding, but I fear the math would only induce a stress-related headache.",
+            "Deposit goal missed. Pissed away your future on pints again, did we? Enjoy working until you're ninety, you lazy sod.",
+            "You failed to hit your deposit target. It's truly magnificent watching you actively sabotage your own life. Utterly pathetic.",
         ],
 
         // ── STRONG CONSISTENCY ────────────────────────────────────────────────
@@ -172,6 +208,10 @@
             "Streak: {n} months. The documented value of doing a thing consistently exceeds the value of doing the theoretically optimal thing occasionally. You've found the more valuable behavior.",
             "{n}-month streak. There is a threshold at which a habit stops being a conscious choice and becomes structural behavior. Based on the data, you are approaching that threshold.",
             "Consistency score: elevated. The portfolio does not know why you're consistent. It only processes the result. The result is accumulation, which is the entire objective function.",
+            "Streak: {n} months. You are demonstrating a level of repetitive, unvarying behavior that I find deeply comforting. Please do not alter this variable.",
+            "{n} consecutive deposits. Your adherence to the schedule is highly commendable. It borders on the compulsive. We have so much in common.",
+            "Streak: {n} months. Stubbornly doing the same thing over and over like a bloody metronome. I suppose it keeps you out of trouble.",
+            "{n} consecutive deposits. A rare bout of not being completely bloody useless. Keep it up, though I won't hold my breath.",
         ],
 
         // ── BENCHMARK BEAT ────────────────────────────────────────────────────
@@ -184,6 +224,10 @@
             "Better than the index by {diff}. Active decisions produced passive-beating results. This is not guaranteed to repeat. It is, however, today's data point. Data points matter.",
             "Beat the benchmark today. In the ongoing empirical debate between active and passive investing, you've registered one vote for active. The study population remains open.",
             "Outperformed by {diff}. I want to note that this is harder to accomplish than the financial media implies. Most professionally managed funds fail at it. You did not. Today.",
+            "Outperformed the benchmark by {diff}. A fascinating anomaly. Given the efficient market hypothesis, I must assume you are either in possession of insider information or merely exceedingly lucky. I will assume the latter to protect myself legally.",
+            "Beat the index by {diff}. You bested the average. Given the general cognitive baseline of the average market participant, this is less impressive than you think it is.",
+            "Outperformed the benchmark by {diff}. You fluked it past the average bloke. Don't let it go to your head, you muppet, it won't last.",
+            "Beat the index by {diff}. A broken clock is right twice a day, and today was your moment to pretend you aren't completely thick.",
         ],
 
         // ── BENCHMARK LAG ─────────────────────────────────────────────────────
@@ -196,6 +240,10 @@
             "Lagged by {diff}. Certain allocation decisions underperformed the market average today. This is data. Data should be distinguished from judgment. They are not the same thing.",
             "Underperformed the index by {diff}. If this is the fifth consecutive week, a strategic review is warranted. If this is one Tuesday in an otherwise functional year, it is probably not.",
             "{diff} below benchmark. The market has a mechanism for humbling everyone at regular intervals. Today was yours. Tomorrow is an independent data point with no memory of today.",
+            "Lagged the benchmark by {diff}. The passive, unthinking market aggregate outperformed your active, presumably thoughtful strategy. The irony is palpable.",
+            "Underperformed by {diff}. You would have literally generated more wealth by doing absolutely nothing and holding the index. Your active interference was mathematically detrimental.",
+            "Lagged the benchmark by {diff}. Getting battered by an inanimate, brainless index. My nan could trade better than you, and she's been dead for ten years.",
+            "Underperformed by {diff}. You literally had to try to be this shit. Doing absolutely nothing would have made you richer, you absolute weapon.",
         ],
 
         // ── CONCENTRATION RISK  (≥ 40 % single holding) ───────────────────────
@@ -208,6 +256,10 @@
             "{holding} at {conc}% of portfolio. This is, in the technical sense of the word, a bet. Bets can pay off. They can also reverse. The magnitude of either is amplified by the concentration.",
             "High concentration in {holding}: {conc}%. The efficient market hypothesis and your current risk profile appear to have reached a philosophical disagreement worth mediating.",
             "{conc}% in a single name. Warren Buffett operated at this concentration on companies he studied for decades with a team of analysts. I offer this as context, not endorsement.",
+            "Concentration alert: {holding} is at {conc}%. You are putting an irrational number of eggs in one basket. If the basket is dropped, the resulting mess will be entirely your fault.",
+            "Your allocation to {holding} is {conc}%. This lack of diversification violates basic Modern Portfolio Theory. Harry Markowitz is weeping, and I am highly disappointed.",
+            "Concentration alert: {holding} is at {conc}%. Putting all your quid on a three-legged horse, are we? You're absolutely off your trolley.",
+            "Your allocation to {holding} is {conc}%. You're a one-trick pony waiting to be shot. When this goes tits up, don't come crying to me.",
         ],
 
         // ── VOLATILITY HIGH ───────────────────────────────────────────────────
@@ -220,6 +272,10 @@
             "High volatility session. I've reviewed the historical data: volatility itself is not correlated with permanent portfolio loss. Selling during volatility is. The distinction is critical.",
             "Portfolio exhibiting elevated movement. In physics, this system would be described as 'far from equilibrium.' In investing, the documented historical pattern is eventual normalization.",
             "Volatility spike: {swing}% range. The market is reacting disproportionately to the available information. This occurs with sufficient regularity that it has documented patterns. Patterns resolve.",
+            "Volatility is at {swing}%. Your portfolio is oscillating wildly. If it were a particle, its position and momentum would be entirely unknowable according to Heisenberg. Please stabilize.",
+            "A {swing}% swing. The standard deviation of your returns is unacceptably high. This is an investment account, not a chaotic pendulum. Do try to reduce the entropy.",
+            "Volatility is at {swing}%. Thrashing about like a fish on a hook. Your portfolio is a proper shambles, absolute bedlam in there.",
+            "A {swing}% swing. Up and down like a tart's drawers. Pick a bloody direction before you give me motion sickness.",
         ],
 
         // ── PRAISE MODE (NEW) ─────────────────────────────────────────────────
@@ -230,18 +286,30 @@
             "Deposit streak maintained. Keep this up and you might actually retire.",
             "No panic selling detected. Are you feeling okay?",
             "You reduced concentration risk. A rare moment of rationality.",
+            "You beat the benchmark, maintained your streak, and generated positive returns. I am struggling to find a flaw in your methodology today. It is highly frustrating.",
+            "An optimal outcome. Everything executed precisely according to the parameters of a successful financial model. Bazinga! Just kidding, there is no joke. You actually did well.",
+            "You beat the benchmark, maintained your streak, and made a profit. I'm gobsmacked. I frankly thought you'd cock this up by now. Fair play.",
+            "An absolute blinder of a day. Don't expect a medal, but I suppose you aren't a complete waste of oxygen after all. Cheers.",
         ],
 
         mixed: [
             "You made money today, but the benchmark made more. Congratulations on being technically profitable and emotionally disappointing.",
             "You reduced concentration risk, but the portfolio still looks like a random number generator.",
             "Positive return today. Unfortunately, literally everyone else also had a positive return today.",
+            "You made money, but underperformed the benchmark. You won the race, but only because the faster runner tripped. I will record it as a win, with an asterisk.",
+            "Positive returns, but you lagged the index. It\u2019s the financial equivalent of getting a B+ on a physics exam. Acceptable to average people, but fundamentally disappointing to me.",
+            "You made money, but underperformed the benchmark. A right dog's dinner of a day. You won, but you still got mugged off by the index.",
+            "Positive returns, but you lagged the index. It's like winning a beauty contest in a leper colony. Technically a win, but nothing to brag about.",
         ],
 
         roast: [
             "You underperformed the benchmark again. At this point, the index fund is not your benchmark, it’s your parent.",
             "Negative return, lagging the benchmark. Have you considered a high-yield savings account?",
             "You missed your deposit goal. The math doesn't care about your excuses.",
+            "Down, lagging, and volatile. Your portfolio is currently a case study in how not to manage capital. I would write a paper on this, but the academic journals only publish novel phenomena, and incompetence is exceedingly common.",
+            "Negative returns and benchmark underperformance. You have achieved a state of complete financial failure today. Would you like me to sing 'Soft Kitty' to soothe your ego?",
+            "Down, lagging, and volatile. An absolute disaster class in how to lose money. You're officially the village idiot of investing.",
+            "Negative returns and benchmark underperformance. A proper clusterfuck. You should honestly just bury your cash in the garden, you absolute pillock.",
         ],
 
     };
