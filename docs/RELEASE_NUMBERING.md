@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `13.4.7`  
-*Target Release Numbering Standard — v13.4.7*
+**Current Release:** `13.5.0`  
+*Target Release Numbering Standard — v13.5.0*
 
 ---
 
@@ -36,7 +36,7 @@ A Major release represents **monumental architectural milestones, new fundamenta
 A Minor release introduces **significant functional enhancements, redesigned user journeys, or new views within existing modules**.
 
 * **Triggers:**
-  * Enhancements to existing features (e.g., hiding cash/PLN amounts in email notifications, interactive milestone calendars, floating tooltip charts).
+  * Enhancements to existing features (e.g., brand visual redesigns, hiding cash/PLN amounts in email notifications, interactive milestone calendars, floating tooltip charts).
   * Non-breaking data structure enrichments.
 * **Increment Rules:** Minor increments by 1; Service resets to 0.
 
@@ -52,11 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `13.4.4`
+* **Current Active Release:** `13.5.0`
   * **Major 13:** Spotify Wrapped & Revolut-style monthly audit email template redesign featuring inline SVG cumulative journey chart with dynamic green/red outperformance fill, 7-column calendar heatmap, Who Moved Your Month leader & anchor asset highlights, global benchmarks table, conditional seasonality analysis, and trailing 12-month turnover comparison.
-  * **Minor 0:** Baseline for Major tier 13.
-  * **Service Release 1:** Fix email recap benchmark return discrepancy by prioritizing canonical market_context close-to-close returns, trim journey chart points strictly to calendar month (ending on month-end, e.g. Jun 30), clarify 0% baseline label, add compact nominal change formatting and solid email-compatible hex colors to calendar heatmap, and add dynamic snapshot fallback for missing daily moves.
+  * **Minor 5:** Complete brand logo and visual asset redesign introducing the neon candlestick "R" app icon across all touchpoints (auth screen, splash loader, navigation header, modal preview, mobile side nav, global footer, PWA manifest, and email templates).
+  * **Service Release 0:** Baseline for Minor tier 5.
 * **Prior Releases:**
+  * **13.4.7:** Calendar hover tooltip improvements and UI polish.
   * **13.0.0:** Baseline release for Major tier 13.
   * **12.1.0:** Added user privacy preference to mask PLN cash flow and nominal positions in notification emails (`hideCashInNotifications`), integrated share dialog privacy checkbox with email dispatch, and resolved journey & market context benchmark return extraction.
   * **12.0.5:** Complete AWS SES domain & DKIM verification for `roastfolio.app` and update dev environment sender to `notifications@roastfolio.app`.

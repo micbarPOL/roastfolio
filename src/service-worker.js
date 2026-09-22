@@ -15,6 +15,7 @@ const PRECACHE = [
     '/',
     '/index.html',
     '/auth.html',
+    '/favicon.ico',
     '/styles/main.css',
     '/scripts/auth-guard.js',
     '/scripts/auth.js',
