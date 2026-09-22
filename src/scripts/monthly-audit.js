@@ -106,6 +106,12 @@
     }
     window.sendMonthlyRecapEmail = sendRecapEmail;
 
+    function isCurrentMonth(period) {
+        const now = new Date();
+        const currentPeriod = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        return period === currentPeriod;
+    }
+
     function ingestItems(items) {
         (Array.isArray(items) ? items : []).forEach(item => {
             const period = String(item?.period || item?.SK?.replace('WRAP#MONTH#', '') || '');
@@ -174,7 +180,7 @@
     function timelineMarkup() {
         const periods = [...new Set([...state.items.keys(), state.selectedPeriod])].filter(Boolean).sort();
         const current = periods.indexOf(state.selectedPeriod);
-        const options = [...periods].reverse().map(period => `<option value="${period}" ${period === state.selectedPeriod ? 'selected' : ''}>${escapeHtml(window.MonthlyAuditPresentation.periodTitle(period))}${state.items.has(period) ? '' : ' · No report'}</option>`).join('');
+        const options = [...periods].reverse().map(period => `<option value="${period}" ${period === state.selectedPeriod ? 'selected' : ''}>${escapeHtml(window.MonthlyAuditPresentation.periodTitle(period))}${isCurrentMonth(period) ? ' (Live MTD)' : (state.items.has(period) ? '' : ' · No report')}</option>`).join('');
         return `
             <div class="ma-toolbar">
                 <div class="ma-edition">YOUR MONTHLY EDITION <span>Less noise. More perspective.</span></div>
@@ -1091,7 +1097,7 @@
 
     async function loadPeriod(period) {
         const item = state.items.get(period);
-        if (item && !item._isLiveStub) return item;
+        if (item && !item._isLiveStub && !isCurrentMonth(period)) return item;
         try {
             const payload = await fetchJson(`/monthly-wraps?period=${encodeURIComponent(period)}`);
             if (payload.item) ingestItems([payload.item]);
