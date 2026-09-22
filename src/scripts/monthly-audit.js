@@ -607,8 +607,7 @@
             const dateReadable = dObj.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
             let returnDesc = 'No trading data';
             if (hasData && changePln != null) {
-                const sign = changePln >= 0 ? '+' : '';
-                returnDesc = `${sign}${formatPLN(changePln, true)}`;
+                returnDesc = formatPLN(changePln, true);
                 if (changePct != null) returnDesc += ` (${formatPct(changePct, true)})`;
             }
             const badgesDesc = [
@@ -687,14 +686,13 @@
             if (hasData && plnStr !== '') {
                 const pln = Number(plnStr);
                 const pct = pctStr !== '' ? Number(pctStr) : null;
-                const sign = pln > 0 ? '+' : '';
                 const pctFormatted = pct != null ? ` (${formatPct(pct, true)})` : '';
                 const valTone = pln > 0.005 ? 'is-positive' : (pln < -0.005 ? 'is-negative' : 'is-neutral');
 
                 returnHtml = `
                     <div class="ma-tooltip-row">
                         <span class="ma-tooltip-key">Daily return</span>
-                        <strong class="ma-tooltip-val ${valTone}">${sign}${formatPLN2(pln, true)}${pctFormatted}</strong>
+                        <strong class="ma-tooltip-val ${valTone}">${formatPLN2(pln, true)}${pctFormatted}</strong>
                     </div>`;
             } else {
                 returnHtml = `
