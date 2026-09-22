@@ -1,6 +1,8 @@
 import sys
 import json
-from lambda.handler import benchmark_daily_handler
+import importlib
+handler_mod = importlib.import_module("lambda.handler")
+benchmark_daily_handler = handler_mod.benchmark_daily_handler
 
 event = {
     "httpMethod": "GET",
