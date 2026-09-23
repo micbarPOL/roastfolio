@@ -2877,6 +2877,10 @@ main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
 .dash-breakdown-card { grid-column: 1 / -1; }
 
 /* Neon Table for Today's Movers */
+.dash-breakdown-card .holdings-table {
+    table-layout: fixed;
+    width: 100%;
+}
 .dash-breakdown-card .holdings-table th,
 .dash-breakdown-card .holdings-table td {
     border: none;
@@ -2895,6 +2899,81 @@ main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
 }
 .dash-breakdown-card .holdings-table tr:nth-child(even) {
     background: rgba(255, 255, 255, 0.02);
+}
+
+/* Movers Column Widths & Right-Aligned Nominal Change (Prevents chip overlap on tablet) */
+.dash-breakdown-card .holdings-table col.dash-movers-col-company,
+.dash-breakdown-card .holdings-table th:first-child,
+.dash-breakdown-card .holdings-table td:first-child {
+    width: 28%;
+    text-align: left;
+}
+
+.dash-breakdown-card .holdings-table col.dash-movers-col-chart,
+.dash-breakdown-card .holdings-table th:nth-child(2),
+.dash-breakdown-card .holdings-table td:nth-child(2) {
+    width: 52%;
+    text-align: left;
+}
+
+.dash-breakdown-card .holdings-table col.dash-movers-col-pln,
+.dash-breakdown-card .holdings-table th:last-child,
+.dash-breakdown-card .holdings-table td:last-child {
+    width: 20%;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.dash-breakdown-card .dash-mover-name {
+    display: inline-block;
+    max-width: calc(100% - 36px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.dash-breakdown-card .dash-mover-chart-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.dash-breakdown-card .dash-mover-pct-vol-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.dash-breakdown-card .dash-mover-pln-val {
+    text-align: right;
+    white-space: nowrap;
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .dash-breakdown-card .holdings-table th,
+    .dash-breakdown-card .holdings-table td {
+        padding: 9px 8px;
+    }
+    .dash-breakdown-card .holdings-table col.dash-movers-col-company,
+    .dash-breakdown-card .holdings-table th:first-child,
+    .dash-breakdown-card .holdings-table td:first-child {
+        width: 26%;
+    }
+    .dash-breakdown-card .holdings-table col.dash-movers-col-chart,
+    .dash-breakdown-card .holdings-table th:nth-child(2),
+    .dash-breakdown-card .holdings-table td:nth-child(2) {
+        width: 54%;
+    }
+    .dash-breakdown-card .holdings-table col.dash-movers-col-pln,
+    .dash-breakdown-card .holdings-table th:last-child,
+    .dash-breakdown-card .holdings-table td:last-child {
+        width: 20%;
+    }
 }
 
 /* ── Today's Movers Volume Pace Badges ── */
@@ -13435,12 +13514,34 @@ body.wallet-overlay-open {
 }
 
 .analysis-financials-table-wrapper td:first-child,
-.analysis-financials-table-wrapper th:first-child {
+.analysis-financials-table-wrapper th:first-child,
+.analysis-financials-table-wrapper .analysis-col-metric {
     position: sticky;
     left: 0;
-    background: rgba(7, 12, 18, 0.96);
+    background: rgba(7, 12, 18, 0.98);
     z-index: 2;
-    min-width: 150px;
+    min-width: 180px;
+    max-width: 240px;
+    width: 210px;
+    white-space: normal !important;
+    word-break: normal;
+    overflow-wrap: break-word;
+    line-height: 1.35;
+}
+
+.analysis-financials-table-wrapper td:first-child .metric-tooltip-container,
+.analysis-financials-table-wrapper .analysis-col-metric .metric-tooltip-container {
+    display: inline;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+.analysis-financials-table-wrapper td:first-child .metric-tooltip-container::after,
+.analysis-financials-table-wrapper .analysis-col-metric .metric-tooltip-container::after {
+    margin-left: 5px;
+    display: inline-block;
+    vertical-align: baseline;
 }
 
 /* Metric Bar Charts */
@@ -14130,25 +14231,32 @@ body.wallet-overlay-open {
     left: 50%;
     top: calc(100% + 8px);
     transform: translateX(-50%);
-    width: 260px;
-    max-width: min(260px, calc(100vw - 24px));
-    background-color: var(--surface);
-    color: var(--text);
+    width: 280px;
+    max-width: min(280px, calc(100vw - 24px));
+    background: rgba(13, 20, 34, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #e2e8f0;
     text-align: left;
-    padding: 10px 12px;
-    border-radius: 8px;
+    padding: 10px 14px;
+    border-radius: 10px;
     z-index: 100000;
     font-size: 12px;
     font-weight: normal;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.5;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-    border: 1px solid var(--border);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(148, 170, 197, 0.15);
+    border: 1px solid rgba(148, 170, 197, 0.28);
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.2s, visibility 0.2s;
     pointer-events: none;
     white-space: normal;
+}
+.global-metric-tooltip {
+    position: absolute;
+    transform: none !important;
+    z-index: 1000000;
 }
 .metric-tooltip-container:hover .metric-tooltip,
 .metric-tooltip-container:focus-within .metric-tooltip,
@@ -14158,14 +14266,30 @@ body.wallet-overlay-open {
     opacity: 1;
 }
 .metric-tooltip strong.metric-good {
-    color: var(--green);
+    color: var(--green, #34d399);
+    font-weight: 700;
 }
 .metric-tooltip strong.metric-bad {
-    color: var(--red);
+    color: var(--red, #f87171);
+    font-weight: 700;
+}
+:root[data-theme="light"] .metric-tooltip {
+    background: rgba(248, 250, 252, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #0f172a;
+    border: 1px solid rgba(148, 170, 197, 0.35);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(148, 170, 197, 0.1);
+}
+:root[data-theme="light"] .metric-tooltip strong.metric-good {
+    color: #16a34a;
+}
+:root[data-theme="light"] .metric-tooltip strong.metric-bad {
+    color: #dc2626;
 }
 @media (max-width: 768px) {
     .metric-tooltip {
-        max-width: 220px;
+        max-width: 240px;
     }
 }
 
@@ -14204,6 +14328,17 @@ body.wallet-overlay-open {
     }
     .analysis-financials-table-wrapper table {
         min-width: 680px;
+    }
+    .analysis-financials-table-wrapper th.analysis-col-metric,
+    .analysis-financials-table-wrapper td.analysis-col-metric,
+    .analysis-financials-table-wrapper th:first-child,
+    .analysis-financials-table-wrapper td:first-child {
+        white-space: normal !important;
+        overflow: visible;
+        text-overflow: clip;
+        min-width: 160px;
+        width: 180px;
+        max-width: 220px;
     }
     #tx-table th:nth-child(2),
     #tx-table td:nth-child(2) {
@@ -14837,8 +14972,9 @@ body.wallet-overlay-open {
 :root[data-theme="light"] .bm-td.bm-month,
 :root[data-theme="light"] .bm-td.bm-port,
 :root[data-theme="light"] .analysis-financials-table-wrapper td:first-child,
-:root[data-theme="light"] .analysis-financials-table-wrapper th:first-child {
-    background: rgba(230, 247, 255, 0.96) !important;
+:root[data-theme="light"] .analysis-financials-table-wrapper th:first-child,
+:root[data-theme="light"] .analysis-financials-table-wrapper .analysis-col-metric {
+    background: rgba(230, 247, 255, 0.98) !important;
     color: var(--fintech-text) !important;
     border-color: var(--fintech-border) !important;
 }

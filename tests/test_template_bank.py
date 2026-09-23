@@ -1,4 +1,8 @@
 import pytest
+
+pytestmark = pytest.mark.full
+
+import pytest
 import os
 import sys
 from datetime import datetime, timezone

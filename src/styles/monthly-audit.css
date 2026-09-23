@@ -578,8 +578,26 @@
 .monthly-share-options input { width: 20px; height: 20px; accent-color: var(--ma-chart); }
 .monthly-share-options p { color: var(--ma-muted); font-size: 13px; line-height: 1.6; margin: 12px 0 20px; }
 .monthly-share-options button { width: 100%; margin-top: 10px; border-radius: 12px; padding: 12px; color: var(--ma-text); background: var(--ma-inset); border: 1px solid var(--ma-border); }
-.monthly-share-options [data-share] { background: #d0f5b0; border-color: transparent; color: #1c2c22; font-weight: 700; }
 .monthly-share-options .monthly-share-status { font-size: 12px; min-height: 40px; }
+
+.ma-recipient-prompt { margin-top: 14px; margin-bottom: 8px; animation: ma-fade-slide 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes ma-fade-slide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.ma-recipient-prompt-card { background: var(--ma-inset); border: 1px solid var(--ma-border); border-radius: 16px; padding: 16px; }
+.ma-recipient-prompt-title { margin: 0 0 12px; font-size: 14px; font-weight: 700; color: var(--ma-text); }
+.ma-recipient-choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.ma-recipient-choice { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--ma-border); background: var(--ma-bg); cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; min-height: 48px; }
+.ma-recipient-choice:hover { border-color: var(--ma-chart); background: rgba(255, 255, 255, 0.04); }
+.ma-recipient-choice input[type="radio"] { margin-top: 2px; flex-shrink: 0; width: 18px; height: 18px; accent-color: var(--ma-chart); }
+.ma-recipient-choice-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ma-recipient-choice-body strong { font-size: 13px; color: var(--ma-text); }
+.ma-recipient-subtext { font-size: 11px; color: var(--ma-muted); word-break: break-all; font-family: monospace; }
+.ma-recipient-actions { display: flex; gap: 8px; }
+.ma-recipient-actions button { width: auto; flex: 1; margin-top: 0; padding: 10px 14px; font-size: 13px; border-radius: 10px; cursor: pointer; }
+.ma-recipient-btn-send { background: #d0f5b0 !important; color: #1c2c22 !important; font-weight: 700 !important; border: none !important; }
+.ma-recipient-btn-send:hover { opacity: 0.92; }
+.ma-recipient-btn-cancel { background: transparent !important; color: var(--ma-muted) !important; border: 1px solid var(--ma-border) !important; }
+.ma-recipient-btn-cancel:hover { color: var(--ma-text) !important; background: rgba(255, 255, 255, 0.05) !important; }
+
 
 @media (max-width: 1050px) {
     #monthly-audit-root .monthly-audit-card { grid-column: span 6; }

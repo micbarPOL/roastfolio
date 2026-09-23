@@ -689,7 +689,7 @@
         
         // Build table header with bar chart column
         const thead = table.querySelector('thead tr');
-        thead.innerHTML = '<th>Metric</th>' + 
+        thead.innerHTML = '<th class="analysis-col-metric">Metric</th>' + 
             periodData.map(pd => `<th>${pd.date}</th>`).join('') + 
             '<th style="min-width:150px;">Trend</th>';
         
@@ -711,7 +711,7 @@
             const chartCell = generateMetricBarChart(values);
             
             return `<tr>
-                <td style="font-weight:600;color:var(--text);">${formatMetricName(metric)}</td>
+                <td class="analysis-col-metric" style="font-weight:600;color:var(--text);">${formatMetricName(metric)}</td>
                 ${cells.join('')}
                 ${chartCell}
             </tr>`;

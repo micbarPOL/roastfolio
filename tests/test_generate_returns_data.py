@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.full
+
 import importlib.util
 import json
 from pathlib import Path

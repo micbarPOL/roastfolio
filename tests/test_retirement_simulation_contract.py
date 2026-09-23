@@ -3,6 +3,10 @@ import unittest
 from pathlib import Path
 
 
+import pytest
+
+pytestmark = pytest.mark.smoke
+
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE_PATH = ROOT / "src" / "scripts" / "retirement-simulation.js"
 

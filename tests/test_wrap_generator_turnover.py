@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.full
+
 from decimal import Decimal
 from unittest.mock import MagicMock
 from pathlib import Path

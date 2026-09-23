@@ -1,5 +1,7 @@
 from pathlib import Path
+import pytest
 
+pytestmark = pytest.mark.smoke
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -95,6 +97,17 @@ def test_monthly_share_is_local_preview_first_and_private_by_default():
     assert "URL.revokeObjectURL" in script
     assert "AbortError" in script
     assert "fetch(" not in script
+    assert "ma-recipient-prompt" in script
+    assert "recipientScope" in script
+    assert "Just me" in script
+    assert "All emails on list" in script
+
+    ma_script = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
+    assert "payload.recipientScope = options.recipientScope" in ma_script
+
+    css = (ROOT / "src" / "styles" / "monthly-audit.css").read_text()
+    assert ".ma-recipient-prompt" in css
+    assert ".ma-recipient-choice" in css
 
 
 def test_milestones_calendar_widget_and_ath_celebration_contract():

@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `13.4.4`  
-*Target Release Numbering Standard — v13.4.4*
+**Current Release:** `14.1.1`  
+*Target Release Numbering Standard — v14.1.1*
 
 ---
 
@@ -28,7 +28,7 @@ Example: **`11.2.1`**
 A Major release represents **monumental architectural milestones, new fundamental sub-systems, or complete paradigm shifts**.
 
 * **Triggers:**
-  * Introducing a brand new core capability (e.g., automated monthly performance summaries, Monte Carlo retirement modeling engine, multi-wallet ledger reconciliation, or tax accounting overhaul).
+  * Introducing a brand new core capability or user-facing screen (e.g., dedicated Release Summary & Changelog screen, automated monthly performance summaries, Monte Carlo retirement modeling engine, multi-wallet ledger reconciliation, or tax accounting overhaul).
   * Major breaking database schema transitions or protocol overhauls.
 * **Increment Rules:** Major increments by 1; Minor and Service reset to 0.
 
@@ -36,7 +36,7 @@ A Major release represents **monumental architectural milestones, new fundamenta
 A Minor release introduces **significant functional enhancements, redesigned user journeys, or new views within existing modules**.
 
 * **Triggers:**
-  * Enhancements to existing features (e.g., hiding cash/PLN amounts in email notifications, interactive milestone calendars, floating tooltip charts).
+  * Enhancements to existing features (e.g., brand visual redesigns, hiding cash/PLN amounts in email notifications, interactive milestone calendars, floating tooltip charts).
   * Non-breaking data structure enrichments.
 * **Increment Rules:** Minor increments by 1; Service resets to 0.
 
@@ -52,11 +52,17 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `13.4.4`
-  * **Major 13:** Spotify Wrapped & Revolut-style monthly audit email template redesign featuring inline SVG cumulative journey chart with dynamic green/red outperformance fill, 7-column calendar heatmap, Who Moved Your Month leader & anchor asset highlights, global benchmarks table, conditional seasonality analysis, and trailing 12-month turnover comparison.
-  * **Minor 0:** Baseline for Major tier 13.
-  * **Service Release 1:** Fix email recap benchmark return discrepancy by prioritizing canonical market_context close-to-close returns, trim journey chart points strictly to calendar month (ending on month-end, e.g. Jun 30), clarify 0% baseline label, add compact nominal change formatting and solid email-compatible hex colors to calendar heatmap, and add dynamic snapshot fallback for missing daily moves.
+* **Current Active Release:** `14.1.1`
+  * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
+  * **Minor 1:** Manual wrap share recipient scope selection ("Just me" vs "All emails on list") on Portfolio History Summaries screen when multiple emails are configured in the user profile.
+  * **Service Release 1:** Fixed tablet viewport layout in Dashboard "Today's Movers" table where the volume pace chip badge collided with the nominal change column ("Daily PLN"); introduced explicit column proportions (28% Company / 52% Chart / 20% Daily PLN), right-aligned nominal change figures, and tablet media query adjustments.
 * **Prior Releases:**
+  * **14.1.0:** Manual wrap share recipient scope selection ("Just me" vs "All emails on list") on Portfolio History Summaries screen when multiple emails are configured in the user profile.
+  * **14.0.2:** Sub-second UI test suite differentiation (`./test.sh smoke`, `npm run test:smoke` running in < 0.6s), dedicated `./test.sh` CLI wrapper, testing architecture documentation (`docs/TESTING.md`), and strict Cognito auth bypass policy via `?devAuth=1` / `localStorage.setItem('roastfolio.devAuth', '1')` preventing slow test-user generation loops.
+  * **14.0.1:** Browser URL box favicon cache resolution (multi-resolution 16/24/32/48/64 ICO & 32/16 PNG fallbacks), root icon synchronization, and application header brand typography standardization from 'Roastfolio' to 'roastfolio'.
+  * **14.0.0:** Baseline release for Major tier 14 introducing dedicated Release Summary screen and universal footer navigation links.
+  * **13.5.0:** Complete brand logo and visual asset redesign introducing the neon candlestick "R" app icon across all touchpoints (auth screen, splash loader, navigation header, modal preview, mobile side nav, global footer, PWA manifest, and email templates).
+  * **13.4.7:** Calendar hover tooltip improvements and UI polish.
   * **13.0.0:** Baseline release for Major tier 13.
   * **12.1.0:** Added user privacy preference to mask PLN cash flow and nominal positions in notification emails (`hideCashInNotifications`), integrated share dialog privacy checkbox with email dispatch, and resolved journey & market context benchmark return extraction.
   * **12.0.5:** Complete AWS SES domain & DKIM verification for `roastfolio.app` and update dev environment sender to `notifications@roastfolio.app`.
