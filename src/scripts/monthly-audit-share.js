@@ -326,6 +326,7 @@
                     <button type="button" data-share disabled>Share image</button>
                     <button type="button" data-download disabled>Download PNG</button>
                     <button type="button" data-email>Email recap</button>
+                    <div class="ma-recipient-prompt" style="display:none;" aria-live="polite"></div>
                     <p class="monthly-share-status" role="status" aria-live="polite">Preparing your image…</p>
                 </div></div>`;
         document.body.appendChild(dialog);
@@ -339,30 +340,119 @@
         let generation = 0;
         let sharing = false;
         let emailing = false;
+        let recipientPromptOpen = false;
+
+        const executeEmailSend = async (scope = 'all') => {
+            if (emailing) return;
+            emailing = true;
+            emailBtn.disabled = true;
+            status.textContent = 'Sending recap email…';
+            try {
+                let res = null;
+                const emailOpts = {
+                    hideCash: Boolean(privacy && privacy.checked),
+                    recipientScope: scope,
+                };
+                if (options && typeof options.onEmail === 'function') {
+                    res = await options.onEmail(emailOpts);
+                } else if (typeof window.sendMonthlyRecapEmail === 'function') {
+                    res = await window.sendMonthlyRecapEmail(item.period, emailOpts);
+                } else {
+                    throw new Error('Email notification handler unavailable.');
+                }
+                const msg = (res && res.message) || (scope === 'me'
+                    ? 'Recap email sent to you.'
+                    : 'Recap email sent to configured recipient(s).');
+                status.textContent = `✓ ${msg}`;
+            } catch (error) {
+                status.textContent = error.message || 'Failed to send recap email.';
+            } finally {
+                emailing = false;
+                emailBtn.disabled = false;
+            }
+        };
+
         if (emailBtn) {
             emailBtn.addEventListener('click', async () => {
                 if (emailing) return;
-                emailing = true;
-                emailBtn.disabled = true;
-                status.textContent = 'Sending recap email…';
+
+                let profile = null;
                 try {
-                    let res = null;
-                    const emailOpts = { hideCash: Boolean(privacy && privacy.checked) };
-                    if (options && typeof options.onEmail === 'function') {
-                        res = await options.onEmail(emailOpts);
-                    } else if (typeof window.sendMonthlyRecapEmail === 'function') {
-                        res = await window.sendMonthlyRecapEmail(item.period, emailOpts);
-                    } else {
-                        throw new Error('Email notification handler unavailable.');
+                    if (window.UserProfile && typeof window.UserProfile.get === 'function') {
+                        profile = await window.UserProfile.get();
                     }
-                    const msg = (res && res.message) || 'Recap email sent to configured recipient(s).';
-                    status.textContent = `✓ ${msg}`;
-                } catch (error) {
-                    status.textContent = error.message || 'Failed to send recap email.';
-                } finally {
-                    emailing = false;
-                    emailBtn.disabled = false;
+                } catch (_) {}
+
+                const primaryEmail = (profile && profile.email) || '';
+                const additional = (profile && profile.settings && Array.isArray(profile.settings.notificationEmails))
+                    ? profile.settings.notificationEmails.filter(e => e && e !== primaryEmail)
+                    : [];
+
+                // If more than one email address on share list, prompt user to choose recipient scope
+                if (primaryEmail && additional.length > 0) {
+                    const promptEl = dialog.querySelector('.ma-recipient-prompt');
+                    if (!promptEl) {
+                        return executeEmailSend('all');
+                    }
+                    if (recipientPromptOpen) {
+                        promptEl.style.display = 'none';
+                        recipientPromptOpen = false;
+                        return;
+                    }
+                    recipientPromptOpen = true;
+                    promptEl.style.display = 'block';
+                    const allCount = additional.length + 1;
+                    const allEmails = [primaryEmail, ...additional];
+                    const escapeText = s => String(s || '').replace(/[&<>"']/g, c => ({
+                        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                    }[c]));
+
+                    promptEl.innerHTML = `
+                        <div class="ma-recipient-prompt-card">
+                            <h4 class="ma-recipient-prompt-title">Share recap with:</h4>
+                            <div class="ma-recipient-choices">
+                                <label class="ma-recipient-choice">
+                                    <input type="radio" name="ma-recipient-scope" value="me" checked>
+                                    <div class="ma-recipient-choice-body">
+                                        <strong>Just me</strong>
+                                        <span class="ma-recipient-subtext">${escapeText(primaryEmail)}</span>
+                                    </div>
+                                </label>
+                                <label class="ma-recipient-choice">
+                                    <input type="radio" name="ma-recipient-scope" value="all">
+                                    <div class="ma-recipient-choice-body">
+                                        <strong>All emails on list (${allCount})</strong>
+                                        <span class="ma-recipient-subtext" title="${escapeText(allEmails.join(', '))}">${escapeText(allEmails.join(', '))}</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="ma-recipient-actions">
+                                <button type="button" class="ma-recipient-btn-send" data-send-choice>Send recap email</button>
+                                <button type="button" class="ma-recipient-btn-cancel" data-cancel-choice>Cancel</button>
+                            </div>
+                        </div>
+                    `;
+
+                    const sendChoiceBtn = promptEl.querySelector('[data-send-choice]');
+                    const cancelChoiceBtn = promptEl.querySelector('[data-cancel-choice]');
+
+                    sendChoiceBtn.addEventListener('click', () => {
+                        const selectedRadio = promptEl.querySelector('input[name="ma-recipient-scope"]:checked');
+                        const scope = selectedRadio ? selectedRadio.value : 'all';
+                        promptEl.style.display = 'none';
+                        recipientPromptOpen = false;
+                        executeEmailSend(scope);
+                    });
+
+                    cancelChoiceBtn.addEventListener('click', () => {
+                        promptEl.style.display = 'none';
+                        recipientPromptOpen = false;
+                        status.textContent = 'Email sharing cancelled.';
+                    });
+                    return;
                 }
+
+                executeEmailSend('me');
             });
         }
         const prepare = () => {

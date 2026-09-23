@@ -102,6 +102,9 @@
         if (options && typeof options.hideCash === 'boolean') {
             payload.hideCash = options.hideCash;
         }
+        if (options && typeof options.recipientScope === 'string') {
+            payload.recipientScope = options.recipientScope;
+        }
         return await postJson('/monthly-wraps/email', payload);
     }
     window.sendMonthlyRecapEmail = sendRecapEmail;
