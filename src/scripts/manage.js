@@ -1397,37 +1397,51 @@
   async function selectPortfolio(portfolioId, options = {}) {
     const lockKey = portfolioId || 'none';
     const isRefresh = !!options.isRefresh;
+    const liveDataOnly = !!options.liveDataOnly;
+    const tableOnly = !!options.tableOnly;
     if (_activePortId === lockKey && _walletSelectionPromise) {
       return _walletSelectionPromise;
     }
     _activePortId = lockKey;
     _walletSelectionPromise = (async () => {
-      _renderPortfolioList();
-      _syncWalletSelectorChrome();
-      if (_isCompactWalletSelector()) _setWalletSelectorOpen(false, { force: true });
-
-      const panel = document.getElementById('mgmt-holdings-panel');
-      if (panel && panel.style.display === 'none') panel.style.display = '';
-
       const p = _portfolios.find(x => x.portfolioId === portfolioId);
+      if (!p) return;
+
       const tbody = document.getElementById('mgmt-holdings-body');
       const holdingsMeta = document.getElementById('mgmt-holdings-meta');
       const cemeteryBody = document.getElementById('mgmt-cemetery-body');
       const cemeteryMeta = document.getElementById('mgmt-cemetery-meta');
+      const txBody = document.getElementById('mgmt-transactions-body');
       const valueHistoryBody = document.getElementById('mgmt-value-history-body');
       const valueHistoryMeta = document.getElementById('mgmt-value-history-meta');
       const holdingsWrap = document.querySelector('.wallet-card-holdings');
-      if (holdingsWrap) holdingsWrap.classList.add('is-loading');
-      _renderHoldingsSkeleton();
-      if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
-      if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
-      if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
-      const txBody = document.getElementById('mgmt-transactions-body');
-      if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
-      if (valueHistoryBody) valueHistoryBody.innerHTML = '<tr><td colspan="3" class="mgmt-loading" style="text-align:center;padding:20px;">Loading…</td></tr>';
-      if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Loading snapshots…', 'syncing');
 
-      if (!p) return;
+      if (!isRefresh) {
+        _renderPortfolioList();
+        _syncWalletSelectorChrome();
+        if (_isCompactWalletSelector()) _setWalletSelectorOpen(false, { force: true });
+
+        const panel = document.getElementById('mgmt-holdings-panel');
+        if (panel && panel.style.display === 'none') panel.style.display = '';
+
+        if (holdingsWrap) holdingsWrap.classList.add('is-loading');
+        _renderHoldingsSkeleton();
+        if (holdingsMeta) _setPillState(holdingsMeta, 'Loading holdings…', 'syncing');
+        if (cemeteryBody) cemeteryBody.innerHTML = '<tr><td colspan="3" class="cemetery-empty">Loading closed positions…</td></tr>';
+        if (cemeteryMeta) _setPillState(cemeteryMeta, 'Loading archive…', 'syncing');
+        if (txBody) txBody.innerHTML = '<tr><td colspan="7" class="mgmt-loading">Loading…</td></tr>';
+        if (valueHistoryBody) valueHistoryBody.innerHTML = '<tr><td colspan="3" class="mgmt-loading" style="text-align:center;padding:20px;">Loading…</td></tr>';
+        if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Loading snapshots…', 'syncing');
+      }
+
+      // Fast-path: live-data price update without DynamoDB re-fetch or skeleton flicker
+      if (liveDataOnly && _currentHoldings && _currentHoldings.length > 0) {
+        const holdings = _mergeHoldings(_currentHoldings, _liveHoldingsFor(p));
+        _currentHoldings = holdings;
+        _renderHoldings(portfolioId, holdings, _isSummaryPortfolio(portfolioId));
+        _renderSettings(p, holdings.length, (_currentTransactions || []).length);
+        return;
+      }
 
       if (_isSummaryPortfolio(portfolioId)) {
         const holdings = _mergeHoldings([], _liveHoldingsFor(p));
@@ -1481,16 +1495,20 @@
         if (!isRefresh) _resetTransactionForm({ keepType: false });
         _syncTransactionsPanel();
       } catch(e) {
-        _currentHoldings = [];
-        _currentTransactions = [];
-        _currentClosedHoldings = [];
-        _currentSnapshots = [];
-        _renderSettings(p, 0, 0);
-        tbody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
-        if (txBody) txBody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
-        if (valueHistoryBody) valueHistoryBody.innerHTML = `<tr><td colspan="3" class="mgmt-error" style="text-align:center;padding:20px;">Error: ${_esc(e.message)}</td></tr>`;
-        if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Unable to load snapshots', 'error');
-        if (holdingsMeta) _setPillState(holdingsMeta, 'Unable to load holdings', 'error');
+        if (!isRefresh) {
+          _currentHoldings = [];
+          _currentTransactions = [];
+          _currentClosedHoldings = [];
+          _currentSnapshots = [];
+          _renderSettings(p, 0, 0);
+          tbody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
+          if (txBody) txBody.innerHTML = `<tr><td colspan="7" class="mgmt-error">Error: ${_esc(e.message)}</td></tr>`;
+          if (valueHistoryBody) valueHistoryBody.innerHTML = `<tr><td colspan="3" class="mgmt-error" style="text-align:center;padding:20px;">Error: ${_esc(e.message)}</td></tr>`;
+          if (valueHistoryMeta) _setPillState(valueHistoryMeta, 'Unable to load snapshots', 'error');
+          if (holdingsMeta) _setPillState(holdingsMeta, 'Unable to load holdings', 'error');
+        } else {
+          console.warn('[manage] Background wallet refresh error:', e);
+        }
         _syncTransactionsPanel();
       }
     })();
@@ -1498,8 +1516,10 @@
     try {
       return await _walletSelectionPromise;
     } finally {
-      const holdingsWrap = document.querySelector('.wallet-card-holdings');
-      if (holdingsWrap) holdingsWrap.classList.remove('is-loading');
+      if (!isRefresh) {
+        const holdingsWrap = document.querySelector('.wallet-card-holdings');
+        if (holdingsWrap) holdingsWrap.classList.remove('is-loading');
+      }
       if (_activePortId === lockKey) {
         _walletSelectionPromise = null;
       }
@@ -3150,16 +3170,22 @@
 
     try {
       await PortfolioClient.addTransaction(_activePortId, payload);
+      _lastWalletTxSavedTime = Date.now();
       _flash('mgmt-holding-flash', `${txType} saved for ${ticker || 'cash'}`, 'ok');
-      await _refreshWalletData();
-      await selectPortfolio(_activePortId);
-      window.dispatchEvent(new CustomEvent('portfolioTransactionSaved', {
-        detail: { portfolioId: _activePortId, type: txType }
-      }));
       _setTradeSyncState('Synced', 'ok');
       _setSubmitStatus('Saved successfully', 'ok');
       _resetTransactionForm({ keepType: false });
       closeTransactionsPanel();
+
+      // Smooth in-place table reload: updates holdings and transactions tables only
+      await selectPortfolio(_activePortId, { isRefresh: true, tableOnly: true });
+
+      window.dispatchEvent(new CustomEvent('portfolioTransactionSaved', {
+        detail: { portfolioId: _activePortId, type: txType }
+      }));
+
+      // Background live prices refresh without triggering UI screen wipes
+      void _refreshWalletData();
 
       // Recalculate historical snapshots when the transaction date is in the past.
       // The call is fire-and-forget from the UX perspective; an event is dispatched
@@ -3702,14 +3728,32 @@
     onQuickEntryInput,
     applyQeTemplate,
     parseQuickEntry,
+    isUserMakingTransaction: _isUserMakingTransaction,
   };
+
+  let _lastWalletTxSavedTime = 0;
+
+  function _isUserMakingTransaction() {
+    const card = document.getElementById('wallet-transaction-card');
+    if (card && card.style.display !== 'none') return true;
+    const qeInput = document.getElementById('mgmt-quick-entry-input');
+    if (qeInput && (qeInput.value.trim().length > 0 || document.activeElement === qeInput)) return true;
+    return false;
+  }
+
   document.addEventListener('liveDataReady', async () => {
     const walletsTab = document.getElementById('tab-wallets');
     if (!walletsTab || !walletsTab.classList.contains('active')) return;
 
+    // Do NOT reload or interrupt if user is actively drafting/entering a transaction
+    if (_isUserMakingTransaction()) return;
+
+    // Do NOT trigger duplicate reload if a transaction was just saved in the last 4 seconds
+    if (Date.now() - _lastWalletTxSavedTime < 4000) return;
+
     if (_activePortId) {
       try {
-        await selectPortfolio(_activePortId, { isRefresh: true });
+        await selectPortfolio(_activePortId, { isRefresh: true, liveDataOnly: true });
       } catch (_) {}
       return;
     }

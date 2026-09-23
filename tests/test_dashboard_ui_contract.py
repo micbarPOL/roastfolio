@@ -198,6 +198,16 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn(".vol-normal", self.main_css)
         self.assertIn(".vol-light", self.main_css)
 
+    def test_wallet_transaction_refresh_contract(self):
+        manage_js = (ROOT / "src" / "scripts" / "manage.js").read_text()
+        self.assertIn("function _isUserMakingTransaction()", manage_js)
+        self.assertIn("isUserMakingTransaction: _isUserMakingTransaction", manage_js)
+        self.assertIn("if (_isUserMakingTransaction()) return;", manage_js)
+        self.assertIn("const liveDataOnly = !!options.liveDataOnly;", manage_js)
+        self.assertIn("const tableOnly = !!options.tableOnly;", manage_js)
+        self.assertIn("if (!isRefresh)", manage_js)
+        self.assertIn("selectPortfolio(_activePortId, { isRefresh: true, tableOnly: true })", manage_js)
+
 
 if __name__ == "__main__":
     unittest.main()
