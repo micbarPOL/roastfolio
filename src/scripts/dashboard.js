@@ -1405,20 +1405,27 @@ function renderDailyBreakdown() {
         const clickHandler = isCash ? '' : `onclick="window.openAnalysisForTicker('${ticker}')" style="cursor:pointer;"`;
         const clickableClass = isCash ? '' : ' holding-row-clickable';
         return `<tr class="${clickableClass}" ${clickHandler}>
-            <td><div style="display:flex;align-items:center;">${logoHtml}<span class="dash-mover-name">${d.name}</span></div></td>
-            <td>
-                <div style="display:flex;align-items:center;gap:8px;">
+            <td class="dash-movers-td-company">
+                <div class="dash-movers-company-cell" style="display:flex;align-items:center;min-width:0;">
+                    ${logoHtml}
+                    <span class="dash-mover-name">${d.name}</span>
+                </div>
+            </td>
+            <td class="dash-movers-td-chart">
+                <div class="dash-mover-chart-wrap" style="display:flex;align-items:center;gap:8px;white-space:nowrap;min-width:0;">
                     ${spark}
-                    <div>
-                        <div style="font-size:12px;color:#94a3b8;font-family:monospace;">${priceStr}</div>
-                        <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
-                            <span style="font-size:12px;font-weight:700;color:${pctColor};font-family:monospace;text-shadow:0 0 5px currentColor;">${pctSign}${pctFormatted}%</span>
+                    <div class="dash-mover-metrics" style="min-width:0;flex-shrink:0;">
+                        <div class="dash-mover-price-label" style="font-size:12px;color:#94a3b8;font-family:monospace;">${priceStr}</div>
+                        <div class="dash-mover-pct-vol-row" style="display:flex;align-items:center;gap:6px;margin-top:2px;white-space:nowrap;">
+                            <span class="dash-mover-pct-badge" style="font-size:12px;font-weight:700;color:${pctColor};font-family:monospace;text-shadow:0 0 5px currentColor;white-space:nowrap;">${pctSign}${pctFormatted}%</span>
                             ${volBadge}
                         </div>
                     </div>
                 </div>
             </td>
-            <td><div style="color:${dailyColor}; font-weight:bold; font-family:monospace; text-shadow:0 0 8px currentColor;">${dailySign}${plnFormatted} PLN</div></td>
+            <td class="dash-movers-td-pln" style="text-align:right;white-space:nowrap;">
+                <div class="dash-mover-pln-val" style="color:${dailyColor}; font-weight:bold; font-family:monospace; text-shadow:0 0 8px currentColor; text-align:right; white-space:nowrap;">${dailySign}${plnFormatted} PLN</div>
+            </td>
         </tr>`;
     }).join('');
 
@@ -1438,11 +1445,16 @@ function renderDailyBreakdown() {
             <div class="dash-movers-mobile-list">${entries}</div>`;
     } else {
         container.innerHTML = `
-            <table class="holdings-table" style="width:100%; font-size:13px;">
+            <table class="holdings-table dash-movers-table" style="width:100%; font-size:13px; table-layout:fixed;">
+                <colgroup>
+                    <col class="dash-movers-col-company" style="width:28%;">
+                    <col class="dash-movers-col-chart" style="width:52%;">
+                    <col class="dash-movers-col-pln" style="width:20%;">
+                </colgroup>
                 <thead>
                     <tr>
-                        <th>Company</th>
-                        <th>
+                        <th class="dash-movers-th-company" style="width:28%; text-align:left;">Company</th>
+                        <th class="dash-movers-th-chart" style="width:52%; text-align:left;">
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <span>Chart</span>
                                 <div style="display:flex;gap:4px;background:rgba(255,255,255,0.15);border-radius:6px;padding:3px;">
@@ -1455,7 +1467,7 @@ function renderDailyBreakdown() {
                                 </div>
                             </div>
                         </th>
-                        <th>Daily PLN</th>
+                        <th class="dash-movers-th-pln" style="width:20%; text-align:right;">Daily PLN</th>
                     </tr>
                 </thead>
                 <tbody>${entries}</tbody>

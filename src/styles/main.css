@@ -2877,6 +2877,10 @@ main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
 .dash-breakdown-card { grid-column: 1 / -1; }
 
 /* Neon Table for Today's Movers */
+.dash-breakdown-card .holdings-table {
+    table-layout: fixed;
+    width: 100%;
+}
 .dash-breakdown-card .holdings-table th,
 .dash-breakdown-card .holdings-table td {
     border: none;
@@ -2895,6 +2899,81 @@ main.tab-content:not(#tab-dashboard) .bm-vs-picker-btn {
 }
 .dash-breakdown-card .holdings-table tr:nth-child(even) {
     background: rgba(255, 255, 255, 0.02);
+}
+
+/* Movers Column Widths & Right-Aligned Nominal Change (Prevents chip overlap on tablet) */
+.dash-breakdown-card .holdings-table col.dash-movers-col-company,
+.dash-breakdown-card .holdings-table th:first-child,
+.dash-breakdown-card .holdings-table td:first-child {
+    width: 28%;
+    text-align: left;
+}
+
+.dash-breakdown-card .holdings-table col.dash-movers-col-chart,
+.dash-breakdown-card .holdings-table th:nth-child(2),
+.dash-breakdown-card .holdings-table td:nth-child(2) {
+    width: 52%;
+    text-align: left;
+}
+
+.dash-breakdown-card .holdings-table col.dash-movers-col-pln,
+.dash-breakdown-card .holdings-table th:last-child,
+.dash-breakdown-card .holdings-table td:last-child {
+    width: 20%;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.dash-breakdown-card .dash-mover-name {
+    display: inline-block;
+    max-width: calc(100% - 36px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.dash-breakdown-card .dash-mover-chart-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.dash-breakdown-card .dash-mover-pct-vol-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.dash-breakdown-card .dash-mover-pln-val {
+    text-align: right;
+    white-space: nowrap;
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .dash-breakdown-card .holdings-table th,
+    .dash-breakdown-card .holdings-table td {
+        padding: 9px 8px;
+    }
+    .dash-breakdown-card .holdings-table col.dash-movers-col-company,
+    .dash-breakdown-card .holdings-table th:first-child,
+    .dash-breakdown-card .holdings-table td:first-child {
+        width: 26%;
+    }
+    .dash-breakdown-card .holdings-table col.dash-movers-col-chart,
+    .dash-breakdown-card .holdings-table th:nth-child(2),
+    .dash-breakdown-card .holdings-table td:nth-child(2) {
+        width: 54%;
+    }
+    .dash-breakdown-card .holdings-table col.dash-movers-col-pln,
+    .dash-breakdown-card .holdings-table th:last-child,
+    .dash-breakdown-card .holdings-table td:last-child {
+        width: 20%;
+    }
 }
 
 /* ── Today's Movers Volume Pace Badges ── */
