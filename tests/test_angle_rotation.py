@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.full
+
 import sys
 import os
 import json

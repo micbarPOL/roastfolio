@@ -16,8 +16,12 @@ Run with:  python -m pytest tests/test_transaction_inline_layout.py -v
 import re
 import unittest
 from pathlib import Path
+import pytest
+
+pytestmark = pytest.mark.smoke
 
 ROOT = Path(__file__).resolve().parents[1]
+
 
 
 def _css_block_for(selector: str, css: str) -> str:

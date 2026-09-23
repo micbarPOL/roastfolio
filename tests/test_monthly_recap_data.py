@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.full
+
 """Backend-only numerical, cache and schema regressions for monthly recaps."""
 import sys
 from datetime import date

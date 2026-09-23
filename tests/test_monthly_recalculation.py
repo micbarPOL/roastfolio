@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.full
+
 """No AWS/network: authenticated API, user isolation, async worker and SAM contract."""
 import copy
 import json

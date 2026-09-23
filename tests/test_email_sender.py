@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.full
+
 import importlib.util
 from pathlib import Path
 

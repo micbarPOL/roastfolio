@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.full
+
 import json
 import sys
 from decimal import Decimal

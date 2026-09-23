@@ -1,3 +1,7 @@
+import pytest
+
+pytestmark = pytest.mark.full
+
 import sys
 from decimal import Decimal
 from pathlib import Path

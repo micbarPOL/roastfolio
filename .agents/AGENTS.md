@@ -13,3 +13,13 @@
   - **Minor version (`X.Y.0`)**: Changes, refinements, redesigns, or enhancements to existing features. Resets Service to 0.
   - **Service release (`X.Y.Z`)**: Bug fixes, performance improvements, and corrections. Increments Service by 1.
 - Keep the version synchronized across all UI displays (`src/index.html`, `src/guide.html`, `src/auth.html`), `package.json`, documentation (`docs/RELEASE_NUMBERING.md`), and contract tests (`tests/test_footer_and_release_contract.py`).
+
+## Testing Strategy & Authentication Rules
+- **Smoke Tests (`./test.sh smoke` / `npm run test:smoke`)**:
+  - MUST be executed after any UI, layout, CSS, HTML, brand, or template change. Runs contract tests in under 1 second.
+- **Full Tests (`./test.sh full` / `npm run test:full`)**:
+  - Must be executed after backend calculation, financial math (XIRR/AVCO), schema, or API handler changes.
+- **No User Creation or Password Resets in Tests**:
+  - NEVER create live Cognito users, send verification emails, or perform password reset flows for UI testing.
+  - Always use the instant mock auth bypass: `?devAuth=1` or `localStorage.setItem('roastfolio.devAuth', '1')` as implemented in `src/scripts/auth-guard.js`.
+

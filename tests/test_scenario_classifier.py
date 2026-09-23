@@ -1,4 +1,8 @@
 import pytest
+
+pytestmark = pytest.mark.full
+
+import pytest
 import sys
 import os
 

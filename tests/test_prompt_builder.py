@@ -3,6 +3,9 @@ import pytest
 import sys
 import os
 
+pytestmark = pytest.mark.smoke
+
+
 # Ensure lambda directory is in path for imports
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'lambda'))
 from prompt_builder import build_roast_prompt

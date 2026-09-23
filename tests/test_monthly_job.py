@@ -1,4 +1,8 @@
 import pytest
+
+pytestmark = pytest.mark.full
+
+import pytest
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timezone, timedelta
 import json
