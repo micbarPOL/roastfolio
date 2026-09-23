@@ -2425,7 +2425,15 @@ def monthly_wrap_send_email_handler(event: dict) -> dict:
         return _resp(404, {"error": "User profile not found"})
 
     import email_service
-    recipients = email_service.get_recipient_emails(user_profile)
+    recipient_scope = str(payload.get("recipientScope") or payload.get("shareWith") or "all").strip().lower()
+    if recipient_scope == "me":
+        primary = email_service.normalize_email(user_profile.get("email"))
+        if not email_service.is_valid_email(primary):
+            return _resp(400, {"error": "No primary email configured for logged-in user"})
+        recipients = [primary]
+    else:
+        recipients = email_service.get_recipient_emails(user_profile)
+
     if not recipients:
         return _resp(400, {"error": "No recipient email configured for user"})
 
@@ -2437,10 +2445,12 @@ def monthly_wrap_send_email_handler(event: dict) -> dict:
         status_code = 422 if result.get("unverified") else 500
         return _resp(status_code, {"error": result.get("error", "Failed to send recap email")})
 
+    target_label = "me" if recipient_scope == "me" else f"{len(recipients)} recipient(s)"
     return _resp(200, {
         "status": "ok",
-        "message": f"Recap email sent to {len(recipients)} recipient(s)",
+        "message": f"Recap email sent to {target_label}",
         "recipients": recipients,
+        "recipientScope": recipient_scope,
         "period": period,
     })
 
