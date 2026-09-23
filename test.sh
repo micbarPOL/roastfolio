@@ -31,7 +31,7 @@ case "$COMMAND" in
         ;;
     full|calc|backend)
         echo "🧪 Running full logic and calculation tests..."
-        exec $PYTEST -m "not browser" "${@:2}"
+        exec $PYTEST -m full "${@:2}"
         ;;
     browser)
         echo "🌐 Running Playwright browser regressions..."
