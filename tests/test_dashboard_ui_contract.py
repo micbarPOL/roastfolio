@@ -198,6 +198,33 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn(".vol-normal", self.main_css)
         self.assertIn(".vol-light", self.main_css)
 
+    def test_wallet_transaction_refresh_contract(self):
+        manage_js = (ROOT / "src" / "scripts" / "manage.js").read_text()
+        self.assertIn("function _isUserMakingTransaction()", manage_js)
+        self.assertIn("isUserMakingTransaction: _isUserMakingTransaction", manage_js)
+        self.assertIn("if (_isUserMakingTransaction()) return;", manage_js)
+        self.assertIn("const liveDataOnly = !!options.liveDataOnly;", manage_js)
+        self.assertIn("const tableOnly = !!options.tableOnly;", manage_js)
+        self.assertIn("if (!isRefresh)", manage_js)
+        self.assertIn("selectPortfolio(_activePortId, { isRefresh: true, tableOnly: true })", manage_js)
+
+    def test_wallet_search_dropdown_and_price_suggest_contract(self):
+        manage_js = (ROOT / "src" / "scripts" / "manage.js").read_text()
+        css = (ROOT / "src" / "styles" / "main.css").read_text()
+
+        # Dropdown positioning downwards and overflow
+        self.assertIn("dropdown.style.top = 'calc(100% + 6px)';", manage_js)
+        self.assertIn("dropdown.style.bottom = 'auto';", manage_js)
+        self.assertIn(".wallet-tx-card {", css)
+        self.assertIn("overflow: visible;", css)
+        self.assertIn(".mgmt-ticker-price", css)
+
+        # Yahoo price auto-suggestion
+        self.assertIn("lastCandle.c ?? lastCandle.close", manage_js)
+        self.assertIn("fxCandle.c ?? fxCandle.close", manage_js)
+        self.assertIn("_fetchStockPricePLN(symbol)", manage_js)
+        self.assertIn("_getLivePricePLN(symbol, displayName)", manage_js)
+
 
 if __name__ == "__main__":
     unittest.main()

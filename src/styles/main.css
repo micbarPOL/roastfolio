@@ -10935,7 +10935,9 @@ body.wallet-overlay-open {
     display: flex;
     flex-direction: column;
     padding: 0;
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
+    z-index: 40;
     /* Optional: add a subtle border highlight to make it stand out */
     border: 1px solid rgba(74, 159, 212, 0.25);
     margin-bottom: 16px;
@@ -11064,12 +11066,10 @@ body.wallet-overlay-open {
 
 /* ── Scrollable body ──────────────────────────────────────────── */
 .tflow-body {
-    flex: 1 1 0%;
-    min-height: 0; /* Allows shrinking on small screens */
-    overflow-y: auto;
-    overflow-x: hidden;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: visible;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
 }
 
 /* ── Quick Entry ──────────────────────────────────────────────── */
@@ -11259,6 +11259,7 @@ body.wallet-overlay-open {
     flex-direction: column;
     gap: 8px;
     position: relative;
+    z-index: 100;
 }
 .tflow-source-toggle {
     display: flex;
@@ -11331,15 +11332,25 @@ body.wallet-overlay-open {
     position: absolute;
     left: 0; right: 0;
     top: calc(100% + 4px);
-    z-index: 200;
+    z-index: 300;
     border-radius: 12px;
-    border: 1px solid rgba(74, 159, 212, 0.2);
+    border: 1px solid rgba(74, 159, 212, 0.25);
     background: #0e1e30;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.65);
     overflow: hidden;
     max-height: 280px;
     overflow-y: auto;
     min-width: 100%;
+}
+.mgmt-ticker-price {
+    font-size: 11px;
+    font-weight: 700;
+    color: #7ee2a8;
+    background: rgba(39, 174, 96, 0.15);
+    border: 1px solid rgba(39, 174, 96, 0.3);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
 }
 .tflow-dropdown .mgmt-dropdown-item {
     display: flex;
