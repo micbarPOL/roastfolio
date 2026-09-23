@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.0.2`  
-*Target Release Numbering Standard — v14.0.2*
+**Current Release:** `14.1.0`  
+*Target Release Numbering Standard — v14.1.0*
 
 ---
 
@@ -52,11 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.0.2`
+* **Current Active Release:** `14.1.0`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
-  * **Minor 0:** Baseline for Major tier 14.
-  * **Service Release 2:** Sub-second UI test suite differentiation (`./test.sh smoke`, `npm run test:smoke` running in < 0.6s), dedicated `./test.sh` CLI wrapper, testing architecture documentation (`docs/TESTING.md`), and strict Cognito auth bypass policy via `?devAuth=1` / `localStorage.setItem('roastfolio.devAuth', '1')` preventing slow test-user generation loops.
+  * **Minor 1:** Manual wrap share recipient scope selection ("Just me" vs "All emails on list") on Portfolio History Summaries screen when multiple emails are configured in the user profile.
+  * **Service Release 0:** Baseline for Minor tier 1.
 * **Prior Releases:**
+  * **14.0.2:** Sub-second UI test suite differentiation (`./test.sh smoke`, `npm run test:smoke` running in < 0.6s), dedicated `./test.sh` CLI wrapper, testing architecture documentation (`docs/TESTING.md`), and strict Cognito auth bypass policy via `?devAuth=1` / `localStorage.setItem('roastfolio.devAuth', '1')` preventing slow test-user generation loops.
   * **14.0.1:** Browser URL box favicon cache resolution (multi-resolution 16/24/32/48/64 ICO & 32/16 PNG fallbacks), root icon synchronization, and application header brand typography standardization from 'Roastfolio' to 'roastfolio'.
   * **14.0.0:** Baseline release for Major tier 14 introducing dedicated Release Summary screen and universal footer navigation links.
   * **13.5.0:** Complete brand logo and visual asset redesign introducing the neon candlestick "R" app icon across all touchpoints (auth screen, splash loader, navigation header, modal preview, mobile side nav, global footer, PWA manifest, and email templates).
