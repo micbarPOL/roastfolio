@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.1.2`  
-*Target Release Numbering Standard — v14.1.2*
+**Current Release:** `14.1.3`  
+*Target Release Numbering Standard — v14.1.3*
 
 ---
 
@@ -52,11 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.1.2`
+* **Current Active Release:** `14.1.3`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
   * **Minor 1:** Manual wrap share recipient scope selection ("Just me" vs "All emails on list") on Portfolio History Summaries screen when multiple emails are configured in the user profile.
-  * **Service Release 2:** Fixed disruptive multiple screen reloads during transaction creation on the Wallets screen; prevented background `liveDataReady` events from triggering screen refreshes while drafting transactions, eliminated skeleton loader wipes during in-place table updates, and optimized transaction submission to reload only the holdings and transaction tables.
+  * **Service Release 3:** Fixed Wallets transaction search dropdown visibility to always open downwards without clipping under the overview/history card; enabled instant holdings display on focus, and added automatic live price suggestion by pulling prices and currency conversion directly from Yahoo Finance.
 * **Prior Releases:**
+  * **14.1.2:** Fixed disruptive multiple screen reloads during transaction creation on the Wallets screen; prevented background `liveDataReady` events from triggering screen refreshes while drafting transactions, eliminated skeleton loader wipes during in-place table updates, and optimized transaction submission to reload only the holdings and transaction tables.
   * **14.1.1:** Fixed tablet viewport layout in Dashboard "Today's Movers" table where the volume pace chip badge collided with the nominal change column ("Daily PLN"); introduced explicit column proportions (28% Company / 52% Chart / 20% Daily PLN), right-aligned nominal change figures, and tablet media query adjustments.
   * **14.1.0:** Manual wrap share recipient scope selection ("Just me" vs "All emails on list") on Portfolio History Summaries screen when multiple emails are configured in the user profile.
   * **14.0.2:** Sub-second UI test suite differentiation (`./test.sh smoke`, `npm run test:smoke` running in < 0.6s), dedicated `./test.sh` CLI wrapper, testing architecture documentation (`docs/TESTING.md`), and strict Cognito auth bypass policy via `?devAuth=1` / `localStorage.setItem('roastfolio.devAuth', '1')` preventing slow test-user generation loops.
