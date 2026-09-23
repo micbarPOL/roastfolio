@@ -9,13 +9,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.0.1">
-    <link rel="shortcut icon" href="favicon.ico?v=14.0.1">
-    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.0.1">
-    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.0.1">
-    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.0.1">
-    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.0.1">
-    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.0.1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.0.2">
+    <link rel="shortcut icon" href="favicon.ico?v=14.0.2">
+    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.0.2">
+    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.0.2">
+    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.0.2">
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.0.2">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.0.2">
 
     <script>
         (function() {
@@ -723,7 +723,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v14.0.1</span>
+                    <span>v14.0.2</span>
                 </div>
             </div>
 
@@ -739,7 +739,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v14.0.1 (Favicon Resolution &amp; Typography Standardization)</strong>
+                    <strong>v14.0.2 (Testing Architecture &amp; Sub-Second Smoke Suite)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -782,6 +782,30 @@
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
 
+            <!-- v14.0.2 -->
+            <article class="rel-card" data-tier="service" data-version="14.0.2">
+                <div class="rel-node" aria-hidden="true"></div>
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v14.0.2</span>
+                        <span class="rel-tier-badge badge-service">Service Release</span>
+                    </div>
+                    <time class="rel-date">Latest Active</time>
+                </header>
+                <h2 class="rel-title">Testing Architecture Segregation &amp; Sub-Second Smoke Test Runner</h2>
+                <div class="rel-tags">
+                    <span class="rel-tag">Testing</span>
+                    <span class="rel-tag">Performance</span>
+                    <span class="rel-tag">Developer Experience</span>
+                    <span class="rel-tag">Authentication</span>
+                </div>
+                <ul class="rel-items-list">
+                    <li class="rel-item"><strong>Sub-Second Smoke Test Suite:</strong> Segregated test suites into fast smoke tests (<code>./test.sh smoke</code>, <code>npm run test:smoke</code>) executing all UI and layout contracts in &lt; 0.6 seconds by directly targeting UI contract modules and bypassing heavy backend dependencies.</li>
+                    <li class="rel-item"><strong>Universal Test Runner:</strong> Added <code>./test.sh</code> supporting <code>smoke</code>/<code>ui</code>, <code>full</code>, <code>browser</code>, and <code>all</code> modes, integrated directly with <code>package.json</code> scripts.</li>
+                    <li class="rel-item"><strong>Strict Auth Bypass Architecture:</strong> Documented and enforced mock authentication via <code>?devAuth=1</code> / <code>localStorage.setItem('roastfolio.devAuth', '1')</code>, completely eliminating slow live Cognito user creation, verification emails, and password reset loops during UI testing.</li>
+                </ul>
+            </article>
+
             <!-- v14.0.1 -->
             <article class="rel-card" data-tier="service" data-version="14.0.1">
                 <div class="rel-node" aria-hidden="true"></div>
@@ -790,7 +814,7 @@
                         <span class="rel-version-tag">v14.0.1</span>
                         <span class="rel-tier-badge badge-service">Service Release</span>
                     </div>
-                    <time class="rel-date">Latest Active</time>
+                    <time class="rel-date">September 2026</time>
                 </header>
                 <h2 class="rel-title">Browser URL Box Favicon Resolution &amp; Brand Typography Standardization</h2>
                 <div class="rel-tags">

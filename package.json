@@ -1,10 +1,16 @@
 {
   "name": "investment-history",
-  "version": "14.0.1",
+  "version": "14.0.2",
   "description": "A web application to display the history of investments and their values over time.",
   "main": "src/scripts/main.js",
   "scripts": {
-    "start": "live-server src"
+    "start": "live-server src",
+    "test": "./test.sh smoke",
+    "test:smoke": "./test.sh smoke",
+    "test:ui": "./test.sh smoke",
+    "test:full": "./test.sh full",
+    "test:browser": "./test.sh browser",
+    "test:all": "./test.sh all"
   },
   "dependencies": {
     "xlsx": "^0.17.0"
