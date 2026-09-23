@@ -44,6 +44,8 @@ const PRECACHE = [
     '/data/logos/icon-512.png',
     '/data/logos/icon-512-maskable.png',
     '/data/logos/apple-touch-icon.png',
+    '/data/logos/roastfolio-logo.svg',
+    '/data/logos/roastfolio-bimi.svg',
 ];
 
 // Patterns that must always hit the network — never cache these
