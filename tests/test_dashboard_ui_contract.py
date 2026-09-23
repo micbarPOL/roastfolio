@@ -208,6 +208,23 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("if (!isRefresh)", manage_js)
         self.assertIn("selectPortfolio(_activePortId, { isRefresh: true, tableOnly: true })", manage_js)
 
+    def test_wallet_search_dropdown_and_price_suggest_contract(self):
+        manage_js = (ROOT / "src" / "scripts" / "manage.js").read_text()
+        css = (ROOT / "src" / "styles" / "main.css").read_text()
+
+        # Dropdown positioning downwards and overflow
+        self.assertIn("dropdown.style.top = 'calc(100% + 6px)';", manage_js)
+        self.assertIn("dropdown.style.bottom = 'auto';", manage_js)
+        self.assertIn(".wallet-tx-card {", css)
+        self.assertIn("overflow: visible;", css)
+        self.assertIn(".mgmt-ticker-price", css)
+
+        # Yahoo price auto-suggestion
+        self.assertIn("lastCandle.c ?? lastCandle.close", manage_js)
+        self.assertIn("fxCandle.c ?? fxCandle.close", manage_js)
+        self.assertIn("_fetchStockPricePLN(symbol)", manage_js)
+        self.assertIn("_getLivePricePLN(symbol, displayName)", manage_js)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1337,11 +1337,11 @@ def benchmark_daily_handler(event: dict) -> dict:
         # Custom ticker (e.g. AAPL, CDR.WA)
         # Validate: alphanumeric + dot + hyphen, max 20 chars
         import re as _re
-        if not _re.match(r'^[A-Z0-9.\-]{1,20}$', raw_ticker):
+        if not _re.match(r'^[A-Z0-9.\-=^]{1,20}$', raw_ticker):
             return _resp(400, {"error": "Invalid ticker symbol"})
         ticker   = raw_ticker
         name     = raw_ticker
-        cache_id = "CUSTOM_" + raw_ticker.replace(".", "_").replace("-", "_")
+        cache_id = "CUSTOM_" + raw_ticker.replace(".", "_").replace("-", "_").replace("=", "_").replace("^", "_")
     else:
         return _resp(400, {"error": "Provide benchmarkId or ticker parameter"})
 

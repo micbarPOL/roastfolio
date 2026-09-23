@@ -717,6 +717,9 @@
       if (Number.isFinite(Number(existing.pricePLN)) && Number(existing.pricePLN) > 0) {
         return Number(existing.pricePLN);
       }
+      if (Number.isFinite(Number(existing.price)) && Number(existing.price) > 0) {
+        return Number(existing.price);
+      }
       if (Number(existing.currentValue) > 0 && Number(existing.units) > 0) {
         return Number(existing.currentValue) / Number(existing.units);
       }
@@ -731,6 +734,9 @@
       if (h) {
         if (Number.isFinite(Number(h.pricePLN)) && Number(h.pricePLN) > 0) {
           return Number(h.pricePLN);
+        }
+        if (Number.isFinite(Number(h.price)) && Number(h.price) > 0) {
+          return Number(h.price);
         }
         if (Number(h.currentValue) > 0 && Number(h.units) > 0) {
           return Number(h.currentValue) / Number(h.units);
@@ -750,6 +756,9 @@
           if (Number.isFinite(Number(h.pricePLN)) && Number(h.pricePLN) > 0) {
             return Number(h.pricePLN);
           }
+          if (Number.isFinite(Number(h.price)) && Number(h.price) > 0) {
+            return Number(h.price);
+          }
           if (Number(h.currentValue) > 0 && Number(h.units) > 0) {
             return Number(h.currentValue) / Number(h.units);
           }
@@ -767,15 +776,28 @@
         const res = await window.PortfolioClient.getBenchmarkDaily(symbol, true);
         if (res && Array.isArray(res.daily) && res.daily.length > 0) {
           const lastCandle = res.daily[res.daily.length - 1];
-          let price = Number(lastCandle.close || 0);
+          let price = Number(lastCandle.c ?? lastCandle.close ?? 0);
           if (price > 0) {
-            if (!symbol.toUpperCase().endsWith('.WA')) {
-              let rate = 4.0;
+            const sym = symbol.toUpperCase();
+            if (!sym.endsWith('.WA')) {
+              let fxTicker = 'USDPLN=X';
+              let defaultRate = 3.85;
+              if (sym.endsWith('.DE') || sym.endsWith('.PA') || sym.endsWith('.AS') || sym.endsWith('.MC') || sym.endsWith('.MI') || sym.endsWith('.VI')) {
+                fxTicker = 'EURPLN=X';
+                defaultRate = 4.28;
+              } else if (sym.endsWith('.L')) {
+                fxTicker = 'GBPPLN=X';
+                defaultRate = 5.12;
+                // UK London quotes in pence (GBp), convert to pounds
+                price = price / 100;
+              }
+              let rate = defaultRate;
               try {
-                const usdRes = await window.PortfolioClient.getBenchmarkDaily('USDPLN=X', true);
-                if (usdRes && Array.isArray(usdRes.daily) && usdRes.daily.length > 0) {
-                  const usdCandle = usdRes.daily[usdRes.daily.length - 1];
-                  if (Number(usdCandle.close) > 0) rate = Number(usdCandle.close);
+                const fxRes = await window.PortfolioClient.getBenchmarkDaily(fxTicker, true);
+                if (fxRes && Array.isArray(fxRes.daily) && fxRes.daily.length > 0) {
+                  const fxCandle = fxRes.daily[fxRes.daily.length - 1];
+                  const c = Number(fxCandle.c ?? fxCandle.close ?? 0);
+                  if (c > 0) rate = c;
                 }
               } catch (_) {}
               price = price * rate;
@@ -2076,18 +2098,38 @@
     }
 
     if (!q) {
+      // Show existing wallet holdings immediately so user doesn't see a blank dropdown
+      const localHoldings = (_currentHoldings || [])
+        .filter(h => h.ticker && h.ticker.toUpperCase() !== 'CASH' && !h.holdingId?.includes('cash'))
+        .map(h => ({
+          symbol: h.ticker,
+          name: h.name || h.ticker,
+          exchange: _activePortfolio()?.name || 'In Wallet',
+          isOwned: true,
+          isCurrent: true,
+        }));
+      if (localHoldings.length > 0) {
+        renderDropdown(localHoldings);
+      }
+
       const requestId = ++_searchRequestId;
-      _setSearchStatus('Loading holdings...', 'loading');
+      _setSearchStatus(localHoldings.length ? 'Holdings ready · type to search Yahoo Finance' : 'Loading holdings...', 'loading');
       _searchTimer = setTimeout(async () => {
         try {
           const results = await searchTickers('');
           if (requestId !== _searchRequestId) return;
-          renderDropdown(results);
+          if (results && results.length) {
+            renderDropdown(results);
+          } else if (!localHoldings.length) {
+            _clearDropdown();
+          }
           _setSearchStatus('Type to search Yahoo Finance · use arrows and Enter to select', 'ok');
         } catch (err) {
           if (requestId !== _searchRequestId) return;
-          _clearDropdown();
-          _setSearchStatus(err.message || 'Failed to load holdings', 'error');
+          if (!localHoldings.length) {
+            _clearDropdown();
+            _setSearchStatus(err.message || 'Failed to load holdings', 'error');
+          }
         }
       }, 50);
       _renderTransactionSummary();
@@ -2314,6 +2356,10 @@
       const isPolish = _isPolishTicker(r);
       const owned    = _findHoldingAcrossAllWallets(r.symbol);
       const isHistoricalOwned = r.isOwned && !owned;
+      const livePrice = _getLivePricePLN(r.symbol, r.name);
+      const priceBadge = livePrice && livePrice > 0
+        ? `<span class="mgmt-ticker-price">${livePrice.toFixed(2)} PLN</span>`
+        : '';
       const polishBadge = isPolish
         ? `<span class="mgmt-ticker-badge mgmt-ticker-badge-pl" title="Warsaw Stock Exchange">🇵🇱 WSE</span>`
         : '';
@@ -2329,7 +2375,7 @@
           <span class="mgmt-ticker-name">${_esc(r.name)}</span>
         </div>
         <div class="mgmt-ticker-meta">
-          ${polishBadge}${ownedBadge}
+          ${priceBadge}${polishBadge}${ownedBadge}
           <span class="mgmt-ticker-exchange">${_esc(r.exchange)}</span>
         </div>
       </div>`;
@@ -2345,20 +2391,8 @@
     });
 
     dropdown.style.display = 'block';
-
-    const wrap = document.getElementById('mgmt-search-wrap') || dropdown.parentElement;
-    const wrapRect = wrap.getBoundingClientRect();
-    const modalBody = document.querySelector('.tflow-sheet') || document.querySelector('.wallet-overlay-panel') || document.querySelector('.wallet-holdings-shell') || document.querySelector('.manage-modal-body');
-    const modalRect = modalBody ? modalBody.getBoundingClientRect() : null;
-    const spaceBelow = modalRect ? modalRect.bottom - wrapRect.bottom : 300;
-
-    if (spaceBelow < 220) {
-      dropdown.style.bottom = '100%';
-      dropdown.style.top = 'auto';
-    } else {
-      dropdown.style.top = 'calc(100% + 6px)';
-      dropdown.style.bottom = 'auto';
-    }
+    dropdown.style.top = 'calc(100% + 6px)';
+    dropdown.style.bottom = 'auto';
 
     _setSearchStatus(`${_searchResults.length} Yahoo Finance result${_searchResults.length === 1 ? '' : 's'} ready`);
     setTimeout(() => dropdown.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
@@ -2393,7 +2427,7 @@
     _setSearchStatus(`Selected ${symbol} from Yahoo Finance`, 'ok');
     _setSubmitStatus('Review the summary, then submit');
 
-    // Autopopulate price per share in PLN with current live value
+    // Autopopulate price per share in PLN with current live value or fetch from Yahoo
     const priceEl = document.getElementById('mgmt-price-input');
     let pricePLN = _getLivePricePLN(symbol, displayName);
     if (pricePLN && pricePLN > 0) {
@@ -2402,14 +2436,18 @@
         priceEl.value = pricePLN.toFixed(txType === 'DIVIDEND' ? 2 : 4);
         handleTransactionDraftChange('price');
       }
-    } else {
+    } else if (symbol && !symbol.startsWith('TFI:') && symbol.toUpperCase() !== 'CASH') {
+      _setSearchStatus(`Fetching live price for ${symbol} from Yahoo…`, 'loading');
       _fetchStockPricePLN(symbol).then(fetchedPrice => {
-        if (fetchedPrice && fetchedPrice > 0) {
-          const currentSymbol = document.getElementById('mgmt-ticker-hidden')?.value;
-          if (currentSymbol === symbol && priceEl) {
+        const currentSymbol = document.getElementById('mgmt-ticker-hidden')?.value;
+        if (currentSymbol === symbol) {
+          if (fetchedPrice && fetchedPrice > 0 && priceEl) {
             const txType = _getTransactionType();
             priceEl.value = fetchedPrice.toFixed(txType === 'DIVIDEND' ? 2 : 4);
             handleTransactionDraftChange('price');
+            _setSearchStatus(`Selected ${symbol} · Live price: ${fetchedPrice.toFixed(2)} PLN`, 'ok');
+          } else {
+            _setSearchStatus(`Selected ${symbol} from Yahoo Finance`, 'ok');
           }
         }
       });
@@ -2609,12 +2647,22 @@
     _setSearchStatus(`Selected existing ${ticker}`, 'ok');
     _setSubmitStatus('Review the summary, then submit');
 
-    // Autopopulate price per share in PLN with current live value
+    // Autopopulate price per share in PLN with current live value or fetch from Yahoo
     const priceEl = document.getElementById('mgmt-price-input');
     let pricePLN = _getLivePricePLN(ticker, name);
     if (pricePLN && pricePLN > 0 && priceEl) {
       priceEl.value = pricePLN.toFixed(type === 'DIVIDEND' ? 2 : 4);
       handleTransactionDraftChange('price');
+    } else if (ticker && !ticker.startsWith('TFI:') && ticker.toUpperCase() !== 'CASH') {
+      _fetchStockPricePLN(ticker).then(fetchedPrice => {
+        if (fetchedPrice && fetchedPrice > 0) {
+          const currentTicker = document.getElementById('mgmt-ticker-hidden')?.value;
+          if (currentTicker === ticker && priceEl) {
+            priceEl.value = fetchedPrice.toFixed(type === 'DIVIDEND' ? 2 : 4);
+            handleTransactionDraftChange('price');
+          }
+        }
+      });
     }
 
     _renderTransactionSummary({
