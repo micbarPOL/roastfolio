@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.2.1`  
-*Target Release Numbering Standard — v14.2.1*
+**Current Release:** `14.2.2`  
+*Target Release Numbering Standard — v14.2.2*
 
 ---
 
@@ -52,11 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.2.1`
+* **Current Active Release:** `14.2.2`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
   * **Minor 2:** Monthly summary wrapped email header branding integration with official neon candlestick logo, BIMI & SVG vector assets for email sender avatars, and multi-client sender picture configuration documentation (BIMI, Gravatar, Google Account, Apple Business Connect).
-  * **Service Release 1:** Fixed PWA web app manifest exclusion in S3 deployment script (`deploy.sh`), added version query parameter to `<link rel="manifest">` in `src/index.html`, added vector SVG icon to `manifest.json`, synchronized icon cache-busting versions across secondary pages (`releases.html`, `telemetry.html`, `achievements.html`), and bumped service worker cache namespace to `roastfolio-v70`.
+  * **Service Release 2:** Added explicit release publication dates to the Release Notes hero section and across all historical release cards; replaced temporal card date placeholders ('Latest Active', 'Previous') with verified calendar dates and ISO machine-readable datetime attributes; added pulsing 'Current Active' badge; and synchronized cache-busting queries across app touchpoints.
 * **Prior Releases:**
+  * **14.2.1:** Fixed PWA web app manifest exclusion in S3 deployment script (`deploy.sh`), added version query parameter to `<link rel="manifest">` in `src/index.html`, added vector SVG icon to `manifest.json`, synchronized icon cache-busting versions across secondary pages (`releases.html`, `telemetry.html`, `achievements.html`), and bumped service worker cache namespace.
   * **14.2.0:** Monthly summary wrapped email header branding integration with official neon candlestick logo, BIMI & SVG vector assets for email sender avatars, and multi-client sender picture configuration documentation.
   * **14.1.3:** Fixed Wallets transaction search dropdown visibility to always open downwards without clipping under the overview/history card; enabled instant holdings display on focus, and added automatic live price suggestion by pulling prices and currency conversion directly from Yahoo Finance.
   * **14.1.2:** Fixed disruptive multiple screen reloads during transaction creation on the Wallets screen; prevented background `liveDataReady` events from triggering screen refreshes while drafting transactions, eliminated skeleton loader wipes during in-place table updates, and optimized transaction submission to reload only the holdings and transaction tables.
