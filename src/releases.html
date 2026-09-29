@@ -9,13 +9,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.2.1">
-    <link rel="shortcut icon" href="favicon.ico?v=14.2.1">
-    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.2.1">
-    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.2.1">
-    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.2.1">
-    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.2.1">
-    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.2.1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.2.2">
+    <link rel="shortcut icon" href="favicon.ico?v=14.2.2">
+    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.2.2">
+    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.2.2">
+    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.2.2">
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.2.2">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.2.2">
 
     <script>
         (function() {
@@ -540,10 +540,53 @@
             color: var(--badge-service-text);
         }
 
+        .badge-latest {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+        }
+        .badge-latest::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+            animation: pulse-dot 2s infinite ease-in-out;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        :root[data-theme="light"] .badge-latest {
+            background: rgba(5, 150, 105, 0.12);
+            border-color: rgba(5, 150, 105, 0.3);
+            color: #047857;
+        }
+        :root[data-theme="light"] .badge-latest::before {
+            background: #059669;
+            box-shadow: 0 0 6px #059669;
+        }
+
         .rel-date {
             font-size: 13px;
             color: var(--text-dim);
-            font-weight: 500;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
         }
 
         .rel-title {
@@ -723,7 +766,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v14.1.2</span>
+                    <span>v14.2.2</span>
                 </div>
             </div>
 
@@ -739,7 +782,12 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v14.2.1 (PWA Manifest Deployment &amp; Favicon Synchronization)</strong>
+                    <strong>v14.2.2 (Release Notes Publication Dates &amp; Milestone Timeline Precision)</strong>
+                </div>
+                <span aria-hidden="true">·</span>
+                <div class="rel-hero-meta-item">
+                    <span>Released:</span>
+                    <strong id="rel-latest-date">September 29, 2026</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -782,6 +830,31 @@
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
 
+            <!-- v14.2.2 -->
+            <article class="rel-card" data-tier="service" data-version="14.2.2">
+                <div class="rel-node" aria-hidden="true"></div>
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v14.2.2</span>
+                        <span class="rel-tier-badge badge-service">Service Release</span>
+                        <span class="rel-status-badge badge-latest">Current Active</span>
+                    </div>
+                    <time class="rel-date" datetime="2026-09-29">September 29, 2026</time>
+                </header>
+                <h2 class="rel-title">Release Notes Publication Dates &amp; Milestone Timeline Precision</h2>
+                <div class="rel-tags">
+                    <span class="rel-tag">Release Notes</span>
+                    <span class="rel-tag">UI/UX</span>
+                    <span class="rel-tag">Changelog</span>
+                    <span class="rel-tag">Design System</span>
+                </div>
+                <ul class="rel-items-list">
+                    <li class="rel-item"><strong>Dedicated Release Dates:</strong> Added explicit publication dates across all release cards on the Release Summary screen, replacing vague temporal placeholders with exact chronological dates.</li>
+                    <li class="rel-item"><strong>Hero Metadata Release Timestamp:</strong> Added official "Released" timestamp to the top hero section header alongside milestone status and TOMINEX architecture attribution.</li>
+                    <li class="rel-item"><strong>Active Milestone Badge:</strong> Enhanced the active release card with a pulsing green status indicator badge clearly distinguishing the deployed production release from prior versions.</li>
+                </ul>
+            </article>
+
             <!-- v14.2.1 -->
             <article class="rel-card" data-tier="service" data-version="14.2.1">
                 <div class="rel-node" aria-hidden="true"></div>
@@ -790,7 +863,7 @@
                         <span class="rel-version-tag">v14.2.1</span>
                         <span class="rel-tier-badge badge-service">Service Release</span>
                     </div>
-                    <time class="rel-date">Latest Active</time>
+                    <time class="rel-date" datetime="2026-09-29">September 29, 2026</time>
                 </header>
                 <h2 class="rel-title">PWA Web App Manifest Deployment &amp; Favicon Synchronization</h2>
                 <div class="rel-tags">
@@ -816,7 +889,7 @@
                         <span class="rel-version-tag">v14.2.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">Previous</time>
+                    <time class="rel-date" datetime="2026-09-23">September 23, 2026</time>
                 </header>
                 <h2 class="rel-title">Summary Wrapped Email Branding &amp; Sender Picture Integration</h2>
                 <div class="rel-tags">
@@ -840,7 +913,7 @@
                         <span class="rel-version-tag">v14.1.3</span>
                         <span class="rel-tier-badge badge-service">Service Release</span>
                     </div>
-                    <time class="rel-date">Previous</time>
+                    <time class="rel-date" datetime="2026-09-23">September 23, 2026</time>
                 </header>
                 <h2 class="rel-title">Wallets Search Dropdown Visibility &amp; Yahoo Live Price Auto-Suggestion</h2>
                 <div class="rel-tags">
@@ -865,7 +938,7 @@
                         <span class="rel-version-tag">v14.1.2</span>
                         <span class="rel-tier-badge badge-service">Service Release</span>
                     </div>
-                    <time class="rel-date">Previous</time>
+                    <time class="rel-date" datetime="2026-09-23">September 23, 2026</time>
                 </header>
                 <h2 class="rel-title">Wallets In-Place Table Reload &amp; Active Transaction Draft Protection</h2>
                 <div class="rel-tags">
@@ -890,7 +963,7 @@
                         <span class="rel-version-tag">v14.1.1</span>
                         <span class="rel-tier-badge badge-service">Service Release</span>
                     </div>
-                    <time class="rel-date">Previous</time>
+                    <time class="rel-date" datetime="2026-09-23">September 23, 2026</time>
                 </header>
                 <h2 class="rel-title">Dashboard Today's Movers Tablet Layout &amp; Nominal Change Alignment</h2>
                 <div class="rel-tags">
@@ -915,7 +988,7 @@
                         <span class="rel-version-tag">v14.1.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">Previous</time>
+                    <time class="rel-date" datetime="2026-09-23">September 23, 2026</time>
                 </header>
                 <h2 class="rel-title">Manual Wrap Share Recipient Scope Selection (Just Me vs All Recipients)</h2>
                 <div class="rel-tags">
@@ -939,7 +1012,7 @@
                         <span class="rel-version-tag">v14.0.2</span>
                         <span class="rel-tier-badge badge-service">Service Release</span>
                     </div>
-                    <time class="rel-date">September 2026</time>
+                    <time class="rel-date" datetime="2026-09-23">September 23, 2026</time>
                 </header>
                 <h2 class="rel-title">Testing Architecture Segregation &amp; Sub-Second Smoke Test Runner</h2>
                 <div class="rel-tags">
@@ -963,7 +1036,7 @@
                         <span class="rel-version-tag">v14.0.1</span>
                         <span class="rel-tier-badge badge-service">Service Release</span>
                     </div>
-                    <time class="rel-date">September 2026</time>
+                    <time class="rel-date" datetime="2026-09-22">September 22, 2026</time>
                 </header>
                 <h2 class="rel-title">Browser URL Box Favicon Resolution &amp; Brand Typography Standardization</h2>
                 <div class="rel-tags">
@@ -987,7 +1060,7 @@
                         <span class="rel-version-tag">v14.0.0</span>
                         <span class="rel-tier-badge badge-major">Major Release</span>
                     </div>
-                    <time class="rel-date">September 2026</time>
+                    <time class="rel-date" datetime="2026-09-22">September 22, 2026</time>
                 </header>
                 <h2 class="rel-title">Dedicated Release Summary Screen &amp; Brand Identity Overhaul</h2>
                 <div class="rel-tags">
@@ -1012,7 +1085,7 @@
                         <span class="rel-version-tag">v13.5.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">September 2026</time>
+                    <time class="rel-date" datetime="2026-09-22">September 22, 2026</time>
                 </header>
                 <h2 class="rel-title">Neon Candlestick App Icon Integration &amp; Visual Assets</h2>
                 <div class="rel-tags">
@@ -1035,7 +1108,7 @@
                         <span class="rel-version-tag">v13.4.7</span>
                         <span class="rel-tier-badge badge-service">Service Patch</span>
                     </div>
-                    <time class="rel-date">September 2026</time>
+                    <time class="rel-date" datetime="2026-09-22">September 22, 2026</time>
                 </header>
                 <h2 class="rel-title">Calendar Hover Tooltip Formatting Correction</h2>
                 <div class="rel-tags">
@@ -1056,7 +1129,7 @@
                         <span class="rel-version-tag">v13.4.4</span>
                         <span class="rel-tier-badge badge-service">Service Patch</span>
                     </div>
-                    <time class="rel-date">September 2026</time>
+                    <time class="rel-date" datetime="2026-09-21">September 21, 2026</time>
                 </header>
                 <h2 class="rel-title">Market Context Returns &amp; Snapshot Fallbacks</h2>
                 <div class="rel-tags">
@@ -1078,7 +1151,7 @@
                         <span class="rel-version-tag">v13.4.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">August 2026</time>
+                    <time class="rel-date" datetime="2026-08-28">August 28, 2026</time>
                 </header>
                 <h2 class="rel-title">Summary Wrapped Benchmarks Card</h2>
                 <div class="rel-tags">
@@ -1098,7 +1171,7 @@
                         <span class="rel-version-tag">v13.3.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">August 2026</time>
+                    <time class="rel-date" datetime="2026-08-14">August 14, 2026</time>
                 </header>
                 <h2 class="rel-title">Tactile Texture Mesh &amp; Weekend Extrapolation</h2>
                 <div class="rel-tags">
@@ -1119,7 +1192,7 @@
                         <span class="rel-version-tag">v13.0.0</span>
                         <span class="rel-tier-badge badge-major">Major Release</span>
                     </div>
-                    <time class="rel-date">July 2026</time>
+                    <time class="rel-date" datetime="2026-07-29">July 29, 2026</time>
                 </header>
                 <h2 class="rel-title">Spotify Wrapped &amp; Revolut-Style Monthly Audit Engine</h2>
                 <div class="rel-tags">
@@ -1142,7 +1215,7 @@
                         <span class="rel-version-tag">v12.1.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">June 2026</time>
+                    <time class="rel-date" datetime="2026-06-25">June 25, 2026</time>
                 </header>
                 <h2 class="rel-title">Cash Masking Privacy &amp; Share Sheet Controls</h2>
                 <div class="rel-tags">
@@ -1163,7 +1236,7 @@
                         <span class="rel-version-tag">v12.0.0</span>
                         <span class="rel-tier-badge badge-major">Major Release</span>
                     </div>
-                    <time class="rel-date">May 2026</time>
+                    <time class="rel-date" datetime="2026-05-30">May 30, 2026</time>
                 </header>
                 <h2 class="rel-title">Automated Report Email Engine &amp; Multi-Recipient Notifications</h2>
                 <div class="rel-tags">
@@ -1185,7 +1258,7 @@
                         <span class="rel-version-tag">v11.8.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">May 2026</time>
+                    <time class="rel-date" datetime="2026-05-22">May 22, 2026</time>
                 </header>
                 <h2 class="rel-title">Milestones Calendar &amp; All-Time High Celebrations</h2>
                 <div class="rel-tags">
@@ -1206,7 +1279,7 @@
                         <span class="rel-version-tag">v11.7.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">May 2026</time>
+                    <time class="rel-date" datetime="2026-05-18">May 18, 2026</time>
                 </header>
                 <h2 class="rel-title">Floating Interactive Crosshair Tooltip on The Journey</h2>
                 <div class="rel-tags">
@@ -1226,7 +1299,7 @@
                         <span class="rel-version-tag">v11.6.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">May 2026</time>
+                    <time class="rel-date" datetime="2026-05-16">May 16, 2026</time>
                 </header>
                 <h2 class="rel-title">Continuous Snapshot Backfills &amp; Modal Error Handling</h2>
                 <div class="rel-tags">
@@ -1248,7 +1321,7 @@
                         <span class="rel-version-tag">v11.2.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">May 2026</time>
+                    <time class="rel-date" datetime="2026-05-06">May 6, 2026</time>
                 </header>
                 <h2 class="rel-title">Editorial Bento Presentation &amp; Private Share Sheets</h2>
                 <div class="rel-tags">
