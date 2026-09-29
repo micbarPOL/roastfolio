@@ -89,6 +89,22 @@ class FooterAndReleaseContractTests(unittest.TestCase):
     def test_package_json_version_synced(self):
         self.assertEqual(self.package_json.get('version'), self.active_version)
 
+    def test_manifest_contract_and_deployment_sync(self):
+        manifest_path = ROOT / "src" / "manifest.json"
+        self.assertTrue(manifest_path.exists(), "src/manifest.json must exist")
+        manifest_data = json.loads(manifest_path.read_text())
+        self.assertIn("icons", manifest_data, "manifest.json must declare icons")
+        self.assertGreaterEqual(len(manifest_data["icons"]), 4, "manifest.json must include standard & maskable icons")
+
+        # index.html must reference manifest with active version cache-busting query
+        self.assertIn(f'href="manifest.json?v={self.active_version}"', self.index_html)
+
+        # deploy.sh must deploy manifest.json to S3
+        deploy_sh = (ROOT / "deploy.sh").read_text()
+        self.assertIn("manifest.json", deploy_sh, "deploy.sh must explicitly sync or copy manifest.json")
+        self.assertNotIn('--exclude "*.json" \\\n  --exclude "test-comments.html"', deploy_sh,
+                         "deploy.sh must not exclude all JSON without including manifest.json")
+
 
 if __name__ == "__main__":
     unittest.main()

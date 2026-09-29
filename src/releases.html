@@ -9,13 +9,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.0.2">
-    <link rel="shortcut icon" href="favicon.ico?v=14.0.2">
-    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.0.2">
-    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.0.2">
-    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.0.2">
-    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.0.2">
-    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.0.2">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.2.1">
+    <link rel="shortcut icon" href="favicon.ico?v=14.2.1">
+    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.2.1">
+    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.2.1">
+    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.2.1">
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.2.1">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.2.1">
 
     <script>
         (function() {
@@ -739,7 +739,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v14.2.0 (Email Branding &amp; Sender Picture Integration)</strong>
+                    <strong>v14.2.1 (PWA Manifest Deployment &amp; Favicon Synchronization)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -782,6 +782,32 @@
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
 
+            <!-- v14.2.1 -->
+            <article class="rel-card" data-tier="service" data-version="14.2.1">
+                <div class="rel-node" aria-hidden="true"></div>
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v14.2.1</span>
+                        <span class="rel-tier-badge badge-service">Service Release</span>
+                    </div>
+                    <time class="rel-date">Latest Active</time>
+                </header>
+                <h2 class="rel-title">PWA Web App Manifest Deployment &amp; Favicon Synchronization</h2>
+                <div class="rel-tags">
+                    <span class="rel-tag">PWA</span>
+                    <span class="rel-tag">Manifest</span>
+                    <span class="rel-tag">Deployment</span>
+                    <span class="rel-tag">Assets</span>
+                </div>
+                <ul class="rel-items-list">
+                    <li class="rel-item"><strong>PWA Manifest S3 Deployment Fix:</strong> Refined <code>deploy.sh</code> S3 sync exclusion rules from <code>--exclude "*.json"</code> to targeting local cache files specifically (<code>*-cache*.json</code>, <code>benchmark-*.json</code>, <code>price-cache.json</code>, <code>widget-cache.json</code>), ensuring <code>manifest.json</code> is properly synced and explicitly uploaded with <code>application/manifest+json</code> MIME type.</li>
+                    <li class="rel-item"><strong>Manifest Version Query Busted:</strong> Added <code>?v=14.2.1</code> query parameter to <code>&lt;link rel="manifest"&gt;</code> in <code>index.html</code>, ensuring browsers and desktop Chrome app shortcut updaters fetch the fresh web manifest without stale caching.</li>
+                    <li class="rel-item"><strong>Vector SVG Manifest Icon:</strong> Added <code>roastfolio-logo.svg</code> to <code>manifest.json</code> icon declarations to enable high-resolution vector scaling on supported modern PWA engines.</li>
+                    <li class="rel-item"><strong>Favicon Version Alignment:</strong> Synchronized cache-busting query strings for favicons and apple-touch-icons across all subpages (<code>releases.html</code>, <code>achievements.html</code>, <code>telemetry.html</code>).</li>
+                    <li class="rel-item"><strong>Service Worker Cache Refresh:</strong> Bumped service worker cache namespace to <code>roastfolio-v70</code> to cycle cached app shell assets.</li>
+                </ul>
+            </article>
+
             <!-- v14.2.0 -->
             <article class="rel-card" data-tier="minor" data-version="14.2.0">
                 <div class="rel-node" aria-hidden="true"></div>
@@ -790,7 +816,7 @@
                         <span class="rel-version-tag">v14.2.0</span>
                         <span class="rel-tier-badge badge-minor">Minor Release</span>
                     </div>
-                    <time class="rel-date">Latest Active</time>
+                    <time class="rel-date">Previous</time>
                 </header>
                 <h2 class="rel-title">Summary Wrapped Email Branding &amp; Sender Picture Integration</h2>
                 <div class="rel-tags">
