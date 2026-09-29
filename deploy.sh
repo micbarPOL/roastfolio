@@ -128,9 +128,18 @@ aws s3 sync src/ "s3://$BUCKET/" \
   --delete \
   --exclude "*.DS_Store" \
   --exclude "scripts/config.js" \
-  --exclude "*.json" \
+  --exclude "*-cache*.json" \
+  --exclude "benchmark-*.json" \
+  --exclude "price-cache.json" \
+  --exclude "widget-cache.json" \
   --exclude "test-comments.html" \
   --exclude "sam-artifacts-*"
+
+echo ""
+echo "=== Uploading manifest.json with canonical Content-Type ==="
+aws s3 cp src/manifest.json "s3://$BUCKET/manifest.json" \
+  --content-type "application/manifest+json" \
+  --region  "$REGION"
 
 echo ""
 echo "=== Invalidating CloudFront cache ==="

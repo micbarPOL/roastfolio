@@ -70,6 +70,8 @@ def test_render_monthly_recap_email_positive_return():
     assert "#4ade80" in html_body  # Positive emerald color
     assert "Emerytura" in html_body
     assert "roastfolio" in html_body
+    assert "/data/logos/icon-192.png" in html_body
+    assert 'alt="roastfolio logo"' in html_body
 
 
 def test_render_monthly_recap_email_negative_return():
