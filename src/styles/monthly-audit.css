@@ -52,8 +52,9 @@
     color: #1c2c22; background: #d0f5b0;
     box-shadow: none; backdrop-filter: none; text-align: left;
 }
-#monthly-audit-root .monthly-audit-hero.is-negative { background: #f2c5b0; }
-#monthly-audit-root .monthly-audit-hero.is-neutral { background: #d4caf2; }
+#monthly-audit-root .monthly-audit-hero.is-negative { background: #f2c5b0; color: #1c2c22; }
+#monthly-audit-root .monthly-audit-hero.is-neutral { background: #d4caf2; color: #1c2c22; }
+#monthly-audit-root .monthly-audit-hero.is-positive { color: #1c2c22; }
 .monthly-audit-hero::before {
     content: ''; position: absolute; z-index: -1; inset: 0;
     background:
@@ -99,6 +100,17 @@
 #monthly-audit-root .ma-hero-benchmark-val.is-positive { color: #14532d; }
 #monthly-audit-root .ma-hero-benchmark-val.is-negative { color: #7f1d1d; }
 #monthly-audit-root .ma-hero-benchmark-val.is-neutral { color: #344634; }
+#monthly-audit-root .monthly-audit-hero-commentary {
+    display: block;
+    text-align: center;
+    font-style: italic;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #344634 !important;
+    margin: 32px auto 0;
+    max-width: 620px;
+    opacity: 0.9;
+}
 
 /* Desktop hierarchy: 2:1 panels, not seven equal boxes. */
 .monthly-audit-content { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; align-items: stretch; }

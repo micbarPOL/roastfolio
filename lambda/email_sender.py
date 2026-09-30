@@ -145,7 +145,23 @@ def render_periodic_recap_email(payload: dict[str, Any]) -> str:
     diary_html = _diary_rows(payload.get("diary") or []) if period == "monthly" else ""
     cta_url = payload.get("cta_url") or "https://app.roastfolio.app/dashboard"
 
-    template = _TEMPLATE.read_text(encoding="utf-8")
+    commentary_html = ""
+    if payload.get("commentary"):
+        commentary_html = f"""
+            <tr>
+              <td class="mobile-pad" style="padding:18px 22px 0 22px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:linear-gradient(180deg,#121b2d 0%,#0f172a 100%); border:1px solid #243244; border-left:4px solid #7c3aed; border-radius:14px; overflow:hidden;">
+                  <tr>
+                    <td style="padding:16px 18px; font-size:14px; line-height:22px; color:#e2e8f0; font-style:italic;">
+                      "{_safe_text(payload.get('commentary'))}"
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+        """
+
+    template = _TEMPLATE_PATH.read_text(encoding="utf-8")
     replacements = {
         "%%TITLE%%": _safe_text(title),
         "%%USER_NAME%%": _safe_text(user_name),
@@ -157,6 +173,7 @@ def render_periodic_recap_email(payload: dict[str, Any]) -> str:
         "%%ANCHOR_NAME%%": anchor_name,
         "%%ANCHOR_VALUE%%": anchor_value,
         "%%DIARY_BLOCK%%": diary_html,
+        "%%COMMENTARY_BLOCK%%": commentary_html,
         "%%CTA_URL%%": _safe_text(cta_url),
     }
 

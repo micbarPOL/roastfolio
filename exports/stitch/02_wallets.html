@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Roastfolio — Wallets & Management</title>
+    <link rel="stylesheet" href="../../src/styles/main.css">
+    <link rel="stylesheet" href="00_design_tokens.css">
+
+    <style>
+        /* Scoped layout wrapper for Google Stitch preview */
+        body {
+            margin: 0;
+            padding: 24px;
+            background-color: #050e18;
+            color: #eef7ff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .stitch-screen-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="stitch-screen-container">
+        <!-- SCREEN: Wallets & Management -->
+        
+        <section class="wallet-screen">
+            <div class="wallet-screen-header">
+                <h2>Wallet Management</h2>
+            </div>
+
+            <!-- ── Sticky wallet selector ─────────────────────── -->
+            <div id="wallet-sticky-sentinel" class="wallet-sticky-sentinel" aria-hidden="true"></div>
+            <div class="wallet-sticky-top">
+                <div class="wallet-card wallet-selector-card">
+                    <!-- Mobile: compact header + overflow menu -->
+                    <div class="wallet-mobile-header">
+                        <h2 class="wallet-mobile-title">Wallets</h2>
+                        <button class="wallet-overflow-btn" type="button" aria-label="More options" onclick="window._mgmt.toggleWalletOverflow()">···</button>
+                    </div>
+                    <div id="mgmt-wallet-overflow-menu" class="wallet-overflow-menu" hidden="" aria-hidden="true">
+                        <button class="wallet-overflow-item" type="button" onclick="window._mgmt.toggleCreatePortfolioComposer()">+ Add wallet</button>
+                        <button class="wallet-overflow-item" type="button" onclick="window._mgmt.openTransactionsPanel('history')">Transaction history</button>
+                    </div>
+                    <!-- Mobile: horizontal wallet chip carousel -->
+                    <div class="wallet-chips-carousel">
+                        <div id="mgmt-wallet-chips-strip" class="wallet-chips-strip" role="listbox" aria-label="Select wallet"><button type="button" class="wallet-chip is-active" data-id="summary" role="option" aria-selected="true" onclick="window._mgmt.selectPortfolio('summary')"><span class="wallet-chip-top"><span class="wallet-chip-dot" style="background:#27ae60"></span><span class="wallet-chip-name">Summary</span></span><span class="wallet-chip-value">348&nbsp;520,50 PLN</span></button><button type="button" class="wallet-chip" data-id="p-xtb" role="option" aria-selected="false" onclick="window._mgmt.selectPortfolio('p-xtb')"><span class="wallet-chip-top"><span class="wallet-chip-dot" style="background:#1abc9c"></span><span class="wallet-chip-name">XTB Brokerage</span></span><span class="wallet-chip-value">208&nbsp;420,50 PLN</span></button><button type="button" class="wallet-chip" data-id="p-ike" role="option" aria-selected="false" onclick="window._mgmt.selectPortfolio('p-ike')"><span class="wallet-chip-top"><span class="wallet-chip-dot" style="background:#1abc9c"></span><span class="wallet-chip-name">IKE Retirement</span></span><span class="wallet-chip-value">140&nbsp;100,00 PLN</span></button><button type="button" class="wallet-chip is-active" data-id="summary" role="option" aria-selected="true" onclick="window._mgmt.selectPortfolio('summary')"><span class="wallet-chip-top"><span class="wallet-chip-dot" style="background:#e74c3c"></span><span class="wallet-chip-name">Total Portfolio</span></span><span class="wallet-chip-value">348&nbsp;520,50 PLN</span></button></div>
+                        <div id="mgmt-wallet-chips-dots" class="wallet-chips-dots" aria-hidden="true"><button class="wallet-chips-dot is-active" data-carousel-index="0" aria-label="Summary" onclick="window._mgmt._carouselGoTo(0)"></button><button class="wallet-chips-dot" data-carousel-index="1" aria-label="XTB Brokerage" onclick="window._mgmt._carouselGoTo(1)"></button><button class="wallet-chips-dot" data-carousel-index="2" aria-label="IKE Retirement" onclick="window._mgmt._carouselGoTo(2)"></button><button class="wallet-chips-dot is-active" data-carousel-index="3" aria-label="Total Portfolio" onclick="window._mgmt._carouselGoTo(3)"></button></div>
+                    </div>
+                    <!-- Mobile: selected wallet value summary -->
+                    <div id="mgmt-mobile-wallet-summary" class="wallet-mobile-summary">
+                        <span id="mgmt-mobile-wallet-name" class="wallet-mobile-summary-name">Summary</span>
+                        <strong id="mgmt-mobile-wallet-total" class="wallet-mobile-summary-total">348&nbsp;520,50 PLN</strong>
+                        <span id="mgmt-mobile-wallet-pct" class="wallet-mobile-summary-pct is-positive">+1.40%</span>
+                    </div>
+                    <!-- Desktop: wallet list label + create button -->
+                    <div class="wallet-selector-head wallet-desktop-only">
+                        <div class="mgmt-section-title">Wallets</div>
+                        <button id="mgmt-toggle-create-btn" class="mgmt-btn mgmt-btn-secondary wallet-create-toggle" onclick="window._mgmt.toggleCreatePortfolioComposer()">+ Wallet</button>
+                    </div>
+                    <div id="mgmt-port-flash" class="mgmt-flash" style="display:none"></div>
+                    <!-- (Desktop dropdown selector removed in favor of universal chips strip) -->
+                    <div id="mgmt-create-row-wrap" class="wallet-create-shell" hidden="" aria-hidden="true">
+                        <div class="mgmt-create-row">
+                            <input id="mgmt-new-port-name" type="text" class="mgmt-input" placeholder="New wallet name…" onkeydown="if(event.key==='Enter')window._mgmt.createPortfolio()" style="">
+                            <button id="mgmt-create-port-btn" class="mgmt-btn mgmt-btn-primary" onclick="window._mgmt.createPortfolio()">Create</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Holdings — always visible ───────────────────
+                 No display:none. Skeleton shows while loading.
+                 Transactions open in overlay without touching this.
+            ── -->
+            <div id="mgmt-holdings-panel" class="wallet-screen-content wallet-holdings-shell">
+                    <div class="wallet-card wallet-card-holdings">
+                        <div class="card-cl-overlay">
+                            <div class="cl-loader">
+                                <div class="cl-candles">
+                                    <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                                    <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                                    <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                                    <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                                    <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
+                                    <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                                    <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                                    <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="wallet-table-header">
+                            <div>
+                                <div class="mgmt-section-title">Holdings</div>
+                                <div id="mgmt-holdings-subtitle" class="wallet-table-subtitle">All wallets combined. Your aggregate balance and performance across every wallet.</div>
+                            </div>
+                            <div id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">6 holdings</div>
+                        </div>
+                        <div class="holdings-view-toggle" role="tablist" aria-label="Holdings view">
+                            <button type="button" class="holdings-view-btn is-active" data-holdings-view="active" role="tab" aria-selected="true" onclick="window._mgmt.setHoldingsView('active')">Active Holdings</button>
+                            <button type="button" class="holdings-view-btn" data-holdings-view="cemetery" role="tab" aria-selected="false" onclick="window._mgmt.setHoldingsView('cemetery')">The Cemetery</button>
+                        </div>
+                        <div data-holdings-view-panel="active">
+                        <div class="wallet-table-wrap wallet-table-wrap-stable wallet-desktop-only">
+                                <table class="wallet-holdings-table">
+                                    <colgroup>
+                                        <col class="wht-col-company">
+                                        <col class="wht-col-shares">
+                                        <col class="wht-col-value">
+                                        <col class="wht-col-today">
+                                        <col class="wht-col-alloc">
+                                        <col class="wht-col-actions">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th class="wht-th">Company</th>
+                                            <th class="wht-th wht-th-r">Shares</th>
+                                            <th class="wht-th wht-th-r">Value</th>
+                                            <th class="wht-th wht-th-r">Today</th>
+                                            <th class="wht-th wht-th-r">Alloc</th>
+                                            <th class="wht-th"></th>
+                                        </tr>
+                                    </thead>
+                                <tbody id="mgmt-holdings-body">
+        <tr class="wht-row" tabindex="0">
+          <td class="wht-td wht-td-company">
+            <div class="wht-company wht-company-clickable" onclick="window.openAnalysisForTicker('AAPL'); event.stopPropagation();" style="cursor:pointer;">
+              <div class="wallet-holding-avatar">A</div>
+              <div class="wht-company-copy">
+                <span class="wht-company-name">Apple Inc.</span>
+                <span class="wht-company-ticker">AAPL</span>
+                
+              </div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-num">100</td>
+          <td class="wht-td wht-td-r wht-td-value">94&nbsp;520,00 PLN</td>
+          <td class="wht-td wht-td-r wht-td-today">
+            <div class="wht-daily-stack">
+              <span class="wht-daily-pln is-positive">+1620,00 PLN</span>
+              <span class="wht-daily-pct is-positive">+1.74%</span>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-alloc">
+            <div class="wht-alloc">
+              <span class="wht-alloc-num">45.4%</span>
+              <div class="wht-alloc-bar"><div class="wht-alloc-fill" style="width:45.35%"></div></div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-actions"><span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span></td>
+        </tr>
+        <tr class="wht-row" tabindex="0">
+          <td class="wht-td wht-td-company">
+            <div class="wht-company wht-company-clickable" onclick="window.openAnalysisForTicker('MSFT'); event.stopPropagation();" style="cursor:pointer;">
+              <div class="wallet-holding-avatar">M</div>
+              <div class="wht-company-copy">
+                <span class="wht-company-name">Microsoft Corporation</span>
+                <span class="wht-company-ticker">MSFT</span>
+                
+              </div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-num">50</td>
+          <td class="wht-td wht-td-r wht-td-value">91&nbsp;000,00 PLN</td>
+          <td class="wht-td wht-td-r wht-td-today">
+            <div class="wht-daily-stack">
+              <span class="wht-daily-pln is-positive">+980,00 PLN</span>
+              <span class="wht-daily-pct is-positive">+1.09%</span>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-alloc">
+            <div class="wht-alloc">
+              <span class="wht-alloc-num">65.0%</span>
+              <div class="wht-alloc-bar"><div class="wht-alloc-fill" style="width:64.95%"></div></div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-actions"><span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span></td>
+        </tr>
+        <tr class="wht-row" tabindex="0">
+          <td class="wht-td wht-td-company">
+            <div class="wht-company wht-company-clickable" onclick="window.openAnalysisForTicker('XTB.WA'); event.stopPropagation();" style="cursor:pointer;">
+              <div class="wallet-holding-avatar">X</div>
+              <div class="wht-company-copy">
+                <span class="wht-company-name">XTB S.A.</span>
+                <span class="wht-company-ticker">XTB.WA</span>
+                
+              </div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-num">1200</td>
+          <td class="wht-td wht-td-r wht-td-value">82&nbsp;080,00 PLN</td>
+          <td class="wht-td wht-td-r wht-td-today">
+            <div class="wht-daily-stack">
+              <span class="wht-daily-pln is-positive">+1680,00 PLN</span>
+              <span class="wht-daily-pct is-positive">+2.09%</span>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-alloc">
+            <div class="wht-alloc">
+              <span class="wht-alloc-num">39.4%</span>
+              <div class="wht-alloc-bar"><div class="wht-alloc-fill" style="width:39.38%"></div></div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-actions"><span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span></td>
+        </tr>
+        <tr class="wht-row" tabindex="0">
+          <td class="wht-td wht-td-company">
+            <div class="wht-company wht-company-clickable" onclick="window.openAnalysisForTicker('CASH'); event.stopPropagation();" style="cursor:pointer;">
+              <div class="wallet-holding-avatar">C</div>
+              <div class="wht-company-copy">
+                <span class="wht-company-name">Cash (PLN)</span>
+                <span class="wht-company-ticker">CASH</span>
+                
+              </div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-num">31&nbsp;820,5</td>
+          <td class="wht-td wht-td-r wht-td-value">31&nbsp;820,50 PLN</td>
+          <td class="wht-td wht-td-r wht-td-today">
+            <div class="wht-daily-stack">
+              <span class="wht-daily-pln is-neutral">0,00 PLN</span>
+              <span class="wht-daily-pct is-neutral">0.00%</span>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-alloc">
+            <div class="wht-alloc">
+              <span class="wht-alloc-num">15.3%</span>
+              <div class="wht-alloc-bar"><div class="wht-alloc-fill" style="width:15.27%"></div></div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-actions"><span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span></td>
+        </tr>
+        <tr class="wht-row" tabindex="0">
+          <td class="wht-td wht-td-company">
+            <div class="wht-company wht-company-clickable" onclick="window.openAnalysisForTicker('CDR.WA'); event.stopPropagation();" style="cursor:pointer;">
+              <div class="wallet-holding-avatar">C</div>
+              <div class="wht-company-copy">
+                <span class="wht-company-name">CD Projekt S.A.</span>
+                <span class="wht-company-ticker">CDR.WA</span>
+                
+              </div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-num">160</td>
+          <td class="wht-td wht-td-r wht-td-value">27&nbsp;600,00 PLN</td>
+          <td class="wht-td wht-td-r wht-td-today">
+            <div class="wht-daily-stack">
+              <span class="wht-daily-pln is-negative">-260,20 PLN</span>
+              <span class="wht-daily-pct is-negative">-0.93%</span>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-alloc">
+            <div class="wht-alloc">
+              <span class="wht-alloc-num">19.7%</span>
+              <div class="wht-alloc-bar"><div class="wht-alloc-fill" style="width:19.7%"></div></div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-actions"><span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span></td>
+        </tr>
+        <tr class="wht-row" tabindex="0">
+          <td class="wht-td wht-td-company">
+            <div class="wht-company wht-company-clickable" onclick="window.openAnalysisForTicker('CASH'); event.stopPropagation();" style="cursor:pointer;">
+              <div class="wallet-holding-avatar">C</div>
+              <div class="wht-company-copy">
+                <span class="wht-company-name">Cash (IKE)</span>
+                <span class="wht-company-ticker">CASH</span>
+                
+              </div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-num">21&nbsp;500</td>
+          <td class="wht-td wht-td-r wht-td-value">21&nbsp;500,00 PLN</td>
+          <td class="wht-td wht-td-r wht-td-today">
+            <div class="wht-daily-stack">
+              <span class="wht-daily-pln is-neutral">0,00 PLN</span>
+              <span class="wht-daily-pct is-neutral">0.00%</span>
+            </div>
+          </td>
+          <td class="wht-td wht-td-r wht-td-alloc">
+            <div class="wht-alloc">
+              <span class="wht-alloc-num">15.3%</span>
+              <div class="wht-alloc-bar"><div class="wht-alloc-fill" style="width:15.35%"></div></div>
+            </div>
+          </td>
+          <td class="wht-td wht-td-actions"><span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span></td>
+        </tr></tbody>
+                            </table>
+                        </div>
+                        <!-- Mobile: holdings as stacked cards -->
+                        <div id="mgmt-holdings-cards" class="wallet-holdings-cards">
+          <div class="whc">
+            <div class="whc-main">
+              <div class="whc-identity whc-identity-clickable" onclick="window.openAnalysisForTicker('AAPL'); event.stopPropagation();" style="cursor:pointer;">
+                <div class="wallet-holding-avatar">A</div>
+                <div class="whc-names">
+                  <span class="whc-name">Apple Inc.</span>
+                  <span class="whc-ticker">AAPL</span>
+                  
+                </div>
+              </div>
+              <div class="whc-financials">
+                <span class="whc-value">94&nbsp;520,00 PLN</span>
+                <span class="whc-daily is-positive">+1620,00 PLN</span>
+              </div>
+            </div>
+            <div class="whc-meta-row">
+              <div class="whc-meta-line">
+                <span class="whc-meta">100 units · 45.4%</span>
+                <span class="whc-meta whc-meta-pct is-positive">+1.74%</span>
+              </div>
+              <div class="whc-alloc-bar"><div class="whc-alloc-fill" style="width:45.35%"></div></div>
+            </div>
+            
+            <div class="whc-actions whc-actions-readonly">
+              <span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span>
+            </div>
+          </div>
+          <div class="whc">
+            <div class="whc-main">
+              <div class="whc-identity whc-identity-clickable" onclick="window.openAnalysisForTicker('MSFT'); event.stopPropagation();" style="cursor:pointer;">
+                <div class="wallet-holding-avatar">M</div>
+                <div class="whc-names">
+                  <span class="whc-name">Microsoft Corporation</span>
+                  <span class="whc-ticker">MSFT</span>
+                  
+                </div>
+              </div>
+              <div class="whc-financials">
+                <span class="whc-value">91&nbsp;000,00 PLN</span>
+                <span class="whc-daily is-positive">+980,00 PLN</span>
+              </div>
+            </div>
+            <div class="whc-meta-row">
+              <div class="whc-meta-line">
+                <span class="whc-meta">50 units · 65.0%</span>
+                <span class="whc-meta whc-meta-pct is-positive">+1.09%</span>
+              </div>
+              <div class="whc-alloc-bar"><div class="whc-alloc-fill" style="width:64.95%"></div></div>
+            </div>
+            
+            <div class="whc-actions whc-actions-readonly">
+              <span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span>
+            </div>
+          </div>
+          <div class="whc">
+            <div class="whc-main">
+              <div class="whc-identity whc-identity-clickable" onclick="window.openAnalysisForTicker('XTB.WA'); event.stopPropagation();" style="cursor:pointer;">
+                <div class="wallet-holding-avatar">X</div>
+                <div class="whc-names">
+                  <span class="whc-name">XTB S.A.</span>
+                  <span class="whc-ticker">XTB.WA</span>
+                  
+                </div>
+              </div>
+              <div class="whc-financials">
+                <span class="whc-value">82&nbsp;080,00 PLN</span>
+                <span class="whc-daily is-positive">+1680,00 PLN</span>
+              </div>
+            </div>
+            <div class="whc-meta-row">
+              <div class="whc-meta-line">
+                <span class="whc-meta">1200 units · 39.4%</span>
+                <span class="whc-meta whc-meta-pct is-positive">+2.09%</span>
+              </div>
+              <div class="whc-alloc-bar"><div class="whc-alloc-fill" style="width:39.38%"></div></div>
+            </div>
+            
+            <div class="whc-actions whc-actions-readonly">
+              <span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span>
+            </div>
+          </div>
+          <div class="whc">
+            <div class="whc-main">
+              <div class="whc-identity whc-identity-clickable" onclick="window.openAnalysisForTicker('CASH'); event.stopPropagation();" style="cursor:pointer;">
+                <div class="wallet-holding-avatar">C</div>
+                <div class="whc-names">
+                  <span class="whc-name">Cash (PLN)</span>
+                  <span class="whc-ticker">CASH</span>
+                  
+                </div>
+              </div>
+              <div class="whc-financials">
+                <span class="whc-value">31&nbsp;820,50 PLN</span>
+                <span class="whc-daily is-neutral">0,00 PLN</span>
+              </div>
+            </div>
+            <div class="whc-meta-row">
+              <div class="whc-meta-line">
+                <span class="whc-meta">31&nbsp;820,5 units · 15.3%</span>
+                <span class="whc-meta whc-meta-pct is-neutral">0.00%</span>
+              </div>
+              <div class="whc-alloc-bar"><div class="whc-alloc-fill" style="width:15.27%"></div></div>
+            </div>
+            
+            <div class="whc-actions whc-actions-readonly">
+              <span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span>
+            </div>
+          </div>
+          <div class="whc">
+            <div class="whc-main">
+              <div class="whc-identity whc-identity-clickable" onclick="window.openAnalysisForTicker('CDR.WA'); event.stopPropagation();" style="cursor:pointer;">
+                <div class="wallet-holding-avatar">C</div>
+                <div class="whc-names">
+                  <span class="whc-name">CD Projekt S.A.</span>
+                  <span class="whc-ticker">CDR.WA</span>
+                  
+                </div>
+              </div>
+              <div class="whc-financials">
+                <span class="whc-value">27&nbsp;600,00 PLN</span>
+                <span class="whc-daily is-negative">-260,20 PLN</span>
+              </div>
+            </div>
+            <div class="whc-meta-row">
+              <div class="whc-meta-line">
+                <span class="whc-meta">160 units · 19.7%</span>
+                <span class="whc-meta whc-meta-pct is-negative">-0.93%</span>
+              </div>
+              <div class="whc-alloc-bar"><div class="whc-alloc-fill" style="width:19.7%"></div></div>
+            </div>
+            
+            <div class="whc-actions whc-actions-readonly">
+              <span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span>
+            </div>
+          </div>
+          <div class="whc">
+            <div class="whc-main">
+              <div class="whc-identity whc-identity-clickable" onclick="window.openAnalysisForTicker('CASH'); event.stopPropagation();" style="cursor:pointer;">
+                <div class="wallet-holding-avatar">C</div>
+                <div class="whc-names">
+                  <span class="whc-name">Cash (IKE)</span>
+                  <span class="whc-ticker">CASH</span>
+                  
+                </div>
+              </div>
+              <div class="whc-financials">
+                <span class="whc-value">21&nbsp;500,00 PLN</span>
+                <span class="whc-daily is-neutral">0,00 PLN</span>
+              </div>
+            </div>
+            <div class="whc-meta-row">
+              <div class="whc-meta-line">
+                <span class="whc-meta">21&nbsp;500 units · 15.3%</span>
+                <span class="whc-meta whc-meta-pct is-neutral">0.00%</span>
+              </div>
+              <div class="whc-alloc-bar"><div class="whc-alloc-fill" style="width:15.35%"></div></div>
+            </div>
+            
+            <div class="whc-actions whc-actions-readonly">
+              <span class="wht-badge wht-badge-readonly" tabindex="0" title="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view." data-tooltip="Select a specific wallet to make transactions for this asset. Summary is an aggregated read-only view.">Read only</span>
+            </div>
+          </div></div>
+                        </div>
+                        <div data-holdings-view-panel="cemetery" hidden="">
+                            <div class="cemetery-header">
+                                <div>
+                                    <div class="cemetery-title">Closed Positions</div>
+                                    <div class="wallet-table-subtitle">Closed positions with lifecycle and total return.</div>
+                                </div>
+                                <div class="cemetery-controls">
+                                    <label for="cemetery-filter" class="cemetery-filter-label">View</label>
+                                    <select id="cemetery-filter" class="cemetery-filter-select" data-bound="1">
+                                        <option value="all">All</option>
+                                        <option value="active">Active</option>
+                                        <option value="closed">Closed</option>
+                                    </select>
+                                    <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">3 shown · 3 active · 0 closed across all wallets</div>
+                                </div>
+                            </div>
+                            <div class="wallet-table-wrap cemetery-table-wrap">
+                                <table class="wallet-holdings-table cemetery-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Asset</th>
+                                            <th><button type="button" id="cemetery-sort-date" class="cemetery-sort-btn" aria-label="Sort by close date" data-bound="1">Holding lifespan ↓</button></th>
+                                            <th><button type="button" id="cemetery-sort-return" class="cemetery-sort-btn" aria-label="Sort by return">Total (Realized) Return</button></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="mgmt-cemetery-body"><tr class="cemetery-row">
+      <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="XTB.WA" data-portfolio-id=""><span class="cemetery-ticker">XTB.WA</span><span class="cemetery-name">XTB S.A.</span></button></div></td>
+      <td class="cemetery-lifespan">2026-09-10 → Active · 14 days</td>
+      <td class="cemetery-return">
+        <span class="is-positive">+31&nbsp;760,00 PLN</span>
+        <span class="cemetery-realized-sub is-neutral">(0,00 PLN)</span>
+      </td>
+    </tr><tr class="cemetery-row">
+      <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="MSFT" data-portfolio-id=""><span class="cemetery-ticker">MSFT</span><span class="cemetery-name">Microsoft Corporation</span></button></div></td>
+      <td class="cemetery-lifespan">2026-07-22 → Active · 64 days</td>
+      <td class="cemetery-return">
+        <span class="is-positive">+19&nbsp;000,00 PLN</span>
+        <span class="cemetery-realized-sub is-neutral">(0,00 PLN)</span>
+      </td>
+    </tr><tr class="cemetery-row">
+      <td><div class="cemetery-asset"><button type="button" class="cemetery-asset-link" data-ticker="AAPL" data-portfolio-id=""><span class="cemetery-ticker">AAPL</span><span class="cemetery-name">Apple Inc.</span></button></div></td>
+      <td class="cemetery-lifespan">2026-04-12 → Active · 165 days</td>
+      <td class="cemetery-return">
+        <span class="is-positive">+24&nbsp;520,00 PLN</span>
+        <span class="cemetery-realized-sub is-neutral">(0,00 PLN)</span>
+      </td>
+    </tr></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- ── Quick Entry — always visible on wallet screen ── -->
+            <div id="wallet-quick-entry-card" class="wallet-card wallet-qe-card">
+                <div class="wallet-qe-header">
+                    <svg class="wallet-qe-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M3 6h14M3 10h10M3 14h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                    </svg>
+                    <span class="wallet-qe-title">Quick entry</span>
+                    <span class="wallet-qe-subtitle">Add a transaction in plain English</span>
+                </div>
+                <div class="wallet-qe-body">
+                    <div class="wallet-qe-inline-copy">Use this to record buys, sells, deposits, and withdrawals without filling a long form.</div>
+                    <div class="wallet-qe-input-row">
+                        <textarea id="mgmt-quick-entry-input" class="wallet-qe-input" rows="1" placeholder="e.g. Buy 10 AAPL for 185.50 to XTB on 2025-06-01" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="window._mgmt.onQuickEntryInput(event)" onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();window._mgmt.parseQuickEntry();}" style=""></textarea>
+                    </div>
+                    <div class="wallet-qe-action-row" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                        <button type="button" id="mgmt-qe-open-trade-btn" class="wallet-qe-btn wallet-qe-btn-secondary is-disabled" onclick="window._mgmt.openTransactionsPanel('trade')" disabled="">Summary is read only</button>
+                        <button type="button" id="mgmt-qe-parse-btn" class="wallet-qe-btn" onclick="window._mgmt.parseQuickEntry()">
+                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" style="width: 16px; height: 16px; margin-right: 6px;">
+                                <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                            Save entry
+                        </button>
+                    </div>
+                    <div class="wallet-qe-examples">
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('buy')">📈 Buy 10 AAPL for 185.50 to XTB on 2025-06-01</span>
+                        <span class="wallet-qe-sep">·</span>
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('sell')">📉 Sell 5 CDR.WA for 120 to IKE</span>
+                        <span class="wallet-qe-sep">·</span>
+                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('deposit')">💰 Deposit 5000 to IKZE</span>
+                    </div>
+                    <div id="mgmt-qe-status" class="wallet-qe-status"></div>
+                </div>
+            </div>
+
+            <!-- ── Compact overview bar ─────────────────────────
+                 Always visible. Replaces the old wallet-card-overview.
+                 Shows wallet name, rename/delete actions, benchmark
+                 (Summary only), and quick-action buttons on desktop.
+            ── -->
+            <div class="wallet-overview-bar wallet-card">
+                <div class="wob-head">
+                    <div class="wob-name-group">
+                        <span class="mgmt-section-title">Selected wallet</span>
+                        <h3 id="mgmt-holdings-title" class="wob-wallet-name">Summary</h3>
+                    </div>
+                    <div id="mgmt-settings-actions" class="wallet-settings-actions wob-settings-actions">
+        <button class="mgmt-icon-btn wallet-settings-btn" title="Wallet Settings" onclick="window._mgmt.openWalletSettingsModal()">⚙️ Settings</button>
+      </div>
+                </div>
+                <div id="mgmt-settings-summary" class="wallet-settings-summary wob-summary">All wallets combined. Current total: <strong>348&nbsp;520,50 PLN</strong> · Daily <strong>+4820,30 PLN (+1.40%)</strong>.</div>
+                <div class="wob-kpi-strip" aria-label="Wallet summary metrics">
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Total value</span>
+                        <strong id="wob-kpi-total">348&nbsp;520,50 PLN</strong>
+                    </div>
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Today</span>
+                        <strong id="wob-kpi-day">+4820,30 PLN / +1.40%</strong>
+                    </div>
+                    <div class="wob-kpi">
+                        <span class="wob-kpi-label">Annual return</span>
+                        <strong id="wob-kpi-return">—</strong>
+                    </div>
+                </div>
+                <div id="wallet-summary-visuals" class="wallet-summary-visuals">
+      <div class="wallet-summary-visual-grid">
+        
+      <div class="wallet-summary-mini-card wallet-summary-chart-card">
+        <div class="wallet-summary-mini-header">
+          <span>Value history</span>
+        </div>
+        <div class="wallet-summary-spark-wrap">
+          <svg class="sparkline-svg" width="520" height="170" style="display:block;overflow:visible;flex-shrink:0;min-width:520px;" data-coords="[{&quot;x&quot;:2,&quot;v&quot;:207400,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2024-01-01&quot;},{&quot;x&quot;:17.636363636363637,&quot;v&quot;:214888.8,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2024-02-01&quot;},{&quot;x&quot;:33.27272727272727,&quot;v&quot;:222467.47,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2024-03-01&quot;},{&quot;x&quot;:48.909090909090914,&quot;v&quot;:230137.08,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2024-04-01&quot;},{&quot;x&quot;:64.54545454545455,&quot;v&quot;:237898.72,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2024-05-01&quot;},{&quot;x&quot;:80.18181818181819,&quot;v&quot;:245753.5,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2024-06-01&quot;},{&quot;x&quot;:95.81818181818183,&quot;v&quot;:253702.55,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2024-07-01&quot;},{&quot;x&quot;:111.45454545454545,&quot;v&quot;:261746.98,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2024-08-01&quot;},{&quot;x&quot;:127.0909090909091,&quot;v&quot;:269887.94,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2024-09-01&quot;},{&quot;x&quot;:142.72727272727272,&quot;v&quot;:278126.6,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2024-10-01&quot;},{&quot;x&quot;:158.36363636363637,&quot;v&quot;:286464.12,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2024-11-01&quot;},{&quot;x&quot;:174,&quot;v&quot;:294901.68,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2024-12-01&quot;},{&quot;x&quot;:189.63636363636365,&quot;v&quot;:303440.51,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2025-01-01&quot;},{&quot;x&quot;:205.27272727272725,&quot;v&quot;:312081.79,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2025-02-01&quot;},{&quot;x&quot;:220.9090909090909,&quot;v&quot;:320826.77,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2025-03-01&quot;},{&quot;x&quot;:236.54545454545453,&quot;v&quot;:329676.69,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2025-04-01&quot;},{&quot;x&quot;:252.1818181818182,&quot;v&quot;:338632.81,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2025-05-01&quot;},{&quot;x&quot;:267.8181818181818,&quot;v&quot;:347696.41,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2025-06-01&quot;},{&quot;x&quot;:283.45454545454544,&quot;v&quot;:356868.76,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2025-07-01&quot;},{&quot;x&quot;:299.0909090909091,&quot;v&quot;:366151.19,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2025-08-01&quot;},{&quot;x&quot;:314.72727272727275,&quot;v&quot;:375545,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2025-09-01&quot;},{&quot;x&quot;:330.3636363636364,&quot;v&quot;:385051.54,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2025-10-01&quot;},{&quot;x&quot;:346,&quot;v&quot;:394672.16,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2025-11-01&quot;},{&quot;x&quot;:361.6363636363637,&quot;v&quot;:404408.23,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2025-12-01&quot;},{&quot;x&quot;:377.2727272727273,&quot;v&quot;:414261.13,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2026-01-01&quot;},{&quot;x&quot;:392.9090909090909,&quot;v&quot;:424232.26,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2026-02-01&quot;},{&quot;x&quot;:408.5454545454545,&quot;v&quot;:434323.05,&quot;label&quot;:&quot;01:00&quot;,&quot;date&quot;:&quot;2026-03-01&quot;},{&quot;x&quot;:424.1818181818182,&quot;v&quot;:444534.92,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2026-04-01&quot;},{&quot;x&quot;:439.8181818181818,&quot;v&quot;:454869.34,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2026-05-01&quot;},{&quot;x&quot;:455.45454545454544,&quot;v&quot;:465327.78,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2026-06-01&quot;},{&quot;x&quot;:471.09090909090907,&quot;v&quot;:475911.71,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2026-07-01&quot;},{&quot;x&quot;:486.72727272727275,&quot;v&quot;:486622.65,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2026-08-01&quot;},{&quot;x&quot;:502.3636363636364,&quot;v&quot;:497462.12,&quot;label&quot;:&quot;02:00&quot;,&quot;date&quot;:&quot;2026-09-01&quot;},{&quot;x&quot;:518,&quot;v&quot;:497462.12,&quot;label&quot;:&quot;Live&quot;,&quot;date&quot;:&quot;2026-09-24&quot;}]">
+        <defs>
+            <linearGradient id="sfk806j" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#34d399" stop-opacity="0.35"></stop>
+                <stop offset="100%" stop-color="#34d399" stop-opacity="0.02"></stop>
+            </linearGradient>
+            <filter id="glow-sfk806j" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur"></feGaussianBlur>
+                <feMerge>
+                    <feMergeNode in="blur"></feMergeNode>
+                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                </feMerge>
+            </filter>
+        </defs>
+        <polygon points="2.0,168.0 17.6,163.7 33.3,159.4 48.9,155.0 64.5,150.5 80.2,146.1 95.8,141.5 111.5,136.9 127.1,132.2 142.7,127.5 158.4,122.8 174.0,117.9 189.6,113.0 205.3,108.1 220.9,103.1 236.5,98.0 252.2,92.9 267.8,87.7 283.5,82.5 299.1,77.1 314.7,71.8 330.4,66.3 346.0,60.8 361.6,55.3 377.3,49.6 392.9,43.9 408.5,38.1 424.2,32.3 439.8,26.4 455.5,20.4 471.1,14.3 486.7,8.2 502.4,2.0 518.0,2.0 518.0,168 2,168" fill="url(#sfk806j)"></polygon>
+        <polyline points="2.0,168.0 17.6,163.7 33.3,159.4 48.9,155.0 64.5,150.5 80.2,146.1 95.8,141.5 111.5,136.9 127.1,132.2 142.7,127.5 158.4,122.8 174.0,117.9 189.6,113.0 205.3,108.1 220.9,103.1 236.5,98.0 252.2,92.9 267.8,87.7 283.5,82.5 299.1,77.1 314.7,71.8 330.4,66.3 346.0,60.8 361.6,55.3 377.3,49.6 392.9,43.9 408.5,38.1 424.2,32.3 439.8,26.4 455.5,20.4 471.1,14.3 486.7,8.2 502.4,2.0 518.0,2.0" fill="none" stroke="#34d399" stroke-width="2" filter="url(#glow-sfk806j)" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <circle cx="518.0" cy="2.0" r="2.5" fill="#34d399" filter="url(#glow-sfk806j)"></circle>
+        <circle class="sp-dot" cx="2.0" cy="168.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="17.6" cy="163.7" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="33.3" cy="159.4" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="48.9" cy="155.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="64.5" cy="150.5" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="80.2" cy="146.1" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="95.8" cy="141.5" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="111.5" cy="136.9" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="127.1" cy="132.2" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="142.7" cy="127.5" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="158.4" cy="122.8" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="174.0" cy="117.9" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="189.6" cy="113.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="205.3" cy="108.1" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="220.9" cy="103.1" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="236.5" cy="98.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="252.2" cy="92.9" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="267.8" cy="87.7" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="283.5" cy="82.5" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="299.1" cy="77.1" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="314.7" cy="71.8" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="330.4" cy="66.3" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="346.0" cy="60.8" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="361.6" cy="55.3" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="377.3" cy="49.6" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="392.9" cy="43.9" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="408.5" cy="38.1" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="424.2" cy="32.3" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="439.8" cy="26.4" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="455.5" cy="20.4" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="471.1" cy="14.3" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="486.7" cy="8.2" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="502.4" cy="2.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="518.0" cy="2.0" r="2.5" fill="#34d399" opacity="0"></circle>
+        <rect x="0" y="0" width="520" height="170" fill="transparent" style="cursor:crosshair;" data-color="#34d399"></rect>
+    </svg>
+          
+        <span class="wallet-summary-axis-label" style="left:36.64706257434746%">2024</span>
+      
+        <span class="wallet-summary-axis-label" style="left:73.24399236815545%">2025</span>
+      
+        <span class="wallet-summary-axis-label" style="left:96%">2026</span>
+      
+          
+      <span class="wallet-summary-event-marker is-deposit" style="left:93.93939393939394%; top:12%;" title="2026-07-27 · +10&nbsp;000,00 PLN" aria-label="2026-07-27 · +10&nbsp;000,00 PLN">
+        <span>+</span>
+      </span>
+    
+        </div>
+      </div>
+    
+        
+      <div class="wallet-summary-mini-card wallet-summary-pie-card">
+        <div class="wallet-summary-mini-header">
+          <span>Holdings</span>
+          <span class="wallet-summary-mini-pill">6 assets</span>
+        </div>
+        <div class="wallet-summary-pie-wrapper">
+          <div class="wallet-summary-pie" style="background: conic-gradient(#00f0ff 0deg 97.63328125605237deg, #ffea00 97.63328125605237deg 191.63062144120647deg, #39ff14 191.63062144120647deg 276.414156412607deg, #bc13fe 276.414156412607deg 309.28275381218606deg, #ff003c 309.28275381218606deg 337.79183720900204deg, #005eff 337.79183720900204deg 360deg);" aria-label="Portfolio allocation chart">
+            <div class="wallet-summary-pie-center">6</div>
+          </div>
+          <div class="wallet-summary-pie-legend">
+            
+        <div class="wallet-summary-legend-item">
+          <span class="wallet-summary-legend-swatch" style="background:#00f0ff;"></span>
+          <span class="wallet-summary-legend-name">AAPL</span>
+          <span class="wallet-summary-legend-value">27.1%</span>
+        </div>
+      
+        <div class="wallet-summary-legend-item">
+          <span class="wallet-summary-legend-swatch" style="background:#ffea00;"></span>
+          <span class="wallet-summary-legend-name">MSFT</span>
+          <span class="wallet-summary-legend-value">26.1%</span>
+        </div>
+      
+        <div class="wallet-summary-legend-item">
+          <span class="wallet-summary-legend-swatch" style="background:#39ff14;"></span>
+          <span class="wallet-summary-legend-name">XTB.WA</span>
+          <span class="wallet-summary-legend-value">23.6%</span>
+        </div>
+      
+        <div class="wallet-summary-legend-item">
+          <span class="wallet-summary-legend-swatch" style="background:#bc13fe;"></span>
+          <span class="wallet-summary-legend-name">CASH</span>
+          <span class="wallet-summary-legend-value">9.1%</span>
+        </div>
+      
+        <div class="wallet-summary-legend-item">
+          <span class="wallet-summary-legend-swatch" style="background:#ff003c;"></span>
+          <span class="wallet-summary-legend-name">CDR.WA</span>
+          <span class="wallet-summary-legend-value">7.9%</span>
+        </div>
+      
+          </div>
+        </div>
+      </div>
+    
+      </div>
+    </div>
+                <div id="mgmt-benchmark-setting" style=""></div>
+                <!-- ── ATH management ────────────────────────────────── -->
+                <div id="mgmt-ath-setting" class="wallet-setting-item" style="display:none">
+                    <span class="wallet-setting-label">All-Time High (ATH)</span>
+                    <div id="mgmt-ath-content"></div>
+                    <div id="mgmt-ath-status" class="portfolio-ath-status" aria-live="polite"></div>
+                </div>
+                <div class="wob-actions"></div>
+            </div>
+
+            <!-- ── Inline Transaction Form ─────────────────── -->
+            <div id="wallet-transaction-card" class="wallet-card wallet-tx-card" style="display: none;">
+                    <!-- visually-hidden title for aria-labelledby -->
+                    <h2 id="mgmt-overlay-title" class="tflow-sr-only">Summary transaction</h2>
+
+                    <!-- ── Type selector ──────────────────────── -->
+                    <div class="tflow-chrome">
+                        <input id="mgmt-transaction-type" type="hidden" value="BUY" style="">
+                        <div class="tflow-type-rail" role="tablist" aria-label="Transaction type">
+                            <button type="button" id="mgmt-type-buy" class="tflow-type-btn tflow-type-buy is-active" onclick="window._mgmt.setTransactionType('BUY')">
+                                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 13V3M3 8l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                Buy
+                            </button>
+                            <button type="button" id="mgmt-type-sell" class="tflow-type-btn tflow-type-sell" onclick="window._mgmt.setTransactionType('SELL')">
+                                <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                                Sell
+                            </button>
+                            <button type="button" id="mgmt-type-deposit" class="tflow-type-btn tflow-type-cash" onclick="window._mgmt.setTransactionType('DEPOSIT')">Deposit</button>
+                            <button type="button" id="mgmt-type-withdrawal" class="tflow-type-btn tflow-type-cash" onclick="window._mgmt.setTransactionType('WITHDRAWAL')">Withdrawal</button>
+                            <button type="button" id="mgmt-type-dividend" class="tflow-type-btn tflow-type-cash" onclick="window._mgmt.setTransactionType('DIVIDEND')">Dividend</button>
+                        </div>
+                    </div>
+
+                    <!-- ── Scrollable body ────────────────────────────── -->
+                    <div class="tflow-body">
+
+
+                        <!-- TRADE VIEW -->
+                        <div id="mgmt-overlay-trade" class="wallet-overlay-view tflow-view">
+
+                            <!-- Meta: hint + date + sync -->
+                            <div class="tflow-meta-row">
+                                <div id="mgmt-transaction-hint" class="tflow-hint">Buying debits the cash position. If needed, you can auto-add the missing cash first.</div>
+                                <div class="tflow-meta-right">
+                                    <input id="mgmt-transaction-date" type="date" class="tflow-date-input" onchange="window._mgmt.handleTransactionDraftChange()" max="2026-09-24" style="">
+                                    <div id="mgmt-trade-sync" class="wallet-settings-pill wallet-settings-pill-muted">Ready</div>
+                                </div>
+                            </div>
+
+                            <!-- Asset search -->
+                            <div id="mgmt-search-wrap" class="tflow-search-section">
+                                <div class="tflow-source-toggle" role="tablist" aria-label="Holding source">
+                                    <button type="button" id="mgmt-source-yf" class="mgmt-source-btn tflow-source-btn is-active" onclick="window._mgmt.setSearchSource('yf')">Yahoo Finance</button>
+                                    <button type="button" id="mgmt-source-tfi" class="mgmt-source-btn tflow-source-btn" onclick="window._mgmt.setSearchSource('tfi')">Polish TFI</button>
+                                </div>
+                                <div class="tflow-search-box">
+                                    <svg class="tflow-search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                        <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.8"></circle>
+                                        <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                                    </svg>
+                                    <input id="mgmt-search-input" type="text" class="tflow-search-input" placeholder="Search company or ticker…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="window._mgmt.onSearchInput(event)" onfocus="window._mgmt.onSearchInput(event)" onkeydown="window._mgmt.onSearchKeyDown(event)" onblur="window._mgmt.onSearchBlur()" style="">
+                                    <input type="hidden" id="mgmt-ticker-hidden" value="" style="">
+                                    <input type="hidden" id="mgmt-holding-name-hidden" value="" style="">
+                                </div>
+                                <div id="mgmt-ticker-dropdown" class="tflow-dropdown mgmt-dropdown" style="display:none"></div>
+                                <div id="mgmt-search-status" class="mgmt-search-hint">Type to search Yahoo Finance · use arrows and Enter to select</div>
+                                <div id="mgmt-tfi-wrap" style="display:none">
+                                    <div class="tflow-tfi-row">
+                                        <input id="mgmt-tfi-code-input" type="text" class="tflow-input" placeholder="bankier.pl code, e.g. PCS21" autocomplete="off" maxlength="20" style="text-transform: uppercase;" oninput="window._mgmt.onTfiCodeInput(event)" onkeydown="window._mgmt.onTfiCodeKeyDown(event)">
+                                        <button type="button" id="mgmt-tfi-lookup-btn" class="tflow-btn-secondary" onclick="window._mgmt.lookupTfi()">Lookup</button>
+                                    </div>
+                                    <div id="mgmt-tfi-status" class="mgmt-search-hint">Enter the bankier.pl fund code and press Lookup. <a href="https://www.bankier.pl/fundusze" target="_blank" rel="noopener noreferrer">Browse funds →</a></div>
+                                </div>
+                            </div>
+
+                            <!-- Selected holding + amount inputs -->
+                            <div id="mgmt-holding-confirm" class="tflow-confirm" style="display:none">
+
+                                <!-- Asset identity card -->
+                                <div class="tflow-asset-card">
+                                    <div class="tflow-asset-info">
+                                        <strong id="mgmt-confirm-symbol" class="tflow-asset-symbol"></strong>
+                                        <div class="tflow-asset-copy">
+                                            <span id="mgmt-confirm-name" class="tflow-asset-name"></span>
+                                            <span id="mgmt-confirm-exchange" class="tflow-asset-exchange"></span>
+                                        </div>
+                                    </div>
+                                    <p id="mgmt-confirm-meta" class="tflow-asset-meta">New position ready. Cash available: 0,00 PLN.</p>
+                                </div>
+
+                                <!-- Amount inputs -->
+                                <div class="tflow-amounts">
+                                    <div class="tflow-amount-field">
+                                        <label class="tflow-amount-label" id="mgmt-units-label" for="mgmt-units-input">Quantity</label>
+                                        <div class="tflow-amount-wrap">
+                                            <input id="mgmt-units-input" type="number" class="tflow-amount-input" placeholder="Quantity to buy" min="0" step="any" oninput="window._mgmt.handleTransactionDraftChange('units')" style="">
+                                            <button type="button" id="mgmt-max-qty-btn" class="tflow-max-btn" onclick="window._mgmt.fillMaxQuantity()" style="display:none">Max</button>
+                                        </div>
+                                    </div>
+                                    <div id="mgmt-price-wrap" class="tflow-amount-field tflow-amounts-row2" style="">
+                                        <label class="tflow-amount-label" for="mgmt-price-input">Price per share <span class="tflow-amount-label-sub">auto-calculates trade value</span></label>
+                                        <div class="tflow-amount-wrap">
+                                            <input id="mgmt-price-input" type="number" class="tflow-amount-input" placeholder="0.0000" min="0" step="any" oninput="window._mgmt.handleTransactionDraftChange('price')" style="">
+                                            <span class="tflow-amount-unit">PLN</span>
+                                        </div>
+                                    </div>
+                                    <div id="mgmt-total-wrap" class="tflow-amount-field tflow-amounts-row2" style="">
+                                        <label class="tflow-amount-label" id="mgmt-total-label" for="mgmt-total-input">Trade value (required)</label>
+                                        <div class="tflow-amount-wrap">
+                                            <input id="mgmt-total-input" type="number" class="tflow-amount-input" placeholder="Total cash outflow incl. fees" min="0" step="any" oninput="window._mgmt.handleTransactionDraftChange('total')" style="">
+                                            <span class="tflow-amount-unit">PLN</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Advanced (collapsible) -->
+                                <details class="tflow-advanced">
+                                    <summary class="tflow-advanced-toggle">Advanced options</summary>
+                                    <div class="tflow-advanced-body">
+                                        <div id="mgmt-commission-wrap" class="tflow-field">
+                                            <label class="tflow-label" for="mgmt-commission-input">Commission / fee</label>
+                                            <input id="mgmt-commission-input" type="number" class="tflow-input" placeholder="0.00 (optional)" min="0" step="any" oninput="window._mgmt.handleTransactionDraftChange()" style="">
+                                        </div>
+                                        <div class="tflow-field">
+                                            <label class="tflow-label" for="mgmt-comment-input">Comment</label>
+                                            <input id="mgmt-comment-input" type="text" class="tflow-input" placeholder="Note (optional)" maxlength="300" oninput="window._mgmt.handleTransactionDraftChange()" style="">
+                                        </div>
+                                        <div id="mgmt-value-hint" class="tflow-hint-small">Trade value is the full cash impact of the transaction. For buys and sells, include fees in that value.</div>
+                                    </div>
+                                </details>
+
+                                <!-- Auto-cash -->
+                                <label id="mgmt-auto-cash-wrap" class="tflow-auto-cash" style="">
+                                    <input id="mgmt-auto-cash-checkbox" type="checkbox" onchange="window._mgmt.handleTransactionDraftChange()" style="">
+                                    <span class="tflow-auto-cash-text">Automatically add missing cash before a buy</span>
+                                </label>
+
+                                <!-- Validation errors -->
+                                <div id="mgmt-form-errors" class="tflow-errors" style="display:none"></div>
+
+                                <!-- Review summary -->
+                                <div id="mgmt-transaction-summary" class="tflow-summary" aria-live="polite">
+                                    <div class="tflow-summary-header">
+                                        <span class="tflow-summary-label">Review</span>
+                                        <span id="mgmt-summary-type" class="tflow-summary-type-val">BUY</span>
+                                    </div>
+                                    <div class="tflow-summary-grid">
+                                        <div class="tflow-summary-cell">
+                                            <span class="tflow-summary-label">Asset</span>
+                                            <strong id="mgmt-summary-ticker" class="tflow-summary-value">—</strong>
+                                        </div>
+                                        <div class="tflow-summary-cell">
+                                            <span class="tflow-summary-label">Quantity</span>
+                                            <strong id="mgmt-summary-units" class="tflow-summary-value">—</strong>
+                                        </div>
+                                        <div class="tflow-summary-cell">
+                                            <span class="tflow-summary-label">Value</span>
+                                            <strong id="mgmt-summary-value" class="tflow-summary-value">—</strong>
+                                        </div>
+                                        <div class="tflow-summary-cell">
+                                            <span class="tflow-summary-label">Cash effect</span>
+                                            <strong id="mgmt-summary-cash-effect" class="tflow-summary-value">—</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Flash / success message -->
+                            <div id="mgmt-holding-flash" class="tflow-flash" style="display:none"></div>
+
+                        </div><!-- /.tflow-view#mgmt-overlay-trade -->
+
+                    </div><!-- /.tflow-body -->
+
+                    <!-- ── Sticky footer: status + cancel + submit ─────── -->
+                    <div class="tflow-footer">
+                        <div id="mgmt-submit-status" class="wallet-trade-submit-status" aria-live="polite">Ready to review</div>
+                        <div class="tflow-footer-btns">
+                            <button type="button" class="tflow-cancel-btn" onclick="window._mgmt.closeTransactionsPanel()">Cancel</button>
+                            <button id="mgmt-add-holding-btn" type="button" class="tflow-submit-btn" onclick="window._mgmt.addHolding()">Save Buy</button>
+                        </div>
+                    </div>
+
+            </div><!-- /#wallet-transaction-card -->
+
+            <!-- Mobile FAB: quick new transaction -->
+            <button class="wallet-fab" id="mgmt-wallet-fab" type="button" aria-label="New transaction" onclick="window._mgmt.openTransactionsPanel('trade')">
+                <span class="wallet-fab-icon" aria-hidden="true">+</span>
+                <span class="wallet-fab-label">Transaction</span>
+            </button>
+
+        </section>
+    
+    </div>
+</body>
+</html>

@@ -283,7 +283,7 @@ def _chapter_header(eyebrow: str, title: str, narrative: str) -> str:
 
 def _chapter_separator() -> str:
     """Full-bleed thin horizontal rule between chapters."""
-    return "\n    <!-- Chapter separator -->\n    <tr><td style=\"padding: 0;\"><div style=\"height: 1px; background-color: #1a2540; margin: 0;\"></div></td></tr>"
+    return "\n    <!-- Chapter separator -->\n    <tr><td bgcolor=\"#07091A\" style=\"padding: 0; background-color: #07091A;\"><div style=\"height: 1px; background-color: #1a2540; margin: 0;\"></div></td></tr>"
 
 
 # ---------------------------------------------------------------------------
@@ -512,7 +512,7 @@ def _render_journey_chart(
     chapter_hdr = _chapter_header("RETURNS, SIDE BY SIDE", "The journey.", narrative)
 
     html_block = (
-        "\n    <!-- Chapter 2: Journey Chart (QuickChart Image) -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        "\n    <!-- Chapter 2: Journey Chart (QuickChart Image) -->\n    <tr>\n      <td bgcolor=\"#07091A\" style=\"padding: 40px 32px 36px; background-color: #07091A;\">"
         + chapter_hdr
         + legend_html
         + f'<img src="{img_src}" alt="Journey Chart" width="100%" style="display:block; max-width: 516px; margin: 0 auto; border: 0;" />'
@@ -746,7 +746,7 @@ def _render_calendar_heatmap(wrap_document: dict, hide_cash: bool = False) -> tu
     chapter_hdr = _chapter_header("MOMENTS THAT MATTERED", "The milestones.", narrative)
 
     html_block = (
-        "\n    <!-- Chapter 3: Calendar Heatmap -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        "\n    <!-- Chapter 3: Calendar Heatmap -->\n    <tr>\n      <td bgcolor=\"#07091A\" style=\"padding: 40px 32px 36px; background-color: #07091A;\">"
         + chapter_hdr
         + '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" style="table-layout: fixed;">'
         + f'<thead><tr>{header_cells}</tr></thead>'
@@ -818,7 +818,7 @@ def _render_leader_anchor(carry: dict | None, anchor: dict | None, hide_cash: bo
     chapter_hdr = _chapter_header("WHO MOVED YOUR MONTH", "The movers.", narrative)
 
     html_block = (
-        "\n    <!-- Chapter 4: Who Moved Your Month -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        "\n    <!-- Chapter 4: Who Moved Your Month -->\n    <tr>\n      <td bgcolor=\"#07091A\" style=\"padding: 40px 32px 36px; background-color: #07091A;\">"
         + chapter_hdr
         + leader_html
         + anchor_html
@@ -943,7 +943,7 @@ def _render_market_context_and_seasonality(
     chapter_hdr = _chapter_header("A LITTLE PERSPECTIVE", "The bigger picture.", narrative)
 
     html_block = (
-        "\n    <!-- Chapter 5: The Bigger Picture -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        "\n    <!-- Chapter 5: The Bigger Picture -->\n    <tr>\n      <td bgcolor=\"#07091A\" style=\"padding: 40px 32px 36px; background-color: #07091A;\">"
         + chapter_hdr
         + bench_table_html
         + seasonality_html
@@ -1057,7 +1057,7 @@ def _render_trading_activity(trading_activity: dict | None, hide_cash: bool) -> 
     )
 
     html_block = (
-        "\n    <!-- Chapter 6: Trading Activity -->\n    <tr>\n      <td style=\"padding: 40px 32px 36px;\">"
+        "\n    <!-- Chapter 6: Trading Activity -->\n    <tr>\n      <td bgcolor=\"#07091A\" style=\"padding: 40px 32px 36px; background-color: #07091A;\">"
         + chapter_hdr
         + comp_html
         + buy_sell_html
@@ -1149,6 +1149,22 @@ def render_monthly_recap_email(
     best_wallet_name = best_wallet.get("name") or "\u2014"
     best_wallet_twr = _fmt_pct(best_wallet.get("twr_pct"), show_sign=True)
     best_wallet_twr_val = best_wallet.get("twr_pct")
+
+    commentary = wrap_document.get("commentary")
+    commentary_html = ""
+    if commentary:
+        import html
+        safe_commentary = html.escape(commentary, quote=False)
+        commentary_html = (
+            '\n    <!-- COMMENTARY BLOCK -->\n'
+            '    <tr>\n'
+            '      <td bgcolor="#07091A" style="padding:0 32px 32px; background-color:#07091A;">\n'
+            '        <div style="text-align:center; font-style:italic; font-size:14px; line-height:1.6; color:#94a3b8; max-width:500px; margin:0 auto; opacity:0.9;">\n'
+            f'          "{safe_commentary}"\n'
+            '        </div>\n'
+            '      </td>\n'
+            '    </tr>\n'
+        )
 
     profit_wallet = wrap_document.get("primary_profit_engine_wallet") or {}
     profit_wallet_name = profit_wallet.get("name") or "\u2014"
@@ -1276,7 +1292,7 @@ def render_monthly_recap_email(
     wallet_html = ""
     if best_wallet_name != "\u2014" or profit_wallet_name != "\u2014":
         wallet_html = (
-            "\n    <!-- Wallet mini-strip -->\n    <tr>\n      <td style=\"padding: 0 32px 36px;\">"
+            "\n    <!-- Wallet mini-strip -->\n    <tr>\n      <td bgcolor=\"#07091A\" style=\"padding: 0 32px 36px; background-color: #07091A;\">"
             '<table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0">'
             '<tr><td style="font-size:12px;color:#64748b;padding-bottom:6px;border-top:1px solid #1a2540;padding-top:14px;">'
             f'Best Return Wallet &mdash; <strong style="color:#94a3b8;">{best_wallet_name}</strong>'
@@ -1295,20 +1311,26 @@ def render_monthly_recap_email(
         '<!DOCTYPE html>\n<html lang="en">\n<head>\n'
         '  <meta charset="utf-8">\n'
         '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        '  <meta name="color-scheme" content="light dark">\n'
+        '  <meta name="supported-color-schemes" content="light dark">\n'
         f'  <title>{subject}</title>\n'
         '  <style>\n'
+        '    :root { color-scheme: light dark; supported-color-schemes: light dark; }\n'
+        '    body, .email-bg { background-color: #050813 !important; }\n'
+        '    .email-container { background-color: #07091A !important; }\n'
         '    @media only screen and (max-width: 600px) {\n'
         '      .email-container { width: 100% !important; border-radius: 0 !important; }\n'
         '      .hero-number { font-size: 52px !important; }\n'
         '    }\n'
         '  </style>\n'
         '</head>\n'
-        '<body style="margin:0;padding:20px 12px;background-color:#050813;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;-webkit-font-smoothing:antialiased;">\n'
-        '  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="email-container"'
+        '<body class="email-bg" bgcolor="#050813" style="margin:0;padding:0;background-color:#050813;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;-webkit-font-smoothing:antialiased;">\n'
+        '  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#050813" style="background-color:#050813;width:100%;"><tr><td bgcolor="#050813" style="padding:20px 12px;background-color:#050813;" align="center">\n'
+        '  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="email-container" bgcolor="#07091A"'
         ' style="max-width:600px;margin:0 auto;background-color:#07091A;border-radius:16px;border:1px solid #1a2540;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.6);">\n\n'
         # HEADER
         '    <!-- HEADER -->\n'
-        '    <tr>\n      <td style="padding:18px 32px;border-bottom:1px solid #1a2540;">\n'
+        '    <tr>\n      <td bgcolor="#07091A" style="padding:18px 32px;border-bottom:1px solid #1a2540;background-color:#07091A;">\n'
         '        <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0"><tr>\n'
         '          <td style="vertical-align:middle;">\n'
         '            <table role="presentation" border="0" cellpadding="0" cellspacing="0"><tr>\n'
@@ -1325,7 +1347,7 @@ def render_monthly_recap_email(
         # HERO
         '    <!-- CHAPTER 1: HERO -->\n'
         '    <tr>\n'
-        '      <td style="padding:52px 32px 44px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#0d1d35 0%,#07091A 70%);">\n'
+        '      <td bgcolor="#07091A" style="padding:52px 32px 44px;text-align:center;background-color:#07091A;background:radial-gradient(ellipse at 50% 0%,#0d1d35 0%,#07091A 70%);">\n'
         f'        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#64748b;margin-bottom:14px;">YOUR MONTHLY RECAP &bull; {period_title.upper()}</div>\n'
         f'        <div style="font-size:15px;color:#94a3b8;margin-bottom:10px;">Hello, {nickname}.</div>\n'
         f'        <div class="hero-number" style="font-size:72px;font-weight:800;letter-spacing:-3px;color:{accent_color};line-height:1;margin-bottom:12px;">{twr_str}</div>\n'
@@ -1333,6 +1355,7 @@ def render_monthly_recap_email(
         f'        <div style="font-size:14px;color:#64748b;margin-bottom:24px;">{hero_subline}</div>\n'
         f'        {hero_pills}\n'
         '      </td>\n    </tr>\n\n'
+        + commentary_html
         + wallet_html
         + sep + journey_html
         + sep + calendar_html
@@ -1341,8 +1364,8 @@ def render_monthly_recap_email(
         + (sep + trading_html if trading_html else "")
         # CTA
         + '\n    <!-- CTA -->\n'
-        '    <tr><td style="padding:0;"><div style="height:1px;background-color:#1a2540;"></div></td></tr>\n'
-        '    <tr>\n      <td align="center" style="padding:40px 32px 44px;">\n'
+        '    <tr><td bgcolor="#07091A" style="padding:0;background-color:#07091A;"><div style="height:1px;background-color:#1a2540;"></div></td></tr>\n'
+        '    <tr>\n      <td bgcolor="#07091A" align="center" style="padding:40px 32px 44px;background-color:#07091A;">\n'
         '        <div style="font-size:13px;color:#64748b;margin-bottom:20px;">Ready to go deeper?</div>\n'
         f'        <a href="{app_url}" target="_blank"'
         ' style="display:inline-block;background-color:#3b82f6;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:14px 36px;border-radius:100px;letter-spacing:0.3px;">'
@@ -1350,11 +1373,11 @@ def render_monthly_recap_email(
         '      </td>\n    </tr>\n\n'
         # FOOTER
         '    <!-- FOOTER -->\n'
-        '    <tr>\n      <td style="padding:20px 32px;background-color:#050813;border-top:1px solid #1a2540;text-align:center;">\n'
+        '    <tr>\n      <td bgcolor="#050813" style="padding:20px 32px;background-color:#050813;border-top:1px solid #1a2540;text-align:center;">\n'
         '        <p style="margin:0 0 4px;font-size:11px;color:#475569;">You received this because email notifications are enabled for your Roastfolio account.</p>\n'
         '        <p style="margin:0;font-size:10px;color:#334155;">Powered by TOMINEX &bull; Roastfolio Investment History &bull; Not investment advice.</p>\n'
         '      </td>\n    </tr>\n\n'
-        '  </table>\n</body>\n</html>'
+        '  </table>\n  </td></tr></table>\n</body>\n</html>'
     )
 
     return subject, text_body, html_body

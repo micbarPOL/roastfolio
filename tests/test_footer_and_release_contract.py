@@ -18,6 +18,7 @@ class FooterAndReleaseContractTests(unittest.TestCase):
         cls.main_css = (ROOT / "src" / "styles" / "main.css").read_text()
         cls.release_doc = (ROOT / "docs" / "RELEASE_NUMBERING.md").read_text()
         cls.package_json = json.loads((ROOT / "package.json").read_text())
+        cls.releases_html = (ROOT / "src" / "releases.html").read_text()
 
         # Extract active release from RELEASE_NUMBERING.md
         match = re.search(r"\*\*Current Release:\*\*\s*`([^`]+)`", cls.release_doc)
@@ -104,6 +105,26 @@ class FooterAndReleaseContractTests(unittest.TestCase):
         self.assertIn("manifest.json", deploy_sh, "deploy.sh must explicitly sync or copy manifest.json")
         self.assertNotIn('--exclude "*.json" \\\n  --exclude "test-comments.html"', deploy_sh,
                          "deploy.sh must not exclude all JSON without including manifest.json")
+
+    def test_releases_html_contract_and_publication_dates(self):
+        # Current active version must appear in releases.html
+        self.assertIn(f'v{self.active_version}', self.releases_html)
+
+        # Hero section must declare publication date
+        self.assertIn('<span>Released:</span>', self.releases_html)
+        self.assertIn('id="rel-latest-date"', self.releases_html)
+
+        # Releases cards must contain dates with ISO datetime attributes
+        # and must not contain temporal placeholders
+        self.assertNotIn('>Latest Active</time>', self.releases_html)
+        self.assertNotIn('>Previous</time>', self.releases_html)
+
+        # Ensure all release cards have a valid date
+        date_matches = re.findall(r'<time class="rel-date" datetime="(\d{4}-\d{2}-\d{2})">([^<]+)</time>', self.releases_html)
+        self.assertGreaterEqual(len(date_matches), 20, "Releases page must contain publication dates for all releases")
+        for dt_str, text_date in date_matches:
+            self.assertRegex(dt_str, r"^\d{4}-\d{2}-\d{2}$")
+            self.assertTrue(len(text_date.strip()) > 0)
 
 
 if __name__ == "__main__":

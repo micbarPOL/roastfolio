@@ -1,0 +1,67 @@
+/* ═════════════════════════════════════════════════════════════════
+   Roastfolio — Asset Analysis & Fundamentals Screen CSS
+   ═════════════════════════════════════════════════════════════════ */
+
+.analysis-container {
+    padding: 0 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.analysis-favorites-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 4px 2px 14px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.analysis-favorite-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.7) 0%, rgba(5, 14, 24, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    white-space: nowrap;
+}
+
+.analysis-favorite-pill:hover,
+.analysis-favorite-pill.is-active {
+    border-color: #00f2fe;
+    box-shadow: 0 0 16px rgba(0, 242, 254, 0.3);
+    background: rgba(0, 242, 254, 0.08);
+}
+
+.analysis-card {
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.7) 0%, rgba(5, 14, 24, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.analysis-price-chart-wrap {
+    position: relative;
+    height: 380px;
+    width: 100%;
+}
+
+.analysis-grid-props {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+}
+
+.analysis-prop-card {
+    background: rgba(10, 22, 38, 0.6);
+    border: 1px solid rgba(0, 242, 254, 0.15);
+    border-radius: 12px;
+    padding: 12px 14px;
+}

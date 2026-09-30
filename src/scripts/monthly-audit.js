@@ -1073,10 +1073,12 @@
                         </div>
                     </div>
                 </div>
+                ${item.commentary ? `<div class="monthly-audit-hero-commentary">"${escapeHtml(item.commentary)}"</div>` : ''}
             </header>` : ''}
             <div class="monthly-audit-content">
                 ${isReady ? [journeyCard(item), extremesCard(item), carryCard(item), retirementCard(item), seasonalityCard(item), flowsCard(item), tradingCard(item)].join('') : renderEmpty(state.selectedPeriod)}
-            </div><p class="ma-footer">${item?.is_live ? 'Month to date (Live). Not investment advice.' : 'A month in perspective. Not investment advice.'}</p>`;
+            </div>
+            <p class="ma-footer">${item?.is_live ? 'Month to date (Live). Not investment advice.' : 'A month in perspective. Not investment advice.'}</p>`;
         if (isReady) {
             bindJourney(item);
             bindMilestones(item);
