@@ -1166,7 +1166,15 @@ def render_monthly_recap_email(
             '    </tr>\n'
         )
 
-    profit_wallet = wrap_document.get("primary_profit_engine_wallet") or {}
+    wallets_list = wrap_document.get("wallet_performance") or []
+    if wallets_list:
+        profit_wallet = max(
+            wallets_list,
+            key=lambda w: w.get("nominal_change_pln") if w.get("nominal_change_pln") is not None else float('-inf'),
+            default=wrap_document.get("primary_profit_engine_wallet") or {}
+        )
+    else:
+        profit_wallet = wrap_document.get("primary_profit_engine_wallet") or {}
     profit_wallet_name = profit_wallet.get("name") or "\u2014"
     profit_wallet_nominal = "---" if hide_cash else _fmt_money(profit_wallet.get("nominal_change_pln"), show_sign=True)
 

@@ -766,7 +766,7 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
         })
 
     best_wallet = max(wallet_performance, key=lambda item: item["twr_pct"], default=None)
-    profit_engine = max(wallet_performance, key=lambda item: abs(item["nominal_change_pln"]), default=None)
+    profit_engine = max(wallet_performance, key=lambda item: item["nominal_change_pln"], default=None)
     trading_act = _trading_activity([
         transaction for rows in monthly_transactions.values() for transaction in rows
     ])
