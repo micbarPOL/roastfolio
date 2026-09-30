@@ -125,4 +125,9 @@ def get_monthly_wrap_commentary(user_id: str, month: MonthStats, is_email: bool 
         except Exception:
             pass
 
-    return chosen["messageTemplate"]
+    message = chosen["messageTemplate"]
+    if "{streak}" in message:
+        streak_val = month.green_streak if month.is_green else month.red_streak
+        message = message.replace("{streak}", str(streak_val))
+
+    return message

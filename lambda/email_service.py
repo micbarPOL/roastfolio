@@ -1311,6 +1311,8 @@ def render_monthly_recap_email(
         '<!DOCTYPE html>\n<html lang="en">\n<head>\n'
         '  <meta charset="utf-8">\n'
         '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        '  <meta name="color-scheme" content="light dark">\n'
+        '  <meta name="supported-color-schemes" content="light dark">\n'
         f'  <title>{subject}</title>\n'
         '  <style>\n'
         '    @media only screen and (max-width: 600px) {\n'
@@ -1319,8 +1321,9 @@ def render_monthly_recap_email(
         '    }\n'
         '  </style>\n'
         '</head>\n'
-        '<body style="margin:0;padding:20px 12px;background-color:#050813;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;-webkit-font-smoothing:antialiased;">\n'
-        '  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="email-container"'
+        '<body style="margin:0;padding:0;background-color:#050813;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,Helvetica,Arial,sans-serif;color:#f1f5f9;-webkit-font-smoothing:antialiased;">\n'
+        '  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#050813"><tr><td style="padding:20px 12px;" align="center">\n'
+        '  <table role="presentation" width="100%" border="0" cellpadding="0" cellspacing="0" class="email-container" bgcolor="#07091A"'
         ' style="max-width:600px;margin:0 auto;background-color:#07091A;border-radius:16px;border:1px solid #1a2540;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.6);">\n\n'
         # HEADER
         '    <!-- HEADER -->\n'
@@ -1371,7 +1374,7 @@ def render_monthly_recap_email(
         '        <p style="margin:0 0 4px;font-size:11px;color:#475569;">You received this because email notifications are enabled for your Roastfolio account.</p>\n'
         '        <p style="margin:0;font-size:10px;color:#334155;">Powered by TOMINEX &bull; Roastfolio Investment History &bull; Not investment advice.</p>\n'
         '      </td>\n    </tr>\n\n'
-        '  </table>\n</body>\n</html>'
+        '  </table>\n  </td></tr></table>\n</body>\n</html>'
     )
 
     return subject, text_body, html_body

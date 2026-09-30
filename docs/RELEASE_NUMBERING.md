@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.3.2`  
-*Target Release Numbering Standard — v14.3.2*
+**Current Release:** `14.3.3`  
+*Target Release Numbering Standard — v14.3.3*
 
 ---
 
@@ -52,11 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.3.2`
+* **Current Active Release:** `14.3.3`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
   * **Minor 3:** Monthly audit commentary bank scaling (320 AI scenario templates across 4 tone profiles), scenario classification integration, and email wrap commentary injection.
-  * **Service Release 2:** Disabled Grammarly browser extension hooks globally via standardized DOM attributes (`data-gramm="false"`, `data-enable-grammarly="false"`, `spellcheck="false"`); enhanced global error and unhandled rejection interceptors in `config.js` to suppress third-party extension runtime noise; and added CSS isolation rules to eliminate extension overlays.
+  * **Service Release 3:** Formatted dynamic `{streak}` placeholder with actual green/red streak months in monthly commentary; fixed monthly recap email dark background cutoff in web/mobile clients; and positioned monthly commentary directly inside the hero summary box without background/border framing.
 * **Prior Releases:**
+  * **14.3.2:** Disabled Grammarly browser extension hooks globally via standardized DOM attributes (`data-gramm="false"`, `data-enable-grammarly="false"`, `spellcheck="false"`); enhanced global error and unhandled rejection interceptors in `config.js` to suppress third-party extension runtime noise; and added CSS isolation rules to eliminate extension overlays.
   * **14.3.1:** Fixed monthly commentary scenario key mapping for DynamoDB/API responses, centered wrap commentary below main summary box, and stripped frame/background styling from wrap email template.
   * **14.2.0:** Monthly summary wrapped email header branding integration with official neon candlestick logo, BIMI & SVG vector assets for email sender avatars, and multi-client sender picture configuration documentation.
   * **14.1.3:** Fixed Wallets transaction search dropdown visibility to always open downwards without clipping under the overview/history card; enabled instant holdings display on focus, and added automatic live price suggestion by pulling prices and currency conversion directly from Yahoo Finance.

@@ -1073,11 +1073,11 @@
                         </div>
                     </div>
                 </div>
+                ${item.commentary ? `<div class="monthly-audit-hero-commentary" style="text-align: center; font-style: italic; font-size: 13px; line-height: 1.5; color: inherit; opacity: 0.85; margin: 32px auto 0; max-width: 600px;">"${escapeHtml(item.commentary)}"</div>` : ''}
             </header>` : ''}
             <div class="monthly-audit-content">
                 ${isReady ? [journeyCard(item), extremesCard(item), carryCard(item), retirementCard(item), seasonalityCard(item), flowsCard(item), tradingCard(item)].join('') : renderEmpty(state.selectedPeriod)}
             </div>
-            ${isReady && item.commentary ? `<div class="monthly-audit-commentary" style="text-align: center; font-style: italic; font-size: 13px; line-height: 1.5; color: var(--fintech-text-secondary); margin: 24px auto 8px; max-width: 600px; padding: 0 16px;"><p style="margin:0;">"${escapeHtml(item.commentary)}"</p></div>` : ''}
             <p class="ma-footer">${item?.is_live ? 'Month to date (Live). Not investment advice.' : 'A month in perspective. Not investment advice.'}</p>`;
         if (isReady) {
             bindJourney(item);
