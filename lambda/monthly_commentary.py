@@ -36,10 +36,10 @@ def _get_scenario_key(month: MonthStats) -> str:
     if month.is_green and month.beat_benchmark:
         return "green_beat_benchmark"
     if month.is_green and not month.beat_benchmark:
-        return "green_lost_benchmark"
+        return "green_lagged_benchmark"
     if month.is_red and month.beat_benchmark:
         return "red_beat_benchmark"
-    return "red_lost_benchmark"
+    return "red_lagged_benchmark"
 
 def get_monthly_wrap_commentary(user_id: str, month: MonthStats, is_email: bool = False) -> str:
     """
@@ -55,7 +55,7 @@ def get_monthly_wrap_commentary(user_id: str, month: MonthStats, is_email: bool 
     # Filter comments by scenario and tone
     candidates = [
         c for c in _ALL_COMMENTS 
-        if c.get("scenario") == scenario_key and c.get("tone") == tone
+        if c.get("scenarioKey") == scenario_key and c.get("tone") == tone
     ]
     
     if not candidates:
@@ -69,7 +69,7 @@ def get_monthly_wrap_commentary(user_id: str, month: MonthStats, is_email: bool 
     
     # Check cooldowns
     for c in candidates:
-        tid = c["id"]
+        tid = c["templateId"]
         audit_entry = wrap_audit.get(tid, {})
         
         if is_email:
@@ -90,9 +90,9 @@ def get_monthly_wrap_commentary(user_id: str, month: MonthStats, is_email: bool 
     if not available:
         # Fallback to the one with the oldest timestamp
         if is_email:
-            available = sorted(candidates, key=lambda c: wrap_audit.get(c["id"], {}).get("lastEmail", ""))
+            available = sorted(candidates, key=lambda c: wrap_audit.get(c["templateId"], {}).get("lastEmail", ""))
         else:
-            available = sorted(candidates, key=lambda c: wrap_audit.get(c["id"], {}).get("lastAdhoc", ""))
+            available = sorted(candidates, key=lambda c: wrap_audit.get(c["templateId"], {}).get("lastAdhoc", ""))
             
         if available:
             available = [available[0]]
@@ -105,7 +105,7 @@ def get_monthly_wrap_commentary(user_id: str, month: MonthStats, is_email: bool 
         chosen = rng.choice(available)
 
     # Persist the audit trail
-    tid = chosen["id"]
+    tid = chosen["templateId"]
     if tid not in wrap_audit:
         wrap_audit[tid] = {}
         
@@ -125,4 +125,4 @@ def get_monthly_wrap_commentary(user_id: str, month: MonthStats, is_email: bool 
         except ValueError:
             pass
 
-    return chosen["text"]
+    return chosen["messageTemplate"]

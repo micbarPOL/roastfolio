@@ -1075,9 +1075,10 @@
                 </div>
             </header>` : ''}
             <div class="monthly-audit-content">
-                ${isReady && item.commentary ? `<div class="monthly-audit-commentary" style="padding: 16px; margin: 16px 24px; background: rgba(124, 58, 237, 0.1); border-left: 4px solid #7c3aed; border-radius: 8px; font-style: italic; font-size: 14px; line-height: 1.5; color: var(--fintech-text-primary);"><p style="margin:0;">"${escapeHtml(item.commentary)}"</p></div>` : ''}
                 ${isReady ? [journeyCard(item), extremesCard(item), carryCard(item), retirementCard(item), seasonalityCard(item), flowsCard(item), tradingCard(item)].join('') : renderEmpty(state.selectedPeriod)}
-            </div><p class="ma-footer">${item?.is_live ? 'Month to date (Live). Not investment advice.' : 'A month in perspective. Not investment advice.'}</p>`;
+            </div>
+            ${isReady && item.commentary ? `<div class="monthly-audit-commentary" style="text-align: center; font-style: italic; font-size: 13px; line-height: 1.5; color: var(--fintech-text-secondary); margin: 24px auto 8px; max-width: 600px; padding: 0 16px;"><p style="margin:0;">"${escapeHtml(item.commentary)}"</p></div>` : ''}
+            <p class="ma-footer">${item?.is_live ? 'Month to date (Live). Not investment advice.' : 'A month in perspective. Not investment advice.'}</p>`;
         if (isReady) {
             bindJourney(item);
             bindMilestones(item);

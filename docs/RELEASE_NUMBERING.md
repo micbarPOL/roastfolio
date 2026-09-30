@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.3.0`  
-*Target Release Numbering Standard — v14.3.0*
+**Current Release:** `14.3.1`  
+*Target Release Numbering Standard — v14.3.1*
 
 ---
 
@@ -52,7 +52,7 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.3.0`
+* **Current Active Release:** `14.3.1`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
   * **Minor 2:** Monthly summary wrapped email header branding integration with official neon candlestick logo, BIMI & SVG vector assets for email sender avatars, and multi-client sender picture configuration documentation (BIMI, Gravatar, Google Account, Apple Business Connect).
   * **Service Release 2:** Added explicit release publication dates to the Release Notes hero section and across all historical release cards; replaced temporal card date placeholders ('Latest Active', 'Previous') with verified calendar dates and ISO machine-readable datetime attributes; added pulsing 'Current Active' badge; and synchronized cache-busting queries across app touchpoints.

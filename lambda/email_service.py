@@ -1159,7 +1159,7 @@ def render_monthly_recap_email(
             '\n    <!-- COMMENTARY BLOCK -->\n'
             '    <tr>\n'
             '      <td style="padding:0 32px 32px;">\n'
-            '        <div style="background:rgba(124,58,237,0.1); border-left:4px solid #7c3aed; padding:16px 20px; border-radius:8px; font-style:italic; font-size:14px; line-height:1.6; color:#f1f5f9;">\n'
+            '        <div style="text-align:center; font-style:italic; font-size:14px; line-height:1.6; color:#94a3b8; max-width:500px; margin:0 auto; opacity:0.9;">\n'
             f'          "{safe_commentary}"\n'
             '        </div>\n'
             '      </td>\n'
