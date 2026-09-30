@@ -1073,7 +1073,7 @@
                         </div>
                     </div>
                 </div>
-                ${item.commentary ? `<div class="monthly-audit-hero-commentary" style="text-align: center; font-style: italic; font-size: 13px; line-height: 1.5; color: inherit; opacity: 0.85; margin: 32px auto 0; max-width: 600px;">"${escapeHtml(item.commentary)}"</div>` : ''}
+                ${item.commentary ? `<div class="monthly-audit-hero-commentary">"${escapeHtml(item.commentary)}"</div>` : ''}
             </header>` : ''}
             <div class="monthly-audit-content">
                 ${isReady ? [journeyCard(item), extremesCard(item), carryCard(item), retirementCard(item), seasonalityCard(item), flowsCard(item), tradingCard(item)].join('') : renderEmpty(state.selectedPeriod)}

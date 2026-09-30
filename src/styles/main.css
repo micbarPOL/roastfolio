@@ -15460,6 +15460,18 @@ body.wallet-overlay-open {
 .monthly-audit-hero-result.is-negative strong { color: #fb7185; }
 .monthly-audit-hero-result.is-neutral strong { color: #e2e8f0; }
 
+.monthly-audit-hero-commentary {
+    display: block;
+    text-align: center;
+    font-style: italic;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #344634;
+    margin: 32px auto 0;
+    max-width: 620px;
+    opacity: 0.9;
+}
+
 .monthly-audit-content {
     display: grid;
     gap: 14px;
