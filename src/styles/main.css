@@ -16327,3 +16327,22 @@ body.wallet-overlay-open {
     }
 }
 
+/* ── Suppress Grammarly extension UI & popups ──────────────────────── */
+grammarly-extension,
+grammarly-popups,
+grammarly-mirror,
+grammarly-editor-plugin,
+[data-grammarly-shadow-root],
+.gr_,
+.gr-top-zero,
+.gr-bottom-zero {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    clip: rect(0, 0, 0, 0) !important;
+}
+
+

@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.3.1`  
-*Target Release Numbering Standard — v14.3.1*
+**Current Release:** `14.3.2`  
+*Target Release Numbering Standard — v14.3.2*
 
 ---
 
@@ -52,12 +52,12 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.3.1`
+* **Current Active Release:** `14.3.2`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
-  * **Minor 2:** Monthly summary wrapped email header branding integration with official neon candlestick logo, BIMI & SVG vector assets for email sender avatars, and multi-client sender picture configuration documentation (BIMI, Gravatar, Google Account, Apple Business Connect).
-  * **Service Release 2:** Added explicit release publication dates to the Release Notes hero section and across all historical release cards; replaced temporal card date placeholders ('Latest Active', 'Previous') with verified calendar dates and ISO machine-readable datetime attributes; added pulsing 'Current Active' badge; and synchronized cache-busting queries across app touchpoints.
+  * **Minor 3:** Monthly audit commentary bank scaling (320 AI scenario templates across 4 tone profiles), scenario classification integration, and email wrap commentary injection.
+  * **Service Release 2:** Disabled Grammarly browser extension hooks globally via standardized DOM attributes (`data-gramm="false"`, `data-enable-grammarly="false"`, `spellcheck="false"`); enhanced global error and unhandled rejection interceptors in `config.js` to suppress third-party extension runtime noise; and added CSS isolation rules to eliminate extension overlays.
 * **Prior Releases:**
-  * **14.2.1:** Fixed PWA web app manifest exclusion in S3 deployment script (`deploy.sh`), added version query parameter to `<link rel="manifest">` in `src/index.html`, added vector SVG icon to `manifest.json`, synchronized icon cache-busting versions across secondary pages (`releases.html`, `telemetry.html`, `achievements.html`), and bumped service worker cache namespace.
+  * **14.3.1:** Fixed monthly commentary scenario key mapping for DynamoDB/API responses, centered wrap commentary below main summary box, and stripped frame/background styling from wrap email template.
   * **14.2.0:** Monthly summary wrapped email header branding integration with official neon candlestick logo, BIMI & SVG vector assets for email sender avatars, and multi-client sender picture configuration documentation.
   * **14.1.3:** Fixed Wallets transaction search dropdown visibility to always open downwards without clipping under the overview/history card; enabled instant holdings display on focus, and added automatic live price suggestion by pulling prices and currency conversion directly from Yahoo Finance.
   * **14.1.2:** Fixed disruptive multiple screen reloads during transaction creation on the Wallets screen; prevented background `liveDataReady` events from triggering screen refreshes while drafting transactions, eliminated skeleton loader wipes during in-place table updates, and optimized transaction submission to reload only the holdings and transaction tables.

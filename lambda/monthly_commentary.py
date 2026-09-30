@@ -122,7 +122,7 @@ def get_monthly_wrap_commentary(user_id: str, month: MonthStats, is_email: bool 
     if should_update:
         try:
             db.update_user(user_id, {"wrapAudit": wrap_audit})
-        except ValueError:
+        except Exception:
             pass
 
     return chosen["messageTemplate"]

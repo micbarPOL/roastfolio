@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-gramm="false" data-gram="false" data-gramm_editor="false" data-enable-grammarly="false">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Release Summary &amp; Changelog — roastfolio</title>
+
+    <script src="scripts/config.js" onerror="window.__CONFIG__={}"></script>
+
     <meta name="theme-color" content="#070d17">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.3.1">
-    <link rel="shortcut icon" href="favicon.ico?v=14.3.1">
-    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.3.1">
-    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.3.1">
-    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.3.1">
-    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.3.1">
-    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.3.1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.3.2">
+    <link rel="shortcut icon" href="favicon.ico?v=14.3.2">
+    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.3.2">
+    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.3.2">
+    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.3.2">
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.3.2">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.3.2">
 
     <script>
         (function() {
@@ -730,7 +733,7 @@
         }
     </style>
 </head>
-<body>
+<body data-gramm="false" data-gram="false" data-gramm_editor="false" data-enable-grammarly="false" spellcheck="false">
 
     <!-- ── Sticky Header ─────────────────────────────────────── -->
     <header class="rel-header">
@@ -766,7 +769,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v14.3.1</span>
+                    <span>v14.3.2</span>
                 </div>
             </div>
 
@@ -830,8 +833,24 @@
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
 
-            
-            
+            <!-- v14.3.2 -->
+            <article class="rel-card" data-tier="service" data-version="14.3.2">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v14.3.2</span>
+                        <h2 class="rel-card-title">Grammarly Extension Suppression &amp; Stability</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-09-30" title="2026-09-30 14:20 UTC">September 30, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-features">
+                        <li class="rel-item"><strong>Grammarly Deactivation:</strong> Disabled Grammarly hooks across all Roastfolio views and inputs via standardized attributes (<code>data-gramm="false"</code>, <code>data-enable-grammarly="false"</code>, <code>spellcheck="false"</code>).</li>
+                        <li class="rel-item"><strong>Extension Error Filtering:</strong> Enhanced global error and unhandled rejection interceptors in <code>config.js</code> to suppress third-party browser extension noise without masking application errors.</li>
+                        <li class="rel-item"><strong>DOM &amp; CSS Isolation:</strong> Added dynamic runtime stamping for newly rendered fields and universal CSS rules to eliminate extension overlays and DOM conflicts.</li>
+                    </ul>
+                </div>
+            </article>
+
             <!-- v14.3.1 -->
             <article class="rel-card" data-tier="service" data-version="14.3.1">
                 <header class="rel-card-header">
@@ -839,7 +858,7 @@
                         <span class="rel-version-tag">v14.3.1</span>
                         <h2 class="rel-card-title">Commentary UI Fixes & Integration</h2>
                     </div>
-                    <time class="rel-date" datetime="2026-09-30T12:15:00Z" title="2026-09-30 12:15 UTC">September 30, 2026</time>
+                    <time class="rel-date" datetime="2026-09-30" title="2026-09-30 12:15 UTC">September 30, 2026</time>
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
