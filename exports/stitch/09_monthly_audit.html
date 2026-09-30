@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Roastfolio — Monthly Audit & Recap</title>
+    <link rel="stylesheet" href="../../src/styles/main.css">
+    <link rel="stylesheet" href="00_design_tokens.css">
+
+    <style>
+        /* Scoped layout wrapper for Google Stitch preview */
+        body {
+            margin: 0;
+            padding: 24px;
+            background-color: #050e18;
+            color: #eef7ff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .stitch-screen-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="stitch-screen-container">
+        <!-- SCREEN: Monthly Audit & Recap -->
+        <div id="monthly-audit-root">
+            
+            <div class="ma-toolbar">
+                <div class="ma-edition">YOUR MONTHLY EDITION <span>Less noise. More perspective.</span></div>
+                <nav class="ma-period-control" aria-label="Summary months">
+                    <button type="button" aria-label="Previous available month" onclick="selectMonthlyAuditPeriod('2026-07')">‹</button>
+                    <select aria-label="Choose summary month" onchange="selectMonthlyAuditPeriod(this.value)"><option value="2026-09">September 2026 (Live MTD)</option><option value="2026-08" selected="">August 2026</option><option value="2026-07">July 2026</option><option value="2026-06">June 2026</option></select>
+                    <button type="button" aria-label="Next available month" onclick="selectMonthlyAuditPeriod('2026-09')">›</button>
+                </nav>
+            </div>
+            <header class="monthly-audit-hero is-positive">
+                <div class="ma-cover-top"><div class="ma-cover-brand"><span class="ma-wordmark">roastfolio</span><span class="ma-cover-edition">MONTHLY AUDIT</span></div><button type="button" class="ma-share-button" onclick="shareMonthlyAudit()"><span aria-hidden="true">↗</span> Share recap</button></div>
+                <h1>August 2026<br><em>Wrapped.</em></h1>
+                <p class="ma-cover-story">A little more momentum.</p>
+                <div class="monthly-audit-hero-bottom">
+                    <div class="monthly-audit-hero-metrics">
+                        <div class="monthly-audit-hero-result ma-twr"><strong>+13.78%</strong><span>TWR result</span></div>
+                        <div class="monthly-audit-hero-result ma-nominal"><strong>+24,680 PLN</strong><span>Nominal change · net of cash flows</span></div>
+                    </div>
+                    <div class="ma-hero-benchmarks" id="ma-hero-benchmarks" aria-label="Key monthly benchmarks">
+                        <span class="ma-hero-benchmarks-title">BENCHMARKS</span>
+                        <div class="ma-hero-benchmarks-grid">
+                            <div class="ma-hero-benchmark-row">
+                                <span class="ma-hero-benchmark-label">Poland (WIG)</span>
+                                <strong class="ma-hero-benchmark-val is-positive" id="ma-hero-benchmark-wig">+2.40%</strong>
+                            </div>
+                            <div class="ma-hero-benchmark-row">
+                                <span class="ma-hero-benchmark-label">World (MSCI ACWI)</span>
+                                <strong class="ma-hero-benchmark-val is-positive" id="ma-hero-benchmark-msci">+4.10%</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <div class="monthly-audit-content">
+                
+            <article class="monthly-audit-card ma-journey">
+                <header><span>The journey</span><h2>Your returns, side by side.</h2></header>
+                
+            <div class="ma-return-legend"><span class="ma-legend-portfolio">Portfolio · cumulative TWR</span><span class="ma-legend-benchmark">MSCI World · IWDA proxy · EUR</span></div>
+            
+            
+            <div class="ma-chart-interactive">
+            <p id="ma-journey-help" class="ma-chart-help">Hover or touch the chart to inspect returns. Keyboard: arrows, Home and End.</p>
+            <svg class="ma-return-chart" viewBox="-32 0 672 228" tabindex="0" role="slider" aria-label="Dated cumulative returns" aria-describedby="ma-journey-help" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0" aria-valuetext="2026-08-01 · Portfolio 0.00% · MSCI World · IWDA proxy 0.00%">
+            <path class="ma-return-grid ma-return-extreme" d="M60 22 H620"></path><text class="ma-return-grid-label" x="52" y="26" text-anchor="end">13.78%</text><path class="ma-return-grid ma-return-zero" d="M60 173.50785340314135 H620"></path><text class="ma-return-grid-label" x="52" y="177.50785340314135" text-anchor="end">0.00%</text><path class="ma-return-grid ma-return-extreme" d="M60 190 H620"></path><text class="ma-return-grid-label" x="52" y="194" text-anchor="end">-1.50%</text>
+            <g class="ma-return-series ma-return-portfolio"><path d="M60.00 173.51 L114.19 150.42 L222.58 190.00"></path><circle cx="60" cy="173.50785340314135" r="2.5"><title>2026-08-01 · 0.00%</title></circle><circle cx="114.19354838709677" cy="150.41884816753927" r="2.5"><title>2026-08-04 · +2.10%</title></circle><circle cx="222.58064516129033" cy="190" r="2.5"><title>2026-08-10 · -1.50%</title></circle></g><g class="ma-return-series ma-return-portfolio"><path d="M403.23 85.55 L620.00 22.00"></path><circle cx="403.2258064516129" cy="85.54973821989529" r="2.5"><title>2026-08-20 · +8.00%</title></circle><circle cx="620" cy="22" r="2.5"><title>2026-09-01 · +13.78%</title></circle></g><g class="ma-return-series ma-return-benchmark"><path d="M60.00 173.51 L114.19 168.01 L222.58 168.01 L240.65 160.31 L403.23 142.72 L620.00 127.33"></path><circle cx="60" cy="173.50785340314135" r="2.5"><title>2026-08-01 · 0.00%</title></circle><circle cx="114.19354838709677" cy="168.0104712041885" r="2.5"><title>2026-08-04 · +0.50%</title></circle><circle cx="222.58064516129033" cy="168.0104712041885" r="2.5"><title>2026-08-10 · +0.50%</title></circle><circle cx="240.64516129032256" cy="160.31413612565447" r="2.5"><title>2026-08-11 · +1.20%</title></circle><circle cx="403.2258064516129" cy="142.72251308900525" r="2.5"><title>2026-08-20 · +2.80%</title></circle><circle cx="620" cy="127.32984293193716" r="2.5"><title>2026-09-01 · +4.20%</title></circle></g>
+            <g class="ma-return-cursor" visibility="hidden" aria-hidden="true"><path class="ma-return-crosshair" d="M60 22 V190"></path><circle class="ma-cursor-portfolio" r="5"></circle><circle class="ma-cursor-benchmark" r="5"></circle></g>
+            <text x="60" y="218">2026-08-01</text><text x="620" y="218" text-anchor="end">2026-09-01</text></svg>
+            <div id="ma-journey-value" class="ma-chart-tooltip" role="tooltip" hidden=""></div>
+        </div>
+            <p class="ma-footnote">Cumulative TWR, not account value: deposits and withdrawals do not create returns. Benchmark returns are in its native currency, not converted to PLN. Weekend and empty benchmark observations are extrapolated from the last available day.</p>
+            <div class="ma-journey-endpoints"><div class="monthly-audit-metric"><span>Deepest drawdown</span><strong class="">-7.19%</strong></div><div class="monthly-audit-metric"><span>Month-end drawdown</span><strong class="">-6.75%</strong></div><div class="monthly-audit-metric"><span>Drawdown change</span><strong class="">-6.75 pp</strong></div></div>
+            <details class="ma-details"><summary>Drawdown details</summary><p class="ma-muted">Deepest on 2026-08-07 · Start 0.00%. Legacy drawdown observations have no stored dates.</p>
+            <svg class="monthly-audit-trajectory" viewBox="0 0 640 190" role="img" aria-label="Drawdown through the month. Lowest observed drawdown -7.19%.">
+                <path class="trajectory-baseline" d="M12 16 H628"></path>
+                <path class="trajectory-lake" d="M12.00 16.00 L32.53 53.63 L53.07 88.93 L73.60 119.80 L94.13 144.11 L114.67 160.39 L135.20 167.79 L155.73 165.67 L176.27 154.47 L196.80 134.39 L217.33 107.12 L237.87 74.14 L258.40 37.56 L278.93 32.49 L299.47 69.49 L320.00 103.10 L340.53 131.22 L361.07 152.14 L381.60 164.83 L402.13 168.00 L422.67 161.87 L443.20 146.65 L463.73 123.39 L484.27 93.37 L504.80 58.49 L525.33 21.07 L545.87 48.77 L566.40 84.50 L586.93 115.99 L607.47 141.36 L628.00 158.70 L628 16 L12 16 Z"></path><path class="trajectory-line" d="M12.00 16.00 L32.53 53.63 L53.07 88.93 L73.60 119.80 L94.13 144.11 L114.67 160.39 L135.20 167.79 L155.73 165.67 L176.27 154.47 L196.80 134.39 L217.33 107.12 L237.87 74.14 L258.40 37.56 L278.93 32.49 L299.47 69.49 L320.00 103.10 L340.53 131.22 L361.07 152.14 L381.60 164.83 L402.13 168.00 L422.67 161.87 L443.20 146.65 L463.73 123.39 L484.27 93.37 L504.80 58.49 L525.33 21.07 L545.87 48.77 L566.40 84.50 L586.93 115.99 L607.47 141.36 L628.00 158.70"></path>
+                <circle cx="402.1333333333333" cy="168" r="5"></circle>
+            </svg></details>
+            </article>
+            <article class="monthly-audit-card ma-milestones">
+                <header><span>The milestones</span><h2>Moments that mattered.</h2></header>
+                
+            <div class="monthly-audit-stats-grid">
+                
+            <div class="monthly-audit-stat is-ath">
+                <span class="monthly-audit-stat-label">ATH status</span>
+                <strong>548,230 PLN</strong>
+                <small>28 Aug · new peak</small>
+                
+            </div>
+                
+            <div class="monthly-audit-stat ">
+                <span class="monthly-audit-stat-label">Days since ATH</span>
+                <strong>3 days</strong>
+                <small>State at month end</small>
+                
+            </div>
+                
+            <div class="monthly-audit-stat is-positive">
+                <span class="monthly-audit-stat-label">Best day</span>
+                <strong>+2,840 PLN</strong>
+                <small>12 Aug</small>
+                
+            </div>
+                
+            <div class="monthly-audit-stat is-negative">
+                <span class="monthly-audit-stat-label">Worst day</span>
+                <strong>-1,960 PLN</strong>
+                <small>7 Aug</small>
+                
+            </div>
+            </div>
+            
+            <div class="ma-calendar-section" id="ma-milestones-calendar">
+                <div class="ma-calendar-header">
+                    <span class="ma-calendar-title">Daily returns</span>
+                    <div class="ma-calendar-legend">
+                        <span class="ma-cal-legend-item"><span class="ma-cal-swatch is-positive"></span>Gain</span>
+                        <span class="ma-cal-legend-item"><span class="ma-cal-swatch is-negative"></span>Loss</span>
+                        <span class="ma-cal-legend-item"><span class="ma-cal-ath-legend">🏆</span>ATH</span>
+                    </div>
+                </div>
+                <div class="ma-cal-grid" role="region" aria-label="Monthly daily performance calendar">
+                    <div class="ma-cal-dow-row" role="row">
+                        <span class="ma-cal-dow" role="columnheader" aria-label="Monday">M</span><span class="ma-cal-dow" role="columnheader" aria-label="Tuesday">T</span><span class="ma-cal-dow" role="columnheader" aria-label="Wednesday">W</span><span class="ma-cal-dow" role="columnheader" aria-label="Thursday">T</span><span class="ma-cal-dow" role="columnheader" aria-label="Friday">F</span><span class="ma-cal-dow" role="columnheader" aria-label="Saturday">S</span><span class="ma-cal-dow" role="columnheader" aria-label="Sunday">S</span>
+                    </div>
+                    <div class="ma-cal-days">
+                        <span class="ma-cal-day is-empty" aria-hidden="true"></span><span class="ma-cal-day is-empty" aria-hidden="true"></span><span class="ma-cal-day is-empty" aria-hidden="true"></span><span class="ma-cal-day is-empty" aria-hidden="true"></span><span class="ma-cal-day is-empty" aria-hidden="true"></span>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-01" data-cal-day="1" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sat 1 Aug: No trading data">
+                    <span class="ma-cal-num">1</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-02" data-cal-day="2" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sun 2 Aug: No trading data">
+                    <span class="ma-cal-num">2</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-03" data-cal-day="3" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Mon 3 Aug: No trading data">
+                    <span class="ma-cal-num">3</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-04" data-cal-day="4" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Tue 4 Aug: No trading data">
+                    <span class="ma-cal-num">4</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-05" data-cal-day="5" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Wed 5 Aug: No trading data">
+                    <span class="ma-cal-num">5</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-06" data-cal-day="6" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Thu 6 Aug: No trading data">
+                    <span class="ma-cal-num">6</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day has-data is-negative is-worst" data-cal-date="2026-08-07" data-cal-day="7" data-cal-pln="-1960" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="1" data-cal-hasdata="1" aria-label="Fri 7 Aug: -1,960 PLN · Worst Day">
+                    <span class="ma-cal-num">7</span>
+                    
+                    
+                    <span class="ma-cal-tag is-worst" aria-hidden="true" title="Worst day">▼</span>
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-08" data-cal-day="8" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sat 8 Aug: No trading data">
+                    <span class="ma-cal-num">8</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-09" data-cal-day="9" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sun 9 Aug: No trading data">
+                    <span class="ma-cal-num">9</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-10" data-cal-day="10" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Mon 10 Aug: No trading data">
+                    <span class="ma-cal-num">10</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-11" data-cal-day="11" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Tue 11 Aug: No trading data">
+                    <span class="ma-cal-num">11</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day has-data is-positive is-best" data-cal-date="2026-08-12" data-cal-day="12" data-cal-pln="2840" data-cal-pct="" data-cal-ath="0" data-cal-best="1" data-cal-worst="0" data-cal-hasdata="1" aria-label="Wed 12 Aug: +2,840 PLN · Best Day">
+                    <span class="ma-cal-num">12</span>
+                    
+                    <span class="ma-cal-tag is-best" aria-hidden="true" title="Best day">★</span>
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-13" data-cal-day="13" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Thu 13 Aug: No trading data">
+                    <span class="ma-cal-num">13</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-14" data-cal-day="14" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Fri 14 Aug: No trading data">
+                    <span class="ma-cal-num">14</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-15" data-cal-day="15" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sat 15 Aug: No trading data">
+                    <span class="ma-cal-num">15</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-16" data-cal-day="16" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sun 16 Aug: No trading data">
+                    <span class="ma-cal-num">16</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-17" data-cal-day="17" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Mon 17 Aug: No trading data">
+                    <span class="ma-cal-num">17</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-18" data-cal-day="18" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Tue 18 Aug: No trading data">
+                    <span class="ma-cal-num">18</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-19" data-cal-day="19" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Wed 19 Aug: No trading data">
+                    <span class="ma-cal-num">19</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-20" data-cal-day="20" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Thu 20 Aug: No trading data">
+                    <span class="ma-cal-num">20</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-21" data-cal-day="21" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Fri 21 Aug: No trading data">
+                    <span class="ma-cal-num">21</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-22" data-cal-day="22" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sat 22 Aug: No trading data">
+                    <span class="ma-cal-num">22</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-23" data-cal-day="23" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sun 23 Aug: No trading data">
+                    <span class="ma-cal-num">23</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-24" data-cal-day="24" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Mon 24 Aug: No trading data">
+                    <span class="ma-cal-num">24</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-25" data-cal-day="25" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Tue 25 Aug: No trading data">
+                    <span class="ma-cal-num">25</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-26" data-cal-day="26" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Wed 26 Aug: No trading data">
+                    <span class="ma-cal-num">26</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-27" data-cal-day="27" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Thu 27 Aug: No trading data">
+                    <span class="ma-cal-num">27</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day has-data is-flat is-ath" data-cal-date="2026-08-28" data-cal-day="28" data-cal-pln="0" data-cal-pct="" data-cal-ath="1" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="1" aria-label="Fri 28 Aug: 0 PLN · All-Time High">
+                    <span class="ma-cal-num">28</span>
+                    <span class="ma-cal-ath-trophy" aria-hidden="true" title="All-Time High">🏆</span>
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-29" data-cal-day="29" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sat 29 Aug: No trading data">
+                    <span class="ma-cal-num">29</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-30" data-cal-day="30" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Sun 30 Aug: No trading data">
+                    <span class="ma-cal-num">30</span>
+                    
+                    
+                    
+                </button>
+                <button type="button" class="ma-cal-day no-data is-neutral" data-cal-date="2026-08-31" data-cal-day="31" data-cal-pln="" data-cal-pct="" data-cal-ath="0" data-cal-best="0" data-cal-worst="0" data-cal-hasdata="0" aria-label="Mon 31 Aug: No trading data">
+                    <span class="ma-cal-num">31</span>
+                    
+                    
+                    
+                </button>
+                    </div>
+                </div>
+                <div class="ma-chart-tooltip ma-cal-tooltip" id="ma-cal-tooltip" hidden=""></div>
+            </div>
+            </article>
+            <article class="monthly-audit-card ma-movers">
+                <header><span>The movers</span><h2>Who moved your month?</h2></header>
+                <p class="ma-month-reference">┆ Month total · +24,680 PLN</p><div class="monthly-audit-contributions">
+            <div class="monthly-audit-contribution carry">
+                <span>▲ Leader</span>
+                <div><strong>NVDA</strong><b class="is-positive">+8,940 PLN</b></div>
+                <div class="ma-contribution-track" role="img" aria-label="Leader: +8,940 PLN. Shared axis minus 24680 to plus 24680 PLN; zero in the centre.">
+                    <span class="ma-contribution-fill is-positive" style="left:50%;width:18.111831442463533%"></span><i class="ma-track-zero" style="left:50%"></i>
+                    <i class="ma-month-marker" style="left:100%" title="Month total +24,680 PLN"></i></div>
+                <p>Price move + bought 1,000 PLN</p>
+            </div>
+            <div class="monthly-audit-contribution anchor">
+                <span>▼ Anchor</span>
+                <div><strong>BND</strong><b class="is-negative">-1,260 PLN</b></div>
+                <div class="ma-contribution-track" role="img" aria-label="Anchor: -1,260 PLN. Shared axis minus 24680 to plus 24680 PLN; zero in the centre.">
+                    <span class="ma-contribution-fill is-negative" style="left:47.44732576985413%;width:2.5526742301458674%"></span><i class="ma-track-zero" style="left:50%"></i>
+                    <i class="ma-month-marker" style="left:100%" title="Month total +24,680 PLN"></i></div>
+                <p>Pure price movement, no trades</p>
+            </div></div>
+            <div class="ma-scale-labels"><span>-24,680 PLN</span><span>0 PLN</span><span>+24,680 PLN</span></div>
+            <p class="ma-footnote">Common symmetric PLN scale · same zero and scale in both rows. Dashed marker = month total, net of cash flows. Full extent is the larger of the absolute month total and either contribution (minimum 1 PLN), not necessarily the month total. Contributions can exceed the net month when other positions offset them.</p>
+            </article>
+            <article class="monthly-audit-card ma-goal">
+                <header><span>Target &amp; AVCO</span><h2>The bigger goal.</h2></header>
+                
+            <div class="monthly-audit-retirement">
+                <strong class="ma-target-percent">300%</strong>
+                <div class="monthly-audit-retirement-copy">
+                    <span>Monthly target progress</span>
+                    <strong>+300 PLN <small>of 100 PLN</small></strong>
+                    <div class="ma-target-track" role="img" aria-label="Actual +300 PLN; target 100 PLN. Shared scale 0 PLN to 300 PLN.">
+                        <span class="ma-target-fill is-positive" style="left:0%;width:100%"></span><i class="ma-track-zero" style="left:0%"></i><i class="ma-target-marker" style="left:33.33333333333333%" title="Target 100 PLN"></i></div>
+                        <div class="ma-scale-labels"><span>0 PLN</span><span>+300 PLN</span></div><p class="ma-footnote">│ Target 100 PLN · one shared PLN scale; losses extend left of zero.</p>
+                </div>
+            </div>
+            <details class="ma-details"><summary>View gains · AVCO</summary><div class="monthly-audit-gains-grid">
+                <div><span>Unrealized gains</span><strong class="is-positive">+23,440 PLN</strong><small>Open positions</small></div>
+                <div><span>Realized gains</span><strong class="is-positive">+1,240 PLN</strong><small>Monthly sells · AVCO</small></div>
+            </div></details>
+            </article>
+            <article class="monthly-audit-card ma-seasonality">
+                <header><span>The bigger picture</span><h2>A little perspective.</h2></header>
+                <div class="ma-market-portfolio">
+                <div class="monthly-audit-metric"><span>Your portfolio · monthly TWR</span><strong class="is-positive">+13.78%</strong></div>
+                
+            <div class="ma-market-verdict is-positive" id="ma-global-market-verdict" role="status">
+                <span class="ma-verdict-badge">Better than global market</span>
+                <span class="ma-verdict-copy">You were better than the global market — beating the MSCI World by +9.68 pp this month.</span>
+            </div>
+            </div>
+            <div class="ma-ticker-strip"><div class="ma-ticker-item ma-market-row" data-market-id="WIG"><span class="ma-ticker-label">WIG</span><b class="ma-ticker-val is-positive">+2.40%</b></div><div class="ma-ticker-item ma-market-row" data-market-id="DAX"><span class="ma-ticker-label">DAX</span><b class="ma-ticker-val is-negative">-1.20%</b></div><div class="ma-ticker-item ma-market-row" data-market-id="FTSE100"><span class="ma-ticker-label">FTSE 100</span><b class="ma-ticker-val is-neutral">No data</b></div><div class="ma-ticker-item ma-market-row" data-market-id="SP500"><span class="ma-ticker-label">S&amp;P 500</span><b class="ma-ticker-val is-positive">+5.20%</b></div><div class="ma-ticker-item ma-market-row" data-market-id="NASDAQ"><span class="ma-ticker-label">NASDAQ</span><b class="ma-ticker-val is-positive">+15.00%</b></div><div class="ma-ticker-item ma-market-row" data-market-id="MSCI_WORLD"><span class="ma-ticker-label">MSCI World</span><b class="ma-ticker-val is-positive">+4.10%</b></div></div><p class="ma-footnote">Calendar close-to-close, native currencies (not PLN-adjusted); dates may differ from portfolio TWR. MSCI World uses a proxy.</p>
+            <h3 class="ma-section-title">Seasonality · August</h3>
+            <div class="monthly-audit-seasonality">
+                <div class="monthly-audit-season-bars" aria-hidden="true">
+                    <span class="negative" style="--share:25%"></span>
+                    <span class="positive" style="--share:75%"></span>
+                </div>
+                <p>August was negative in 1 out of the last 4 observations (avg -2.30%) and positive in 3 (avg +4.10%).</p>
+                <div class="monthly-audit-status is-positive">
+                    <span>Trend broken</span>
+                    <strong>Current result beat seasonal history</strong>
+                </div>
+            </div>
+            </article>
+            <article class="monthly-audit-card ma-flows">
+                <header><span>Cash flows &amp; wallets</span><h2>Your money, in motion.</h2></header>
+                
+            <div class="monthly-audit-summary-grid">
+                <div class="monthly-audit-metric"><span>Deposits</span><strong class="is-positive">3,200 PLN</strong></div>
+                <div class="monthly-audit-metric"><span>Withdrawals</span><strong class="is-neutral">0 PLN</strong></div>
+            </div>
+            <div class="monthly-audit-highlight-grid">
+                <div class="monthly-audit-highlight efficiency">
+                    <span>Efficiency leader · % TWR</span>
+                    <strong>Retirement · IKE</strong>
+                    <b class="is-positive">+15.20% TWR</b>
+                </div>
+                <div class="monthly-audit-highlight engine">
+                    <span>Primary profit engine · PLN</span>
+                    <strong>Long-term investments</strong>
+                    <b class="is-positive">+18,600 PLN</b>
+                </div>
+            </div>
+            <details class="ma-details"><summary>View wallet details</summary>
+                <div class="ma-wallet-row"><strong>Retirement · IKE</strong><span>+15.20% TWR</span><span>+18,600 PLN</span><small>Net cash flow +3,200 PLN</small></div>
+            </details>
+            </article>
+            <article class="monthly-audit-card ma-trading">
+                <header><span>Trading activity</span><h2>What changed hands.</h2></header>
+                
+            <div class="ma-trading-metrics">
+                <div class="monthly-audit-metric"><span>Turnover · BUY + SELL</span><strong class="">1,400 PLN</strong></div>
+                <div class="monthly-audit-metric"><span>BUY total</span><strong class="">1,000 PLN</strong></div>
+                <div class="monthly-audit-metric"><span>SELL total</span><strong class="">400 PLN</strong></div>
+                <div class="monthly-audit-metric"><span>BUY / SELL transactions</span><strong class="">2</strong></div>
+                <div class="monthly-audit-metric"><span>Dividends received</span><strong class="">+25 PLN</strong></div>
+            </div>
+            
+            <h3 class="ma-section-title">Largest transactions</h3>
+            <ol class="ma-transactions"><li><time>2026-08-12</time><span class="ma-trade-type">BUY</span><strong>NVDA</strong><b>1,000 PLN</b></li><li><time>2026-08-24</time><span class="ma-trade-type">SELL</span><strong>BND</strong><b>400 PLN</b></li></ol>
+            <p class="ma-footnote">Settled transaction values in PLN. Turnover is trading volume, not investment return; dividends are separate.</p>
+            </article>
+            </div><p class="ma-footer">A month in perspective. Not investment advice.</p></div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Roastfolio — Retirement & FIRE Forecast</title>
+    <link rel="stylesheet" href="../../src/styles/main.css">
+    <link rel="stylesheet" href="00_design_tokens.css">
+    <link rel="stylesheet" href="05_retirement.css">
+    <style>
+        /* Scoped layout wrapper for Google Stitch preview */
+        body {
+            margin: 0;
+            padding: 24px;
+            background-color: #050e18;
+            color: #eef7ff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .stitch-screen-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="stitch-screen-container">
+        <!-- SCREEN: Retirement & FIRE Forecast -->
+        
+        <section id="retirement-screen" class="retirement-screen">
+            <section class="retirement-card retirement-hero-card">
+                <div class="retirement-hero-copy">
+                    <div class="mgmt-section-title">Retirement Forecast</div>
+                    <h2 id="retirement-plan-title" class="wallet-panel-title">Base retirement plan</h2>
+                    <p class="retirement-hero-subtitle">Compare your real portfolio history with a theoretical saving path from your investing start date, then see two futures from today: one from the real balance and one from the projected balance.</p>
+                </div>
+                <div class="retirement-hero-meta">
+                    <div id="retirement-plan-status" class="wallet-settings-pill wallet-settings-pill-muted" data-tone="muted">Start with the default template, then save your favorite scenario.</div>
+                    <div id="retirement-years-left" class="retirement-insight-pill">13.0 years to retirement · 20.0 years invested by retirement</div>
+                </div>
+                <div class="retirement-action-bar">
+                    <button id="retirement-create-btn" type="button" class="mgmt-btn mgmt-btn-secondary">+ New plan</button>
+                    <button id="retirement-rerun-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Preview</button>
+                    <button id="retirement-save-btn" type="button" class="mgmt-btn mgmt-btn-primary">Save plan</button>
+                    <button id="retirement-delete-btn" type="button" class="mgmt-btn mgmt-btn-secondary">Delete</button>
+                </div>
+                <div class="retirement-plan-strip-wrap">
+                    <div class="retirement-plan-strip-label">Saved plans</div>
+                    <div id="retirement-plan-list" class="retirement-plan-list"><div class="retirement-empty-state">No saved plans yet. Start with the default template and tap save when the preview looks right.</div></div>
+                </div>
+            </section>
+
+            <div id="retirement-warning-banner" class="retirement-warning-banner" data-tone="danger">
+                <strong id="retirement-warning-title">Your actual portfolio may not make it to age 88.6</strong>
+                <span id="retirement-warning-copy">Using the real portfolio value today, the projection may run out around 2065-08-24. Consider retiring later, investing more, or lowering retirement spending.</span>
+            </div>
+
+            <section class="retirement-card retirement-chart-panel retirement-chart-panel-wide">
+                <div class="retirement-card-head">
+                    <div>
+                        <div class="mgmt-section-title">Projection chart</div>
+                        <h2 class="wallet-panel-title">Past + future in one view</h2>
+                    </div>
+                    <div id="retirement-chart-badge" class="retirement-insight-pill" data-tone="preview">Instant preview</div>
+                </div>
+                <div id="retirement-range-btns" class="retirement-range-btns">
+                    <button class="retirement-range-btn is-active" data-retirement-range="ALL" onclick="setRetirementChartRange('ALL')">All</button>
+                    <button class="retirement-range-btn" data-retirement-range="10Y" onclick="setRetirementChartRange('10Y')">10Y history</button>
+                    <button class="retirement-range-btn" data-retirement-range="5Y" onclick="setRetirementChartRange('5Y')">5Y history</button>
+                    <button class="retirement-range-btn" data-retirement-range="3Y" onclick="setRetirementChartRange('3Y')">3Y history</button>
+                    <button class="retirement-range-btn" data-retirement-range="1Y" onclick="setRetirementChartRange('1Y')">1Y history</button>
+                </div>
+                <div class="retirement-chart-controls">
+                    <div class="retirement-chart-control retirement-chart-control-select">
+                        <label class="retirement-chart-control-label" for="retirement-chart-scale-mode">Y scale</label>
+                        <select id="retirement-chart-scale-mode" class="mgmt-input">
+                            <option value="linear">Linear</option>
+                            <option value="log">Log</option>
+                        </select>
+                    </div>
+                    <div class="retirement-chart-control">
+                        <div class="retirement-chart-control-head">
+                            <label class="retirement-chart-control-label" for="retirement-chart-y-zoom">Y zoom</label>
+                            <span id="retirement-chart-y-zoom-value" class="retirement-chart-control-value">10% of full height</span>
+                        </div>
+                        <input id="retirement-chart-y-zoom" type="range" min="10" max="100" step="1" value="100" style="">
+                    </div>
+                    <div id="retirement-chart-y-pan-row" class="retirement-chart-control">
+                        <div class="retirement-chart-control-head">
+                            <label class="retirement-chart-control-label" for="retirement-chart-y-pan">Y scroll</label>
+                            <span id="retirement-chart-y-pan-value" class="retirement-chart-control-value">Focused on lower values</span>
+                        </div>
+                        <input id="retirement-chart-y-pan" type="range" min="0" max="100" step="1" value="0" style="">
+                    </div>
+                    <div class="retirement-chart-control retirement-chart-shortcuts">
+                        <span class="retirement-chart-control-label">Quick focus</span>
+                        <div class="retirement-chart-shortcut-buttons">
+                            <button id="retirement-chart-fit-all-btn" type="button" class="retirement-range-btn">Fit all</button>
+                            <button id="retirement-chart-focus-lower-btn" type="button" class="retirement-range-btn">Focus actuals</button>
+                            <button id="retirement-chart-log-btn" type="button" class="retirement-range-btn">Use log scale</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="retirement-chart-scale-helper" class="retirement-chart-scale-helper">Use Y zoom + Y scroll to inspect the lower part of the chart when the forecast shoots much higher than today.</div>
+                <div class="retirement-chart-meta">
+                    <div class="retirement-mini-stat">
+                        <span class="retirement-mini-stat-label">Retirement begins</span>
+                        <strong id="retirement-transition-date">Sept 2039</strong>
+                    </div>
+                    <div class="retirement-mini-stat">
+                        <span class="retirement-mini-stat-label">Actual path outlook</span>
+                        <strong id="retirement-duration-hero">Until Aug 2065</strong>
+                    </div>
+                    <div class="retirement-mini-stat">
+                        <span class="retirement-mini-stat-label">Monthly spending</span>
+                        <strong id="retirement-spending-hero">6000,00 PLN/mo</strong>
+                    </div>
+                </div>
+                <div id="retirement-chart-scroll-surface" class="chart-wrapper retirement-chart-wrapper">
+                    <canvas id="retirement-forecast-chart" style="box-sizing: border-box; display: block; height: 612px; width: 1172px;" width="1172" height="612"></canvas>
+                    <div class="retirement-axis-note" tabindex="0" aria-label="Life expectancy note">
+                        <span class="retirement-axis-note-icon" aria-hidden="true">i</span>
+                        <span class="retirement-axis-note-tooltip">Average life expectancy in Poland is 78,6. I gave you 10 extra years because apparently your retirement plan also wants plot armor.</span>
+                    </div>
+                </div>
+                <div class="retirement-chart-footnote">
+                    Blue shows your real history. Dashed blue is a monthly-compounded theoretical path from your investing start date using your pre-retirement yearly return. Green projects forward from the real balance today, and purple projects forward from the theoretical balance today.
+                    <span class="retirement-band-help" tabindex="0" aria-label="How the simulation bands are calculated">
+                        <span class="retirement-band-help-icon" aria-hidden="true">i</span>
+                        <span class="retirement-band-help-label">Simulation bands</span>
+                        <span class="retirement-band-help-tooltip">Current method: the baseline path compounds monthly, adjusts retirement spending for inflation, and now deducts annual portfolio fees. The bands use a deterministic seeded Monte Carlo with mild / weak / stress monthly regimes, so the same assumptions always produce the same P10 / P50 / P90 result. It is still a simplified single-portfolio model, but it is closer to institutional planning than a plain bell-curve path.</span>
+                    </span>
+                </div>
+            </section>
+
+            <div class="retirement-layout">
+                <section class="retirement-card retirement-summary-panel">
+                    <div class="retirement-card-head">
+                        <div>
+                            <div class="mgmt-section-title">Quick summary</div>
+                            <h2 class="wallet-panel-title">What this plan says</h2>
+                        </div>
+                    </div>
+
+                    <div class="retirement-summary-grid">
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Actual value today</div>
+                            <div id="retirement-summary-current" class="stat-value">497&nbsp;462,12 PLN</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Actual path at retirement</div>
+                            <div id="retirement-summary-transition" class="stat-value">1&nbsp;622&nbsp;087,09 PLN</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Actual path at age 88.6</div>
+                            <div id="retirement-summary-final" class="stat-value">0,00 PLN</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Retirement runway</div>
+                            <div id="retirement-summary-duration" class="stat-value stat-value-sm">25 yr 11 mo</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Spending support</div>
+                            <div id="retirement-summary-spending" class="stat-value stat-value-sm">6000,00 PLN/mo</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Confidence view</div>
+                            <div id="retirement-summary-monte-carlo" class="stat-value stat-value-sm">— success</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Age 88.6 check</div>
+                            <div id="retirement-summary-lasts" class="stat-value stat-value-sm">Runs out before 88.6</div>
+                        </div>
+                        <div class="stat-card retirement-stat-card">
+                            <div class="stat-label">Historical range</div>
+                            <div id="retirement-summary-history" class="stat-value stat-value-sm">2019-09-24 → 2026-09-01</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="retirement-card retirement-config-panel">
+                        <div class="retirement-card-head">
+                            <div>
+                                <div class="mgmt-section-title">Plan setup</div>
+                                <h2 class="wallet-panel-title">Keep it simple</h2>
+                            </div>
+                        </div>
+                        <p class="retirement-config-intro">Start with your birth date, when you began investing, the age you want to retire, monthly contribution, expected growth, and retirement spending. The app translates that retirement age into the date of your birthday automatically.</p>
+
+                        <div class="retirement-form-grid">
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-plan-name">Plan name</label>
+                                <input id="retirement-plan-name" type="text" class="mgmt-input" placeholder="My retirement plan" style="" data-retirement-bound="true">
+                                <div class="retirement-field-hint">Use any name that helps you compare scenarios.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-birth-date">Date of birth</label>
+                                <input id="retirement-birth-date" type="date" class="mgmt-input" style="" data-retirement-bound="true">
+                                <div class="retirement-field-hint">Used to calculate real ages and the age-88.6 target date.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-started-date">Started investing on</label>
+                                <input id="retirement-started-date" type="date" class="mgmt-input" style="" data-retirement-bound="true">
+                                <div class="retirement-field-hint">This sets the start of the projected historical path.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-retirement-age">Retirement age</label>
+                                <input id="retirement-retirement-age" type="number" min="1" step="0.1" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                <div class="retirement-field-hint">If you enter 50, the plan uses the date of your 50th birthday.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-monthly-investment">Monthly investment</label>
+                                <input id="retirement-monthly-investment" type="number" min="0" step="any" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                <div class="retirement-field-hint">How much you plan to add each month before retirement.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-working-return">Growth before retirement (%)</label>
+                                <input id="retirement-working-return" type="number" step="0.1" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                <div class="retirement-field-hint">Expected yearly growth while you are still investing.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-retired-return">Growth after retirement (%)</label>
+                                <input id="retirement-retired-return" type="number" step="0.1" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                <div class="retirement-field-hint">Expected yearly growth once withdrawals begin.</div>
+                            </div>
+                            <div class="mgmt-form-field retirement-input-card">
+                                <label class="mgmt-field-label" for="retirement-monthly-spending">Monthly retirement spending</label>
+                                <input id="retirement-monthly-spending" type="number" min="0" step="any" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                <div class="retirement-field-hint">How much you want the portfolio to cover each month.</div>
+                            </div>
+                        </div>
+
+                        <details class="retirement-advanced-details">
+                            <summary>More controls</summary>
+                            <div class="retirement-advanced-copy">Optional inputs for a more detailed scenario. You can ignore these and still get a solid forecast.</div>
+                            <div class="retirement-advanced-grid">
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-target-age-display">Target age</label>
+                                    <input id="retirement-target-age-display" type="text" class="mgmt-input" value="88.6 years old" disabled="" style="">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-initial-investment">Starting amount</label>
+                                    <input id="retirement-initial-investment" type="number" min="0" step="any" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-inflation-rate">Spending growth (%)</label>
+                                    <input id="retirement-inflation-rate" type="number" step="0.1" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-annual-fee-rate">Annual fee drag (%)</label>
+                                    <input id="retirement-annual-fee-rate" type="number" min="0" max="15" step="0.01" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-monte-carlo-runs">Confidence samples</label>
+                                    <input id="retirement-monte-carlo-runs" type="number" min="50" max="1000" step="50" class="mgmt-input" inputmode="numeric" style="" data-retirement-bound="true">
+                                </div>
+                                <label class="mgmt-search-hint retirement-checkbox-field retirement-input-card">
+                                    <input id="retirement-monte-carlo-enabled" type="checkbox" style="" data-retirement-bound="true">
+                                    Show confidence bands
+                                </label>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-working-volatility">Working volatility (%)</label>
+                                    <input id="retirement-working-volatility" type="number" step="0.1" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                </div>
+                                <div class="mgmt-form-field retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-retired-volatility">Retired volatility (%)</label>
+                                    <input id="retirement-retired-volatility" type="number" step="0.1" class="mgmt-input" inputmode="decimal" style="" data-retirement-bound="true">
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-income-streams">Income streams (JSON array)</label>
+                                    <textarea id="retirement-income-streams" class="mgmt-input retirement-json-input" placeholder="[{&quot;label&quot;:&quot;Pension&quot;,&quot;startAge&quot;:65,&quot;endAge&quot;:100,&quot;monthlyAmount&quot;:3500,&quot;inflationLinked&quot;:true}]" style="" data-retirement-bound="true"></textarea>
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-one-time-events">One-time events (JSON array)</label>
+                                    <textarea id="retirement-one-time-events" class="mgmt-input retirement-json-input" placeholder="[{&quot;label&quot;:&quot;Home sale&quot;,&quot;age&quot;:67,&quot;amount&quot;:150000}]" style="" data-retirement-bound="true"></textarea>
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-spending-phases">Spending phases (JSON array)</label>
+                                    <textarea id="retirement-spending-phases" class="mgmt-input retirement-json-input" placeholder="[{&quot;label&quot;:&quot;Early retirement&quot;,&quot;startAge&quot;:65,&quot;endAge&quot;:75,&quot;monthlySpending&quot;:7500,&quot;inflationLinked&quot;:true}]" style="" data-retirement-bound="true"></textarea>
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-return-phases">Return phases (JSON array)</label>
+                                    <textarea id="retirement-return-phases" class="mgmt-input retirement-json-input" placeholder="[{&quot;label&quot;:&quot;De-risking&quot;,&quot;startAge&quot;:58,&quot;endAge&quot;:65,&quot;annualReturn&quot;:5.5,&quot;annualVolatility&quot;:11}]" style="" data-retirement-bound="true"></textarea>
+                                </div>
+                                <div class="mgmt-form-field mgmt-form-field-wide retirement-input-card">
+                                    <label class="mgmt-field-label" for="retirement-notes">Notes</label>
+                                    <textarea id="retirement-notes" class="mgmt-input retirement-notes-input" placeholder="Optional reminders for this scenario" style="" data-retirement-bound="true"></textarea>
+                                </div>
+                            </div>
+                        </details>
+                </section>
+            </div>
+        </section>
+    
+    </div>
+</body>
+</html>

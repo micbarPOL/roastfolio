@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Roastfolio — Transactions & Turnover Activity</title>
+    <link rel="stylesheet" href="../../src/styles/main.css">
+    <link rel="stylesheet" href="00_design_tokens.css">
+    <link rel="stylesheet" href="06_transactions.css">
+    <style>
+        /* Scoped layout wrapper for Google Stitch preview */
+        body {
+            margin: 0;
+            padding: 24px;
+            background-color: #050e18;
+            color: #eef7ff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .stitch-screen-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="stitch-screen-container">
+        <!-- SCREEN: Transactions & Turnover Activity -->
+        
+
+        <!-- Summary cards -->
+        <section class="tx-summary-bar">
+            <div class="stat-card tx-stat-card" id="tx-month-card">
+                <div class="stat-label">This Month's Turnover</div>
+                <div class="stat-value" id="tx-month-value">46&nbsp;264,00 PLN</div>
+                <div class="stat-sub" id="tx-month-sub">4 transactions</div>
+            </div>
+            <div class="stat-card tx-stat-card" id="tx-ytd-card">
+                <div class="stat-label">YTD Turnover</div>
+                <div class="stat-value" id="tx-ytd-value">153&nbsp;964,00 PLN</div>
+                <div class="stat-sub" id="tx-ytd-sub">16 transactions</div>
+            </div>
+            <div class="stat-card tx-stat-card" id="tx-total-card">
+                <div class="stat-label">All-Time Turnover</div>
+                <div class="stat-value" id="tx-total-value">153&nbsp;964,00 PLN</div>
+                <div class="stat-sub" id="tx-total-sub">16 transactions total</div>
+            </div>
+        </section>
+
+        <!-- Activity Calendar -->
+        <section class="tx-activity-card">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;">
+                <h2 class="tx-section-title">Transaction Activity</h2>
+                <div id="cal-year-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"><button class="cal-year-btn active" data-year="2026">2026</button></div>
+                <div id="cal-legend" style="display:flex;align-items:center;gap:6px;margin-left:auto;font-size:11px;color:#888;flex-wrap:wrap;">
+                    <span>Less</span>
+                    <span class="cal-legend-swatch cal-i1"></span>
+                    <span class="cal-legend-swatch cal-i2"></span>
+                    <span class="cal-legend-swatch cal-i3"></span>
+                    <span class="cal-legend-swatch cal-i4"></span>
+                    <span class="cal-legend-swatch cal-i5"></span>
+                    <span>More turnover</span>
+                    <span style="margin-left:10px;display:inline-flex;align-items:center;gap:4px;">
+                        <span class="cal-legend-swatch" style="box-shadow:inset 0 0 0 2px #27ae60;"></span> Deposit
+                    </span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;">
+                        <span class="cal-legend-swatch" style="box-shadow:inset 0 0 0 2px #c0392b;"></span> Withdrawal
+                    </span>
+                </div>
+            </div>
+            <div id="tx-calendar"><div class="cal-grid"><div class="cal-month">
+            <div class="cal-month-name">Jan</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span><span class="cal-day" title="">31</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Feb</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Mar</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span><span class="cal-day" title="">31</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Apr</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day cal-active cal-i4" title="2026-04-12
+35&nbsp;600 PLN turnover" data-date="2026-04-12">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span></div></div><div class="cal-month">
+            <div class="cal-month-name">May</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day cal-active cal-i0 cal-frame-deposit" title="2026-05-02
+0 PLN turnover" data-date="2026-05-02">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span><span class="cal-day" title="">31</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Jun</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day cal-active cal-i3" title="2026-06-14
+17&nbsp;500 PLN turnover" data-date="2026-06-14">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Jul</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day cal-active cal-i5" title="2026-07-22
+54&nbsp;600 PLN turnover" data-date="2026-07-22">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span><span class="cal-day" title="">31</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Aug</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day cal-active cal-i0 cal-frame-deposit" title="2026-08-01
+0 PLN turnover" data-date="2026-08-01">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day cal-active cal-i0" title="2026-08-25
+0 PLN turnover" data-date="2026-08-25">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span><span class="cal-day" title="">31</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Sep</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day cal-active cal-i4" title="2026-09-10
+27&nbsp;360 PLN turnover" data-date="2026-09-10">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day cal-active cal-i3" title="2026-09-18
+18&nbsp;904 PLN turnover" data-date="2026-09-18">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Oct</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span><span class="cal-day" title="">31</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Nov</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span></div></div><div class="cal-month">
+            <div class="cal-month-name">Dec</div>
+            <div class="cal-dow-row"><span class="cal-dow">M</span><span class="cal-dow">T</span><span class="cal-dow">W</span><span class="cal-dow">T</span><span class="cal-dow">F</span><span class="cal-dow">S</span><span class="cal-dow">S</span></div>
+            <div class="cal-days"><span class="cal-day empty"></span><span class="cal-day" title="">1</span><span class="cal-day" title="">2</span><span class="cal-day" title="">3</span><span class="cal-day" title="">4</span><span class="cal-day" title="">5</span><span class="cal-day" title="">6</span><span class="cal-day" title="">7</span><span class="cal-day" title="">8</span><span class="cal-day" title="">9</span><span class="cal-day" title="">10</span><span class="cal-day" title="">11</span><span class="cal-day" title="">12</span><span class="cal-day" title="">13</span><span class="cal-day" title="">14</span><span class="cal-day" title="">15</span><span class="cal-day" title="">16</span><span class="cal-day" title="">17</span><span class="cal-day" title="">18</span><span class="cal-day" title="">19</span><span class="cal-day" title="">20</span><span class="cal-day" title="">21</span><span class="cal-day" title="">22</span><span class="cal-day" title="">23</span><span class="cal-day" title="">24</span><span class="cal-day" title="">25</span><span class="cal-day" title="">26</span><span class="cal-day" title="">27</span><span class="cal-day" title="">28</span><span class="cal-day" title="">29</span><span class="cal-day" title="">30</span><span class="cal-day" title="">31</span></div></div></div></div>
+        </section>
+
+        <!-- Monthly turnover chart -->
+        <section class="chart-container tx-chart-section">
+            <h2 class="tx-section-title">Monthly Turnover</h2>
+            <div class="chart-wrapper" style="height:260px;">
+                <canvas id="txTurnoverChart" style="box-sizing: border-box; display: block; height: 260px; width: 1130px;" width="1130" height="260"></canvas>
+            </div>
+        </section>
+
+        <section class="tx-history-card">
+            <h2 class="tx-section-title">Transaction History</h2>
+            <div id="tx-summary" style="margin-bottom: 14px; font-size: 13px; color: rgb(148, 163, 184); font-weight: normal;">Showing 16 of 16 transactions</div>
+            <table id="tx-table" class="holdings-table" style="width:100%;font-size:13px;">
+                <thead>
+                    <tr>
+                        <th class="tx-th hide-on-mobile">
+                            <div>Date</div>
+                            <button class="filter-btn" id="btn-date">📅 Any date</button>
+                            <div class="filter-popup" id="pop-date">
+                                <div style="display:flex;gap:5px;margin-bottom:8px;">
+                                    <button class="filter-clear" id="date-quick-today" style="flex:1;background:rgba(255,255,255,0.05)">Today</button>
+                                    <button class="filter-clear" id="date-quick-week" style="flex:1;background:rgba(255,255,255,0.05)">This week</button>
+                                </div>
+                                <label>From <input type="date" id="f-date-from" style=""></label>
+                                <label>To <input type="date" id="f-date-to" style=""></label>
+                                <button class="filter-clear" id="clear-date">Clear</button>
+                            </div>
+                        </th>
+                        <th class="tx-th">
+                            <div>Operation</div>
+                            <button class="filter-btn" id="btn-op">≡ All</button>
+                            <div class="filter-popup" id="pop-op">
+                                <div id="op-checkboxes"><button class="op-pill active" data-op="Buy" style="--op-color:#0ea5e9">Buy</button><button class="op-pill active" data-op="Deposit" style="--op-color:#a855f7">Deposit</button><button class="op-pill active" data-op="Dividend" style="--op-color:#fbbf24">Dividend</button><button class="op-pill active" data-op="Sell" style="--op-color:#34d399">Sell</button></div>
+                                <button class="filter-clear" id="clear-op">Clear</button>
+                            </div>
+                        </th>
+                        <th class="tx-th">
+                            Asset
+                            <input class="col-filter" id="f-asset" placeholder="filter…" style="">
+                        </th>
+                        <th class="tx-th hide-on-mobile">
+                            Wallet
+                            <input class="col-filter" id="f-wallet" placeholder="filter…" style="">
+                        </th>
+                        <th class="hide-on-mobile">Units</th>
+                        <th class="hide-on-mobile">Price (PLN)</th>
+                        <th class="hide-on-mobile">Commission</th>
+                        <th class="tx-th">
+                            <div>Value (PLN)</div>
+                            <button class="filter-btn" id="btn-value">↔ Any value</button>
+                            <div class="filter-popup" id="pop-value">
+                                <div id="value-range-labels" style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;"><span>-27.3k PLN</span><span>8.8k PLN</span></div>
+                                <div id="value-slider" class="range-slider">
+                                    <div class="range-track"></div>
+                                    <div class="range-fill" id="range-fill" style="left: 0%; width: 100%;"></div>
+                                    <div class="range-thumb" id="thumb-min" data-thumb="min" style="left: 0%;"></div>
+                                    <div class="range-thumb" id="thumb-max" data-thumb="max" style="left: 100%;"></div>
+                                </div>
+                                <button class="filter-clear" id="clear-value">Clear</button>
+                            </div>
+                        </th>
+                        <th>Save</th>
+                    </tr>
+                </thead>
+                <tbody id="tx-body"><tr data-tx-id="tx-1" data-portfolio-id="p-xtb" style="">
+                <td class="hide-on-mobile">2026-09-18</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#0ea5e9" title="Buy"><span class="tx-op-full">Buy</span><span class="tx-op-short">B</span></span></td>
+                <td><span class="tx-asset-text" title="Apple Inc. (AAPL)">Apple Inc. (AAPL)</span></td>
+                <td class="hide-on-mobile">XTB Brokerage</td>
+                <td class="hide-on-mobile" style="text-align:right">10</td>
+                <td class="hide-on-mobile" style="text-align:right">945,20</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#f87171">-9452,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-1" data-portfolio-id="p-xtb" style="background:rgba(255,255,255,0.02)">
+                <td class="hide-on-mobile">2026-09-18</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#0ea5e9" title="Buy"><span class="tx-op-full">Buy</span><span class="tx-op-short">B</span></span></td>
+                <td><span class="tx-asset-text" title="Apple Inc. (AAPL)">Apple Inc. (AAPL)</span></td>
+                <td class="hide-on-mobile">IKE Retirement</td>
+                <td class="hide-on-mobile" style="text-align:right">10</td>
+                <td class="hide-on-mobile" style="text-align:right">945,20</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#f87171">-9452,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-2" data-portfolio-id="p-xtb" style="">
+                <td class="hide-on-mobile">2026-09-10</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#0ea5e9" title="Buy"><span class="tx-op-full">Buy</span><span class="tx-op-short">B</span></span></td>
+                <td><span class="tx-asset-text" title="XTB S.A.">XTB S.A.</span></td>
+                <td class="hide-on-mobile">XTB Brokerage</td>
+                <td class="hide-on-mobile" style="text-align:right">200</td>
+                <td class="hide-on-mobile" style="text-align:right">68,40</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#f87171">-13&nbsp;680,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-2" data-portfolio-id="p-xtb" style="background:rgba(255,255,255,0.02)">
+                <td class="hide-on-mobile">2026-09-10</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#0ea5e9" title="Buy"><span class="tx-op-full">Buy</span><span class="tx-op-short">B</span></span></td>
+                <td><span class="tx-asset-text" title="XTB S.A.">XTB S.A.</span></td>
+                <td class="hide-on-mobile">IKE Retirement</td>
+                <td class="hide-on-mobile" style="text-align:right">200</td>
+                <td class="hide-on-mobile" style="text-align:right">68,40</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#f87171">-13&nbsp;680,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-3" data-portfolio-id="p-xtb" style="">
+                <td class="hide-on-mobile">2026-08-25</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#fbbf24" title="Dividend"><span class="tx-op-full">Dividend</span><span class="tx-op-short">D</span></span></td>
+                <td><span class="tx-asset-text" title="XTB S.A.">XTB S.A.</span></td>
+                <td class="hide-on-mobile">XTB Brokerage</td>
+                <td class="hide-on-mobile" style="text-align:right">—</td>
+                <td class="hide-on-mobile" style="text-align:right">—</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#34d399">1840,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-3" data-portfolio-id="p-xtb" style="background:rgba(255,255,255,0.02)">
+                <td class="hide-on-mobile">2026-08-25</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#fbbf24" title="Dividend"><span class="tx-op-full">Dividend</span><span class="tx-op-short">D</span></span></td>
+                <td><span class="tx-asset-text" title="XTB S.A.">XTB S.A.</span></td>
+                <td class="hide-on-mobile">IKE Retirement</td>
+                <td class="hide-on-mobile" style="text-align:right">—</td>
+                <td class="hide-on-mobile" style="text-align:right">—</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#34d399">1840,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-4" data-portfolio-id="p-xtb" style="">
+                <td class="hide-on-mobile">2026-08-01</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#a855f7" title="Deposit"><span class="tx-op-full">Deposit</span><span class="tx-op-short">+</span></span></td>
+                <td><span class="tx-asset-text" title="Cash">Cash</span></td>
+                <td class="hide-on-mobile">XTB Brokerage</td>
+                <td class="hide-on-mobile" style="text-align:right">—</td>
+                <td class="hide-on-mobile" style="text-align:right">5000,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#34d399">5000,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-4" data-portfolio-id="p-xtb" style="background:rgba(255,255,255,0.02)">
+                <td class="hide-on-mobile">2026-08-01</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#a855f7" title="Deposit"><span class="tx-op-full">Deposit</span><span class="tx-op-short">+</span></span></td>
+                <td><span class="tx-asset-text" title="Cash">Cash</span></td>
+                <td class="hide-on-mobile">IKE Retirement</td>
+                <td class="hide-on-mobile" style="text-align:right">—</td>
+                <td class="hide-on-mobile" style="text-align:right">5000,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#34d399">5000,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-5" data-portfolio-id="p-ike" style="">
+                <td class="hide-on-mobile">2026-07-22</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#0ea5e9" title="Buy"><span class="tx-op-full">Buy</span><span class="tx-op-short">B</span></span></td>
+                <td><span class="tx-asset-text" title="Microsoft Corporation (MSFT)">Microsoft Corporation (MSFT)</span></td>
+                <td class="hide-on-mobile">XTB Brokerage</td>
+                <td class="hide-on-mobile" style="text-align:right">15</td>
+                <td class="hide-on-mobile" style="text-align:right">1820,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#f87171">-27&nbsp;300,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-5" data-portfolio-id="p-ike" style="background:rgba(255,255,255,0.02)">
+                <td class="hide-on-mobile">2026-07-22</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#0ea5e9" title="Buy"><span class="tx-op-full">Buy</span><span class="tx-op-short">B</span></span></td>
+                <td><span class="tx-asset-text" title="Microsoft Corporation (MSFT)">Microsoft Corporation (MSFT)</span></td>
+                <td class="hide-on-mobile">IKE Retirement</td>
+                <td class="hide-on-mobile" style="text-align:right">15</td>
+                <td class="hide-on-mobile" style="text-align:right">1820,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#f87171">-27&nbsp;300,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-6" data-portfolio-id="p-xtb" style="">
+                <td class="hide-on-mobile">2026-06-14</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#34d399" title="Sell"><span class="tx-op-full">Sell</span><span class="tx-op-short">S</span></span></td>
+                <td><span class="tx-asset-text" title="CD Projekt S.A. (CDR)">CD Projekt S.A. (CDR)</span></td>
+                <td class="hide-on-mobile">XTB Brokerage</td>
+                <td class="hide-on-mobile" style="text-align:right">50</td>
+                <td class="hide-on-mobile" style="text-align:right">175,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#34d399">8750,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-6" data-portfolio-id="p-xtb" style="background:rgba(255,255,255,0.02)">
+                <td class="hide-on-mobile">2026-06-14</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#34d399" title="Sell"><span class="tx-op-full">Sell</span><span class="tx-op-short">S</span></span></td>
+                <td><span class="tx-asset-text" title="CD Projekt S.A. (CDR)">CD Projekt S.A. (CDR)</span></td>
+                <td class="hide-on-mobile">IKE Retirement</td>
+                <td class="hide-on-mobile" style="text-align:right">50</td>
+                <td class="hide-on-mobile" style="text-align:right">175,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#34d399">8750,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-7" data-portfolio-id="p-xtb" style="">
+                <td class="hide-on-mobile">2026-05-02</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#a855f7" title="Deposit"><span class="tx-op-full">Deposit</span><span class="tx-op-short">+</span></span></td>
+                <td><span class="tx-asset-text" title="Cash">Cash</span></td>
+                <td class="hide-on-mobile">XTB Brokerage</td>
+                <td class="hide-on-mobile" style="text-align:right">—</td>
+                <td class="hide-on-mobile" style="text-align:right">5000,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#34d399">5000,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-7" data-portfolio-id="p-xtb" style="background:rgba(255,255,255,0.02)">
+                <td class="hide-on-mobile">2026-05-02</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#a855f7" title="Deposit"><span class="tx-op-full">Deposit</span><span class="tx-op-short">+</span></span></td>
+                <td><span class="tx-asset-text" title="Cash">Cash</span></td>
+                <td class="hide-on-mobile">IKE Retirement</td>
+                <td class="hide-on-mobile" style="text-align:right">—</td>
+                <td class="hide-on-mobile" style="text-align:right">5000,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#34d399">5000,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-8" data-portfolio-id="p-xtb" style="">
+                <td class="hide-on-mobile">2026-04-12</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#0ea5e9" title="Buy"><span class="tx-op-full">Buy</span><span class="tx-op-short">B</span></span></td>
+                <td><span class="tx-asset-text" title="Apple Inc. (AAPL)">Apple Inc. (AAPL)</span></td>
+                <td class="hide-on-mobile">XTB Brokerage</td>
+                <td class="hide-on-mobile" style="text-align:right">20</td>
+                <td class="hide-on-mobile" style="text-align:right">890,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#f87171">-17&nbsp;800,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr><tr data-tx-id="tx-8" data-portfolio-id="p-xtb" style="background:rgba(255,255,255,0.02)">
+                <td class="hide-on-mobile">2026-04-12</td>
+                <td><span class="tx-op-badge" style="--tx-op-color:#0ea5e9" title="Buy"><span class="tx-op-full">Buy</span><span class="tx-op-short">B</span></span></td>
+                <td><span class="tx-asset-text" title="Apple Inc. (AAPL)">Apple Inc. (AAPL)</span></td>
+                <td class="hide-on-mobile">IKE Retirement</td>
+                <td class="hide-on-mobile" style="text-align:right">20</td>
+                <td class="hide-on-mobile" style="text-align:right">890,00</td>
+                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">—</td>
+                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:#f87171">-17&nbsp;800,00</td>
+                <td class="tx-save-cell">
+                    
+                        <button class="tx-edit-btn" data-tx-edit="" title="Edit transaction">Edit</button>
+                    
+                </td>
+            </tr></tbody>
+            </table>
+        </section>
+    
+    </div>
+</body>
+</html>

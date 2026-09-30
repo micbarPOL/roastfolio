@@ -290,7 +290,7 @@ def update_user(user_id: str, updates: dict) -> dict:
         })
     """
     IMMUTABLE = {"userId", "email", "createdAt"}
-    ALLOWED   = {"nickname", "settings", "portfolioMeta", "subscription", "role", "favorites"}
+    ALLOWED   = {"nickname", "settings", "portfolioMeta", "subscription", "role", "favorites", "wrapAudit"}
 
     bad = set(updates.keys()) & IMMUTABLE
     if bad:

@@ -1,0 +1,263 @@
+/* ═════════════════════════════════════════════════════════════════
+   Roastfolio — Coping Diary Screen CSS (Conviction & Emotional Ledger)
+   ═════════════════════════════════════════════════════════════════ */
+
+.diary-split {
+    display: grid;
+    grid-template-columns: minmax(320px, 36%) minmax(0, 64%);
+    gap: 16px;
+    min-height: 560px;
+}
+
+.diary-pane {
+    border: 1px solid rgba(127, 143, 164, 0.25);
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.7) 0%, rgba(5, 14, 24, 0.9) 100%);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+}
+
+.diary-pane-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(127, 143, 164, 0.2);
+}
+
+.diary-pane-head strong {
+    font-size: 15px;
+    font-weight: 700;
+    color: #eef7ff;
+}
+
+.diary-ledger-list {
+    padding: 12px;
+    display: grid;
+    gap: 10px;
+    max-height: 72vh;
+    overflow-y: auto;
+}
+
+.diary-ledger-card {
+    border: 1px solid rgba(127, 143, 164, 0.3);
+    border-radius: 14px;
+    background: rgba(10, 22, 38, 0.55);
+    padding: 14px;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.diary-ledger-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(168, 85, 247, 0.7);
+    box-shadow: 0 4px 16px rgba(168, 85, 247, 0.2);
+}
+
+.diary-ledger-card.is-selected {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 1px #a855f7, 0 4px 20px rgba(168, 85, 247, 0.25);
+    background: rgba(168, 85, 247, 0.08);
+}
+
+.diary-ledger-card.is-inactive {
+    filter: grayscale(0.6) opacity(0.7);
+}
+
+.diary-inactive-pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+}
+
+.diary-badge {
+    display: inline-block;
+    border: 1px solid rgba(127, 143, 164, 0.45);
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.diary-tags-cloud {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 4px 0 12px;
+}
+
+.diary-tags-cloud .match {
+    background: rgba(168, 85, 247, 0.18);
+    border-color: rgba(168, 85, 247, 0.85);
+    color: #d9b8ff;
+}
+
+.diary-detail-body {
+    padding: 20px;
+    display: grid;
+    gap: 16px;
+}
+
+/* ── Interactive Glass Toggle ── */
+.diary-glass-toggle {
+    position: relative;
+    width: 56px;
+    height: 30px;
+    display: inline-block;
+}
+
+.diary-glass-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.diary-glass-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: #1f2937;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.diary-glass-slider:before {
+    content: "";
+    position: absolute;
+    height: 24px;
+    width: 24px;
+    left: 3px;
+    top: 3px;
+    border-radius: 50%;
+    background: #eef2ff;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.diary-glass-toggle input:checked + .diary-glass-slider {
+    background: #a855f7;
+    box-shadow: 0 0 16px rgba(168, 85, 247, 0.7);
+}
+
+.diary-glass-toggle input:checked + .diary-glass-slider:before {
+    transform: translateX(26px);
+}
+
+/* ── Coping Chat & Checklist ── */
+.coping-chat-container {
+    max-height: 240px;
+    overflow-y: auto;
+    display: grid;
+    gap: 8px;
+}
+
+.coping-chat-entry {
+    display: grid;
+    gap: 4px;
+}
+
+.coping-chat-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.coping-chat-date {
+    display: block;
+    font-size: 11px;
+    color: #8ea1bb;
+}
+
+.coping-chat-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #e2e8f0;
+}
+
+.coping-chat-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.coping-chat-edit-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.diary-toggle-status {
+    font-size: 12px;
+    color: #cbd5e1;
+    min-width: 66px;
+    text-align: right;
+}
+
+.diary-chat-compose {
+    display: flex;
+    gap: 8px;
+}
+
+.diary-chat-compose input {
+    flex: 1;
+    min-width: 0;
+}
+
+.diary-amber-pulse {
+    animation: diaryPulse 1.6s ease-in-out infinite;
+}
+
+.diary-check-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 14px;
+    border: 1px solid rgba(127, 143, 164, 0.25);
+    border-radius: 10px;
+    background: rgba(8, 20, 33, 0.35);
+}
+
+.diary-ledger-filter {
+    width: 100%;
+    border: 1px solid rgba(127, 143, 164, 0.45);
+    border-radius: 8px;
+    padding: 8px;
+    background: transparent;
+    color: inherit;
+}
+
+.diary-mention {
+    color: #5aa0ff;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+    white-space: nowrap;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+@keyframes diaryPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(245, 158, 11, 0.15); }
+    50% { box-shadow: 0 0 20px rgba(245, 158, 11, 0.45); }
+}
+
+@keyframes diaryCardIn {
+    from { opacity: 0.3; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 980px) {
+    .diary-split {
+        grid-template-columns: 1fr;
+    }
+}

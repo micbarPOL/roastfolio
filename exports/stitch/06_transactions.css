@@ -1,0 +1,175 @@
+/* ═════════════════════════════════════════════════════════════════
+   Roastfolio — Transactions Screen CSS
+   ═════════════════════════════════════════════════════════════════ */
+
+/* ── Summary Bar & Turnover Cards ── */
+.tx-summary-bar {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 0 0 20px;
+}
+
+.tx-stat-card {
+    flex: 1;
+    min-width: 220px;
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.7) 0%, rgba(5, 14, 24, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 16px;
+    padding: 18px 22px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.tx-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #00f2fe;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin: 0 0 16px;
+    text-shadow: 0 0 8px rgba(0, 242, 254, 0.3);
+}
+
+/* ── Activity Calendar & Legend ── */
+.tx-activity-card {
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.7) 0%, rgba(5, 14, 24, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.cal-legend-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    vertical-align: middle;
+}
+
+.cal-i1 { background-color: rgba(14, 165, 233, 0.2); }
+.cal-i2 { background-color: rgba(14, 165, 233, 0.4); }
+.cal-i3 { background-color: rgba(14, 165, 233, 0.6); }
+.cal-i4 { background-color: rgba(14, 165, 233, 0.8); }
+.cal-i5 { background-color: #00f2fe; box-shadow: 0 0 6px rgba(0, 242, 254, 0.8); }
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px 24px;
+}
+
+.cal-month {
+    font-size: 12px;
+}
+
+.cal-month-name {
+    font-weight: 700;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.cal-dow-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+}
+
+.cal-dow {
+    text-align: center;
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.cal-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+}
+
+.cal-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-size: 10px;
+    color: #64748b;
+    background: rgba(14, 165, 233, 0.05);
+    cursor: default;
+}
+
+.cal-day.empty {
+    background: transparent;
+}
+
+.cal-day.cal-active {
+    font-weight: 700;
+    color: #050e18;
+    cursor: pointer;
+}
+
+/* ── Turnover Chart ── */
+.tx-chart-section {
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.7) 0%, rgba(5, 14, 24, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* ── History Table & Filters ── */
+.tx-history-card {
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.7) 0%, rgba(5, 14, 24, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    overflow-x: auto;
+}
+
+.col-filter {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    border: 1px solid rgba(14, 165, 233, 0.4);
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+    box-sizing: border-box;
+}
+
+.filter-btn {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    border: 1px solid rgba(14, 165, 233, 0.4);
+    border-radius: 6px;
+    background: #0f172a;
+    color: #e2e8f0;
+    cursor: pointer;
+}
+
+/* ── Operation Badges ── */
+.tx-op-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: color-mix(in srgb, var(--tx-op-color, #94a3b8) 16%, transparent);
+    color: var(--tx-op-color, #94a3b8);
+    border: 1px solid color-mix(in srgb, var(--tx-op-color, #94a3b8) 35%, transparent);
+}

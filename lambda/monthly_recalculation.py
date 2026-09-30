@@ -129,7 +129,7 @@ def run_job(event: dict, context=None) -> dict:
             return public_job(job)
         year, month = map(int, period.split("-"))
         try:
-            wrap_generator.generate_monthly_wrap(user_id, year, month, benchmark_id=job["benchmark_id"])
+            wrap_generator.generate_monthly_wrap(user_id, year, month, benchmark_id=job["benchmark_id"], is_email=True)
             job["completed_periods"].append(period)
         except Exception as exc:
             print(f"Monthly regeneration failed for job {job_id}, period {period}: {exc}")

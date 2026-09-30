@@ -17,6 +17,7 @@ import portfolio_avco
 import portfolios
 import retirement_plans
 import snapshots
+import monthly_commentary
 
 
 ZERO = Decimal("0")
@@ -396,6 +397,59 @@ def _extremes(items: list[dict], transactions: list[dict], start: date, next_mon
     }
 
 
+def _calculate_streaks(items: list[dict], year: int, month: int, current_twr_pct: Decimal, benchmark_return_pct: Decimal) -> dict:
+    from monthly_commentary import MonthStats
+    
+    returns = []
+    # Loop backward month by month
+    y, m = year, month
+    for _ in range(60): # 5 years max history
+        m -= 1
+        if m == 0:
+            y -= 1
+            m = 12
+        start, next_month, _ = _month_bounds(y, m)
+        perf = _monthly_performance(items, start, next_month, ZERO)
+        start_snapshot, end_snapshot = _period_boundaries(items, start, next_month)
+        if not start_snapshot or not end_snapshot:
+            break
+        returns.append(perf["twr_pct"])
+
+    is_green = current_twr_pct > ZERO
+    is_red = current_twr_pct < ZERO
+    beat_benchmark = current_twr_pct > (benchmark_return_pct or ZERO)
+
+    prev_green_streak = 0
+    prev_red_streak = 0
+    
+    if returns:
+        if returns[0] > ZERO:
+            for r in returns:
+                if r > ZERO:
+                    prev_green_streak += 1
+                else:
+                    break
+        elif returns[0] < ZERO:
+            for r in returns:
+                if r < ZERO:
+                    prev_red_streak += 1
+                else:
+                    break
+
+    green_streak = prev_green_streak + 1 if is_green else 0
+    red_streak = prev_red_streak + 1 if is_red else 0
+
+    return {
+        "is_green": is_green,
+        "is_red": is_red,
+        "green_streak": green_streak,
+        "red_streak": red_streak,
+        "prev_green_streak": prev_green_streak,
+        "prev_red_streak": prev_red_streak,
+        "beat_benchmark": beat_benchmark,
+    }
+
+
 def _seasonality(items: list[dict], year: int, month: int, current_twr_pct: Decimal) -> dict:
     returns = []
     for historical_year in sorted({_snapshot_date(item)[:4] for item in items if _snapshot_date(item)}):
@@ -671,7 +725,7 @@ def _trailing_turnover_average(user_id: str, year: int, month: int) -> Decimal |
     return _money(sum(turnovers) / Decimal(len(turnovers)))
 
 
-def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: str | None = None) -> dict:
+def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: str | None = None, is_email: bool = False) -> dict:
     """Compile and persist one complete monthly audit document."""
     if not str(user_id or "").strip():
         raise ValueError("user_id is required")
@@ -718,6 +772,13 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
     ])
     trading_act["avg_12m_turnover_pln"] = _trailing_turnover_average(user_id, int(year), int(month))
 
+    market_comparison = _market_comparison(user_id, summary_snapshots, start, next_month, benchmark_id)
+    benchmark_return = market_comparison["journey"].get("benchmark_return_pct")
+    streaks = _calculate_streaks(summary_snapshots, int(year), int(month), overall["twr_pct"], benchmark_return)
+    commentary = monthly_commentary.get_monthly_wrap_commentary(
+        user_id, monthly_commentary.MonthStats(**streaks), is_email=is_email
+    )
+
     document = {
         "PK": f"USER#{user_id}",
         "SK": f"WRAP#MONTH#{period_key}",
@@ -726,6 +787,7 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
         "year": int(year),
         "month": int(month),
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "commentary": commentary,
         "cash_flow_pln": total_cash_flow,
         "deposits_pln": cash_flow_breakdown["deposits_pln"],
         "withdrawals_pln": cash_flow_breakdown["withdrawals_pln"],
@@ -733,7 +795,7 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
         "overall_nominal_change_pln": overall["nominal_change_pln"],
         "start_value_pln": overall["start_value_pln"],
         "end_value_pln": overall["end_value_pln"],
-        **_market_comparison(user_id, summary_snapshots, start, next_month, benchmark_id),
+        **market_comparison,
         "trading_activity": trading_act,
         "wallet_performance": wallet_performance,
         "best_efficiency_wallet": best_wallet,
@@ -746,6 +808,7 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
             month_end,
         ),
         **_seasonality(summary_snapshots, int(year), int(month), overall["twr_pct"]),
+
         "retirement_target": _retirement_target(user_id, overall["nominal_change_pln"]),
         "avco_gains": _avco_gains(user_id, ledgers, start, next_month),
         **_asset_contributions(user_id, ledgers, start, next_month),

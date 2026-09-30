@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Roastfolio — Statistics, Benchmarks & Lakes</title>
+    <link rel="stylesheet" href="../../src/styles/main.css">
+    <link rel="stylesheet" href="00_design_tokens.css">
+    <link rel="stylesheet" href="04_statistics.css">
+    <style>
+        /* Scoped layout wrapper for Google Stitch preview */
+        body {
+            margin: 0;
+            padding: 24px;
+            background-color: #050e18;
+            color: #eef7ff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .stitch-screen-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="stitch-screen-container">
+        <!-- SCREEN: Statistics, Benchmarks & Lakes -->
+        
+        <section class="stats-section">
+            <h2 class="tx-section-title" style="margin-top:0;">All-Time Values</h2>
+            <div class="stats-grid" id="stats-alltime"><div class="stat-card">
+        <div class="stat-label">All-Time High</div>
+        <div class="stat-value">497&nbsp;462,12 PLN</div>
+        <div class="stat-sub">01 Sept 2026 · Daily snapshots</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Days Since ATH</div>
+        <div class="stat-value">23 days</div>
+        <div class="stat-sub">01 Sept 2026</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Drawdown from ATH</div>
+        <div class="stat-value">-29.94%</div>
+        <div class="stat-sub">-148&nbsp;941,62 PLN</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Highest Profit (Value − Invested)</div>
+        <div class="stat-value">185&nbsp;462,12 PLN</div>
+        <div class="stat-sub">01 Sept 2026</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Avg Transactions / Month (6mo MA)</div>
+        <div class="stat-value">2.4</div>
+        <div class="stat-sub">No prior 6-month comparison available</div>
+    </div></div>
+        </section>
+        <section class="stats-section">
+            <h2 class="tx-section-title" style="margin-top:0;">Monthly Statistics</h2>
+            <div class="stats-grid" id="stats-monthly"><div class="stat-card">
+        <div class="stat-label">Best Month (Net Gain)</div>
+        <div class="stat-value">6710,94 PLN</div>
+        <div class="stat-sub">August 2026</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Worst Month (Net Gain)</div>
+        <div class="stat-value">-142&nbsp;102,15 PLN</div>
+        <div class="stat-sub">September 2026</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Highest Monthly Turnover</div>
+        <div class="stat-value">54&nbsp;600,00 PLN</div>
+        <div class="stat-sub">July 2026</div>
+    </div></div>
+        </section>
+        <section class="stats-section">
+            <h2 class="tx-section-title" style="margin-top:0;">Daily Statistics</h2>
+            <div class="stats-grid" id="stats-daily"><div class="stat-card">
+        <div class="stat-label">Best Day (%)</div>
+        <div class="stat-value">+1.68%</div>
+        <div class="stat-sub">01 Feb 2024</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Worst Day (%)</div>
+        <div class="stat-value">-29.94%</div>
+        <div class="stat-sub">24 Sept 2026</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Best Day (PLN)</div>
+        <div class="stat-value">6839,47 PLN</div>
+        <div class="stat-sub">01 Sept 2026</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Worst Day (PLN)</div>
+        <div class="stat-value">-148&nbsp;941,62 PLN</div>
+        <div class="stat-sub">24 Sept 2026</div>
+    </div><div class="stat-card">
+        <div class="stat-label">Highest Daily Turnover</div>
+        <div class="stat-value">54&nbsp;600,00 PLN</div>
+        <div class="stat-sub">22 Jul 2026</div>
+    </div></div>
+        </section>
+        <section class="stats-section stats-acc-section">
+            <button class="stats-acc-btn" onclick="toggleStatsAccordion('bm-cmp')" aria-expanded="true">
+                <span style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;">
+                    <span>Benchmark Comparison</span>
+                    <span id="bm-cmp-header-preview" class="stats-acc-preview"><span class="stats-acc-preview-badge "></span> <span class="stats-acc-preview-month">(September 2026)</span> <span class="stats-acc-preview-pct" style="color:#f87171;font-weight:700;">-29.08%</span></span>
+                </span>
+                <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(0deg);"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </button>
+            <div id="acc-bm-cmp" class="stats-acc-body stats-acc-body--open">
+                <div id="bm-cmp-wrap">
+        <div class="bm-scroll bm-desktop-only">
+            <table class="bm-table">
+                <thead>
+                    <tr>
+                        <th class="bm-th bm-th-month">Month</th>
+                        <th class="bm-th bm-th-port">Portfolio</th>
+                        <th class="bm-th">WIG</th><th class="bm-th">WIG20</th><th class="bm-th">mWIG40</th><th class="bm-th">sWIG80</th><th class="bm-th">S&amp;P 500</th><th class="bm-th">NASDAQ</th><th class="bm-th">DAX</th><th class="bm-th">MSCI W</th>
+                        <th class="bm-th bm-th-score">Score</th>
+                    </tr>
+                </thead>
+                <tbody><tr>
+            <td class="bm-td bm-month">September 2026</td>
+            <td class="bm-td bm-port" style="color:#f87171;font-weight:700;">-29.08%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">August 2026</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.40%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">July 2026</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.41%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">June 2026</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.41%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">May 2026</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.42%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">April 2026</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.42%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">March 2026</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.43%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">February 2026</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.43%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">January 2026</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.44%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">December 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.45%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">November 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.45%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">October 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.46%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">September 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.47%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">August 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.47%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">July 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.48%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">June 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.49%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">May 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.49%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">April 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.50%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">March 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.51%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">February 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.52%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">January 2025</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.53%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">December 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.54%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">November 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.55%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">October 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.56%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">September 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.57%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">August 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.58%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">July 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.59%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">June 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.61%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">May 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.62%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">April 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.63%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">March 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.65%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr><tr>
+            <td class="bm-td bm-month">February 2024</td>
+            <td class="bm-td bm-port" style="color:#34d399;font-weight:700;">+1.67%</td>
+            <td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td><td class="bm-td bm-na">—</td>
+            <td class="bm-td bm-score ">—</td>
+        </tr></tbody>
+            </table>
+        </div>
+        <div class="bm-mobile-only">
+            <div class="bm-mobile-list">
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">September 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#f87171">-29.08%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">August 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.40%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">July 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.41%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">June 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.41%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">May 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.42%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">April 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.42%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">March 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.43%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">February 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.43%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">January 2026</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.44%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">December 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.45%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">November 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.45%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">October 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.46%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">September 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.47%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">August 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.47%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">July 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.48%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">June 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.49%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">May 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.49%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">April 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.50%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">March 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.51%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">February 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.52%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">January 2025</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.53%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">December 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.54%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">November 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.55%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">October 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.56%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">September 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.57%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">August 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.58%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">July 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.59%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">June 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.61%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">May 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.62%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">April 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.63%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">March 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.65%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        
+            <div class="bm-mobile-row" onclick="toggleMobileBmRow(this)">
+                <div class="bm-mobile-summary">
+                    <div class="bm-mobile-summary-left">
+                        <span class="bm-mobile-month">February 2024</span>
+                        <span class="bm-mobile-score ">—</span>
+                    </div>
+                    <div class="bm-mobile-summary-right">
+                        <span class="bm-mobile-port" style="color:#34d399">+1.67%</span>
+                        <svg class="bm-mobile-arrow-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+                <div class="bm-mobile-details">
+                    <div class="bm-mobile-details-grid"><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">WIG20</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">mWIG40</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">sWIG80</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">S&amp;P 500</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">NASDAQ</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">DAX</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div><div class="bm-mobile-detail-item">
+                    <span class="bm-mobile-detail-name">MSCI W</span>
+                    <span class="bm-mobile-detail-val bm-na">—</span>
+                </div></div>
+                </div>
+            </div>
+        </div>
+        </div></div>
+            </div>
+        </section>
+        <section class="stats-section stats-acc-section">
+            <button class="stats-acc-btn" onclick="toggleStatsAccordion('underwater-lakes')">
+                <span style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;">
+                    <span>Underwater Lakes</span>
+                    <span id="underwater-lakes-header-preview" class="stats-acc-preview">No active lakes (ALL)</span>
+                </span>
+                <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(0deg);"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </button>
+            <div id="acc-underwater-lakes" class="stats-acc-body stats-acc-body--open">
+                <div class="uwl-controls-row">
+                    <div class="history-wallet-btns" id="underwater-lakes-portfolio-btns" role="tablist"><button class="history-wallet-btn is-active" data-wallet-key="summary" onclick="setUnderwaterLakesPortfolio('summary')">Total</button><button class="history-wallet-btn" data-wallet-key="p-xtb" onclick="setUnderwaterLakesPortfolio('p-xtb')">XTB Brokerage</button><button class="history-wallet-btn" data-wallet-key="p-ike" onclick="setUnderwaterLakesPortfolio('p-ike')">IKE Retirement</button></div>
+                    <div class="history-wallet-btns" id="underwater-lakes-range-btns" role="tablist" aria-label="Underwater lakes time range">
+                        <button class="history-wallet-btn is-active" data-range="ALL" onclick="setUnderwaterLakesRange('ALL')">All</button>
+                        <button class="history-wallet-btn" data-range="3Y" onclick="setUnderwaterLakesRange('3Y')">3Y</button>
+                        <button class="history-wallet-btn" data-range="1Y" onclick="setUnderwaterLakesRange('1Y')">1Y</button>
+                        <button class="history-wallet-btn" data-range="YTD" onclick="setUnderwaterLakesRange('YTD')">YTD</button>
+                    </div>
+                </div>
+
+                <div class="uwl-stat-grid" id="underwater-lakes-stat-grid">
+                    <article class="uwl-stat-card uwl-stat-card-depth">
+                        <div class="uwl-stat-eyebrow">The Deepest Trench</div>
+                        <div class="uwl-stat-value" id="uwl-deepest-value">0.00%</div>
+                        <div class="uwl-stat-meta" id="uwl-deepest-meta">No underwater periods in selected range</div>
+                    </article>
+                    <article class="uwl-stat-card uwl-stat-card-width">
+                        <div class="uwl-stat-eyebrow">The Widest Swamp</div>
+                        <div class="uwl-stat-value" id="uwl-widest-value">0 days</div>
+                        <div class="uwl-stat-meta" id="uwl-widest-meta">No underwater periods in selected range</div>
+                    </article>
+                </div>
+
+                <div class="uwl-chart-grid">
+                    <section class="uwl-chart-panel">
+                        <header class="uwl-chart-head">
+                            <h3 class="uwl-chart-title">Valuation Path vs High-Water Mark</h3>
+                        </header>
+                        <div class="uwl-chart-wrap">
+                            <canvas id="underwater-path-chart" height="240" style="display: block; box-sizing: border-box; height: 240px; width: 500px;" width="500"></canvas>
+                        </div>
+                    </section>
+
+                    <section class="uwl-chart-panel" id="uwl-selected-lake-panel">
+                        <header class="uwl-chart-head">
+                            <h3 class="uwl-chart-title">The Lakes (Underwater Drawdown %)</h3>
+                            <span id="uwl-selected-lake-pill" class="uwl-lake-pill">Click a lake on the left chart</span>
+                        </header>
+                        <div class="uwl-chart-wrap">
+                            <canvas id="underwater-lakes-chart" height="240" style="display: block; box-sizing: border-box; height: 240px; width: 500px;" width="500"></canvas>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+        <section class="stats-section stats-acc-section">
+            <button class="stats-acc-btn" onclick="toggleStatsAccordion('heatmap')">
+                <span style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; flex: 1;">
+                    <span>Monthly Performance Heatmap</span>
+                    <span id="heatmap-header-preview" class="stats-acc-preview"></span>
+                </span>
+                <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(0deg);"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </button>
+            <div id="acc-heatmap" class="stats-acc-body stats-acc-body--open">
+                <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                        <div class="history-wallet-btns" id="heatmap-metric-btns" role="tablist">
+                            <button class="history-wallet-btn is-active" data-metric="pct" onclick="setHeatmapMetric('pct')">% Return</button>
+                            <button class="history-wallet-btn" data-metric="pln" onclick="setHeatmapMetric('pln')">PLN Return</button>
+                        </div>
+                    </div>
+                    <div class="history-wallet-btns" id="heatmap-portfolio-btns" role="tablist"><button class="history-wallet-btn is-active" data-wallet-key="summary" onclick="setHeatmapPortfolio('summary')">Total</button><button class="history-wallet-btn" data-wallet-key="p-xtb" onclick="setHeatmapPortfolio('p-xtb')">XTB Brokerage</button><button class="history-wallet-btn" data-wallet-key="p-ike" onclick="setHeatmapPortfolio('p-ike')">IKE Retirement</button></div>
+                </div>
+                <div id="heatmap-table-wrap"><div class="heatmap-scroll-wrap"><table class="heatmap-table"><thead><tr><th class="heatmap-th-month">Month</th><th class="heatmap-th-avg">Avg (%)</th><th class="heatmap-th-year">2024</th><th class="heatmap-th-year">2025</th><th class="heatmap-th-year">2026</th></tr></thead><tbody><tr><td class="heatmap-td-month">Jan</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.48%</td><td class="heatmap-cell heatmap-empty">—</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.53%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.44%</td></tr><tr><td class="heatmap-td-month">Feb</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.54%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.28);">+1.67%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.52%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.43%</td></tr><tr><td class="heatmap-td-month">Mar</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.53%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.28);">+1.65%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.51%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.43%</td></tr><tr><td class="heatmap-td-month">Apr</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.52%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.28);">+1.63%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.50%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.42%</td></tr><tr><td class="heatmap-td-month">May</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.51%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.28);">+1.62%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.49%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.42%</td></tr><tr><td class="heatmap-td-month">Jun</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.50%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.61%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.49%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.41%</td></tr><tr><td class="heatmap-td-month">Jul</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.49%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.59%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.48%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.41%</td></tr><tr><td class="heatmap-td-month">Aug</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.49%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.58%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.47%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.40%</td></tr><tr><td class="heatmap-td-month">Sep</td><td class="heatmap-td-avg" style="color:#c0392b;font-weight:700;">-8.68%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.57%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.47%</td><td class="heatmap-cell" style="background:rgba(192, 57, 43, 0.55);color:#e74c3c;border:1px solid rgba(192, 57, 43, 0.70);">-29.08%</td></tr><tr><td class="heatmap-td-month">Oct</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.51%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.56%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.46%</td><td class="heatmap-cell heatmap-empty">—</td></tr><tr><td class="heatmap-td-month">Nov</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.50%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.55%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.45%</td><td class="heatmap-cell heatmap-empty">—</td></tr><tr><td class="heatmap-td-month">Dec</td><td class="heatmap-td-avg" style="color:#27ae60;font-weight:700;">+1.49%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.54%</td><td class="heatmap-cell" style="background:rgba(39, 174, 96, 0.17);color:#2ecc71;border:1px solid rgba(39, 174, 96, 0.27);">+1.45%</td><td class="heatmap-cell heatmap-empty">—</td></tr></tbody></table></div></div>
+            </div>
+        </section>
+        <section class="stats-section stats-acc-section">
+            <button class="stats-acc-btn" onclick="toggleStatsAccordion('monthly-snap')">
+                <span>Snapshot Summary</span>
+                <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+            </button>
+            <div id="acc-monthly-snap" class="stats-acc-body">
+                <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
+                    <div class="history-wallet-btns" id="stats-snap-granularity-btns" role="tablist">
+                        <button class="history-wallet-btn is-active" data-val="monthly" onclick="setSnapshotGranularity('monthly')">Monthly</button>
+                        <button class="history-wallet-btn" data-val="daily" onclick="setSnapshotGranularity('daily')">Daily</button>
+                    </div>
+                    <div class="history-wallet-btns" id="stats-snap-portfolio-btns" role="tablist"><button class="history-wallet-btn is-active" data-wallet-key="summary" onclick="setSnapshotPortfolio('summary')">Total</button><button class="history-wallet-btn" data-wallet-key="p-xtb" onclick="setSnapshotPortfolio('p-xtb')">XTB Brokerage</button><button class="history-wallet-btn" data-wallet-key="p-ike" onclick="setSnapshotPortfolio('p-ike')">IKE Retirement</button></div>
+                </div>
+                <div id="returns-table-wrap">
+        <div style="overflow-x:auto;margin-top:4px;">
+            <table class="holdings-table" style="width:100%;font-size:13px;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left;">Month</th>
+                        <th style="text-align:right;">End Value</th>
+                        <th style="text-align:right;">Total Invested</th>
+                        <th style="text-align:right;">Net Gain</th>
+                        <th style="text-align:right;">Return %</th>
+                        <th style="text-align:right;">XIRR</th>
+                    </tr>
+                </thead>
+                <tbody><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">September 2026</td>
+            <td style="padding:6px 10px;text-align:right;">348&nbsp;520,50 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">312&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#f87171;font-weight:700;">-142&nbsp;102,15 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#f87171;font-weight:700;">-29.08%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">August 2026</td>
+            <td style="padding:6px 10px;text-align:right;">486&nbsp;622,65 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">308&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+6710,94 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.40%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">July 2026</td>
+            <td style="padding:6px 10px;text-align:right;">475&nbsp;911,71 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">304&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+6583,93 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.41%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">June 2026</td>
+            <td style="padding:6px 10px;text-align:right;">465&nbsp;327,78 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">300&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+6458,44 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.41%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">May 2026</td>
+            <td style="padding:6px 10px;text-align:right;">454&nbsp;869,34 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">296&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+6334,42 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.42%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">April 2026</td>
+            <td style="padding:6px 10px;text-align:right;">444&nbsp;534,92 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">292&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+6211,87 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.42%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">March 2026</td>
+            <td style="padding:6px 10px;text-align:right;">434&nbsp;323,05 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">288&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+6090,79 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.43%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">February 2026</td>
+            <td style="padding:6px 10px;text-align:right;">424&nbsp;232,26 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">284&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5971,13 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.43%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">January 2026</td>
+            <td style="padding:6px 10px;text-align:right;">414&nbsp;261,13 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">280&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5852,90 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.44%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">December 2025</td>
+            <td style="padding:6px 10px;text-align:right;">404&nbsp;408,23 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">276&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5736,07 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.45%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">November 2025</td>
+            <td style="padding:6px 10px;text-align:right;">394&nbsp;672,16 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">272&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5620,62 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.45%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">October 2025</td>
+            <td style="padding:6px 10px;text-align:right;">385&nbsp;051,54 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">268&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5506,54 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.46%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">September 2025</td>
+            <td style="padding:6px 10px;text-align:right;">375&nbsp;545,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">264&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5393,81 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.47%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">August 2025</td>
+            <td style="padding:6px 10px;text-align:right;">366&nbsp;151,19 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">260&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5282,43 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.47%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">July 2025</td>
+            <td style="padding:6px 10px;text-align:right;">356&nbsp;868,76 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">256&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5172,35 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.48%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">June 2025</td>
+            <td style="padding:6px 10px;text-align:right;">347&nbsp;696,41 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">252&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+5063,60 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.49%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">May 2025</td>
+            <td style="padding:6px 10px;text-align:right;">338&nbsp;632,81 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">248&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4956,12 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.49%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">April 2025</td>
+            <td style="padding:6px 10px;text-align:right;">329&nbsp;676,69 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">244&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4849,92 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.50%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">March 2025</td>
+            <td style="padding:6px 10px;text-align:right;">320&nbsp;826,77 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">240&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4744,98 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.51%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">February 2025</td>
+            <td style="padding:6px 10px;text-align:right;">312&nbsp;081,79 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">236&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4641,28 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.52%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">January 2025</td>
+            <td style="padding:6px 10px;text-align:right;">303&nbsp;440,51 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">232&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4538,83 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.53%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">December 2024</td>
+            <td style="padding:6px 10px;text-align:right;">294&nbsp;901,68 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">228&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4437,56 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.54%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">November 2024</td>
+            <td style="padding:6px 10px;text-align:right;">286&nbsp;464,12 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">224&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4337,52 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.55%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">October 2024</td>
+            <td style="padding:6px 10px;text-align:right;">278&nbsp;126,60 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">220&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4238,66 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.56%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">September 2024</td>
+            <td style="padding:6px 10px;text-align:right;">269&nbsp;887,94 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">216&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4140,96 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.57%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">August 2024</td>
+            <td style="padding:6px 10px;text-align:right;">261&nbsp;746,98 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">212&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+4044,43 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.58%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">July 2024</td>
+            <td style="padding:6px 10px;text-align:right;">253&nbsp;702,55 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">208&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+3949,05 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.59%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">June 2024</td>
+            <td style="padding:6px 10px;text-align:right;">245&nbsp;753,50 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">204&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+3854,78 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.61%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">May 2024</td>
+            <td style="padding:6px 10px;text-align:right;">237&nbsp;898,72 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">200&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+3761,64 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.62%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">April 2024</td>
+            <td style="padding:6px 10px;text-align:right;">230&nbsp;137,08 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">196&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+3669,61 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.63%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">March 2024</td>
+            <td style="padding:6px 10px;text-align:right;">222&nbsp;467,47 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">192&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+3578,67 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.65%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr><tr>
+            <td style="padding:6px 10px;font-weight:500;white-space:nowrap;">February 2024</td>
+            <td style="padding:6px 10px;text-align:right;">214&nbsp;888,80 PLN</td>
+            <td style="padding:6px 10px;text-align:right;">188&nbsp;000,00 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+3488,80 PLN</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1.67%</td>
+            <td style="padding:6px 10px;text-align:right;color:#34d399;font-weight:700;">+1480.00%</td>
+        </tr></tbody>
+            </table>
+        </div></div>
+            </div>
+        </section>
+    
+    </div>
+</body>
+</html>

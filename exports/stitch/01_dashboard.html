@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Roastfolio — Dashboard</title>
+    <link rel="stylesheet" href="../../src/styles/main.css">
+    <link rel="stylesheet" href="00_design_tokens.css">
+
+    <style>
+        /* Scoped layout wrapper for Google Stitch preview */
+        body {
+            margin: 0;
+            padding: 24px;
+            background-color: #050e18;
+            color: #eef7ff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .stitch-screen-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="stitch-screen-container">
+        <!-- SCREEN: Dashboard -->
+        
+        <section id="market-index-carousel-top-mobile" class="market-index-carousel market-index-carousel-top-mobile" data-market-carousel="" aria-label="Major indices banner">
+            <div class="market-index-carousel-shell">
+                <div class="market-index-carousel-track"><div class="market-ticker-lane">
+            <span class="market-ticker-item" data-index-id="WIG">
+                <span class="market-ticker-symbol">WIG</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="WIG20">
+                <span class="market-ticker-symbol">WIG20</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="SP500">
+                <span class="market-ticker-symbol">S&amp;P 500</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="NASDAQ">
+                <span class="market-ticker-symbol">NASDAQ</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="DAX">
+                <span class="market-ticker-symbol">DAX</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="MSCI_WORLD">
+                <span class="market-ticker-symbol">MSCI World</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="WIG">
+                <span class="market-ticker-symbol">WIG</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="WIG20">
+                <span class="market-ticker-symbol">WIG20</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="SP500">
+                <span class="market-ticker-symbol">S&amp;P 500</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="NASDAQ">
+                <span class="market-ticker-symbol">NASDAQ</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="DAX">
+                <span class="market-ticker-symbol">DAX</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="MSCI_WORLD">
+                <span class="market-ticker-symbol">MSCI World</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        </div></div>
+            </div>
+            <div class="market-index-carousel-dots"></div>
+        </section>
+        <!-- Engagement strip — streak + level + badge pills, links to achievements.html -->
+        <div id="engagement-strip" class="eng-strip-wrap is-visible" aria-label="Your progress"><div class="eng-strip" role="list"><a href="achievements.html" class="eng-pill eng-pill--level" aria-label="Level: Contributor · 2075 XP"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg><span class="eng-pill__label"><span class="eng-pill__strong">Contributor</span><span class="eng-pill__sub">2075 XP · 72%</span></span><span class="eng-pill__xp-track" aria-hidden="true"><span class="eng-pill__xp-fill" style="width:72%"></span></span></a><a href="achievements.html" class="eng-pill eng-pill--streak" style="color:#27ae60;background:rgba(39,174,96,0.13);border-color:rgba(39,174,96,0.32)" aria-label="Deposit streak streak: 1 mo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg><span class="eng-pill__label"><span class="eng-pill__strong">1 mo</span><span class="eng-pill__sub">Deposit streak</span></span></a><a href="achievements.html" class="eng-pill eng-pill--streak" style="color:#2b88cf;background:rgba(43,136,207,0.13);border-color:rgba(43,136,207,0.32)" aria-label="Active days streak: 8 days"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="eng-pill__label"><span class="eng-pill__strong">8 days</span><span class="eng-pill__sub">Active days</span></span></a><a href="achievements.html" class="eng-pill eng-pill--streak" style="color:#8a4fff;background:rgba(138,79,255,0.13);border-color:rgba(138,79,255,0.32)" aria-label="Withdrawal-free streak: 4 mo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><span class="eng-pill__label"><span class="eng-pill__strong">4 mo</span><span class="eng-pill__sub">Withdrawal-free</span></span></a><a href="achievements.html" class="eng-pill eng-pill--streak" style="color:#d4ac2a;background:rgba(212,172,42,0.13);border-color:rgba(212,172,42,0.32)" aria-label="Goal streak streak: 1 mo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg><span class="eng-pill__label"><span class="eng-pill__strong">1 mo</span><span class="eng-pill__sub">Goal streak</span></span></a><a href="achievements.html" class="eng-pill eng-pill--streak" style="color:#4caf82;background:rgba(76,175,130,0.13);border-color:rgba(76,175,130,0.32)" aria-label="Green months streak: 32 mo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg><span class="eng-pill__label"><span class="eng-pill__strong">32 mo</span><span class="eng-pill__sub">Green months</span></span></a><a href="achievements.html" class="eng-pill eng-pill--streak" style="color:#e06b1f;background:rgba(224,107,31,0.13);border-color:rgba(224,107,31,0.32)" aria-label="Beat WIG streak: 0 mo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg><span class="eng-pill__label"><span class="eng-pill__strong">0 mo</span><span class="eng-pill__sub">Beat WIG</span></span></a><a href="achievements.html" class="eng-pill eng-pill--badge" style="color:#d4ac2a;background:rgba(212,172,42,0.13);border-color:rgba(212,172,42,0.32)" aria-label="Badge: Six Figures · Gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg><span class="eng-pill__label"><span class="eng-pill__strong">Six Figures</span><span class="eng-pill__sub">Gold</span></span></a><a href="achievements.html" class="eng-pill eng-pill--all" aria-label="View all achievements"><span>All achievements</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg></a></div></div>
+        <div class="dashboard-grid">
+            <section class="dash-card dash-summary">
+                <div class="dash-label">Portfolio — Total Value</div>
+                <div class="skel-line skel-lg" aria-hidden="true"></div>
+                <div class="skel-line skel-md" aria-hidden="true"></div>
+                <div class="skel-line skel-sm" aria-hidden="true"></div>
+                <div id="dash-total-value" class="dash-total">348&nbsp;520,50 PLN</div>
+                <div id="dash-daily-pln" class="dash-daily"><span class="dash-daily-main" style="color:#27ae60;">+4820,30 PLN</span><span class="dash-daily-pct" style="color:#27ae60;">(+1.40%)</span></div>
+                <div id="dash-drawdown" class="dash-drawdown"><div class="ath-title">From All-Time High</div><span class="ath-pct" style="color:#c0392b;">-29.94%</span><span class="ath-pln" style="color:#c0392b;">(-148&nbsp;941,62 PLN)</span><div class="ath-date">Last recorded ATH: 497&nbsp;462,12 PLN (2026-09-01)</div></div>
+                <div id="dash-ath-celebration" class="gauge-ath-celebration dash-ath-celebration" hidden=""></div>
+                <!-- Sparkline chart for last 6 months returns -->
+                <div class="dash-sparkline-container" style="height: 65px; margin-top: 12px; margin-bottom: -10px; width: 100%;">
+                    <canvas id="dashSparklineChart" style="box-sizing: border-box; display: block; height: 65px; width: 520px;" width="520" height="65"></canvas>
+                </div>
+            </section>
+            <section class="dash-card dash-gauge-card gauge-booted" style="position:relative;">
+                <div class="dash-label">Portfolio — Daily Change</div>
+                <div class="skel-circle" aria-hidden="true"></div>
+                <div class="card-cl-overlay">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gauge-wrapper" style="position:relative;">
+                    <canvas id="gaugeChart" width="520" height="220"></canvas>
+                </div>
+                <div id="gauge-benchmark-tooltip" class="bm-winning bm-modern-roast bm-reveal" style="display: block;"><span class="bm-msg">"You beat the benchmark today. Enjoy the delusion before the next drawdown hits."</span>
+<div class="roast-reactions" style="margin-top: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 50; pointer-events: auto;">
+    <button onclick="window.submitRoastReaction('good', event)" ontouchend="window.submitRoastReaction('good', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">👍 Good</button>
+    <button onclick="window.submitRoastReaction('repetitive', event)" ontouchend="window.submitRoastReaction('repetitive', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">🔁 Repetitive</button>
+    <button onclick="window.submitRoastReaction('wrong', event)" ontouchend="window.submitRoastReaction('wrong', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">❌ Wrong</button>
+    <button onclick="window.submitRoastReaction('boring', event)" ontouchend="window.submitRoastReaction('boring', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">🥱 Boring</button>
+</div></div>
+                <section id="market-index-carousel" class="market-index-carousel" data-market-carousel="" aria-label="Major indices banner">
+                    <div class="market-index-carousel-shell">
+                        <div class="market-index-carousel-track"><div class="market-ticker-lane">
+            <span class="market-ticker-item" data-index-id="WIG">
+                <span class="market-ticker-symbol">WIG</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="WIG20">
+                <span class="market-ticker-symbol">WIG20</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="SP500">
+                <span class="market-ticker-symbol">S&amp;P 500</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="NASDAQ">
+                <span class="market-ticker-symbol">NASDAQ</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="DAX">
+                <span class="market-ticker-symbol">DAX</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="MSCI_WORLD">
+                <span class="market-ticker-symbol">MSCI World</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="WIG">
+                <span class="market-ticker-symbol">WIG</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="WIG20">
+                <span class="market-ticker-symbol">WIG20</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="SP500">
+                <span class="market-ticker-symbol">S&amp;P 500</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="NASDAQ">
+                <span class="market-ticker-symbol">NASDAQ</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="DAX">
+                <span class="market-ticker-symbol">DAX</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        
+            <span class="market-ticker-item" data-index-id="MSCI_WORLD">
+                <span class="market-ticker-symbol">MSCI World</span>
+                <span class="market-ticker-direction is-up" aria-hidden="true">▲</span>
+                <span class="market-ticker-change is-up">+0.00%</span>
+            </span>
+        </div></div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- Mobile swipeable gauge carousel — hidden on desktop, rebuilt dynamically after data loads -->
+            <section class="dash-card dash-gauge-carousel-card">
+                <div class="gauge-carousel-track" id="gauge-carousel-track">
+                    <!-- Slot 0: Summary (always present) -->
+                    <div class="gauge-slide is-active" data-wallet="Summary">
+                        <div class="gauge-slide-inner">
+                            <div class="dash-label gauge-slide-title">Portfolio</div>
+                            <div class="skel-circle" aria-hidden="true"></div>
+                            <div class="card-cl-overlay">
+                                <div class="cl-loader">
+                                    <div class="cl-candles">
+                                        <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                                        <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                                        <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                                        <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gauge-wrapper-mini" style="position:relative;">
+                                <canvas id="gaugeChart-mobile" style="width:100%;height:160px;"></canvas>
+                            </div>
+                            <div id="gauge-benchmark-tooltip-mobile"></div>
+                            <div id="gauge-mobile-meta-summary" class="gauge-mobile-meta"></div>
+                        </div>
+                    </div>
+                    <!-- Wallet slides injected dynamically by rebuildCarousel() after API response -->
+                </div>
+                <!-- Dot indicators — rebuilt dynamically -->
+                <div class="gauge-carousel-dots" id="gauge-carousel-dots">
+                    <span class="gauge-dot active" data-slide="0"></span>
+                </div>
+            </section>
+
+            <div id="dash-mini-wallets" class="dash-mini-wallets">
+    <div class="dash-card dash-control-panel-card">
+        <div class="control-panel-header">
+            <div class="dash-label" style="margin:0;"><span class="control-panel-status-light"></span> Portfolios Control Room</div>
+            <div class="control-panel-title-sub">Instrument Panel</div>
+        </div>
+        <div class="control-panel-grid">
+            
+        <div class="control-panel-meter" onclick="showTab('history'); if(window.setHistoryWallet) window.setHistoryWallet('XTB Brokerage');" style="cursor:pointer;" title="View history for XTB Brokerage">
+            <div class="control-panel-dial-wrap">
+                <canvas id="controlDial-XTB Brokerage" style="width:100px; height:100px;" width="100" height="100"></canvas>
+            </div>
+            <div class="control-panel-info">
+                <div class="control-panel-nameplate">XTB Brokerage</div>
+                <div class="control-panel-val">208&nbsp;420,5 PLN</div>
+                <div class="control-panel-pct" style="color:#27ae60;">
+                    +1.53% 
+                    <span style="font-size:11px; font-weight:normal; opacity:0.85; margin-left:4px;">(+3150,2 PLN)</span>
+                </div>
+                <div id="wallet-ath-XTB Brokerage" class="control-panel-ath">ATH Drawdown: <strong style="color:#ef4444;">-0.75%</strong></div>
+            </div>
+        </div>
+        <div class="control-panel-meter" onclick="showTab('history'); if(window.setHistoryWallet) window.setHistoryWallet('IKE Retirement');" style="cursor:pointer;" title="View history for IKE Retirement">
+            <div class="control-panel-dial-wrap">
+                <canvas id="controlDial-IKE Retirement" style="width:100px; height:100px;" width="100" height="100"></canvas>
+            </div>
+            <div class="control-panel-info">
+                <div class="control-panel-nameplate">IKE Retirement</div>
+                <div class="control-panel-val">140&nbsp;100 PLN</div>
+                <div class="control-panel-pct" style="color:#27ae60;">
+                    +1.21% 
+                    <span style="font-size:11px; font-weight:normal; opacity:0.85; margin-left:4px;">(+1670,1 PLN)</span>
+                </div>
+                <div id="wallet-ath-IKE Retirement" class="control-panel-ath">ATH Drawdown: <strong style="color:#ef4444;">-1.41%</strong></div>
+            </div>
+        </div>
+        </div>
+    </div></div>
+
+            <!-- Monthly Summary Card -->
+            <section class="dash-card dash-monthly-summary-card">
+                <div class="dash-label">Monthly Summary</div>
+                <div class="monthly-summary-grid">
+                    <!-- Column 1: Monthly Return -->
+                    <div class="monthly-metric-card">
+                        <span class="monthly-metric-title">Monthly Return</span>
+                        <div id="monthly-return-val" class="monthly-metric-value" style="color: rgb(192, 57, 43);">-142&nbsp;102,15 PLN</div>
+                        <div id="monthly-return-pct" class="monthly-metric-sub" style="color: rgb(192, 57, 43);">-29.08%</div>
+                    </div>
+                    <!-- Column 2: Benchmark Comparison -->
+                    <div class="monthly-metric-card clickable-card" id="monthly-benchmarks-btn" onclick="toggleMonthlyBenchmarksList()">
+                        <span class="monthly-metric-title">Benchmark Comparison</span>
+                        <div id="monthly-benchmarks-score" class="monthly-metric-value" style="color: rgb(39, 174, 96);">Beat 4 / Lost 1</div>
+                        <div class="monthly-metric-sub">Overtook vs Lost <span class="arrow-indicator">▼</span></div>
+                        <div id="monthly-benchmarks-dropdown" class="monthly-benchmarks-list" style="display: none;" onclick="event.stopPropagation()">
+                            <!-- list of benchmarks will be dynamically populated -->
+                        </div>
+                    </div>
+                    <!-- Column 3: Retirement Goals -->
+                    <div class="monthly-metric-card monthly-goals-card">
+                        <span class="monthly-metric-title">Retirement Goals</span>
+                        <div class="monthly-goal-row">
+                            <div class="monthly-goal-meta">
+                                <span class="goal-label">Monthly Deposit:</span>
+                                <span id="monthly-deposit-status" class="goal-value">5 000 / 5 000 PLN</span>
+                            </div>
+                            <div class="progress-container">
+                                <div id="monthly-deposit-bar" class="progress-bar" style="width: 100%;"></div>
+                                <span id="monthly-deposit-pct" class="progress-pct">100%</span>
+                            </div>
+                        </div>
+                        <div class="monthly-goal-row">
+                            <div class="monthly-goal-meta">
+                                <span class="goal-label">Monthly Return:</span>
+                                <span id="monthly-return-goal-status" class="goal-value">-142&nbsp;102 / 0 PLN</span>
+                            </div>
+                            <div class="progress-container">
+                                <div id="monthly-return-bar" class="progress-bar negative-bar" style="width: 0%;"></div>
+                                <span id="monthly-return-pct-goal" class="progress-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Yearly Summary Card -->
+            <section class="dash-card dash-yearly-summary-card">
+                <div class="dash-label">Yearly Summary</div>
+                <div class="yearly-summary-grid">
+                    <!-- Column 1: Yearly Return -->
+                    <div class="yearly-metric-card">
+                        <span class="yearly-metric-title">Yearly Return</span>
+                        <div id="yearly-return-val" class="yearly-metric-value" style="color: rgb(192, 57, 43);">-91&nbsp;887,73 PLN</div>
+                        <div id="yearly-return-pct" class="yearly-metric-sub" style="color: rgb(192, 57, 43);">-21.75%</div>
+                    </div>
+                    <!-- Column 2: Benchmark Comparison -->
+                    <div class="yearly-metric-card clickable-card" id="yearly-benchmarks-btn" onclick="toggleYearlyBenchmarksList()">
+                        <span class="yearly-metric-title">Benchmark Comparison</span>
+                        <div id="yearly-benchmarks-score" class="yearly-metric-value" style="color: rgb(39, 174, 96);">Beat 5 / Lost 0</div>
+                        <div class="yearly-metric-sub">Overtook vs Lost <span class="arrow-indicator">▼</span></div>
+                        <div id="yearly-benchmarks-dropdown" class="yearly-benchmarks-list" style="display: none;" onclick="event.stopPropagation()">
+                            <!-- list of benchmarks will be dynamically populated -->
+                        </div>
+                    </div>
+                    <!-- Column 3: Retirement Goals -->
+                    <div class="yearly-metric-card yearly-goals-card">
+                        <span class="yearly-metric-title">Retirement Goals</span>
+                        <div class="yearly-goal-row">
+                            <div class="yearly-goal-meta">
+                                <span class="goal-label">Yearly Deposit:</span>
+                                <span id="yearly-deposit-status" class="goal-value">20&nbsp;000 / 0 PLN</span>
+                            </div>
+                            <div class="progress-container">
+                                <div id="yearly-deposit-bar" class="progress-bar" style="width: 0%;"></div>
+                                <span id="yearly-deposit-pct" class="progress-pct">0%</span>
+                            </div>
+                        </div>
+                        <div class="yearly-goal-row">
+                            <div class="yearly-goal-meta">
+                                <span class="goal-label">Yearly Return:</span>
+                                <span id="yearly-return-goal-status" class="goal-value">-91&nbsp;888 / 0 PLN</span>
+                            </div>
+                            <div class="progress-container">
+                                <div id="yearly-return-bar" class="progress-bar negative-bar" style="width: 0%;"></div>
+                                <span id="yearly-return-pct-goal" class="progress-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="dash-card dash-breakdown-card">
+                <div class="dash-label">Today's Movers</div>
+                <div id="dash-breakdown">
+            <table class="holdings-table dash-movers-table" style="width:100%; font-size:13px; table-layout:fixed;">
+                <colgroup>
+                    <col class="dash-movers-col-company" style="width:28%;">
+                    <col class="dash-movers-col-chart" style="width:52%;">
+                    <col class="dash-movers-col-pln" style="width:20%;">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th class="dash-movers-th-company" style="width:28%; text-align:left;">Company</th>
+                        <th class="dash-movers-th-chart" style="width:52%; text-align:left;">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span>Chart</span>
+                                <div style="display:flex;gap:4px;background:rgba(255,255,255,0.15);border-radius:6px;padding:3px;">
+                                    <button class="spark-mode-btn" data-mode="today" onclick="setSparkMode('today')" style="border:none;border-radius:4px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;
+                                        background:#fff;color:#35424a;">1D</button>
+                                    <button class="spark-mode-btn" data-mode="year" onclick="setSparkMode('year')" style="border:none;border-radius:4px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;
+                                        background:transparent;color:#fff;">1Y</button>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="dash-movers-th-pln" style="width:20%; text-align:right;">Daily PLN</th>
+                    </tr>
+                </thead>
+                <tbody><tr class=" holding-row-clickable" onclick="window.openAnalysisForTicker('XTB.WA')" style="cursor:pointer;">
+            <td class="dash-movers-td-company">
+                <div class="dash-movers-company-cell" style="display:flex;align-items:center;min-width:0;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#35424a;color:white;font-size:9px;font-weight:bold;margin-right:8px;flex-shrink:0;">XTB</span>
+                    <span class="dash-mover-name">XTB S.A.</span>
+                </div>
+            </td>
+            <td class="dash-movers-td-chart">
+                <div class="dash-mover-chart-wrap" style="display:flex;align-items:center;gap:8px;white-space:nowrap;min-width:0;">
+                    <svg class="sparkline-svg" width="135" height="36" style="display:block;overflow:visible;flex-shrink:0;min-width:135px;" data-coords="[{&quot;x&quot;:2,&quot;v&quot;:67,&quot;label&quot;:&quot;10:22&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:34.75,&quot;v&quot;:67.2,&quot;label&quot;:&quot;10:23&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:67.5,&quot;v&quot;:67.8,&quot;label&quot;:&quot;10:24&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:100.25,&quot;v&quot;:68.1,&quot;label&quot;:&quot;10:25&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:133,&quot;v&quot;:68.4,&quot;label&quot;:&quot;Live&quot;,&quot;date&quot;:&quot;2026-09-24&quot;}]">
+        <defs>
+            <linearGradient id="sfqdrkq" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#34d399" stop-opacity="0.35"></stop>
+                <stop offset="100%" stop-color="#34d399" stop-opacity="0.02"></stop>
+            </linearGradient>
+            <filter id="glow-sfqdrkq" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur"></feGaussianBlur>
+                <feMerge>
+                    <feMergeNode in="blur"></feMergeNode>
+                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                </feMerge>
+            </filter>
+        </defs>
+        <polygon points="2.0,34.0 34.8,29.4 67.5,15.7 100.3,8.9 133.0,2.0 133.0,34 2,34" fill="url(#sfqdrkq)"></polygon>
+        <polyline points="2.0,34.0 34.8,29.4 67.5,15.7 100.3,8.9 133.0,2.0" fill="none" stroke="#34d399" stroke-width="2" filter="url(#glow-sfqdrkq)" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <circle cx="133.0" cy="2.0" r="2.5" fill="#34d399" filter="url(#glow-sfqdrkq)"></circle>
+        <circle class="sp-dot" cx="2.0" cy="34.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="34.8" cy="29.4" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="67.5" cy="15.7" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="100.3" cy="8.9" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="133.0" cy="2.0" r="2.5" fill="#34d399" opacity="0"></circle>
+        <rect x="0" y="0" width="135" height="36" fill="transparent" style="cursor:crosshair;" data-color="#34d399"></rect>
+    </svg>
+                    <div class="dash-mover-metrics" style="min-width:0;flex-shrink:0;">
+                        <div class="dash-mover-price-label" style="font-size:12px;color:#94a3b8;font-family:monospace;">68,40 PLN</div>
+                        <div class="dash-mover-pct-vol-row" style="display:flex;align-items:center;gap:6px;margin-top:2px;white-space:nowrap;">
+                            <span class="dash-mover-pct-badge" style="font-size:12px;font-weight:700;color:#27ae60;font-family:monospace;text-shadow:0 0 5px currentColor;white-space:nowrap;">+2.09%</span>
+                            <span class="dash-mover-vol-badge vol-surge" title="Volume: 320.0K / Avg: 290.0K (Session: 18% elapsed, expected: 52.0K, pace: 616%)" aria-label="616% vol"><span class="vol-icon">🔥</span><span class="vol-text">616% vol</span></span>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td class="dash-movers-td-pln" style="text-align:right;white-space:nowrap;">
+                <div class="dash-mover-pln-val" style="color:#27ae60; font-weight:bold; font-family:monospace; text-shadow:0 0 8px currentColor; text-align:right; white-space:nowrap;">1680,00 PLN</div>
+            </td>
+        </tr><tr class=" holding-row-clickable" onclick="window.openAnalysisForTicker('AAPL')" style="cursor:pointer;">
+            <td class="dash-movers-td-company">
+                <div class="dash-movers-company-cell" style="display:flex;align-items:center;min-width:0;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#35424a;color:white;font-size:9px;font-weight:bold;margin-right:8px;flex-shrink:0;">APP</span>
+                    <span class="dash-mover-name">Apple Inc.</span>
+                </div>
+            </td>
+            <td class="dash-movers-td-chart">
+                <div class="dash-mover-chart-wrap" style="display:flex;align-items:center;gap:8px;white-space:nowrap;min-width:0;">
+                    <svg class="sparkline-svg" width="135" height="36" style="display:block;overflow:visible;flex-shrink:0;min-width:135px;" data-coords="[{&quot;x&quot;:2,&quot;v&quot;:930,&quot;label&quot;:&quot;10:22&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:34.75,&quot;v&quot;:932,&quot;label&quot;:&quot;10:23&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:67.5,&quot;v&quot;:938,&quot;label&quot;:&quot;10:24&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:100.25,&quot;v&quot;:942,&quot;label&quot;:&quot;10:25&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:133,&quot;v&quot;:945.2,&quot;label&quot;:&quot;Live&quot;,&quot;date&quot;:&quot;2026-09-24&quot;}]">
+        <defs>
+            <linearGradient id="sfyc1g4" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#34d399" stop-opacity="0.35"></stop>
+                <stop offset="100%" stop-color="#34d399" stop-opacity="0.02"></stop>
+            </linearGradient>
+            <filter id="glow-sfyc1g4" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur"></feGaussianBlur>
+                <feMerge>
+                    <feMergeNode in="blur"></feMergeNode>
+                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                </feMerge>
+            </filter>
+        </defs>
+        <polygon points="2.0,34.0 34.8,29.8 67.5,17.2 100.3,8.7 133.0,2.0 133.0,34 2,34" fill="url(#sfyc1g4)"></polygon>
+        <polyline points="2.0,34.0 34.8,29.8 67.5,17.2 100.3,8.7 133.0,2.0" fill="none" stroke="#34d399" stroke-width="2" filter="url(#glow-sfyc1g4)" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <circle cx="133.0" cy="2.0" r="2.5" fill="#34d399" filter="url(#glow-sfyc1g4)"></circle>
+        <circle class="sp-dot" cx="2.0" cy="34.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="34.8" cy="29.8" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="67.5" cy="17.2" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="100.3" cy="8.7" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="133.0" cy="2.0" r="2.5" fill="#34d399" opacity="0"></circle>
+        <rect x="0" y="0" width="135" height="36" fill="transparent" style="cursor:crosshair;" data-color="#34d399"></rect>
+    </svg>
+                    <div class="dash-mover-metrics" style="min-width:0;flex-shrink:0;">
+                        <div class="dash-mover-price-label" style="font-size:12px;color:#94a3b8;font-family:monospace;">945,20 PLN <small style="color:#888">236.3 USD</small></div>
+                        <div class="dash-mover-pct-vol-row" style="display:flex;align-items:center;gap:6px;margin-top:2px;white-space:nowrap;">
+                            <span class="dash-mover-pct-badge" style="font-size:12px;font-weight:700;color:#27ae60;font-family:monospace;text-shadow:0 0 5px currentColor;white-space:nowrap;">+1.74%</span>
+                            <span class="dash-mover-vol-badge vol-normal" title="Volume: 48.2M / Avg: 52.0M (93% of daily average volume)" aria-label="93% vol"><span class="vol-icon">📊</span><span class="vol-text">93% vol</span></span>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td class="dash-movers-td-pln" style="text-align:right;white-space:nowrap;">
+                <div class="dash-mover-pln-val" style="color:#27ae60; font-weight:bold; font-family:monospace; text-shadow:0 0 8px currentColor; text-align:right; white-space:nowrap;">1620,00 PLN</div>
+            </td>
+        </tr><tr class=" holding-row-clickable" onclick="window.openAnalysisForTicker('MSFT')" style="cursor:pointer;">
+            <td class="dash-movers-td-company">
+                <div class="dash-movers-company-cell" style="display:flex;align-items:center;min-width:0;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#35424a;color:white;font-size:9px;font-weight:bold;margin-right:8px;flex-shrink:0;">MIC</span>
+                    <span class="dash-mover-name">Microsoft Corporation</span>
+                </div>
+            </td>
+            <td class="dash-movers-td-chart">
+                <div class="dash-mover-chart-wrap" style="display:flex;align-items:center;gap:8px;white-space:nowrap;min-width:0;">
+                    <svg class="sparkline-svg" width="135" height="36" style="display:block;overflow:visible;flex-shrink:0;min-width:135px;" data-coords="[{&quot;x&quot;:2,&quot;v&quot;:1800,&quot;label&quot;:&quot;10:22&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:34.75,&quot;v&quot;:1805,&quot;label&quot;:&quot;10:23&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:67.5,&quot;v&quot;:1812,&quot;label&quot;:&quot;10:24&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:100.25,&quot;v&quot;:1818,&quot;label&quot;:&quot;10:25&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:133,&quot;v&quot;:1820,&quot;label&quot;:&quot;Live&quot;,&quot;date&quot;:&quot;2026-09-24&quot;}]">
+        <defs>
+            <linearGradient id="sfix24w" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#34d399" stop-opacity="0.35"></stop>
+                <stop offset="100%" stop-color="#34d399" stop-opacity="0.02"></stop>
+            </linearGradient>
+            <filter id="glow-sfix24w" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur"></feGaussianBlur>
+                <feMerge>
+                    <feMergeNode in="blur"></feMergeNode>
+                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                </feMerge>
+            </filter>
+        </defs>
+        <polygon points="2.0,34.0 34.8,26.0 67.5,14.8 100.3,5.2 133.0,2.0 133.0,34 2,34" fill="url(#sfix24w)"></polygon>
+        <polyline points="2.0,34.0 34.8,26.0 67.5,14.8 100.3,5.2 133.0,2.0" fill="none" stroke="#34d399" stroke-width="2" filter="url(#glow-sfix24w)" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <circle cx="133.0" cy="2.0" r="2.5" fill="#34d399" filter="url(#glow-sfix24w)"></circle>
+        <circle class="sp-dot" cx="2.0" cy="34.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="34.8" cy="26.0" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="67.5" cy="14.8" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="100.3" cy="5.2" r="2.5" fill="#34d399" opacity="0"></circle><circle class="sp-dot" cx="133.0" cy="2.0" r="2.5" fill="#34d399" opacity="0"></circle>
+        <rect x="0" y="0" width="135" height="36" fill="transparent" style="cursor:crosshair;" data-color="#34d399"></rect>
+    </svg>
+                    <div class="dash-mover-metrics" style="min-width:0;flex-shrink:0;">
+                        <div class="dash-mover-price-label" style="font-size:12px;color:#94a3b8;font-family:monospace;">1820,00 PLN <small style="color:#888">455 USD</small></div>
+                        <div class="dash-mover-pct-vol-row" style="display:flex;align-items:center;gap:6px;margin-top:2px;white-space:nowrap;">
+                            <span class="dash-mover-pct-badge" style="font-size:12px;font-weight:700;color:#27ae60;font-family:monospace;text-shadow:0 0 5px currentColor;white-space:nowrap;">+1.09%</span>
+                            <span class="dash-mover-vol-badge vol-normal" title="Volume: 21.0M / Avg: 24.0M (88% of daily average volume)" aria-label="88% vol"><span class="vol-icon">📊</span><span class="vol-text">88% vol</span></span>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td class="dash-movers-td-pln" style="text-align:right;white-space:nowrap;">
+                <div class="dash-mover-pln-val" style="color:#27ae60; font-weight:bold; font-family:monospace; text-shadow:0 0 8px currentColor; text-align:right; white-space:nowrap;">980,00 PLN</div>
+            </td>
+        </tr><tr class=" holding-row-clickable" onclick="window.openAnalysisForTicker('CDR.WA')" style="cursor:pointer;">
+            <td class="dash-movers-td-company">
+                <div class="dash-movers-company-cell" style="display:flex;align-items:center;min-width:0;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#35424a;color:white;font-size:9px;font-weight:bold;margin-right:8px;flex-shrink:0;">CD </span>
+                    <span class="dash-mover-name">CD Projekt S.A.</span>
+                </div>
+            </td>
+            <td class="dash-movers-td-chart">
+                <div class="dash-mover-chart-wrap" style="display:flex;align-items:center;gap:8px;white-space:nowrap;min-width:0;">
+                    <svg class="sparkline-svg" width="135" height="36" style="display:block;overflow:visible;flex-shrink:0;min-width:135px;" data-coords="[{&quot;x&quot;:2,&quot;v&quot;:174,&quot;label&quot;:&quot;10:22&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:34.75,&quot;v&quot;:173.5,&quot;label&quot;:&quot;10:23&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:67.5,&quot;v&quot;:173,&quot;label&quot;:&quot;10:24&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:100.25,&quot;v&quot;:172.8,&quot;label&quot;:&quot;10:25&quot;,&quot;date&quot;:&quot;2026-09-24&quot;},{&quot;x&quot;:133,&quot;v&quot;:172.5,&quot;label&quot;:&quot;Live&quot;,&quot;date&quot;:&quot;2026-09-24&quot;}]">
+        <defs>
+            <linearGradient id="sfqwcyk" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f87171" stop-opacity="0.35"></stop>
+                <stop offset="100%" stop-color="#f87171" stop-opacity="0.02"></stop>
+            </linearGradient>
+            <filter id="glow-sfqwcyk" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2" result="blur"></feGaussianBlur>
+                <feMerge>
+                    <feMergeNode in="blur"></feMergeNode>
+                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                </feMerge>
+            </filter>
+        </defs>
+        <polygon points="2.0,2.0 34.8,12.7 67.5,23.3 100.3,27.6 133.0,34.0 133.0,34 2,34" fill="url(#sfqwcyk)"></polygon>
+        <polyline points="2.0,2.0 34.8,12.7 67.5,23.3 100.3,27.6 133.0,34.0" fill="none" stroke="#f87171" stroke-width="2" filter="url(#glow-sfqwcyk)" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <circle cx="133.0" cy="34.0" r="2.5" fill="#f87171" filter="url(#glow-sfqwcyk)"></circle>
+        <circle class="sp-dot" cx="2.0" cy="2.0" r="2.5" fill="#f87171" opacity="0"></circle><circle class="sp-dot" cx="34.8" cy="12.7" r="2.5" fill="#f87171" opacity="0"></circle><circle class="sp-dot" cx="67.5" cy="23.3" r="2.5" fill="#f87171" opacity="0"></circle><circle class="sp-dot" cx="100.3" cy="27.6" r="2.5" fill="#f87171" opacity="0"></circle><circle class="sp-dot" cx="133.0" cy="34.0" r="2.5" fill="#f87171" opacity="0"></circle>
+        <rect x="0" y="0" width="135" height="36" fill="transparent" style="cursor:crosshair;" data-color="#f87171"></rect>
+    </svg>
+                    <div class="dash-mover-metrics" style="min-width:0;flex-shrink:0;">
+                        <div class="dash-mover-price-label" style="font-size:12px;color:#94a3b8;font-family:monospace;">172,50 PLN</div>
+                        <div class="dash-mover-pct-vol-row" style="display:flex;align-items:center;gap:6px;margin-top:2px;white-space:nowrap;">
+                            <span class="dash-mover-pct-badge" style="font-size:12px;font-weight:700;color:#c0392b;font-family:monospace;text-shadow:0 0 5px currentColor;white-space:nowrap;">-0.93%</span>
+                            <span class="dash-mover-vol-badge vol-surge" title="Volume: 180.0K / Avg: 210.0K (Session: 18% elapsed, expected: 37.6K, pace: 478%)" aria-label="478% vol"><span class="vol-icon">🔥</span><span class="vol-text">478% vol</span></span>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td class="dash-movers-td-pln" style="text-align:right;white-space:nowrap;">
+                <div class="dash-mover-pln-val" style="color:#c0392b; font-weight:bold; font-family:monospace; text-shadow:0 0 8px currentColor; text-align:right; white-space:nowrap;">-260,20 PLN</div>
+            </td>
+        </tr></tbody>
+            </table></div>
+            </section>
+        </div>
+
+        <!-- Benchmark Chart -->
+        <section class="dash-card wig-chart-card">
+            <div class="wig-chart-header">
+                <div class="wig-title-row">
+                    <span id="benchmark-chart-title" class="wig-title">WIG</span>
+                    <span id="benchmark-change-badge" class="wig-change-badge" style="color: rgb(22, 163, 74);"><span class="wig-badge-primary">▲ +0.85% 1D</span></span>
+                    <span id="benchmark-ohlc-legend" class="wig-ohlc-legend"></span>
+                </div>
+                <div class="wig-controls">
+                    <div class="benchmark-range-btns wig-range-btns">
+                        <button class="benchmark-range-btn wig-range-btn active" data-range="1D" onclick="setBenchmarkRange('1D')">1D</button>
+                        <button class="benchmark-range-btn wig-range-btn" data-range="YTD" onclick="setBenchmarkRange('YTD')">YTD</button>
+                        <button class="benchmark-range-btn wig-range-btn" data-range="1Y" onclick="setBenchmarkRange('1Y')">1Y</button>
+                    </div>
+                    <div class="benchmark-type-btns wig-type-btns">
+                        <button class="benchmark-type-btn wig-type-btn active" data-type="line" onclick="setBenchmarkChartType('line')">Line</button>
+                        <button class="benchmark-type-btn wig-type-btn" data-type="candle" onclick="setBenchmarkChartType('candle')">Candle</button>
+                    </div>
+                </div>
+            </div>
+            <div id="benchmarkChartContainer" class="wig-chart-wrapper" style="position:relative;">
+                <div id="benchmark-cl-loader" class="card-cl-overlay" style="display: none;">
+                    <div class="cl-loader">
+                        <div class="cl-candles">
+                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                        </div>
+                        <span class="cl-loader-text">Loading chart…</span>
+                    </div>
+                </div>
+                <div id="benchmark-no-data" style="display:none;align-items:center;justify-content:center;height:100%;color:#888">Refresh prices to load WIG chart data</div>
+            <div class="tv-lightweight-charts" style="overflow: hidden; direction: ltr; width: 1158px; height: 380px; user-select: none; -webkit-tap-highlight-color: transparent;"><table cellspacing="0" style="height: 380px; width: 1158px;"><tr><td style="padding: 0px;"></td><td style="padding: 0px; position: relative; width: 1080px; height: 352px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="1080" height="352" style="width: 1080px; height: 352px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="1080" height="352" style="width: 1080px; height: 352px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div><style>a#tv-attr-logo{--fill:#131722;--stroke:#fff;position:absolute;left:10px;bottom:10px;height:19px;width:35px;margin:0;padding:0;border:0;z-index:3;}a#tv-attr-logo[data-dark]{--fill:#D1D4DC;--stroke:#131722;}</style><a href="https://www.tradingview.com/?utm_medium=lwc-link&amp;utm_campaign=lwc-chart&amp;utm_source=127.0.0.1/src/index.html" title="Charting by TradingView" id="tv-attr-logo" target="_blank" data-dark=""><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 35 19" width="35" height="19" fill="none"><g fill-rule="evenodd" clip-path="url(#a)" clip-rule="evenodd"><path fill="var(--stroke)" d="M2 0H0v10h6v9h21.4l.5-1.3 6-15 1-2.7H23.7l-.5 1.3-.2.6a5 5 0 0 0-7-.9V0H2Zm20 17h4l5.2-13 .8-2h-7l-1 2.5-.2.5-1.5 3.8-.3.7V17Zm-.8-10a3 3 0 0 0 .7-2.7A3 3 0 1 0 16.8 7h4.4ZM14 7V2H2v6h6v9h4V7h2Z"></path><path fill="var(--fill)" d="M14 2H2v6h6v9h6V2Zm12 15h-7l6-15h7l-6 15Zm-7-9a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path></g><defs><clipPath id="a"><path fill="var(--stroke)" d="M0 0h35v19H0z"></path></clipPath></defs></svg></a></td><td style="padding: 0px;"><div style="height: 352px; overflow: hidden; width: 78px; left: 0px; position: relative;"><canvas width="78" height="352" style="width: 78px; height: 352px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="78" height="352" style="width: 78px; height: 352px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td></tr><tr><td style="padding: 0px;"></td><td style="height: 28px; padding: 0px; width: 1080px;"><div style="width: 100%; height: 100%; position: relative; overflow: hidden;"><canvas width="1080" height="28" style="width: 1080px; height: 28px; position: absolute; z-index: 1; left: 0px; top: 0px;"></canvas><canvas width="1080" height="28" style="width: 1080px; height: 28px; position: absolute; z-index: 2; left: 0px; top: 0px;"></canvas></div></td><td style="padding: 0px;"><div style="width: 78px; height: 28px; overflow: hidden;"><canvas width="78" height="28" style="width: 78px; height: 28px;"></canvas></div></td></tr></table></div></div>
+        </section>
+    
+    </div>
+</body>
+</html>

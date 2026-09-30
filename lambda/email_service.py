@@ -1150,6 +1150,22 @@ def render_monthly_recap_email(
     best_wallet_twr = _fmt_pct(best_wallet.get("twr_pct"), show_sign=True)
     best_wallet_twr_val = best_wallet.get("twr_pct")
 
+    commentary = wrap_document.get("commentary")
+    commentary_html = ""
+    if commentary:
+        import html
+        safe_commentary = html.escape(commentary, quote=False)
+        commentary_html = (
+            '\n    <!-- COMMENTARY BLOCK -->\n'
+            '    <tr>\n'
+            '      <td style="padding:0 32px 32px;">\n'
+            '        <div style="background:rgba(124,58,237,0.1); border-left:4px solid #7c3aed; padding:16px 20px; border-radius:8px; font-style:italic; font-size:14px; line-height:1.6; color:#f1f5f9;">\n'
+            f'          "{safe_commentary}"\n'
+            '        </div>\n'
+            '      </td>\n'
+            '    </tr>\n'
+        )
+
     profit_wallet = wrap_document.get("primary_profit_engine_wallet") or {}
     profit_wallet_name = profit_wallet.get("name") or "\u2014"
     profit_wallet_nominal = "---" if hide_cash else _fmt_money(profit_wallet.get("nominal_change_pln"), show_sign=True)
@@ -1333,6 +1349,7 @@ def render_monthly_recap_email(
         f'        <div style="font-size:14px;color:#64748b;margin-bottom:24px;">{hero_subline}</div>\n'
         f'        {hero_pills}\n'
         '      </td>\n    </tr>\n\n'
+        + commentary_html
         + wallet_html
         + sep + journey_html
         + sep + calendar_html

@@ -1,0 +1,44 @@
+{
+  "Ah, the inevitable regression to the mean. It appears your rudimentary cognitive apparatus finally realized that mistaking standard variance for financial genius violates the fundamental laws of probability.": {
+    "templateId": "monthly_streak_breaker_green_to_red_sarcastic_001",
+    "messageTemplate": "Ah, the inevitable regression to the mean. It appears your rudimentary cognitive apparatus finally realized that mistaking standard variance for financial genius violates the fundamental laws of probability.",
+    "action": "stay",
+    "timestamp": "2026-09-30T09:56:18.643388+00:00"
+  },
+  "I see your brief anomaly of positive returns has concluded. Please don't cry; physics dictates that what goes up must eventually reflect your actual IQ.": {
+    "templateId": "monthly_streak_breaker_green_to_red_sarcastic_002",
+    "messageTemplate": "I see your brief anomaly of positive returns has concluded. Please don't cry; physics dictates that what goes up must eventually reflect your actual IQ.",
+    "action": "stay",
+    "timestamp": "2026-09-30T09:56:39.263988+00:00"
+  },
+  "Fascinating. Your portfolio has finally collapsed under the weight of its own statistical improbability. A classic case of hubris intersecting with baseline incompetence.": {
+    "templateId": "monthly_streak_breaker_green_to_red_sarcastic_003",
+    "messageTemplate": "Fascinating. Your portfolio has finally collapsed under the weight of its own statistical improbability. A classic case of hubris intersecting with baseline incompetence.",
+    "action": "stay",
+    "timestamp": "2026-09-30T09:56:53.849170+00:00"
+  },
+  "Did you genuinely believe you had transcended market forces? I would explain the concept of random distribution, but I fear it would exceed your neurological capacity.": {
+    "templateId": "monthly_streak_breaker_green_to_red_sarcastic_004",
+    "messageTemplate": "Did you genuinely believe you had transcended market forces? I would explain the concept of random distribution, but I fear it would exceed your neurological capacity.",
+    "action": "stay",
+    "timestamp": "2026-09-30T09:57:11.987624+00:00"
+  },
+  "Your winning streak is over. I presume you'll now attempt to blame macroeconomic factors rather than accepting your own deeply flawed heuristics. How predictable.": {
+    "templateId": "monthly_streak_breaker_green_to_red_sarcastic_005",
+    "messageTemplate": "Your winning streak is over. I presume you'll now attempt to blame macroeconomic factors rather than accepting your own deeply flawed heuristics. How predictable.",
+    "action": "stay",
+    "timestamp": "2026-09-30T09:57:48.155701+00:00"
+  },
+  "Oh, look. The universe has corrected the brief, mathematically offensive error of making you profitable. Order is restored.": {
+    "templateId": "monthly_streak_breaker_green_to_red_sarcastic_006",
+    "messageTemplate": "Oh, look. The universe has corrected the brief, mathematically offensive error of making you profitable. Order is restored.",
+    "action": "stay",
+    "timestamp": "2026-09-30T10:00:15.554925+00:00"
+  },
+  "You've successfully reverted to your baseline of losing money. I suggest you update your priors to expect this as the norm.": {
+    "templateId": "monthly_streak_breaker_green_to_red_sarcastic_007",
+    "messageTemplate": "You've successfully reverted to your baseline of losing money. I suggest you update your priors to expect this as the norm.",
+    "action": "stay",
+    "timestamp": "2026-09-30T10:39:05.820579+00:00"
+  }
+}

@@ -1,0 +1,381 @@
+/* ═════════════════════════════════════════════════════════════════
+   Roastfolio — Statistics Screen CSS
+   ═════════════════════════════════════════════════════════════════ */
+
+/* ── Statistics Sections & Cards ── */
+.stats-section {
+    background: linear-gradient(145deg, #0f172a 0%, #020617 100%);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    border-radius: 16px;
+    box-shadow: 
+        inset 0 0 20px rgba(14, 165, 233, 0.05),
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        0 0 10px rgba(14, 165, 233, 0.1);
+    position: relative;
+    overflow: hidden;
+    padding: 24px 28px;
+    margin: 20px 0;
+}
+
+.stats-section h2 {
+    margin: 0 0 18px;
+    font-size: 1.1rem;
+    color: #00f0ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+    padding-bottom: 10px;
+    text-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.stat-card {
+    background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 12px;
+    padding: 16px 18px;
+    border-left: 4px solid #00f0ff;
+    box-shadow: inset 0 0 10px rgba(14, 165, 233, 0.05);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+
+.stat-sub {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* ── Stats Accordions ── */
+.stats-acc-section {
+    padding: 0;
+    overflow: hidden;
+}
+
+.stats-acc-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    text-align: left;
+    border-bottom: 1px solid rgba(14, 165, 233, 0.2);
+}
+
+.stats-acc-btn:hover {
+    background: rgba(14, 165, 233, 0.05);
+}
+
+.stats-acc-preview {
+    font-size: 0.85rem;
+    font-weight: normal;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding-right: 12px;
+}
+
+.stats-acc-preview-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.stats-acc-preview-badge.bm-score-good { background-color: rgba(39, 174, 96, 0.15); color: #27ae60; }
+.stats-acc-preview-badge.bm-score-mid  { background-color: rgba(212, 172, 42, 0.15); color: #d4ac2a; }
+.stats-acc-preview-badge.bm-score-bad  { background-color: rgba(192, 57, 43, 0.15); color: #c0392b; }
+
+.stats-acc-arrow {
+    flex-shrink: 0;
+    color: #888;
+    transition: transform 0.22s ease;
+    transform: rotate(0deg);
+}
+
+.stats-acc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.28s ease, padding 0.22s ease;
+    padding: 0 28px;
+}
+
+.stats-acc-body--open {
+    max-height: 9999px;
+    padding: 16px 28px 24px;
+}
+
+/* ── Benchmark Comparison Table ── */
+.bm-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 4px;
+}
+
+.bm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    white-space: nowrap;
+    color: #e2e8f0;
+}
+
+.bm-th {
+    padding: 7px 10px;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-weight: 600;
+    text-align: right;
+    letter-spacing: 0.3px;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.bm-th-month  { text-align: left; position: sticky; left: 0; z-index: 3; }
+.bm-th-port   { text-align: right; position: sticky; left: 110px; z-index: 3; }
+.bm-th-score  { background: #020617; }
+
+.bm-td {
+    padding: 5px 10px;
+    text-align: right;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-variant-numeric: tabular-nums;
+}
+
+.bm-td.bm-month {
+    text-align: left;
+    font-weight: 500;
+    position: sticky;
+    left: 0;
+    background: #0f172a;
+    z-index: 1;
+    min-width: 108px;
+    color: #e2e8f0;
+}
+
+.bm-td.bm-port {
+    position: sticky;
+    left: 110px;
+    background: #0f172a;
+    z-index: 1;
+    font-weight: 700;
+    border-right: 2px solid rgba(255,255,255,0.1);
+    min-width: 80px;
+    color: #e2e8f0;
+}
+
+.bm-td.bm-win  { background: rgba(52, 211, 153, 0.10); }
+.bm-td.bm-loss { background: rgba(248, 113, 113, 0.10); }
+.bm-td.bm-na   { color: #64748b; background: rgba(255,255,255,0.02); }
+.bm-icon       { font-size: 10px; margin-right: 2px; }
+.bm-td.bm-win  .bm-icon { color: #34d399; }
+.bm-td.bm-loss .bm-icon { color: #f87171; }
+
+.bm-diff {
+    display: block;
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 1px;
+}
+
+.bm-score { font-weight: 700; min-width: 48px; }
+.bm-score-good { color: #34d399; }
+.bm-score-mid  { color: #fbbf24; }
+.bm-score-bad  { color: #f87171; }
+
+/* ── Underwater Lakes ── */
+.uwl-controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+}
+
+.uwl-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.uwl-stat-card {
+    position: relative;
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.85) 0%, rgba(5, 14, 24, 0.95) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.18);
+    border-radius: 16px;
+    padding: 16px 20px;
+    overflow: hidden;
+}
+
+.uwl-stat-card-depth::after { border-color: rgba(248, 113, 113, 0.4); }
+.uwl-stat-card-width::after { border-color: rgba(56, 189, 248, 0.4); }
+
+.uwl-stat-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #94a3b8;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 6px;
+}
+
+.uwl-stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #eef7ff;
+    letter-spacing: -0.02em;
+}
+
+.uwl-stat-meta {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.uwl-chart-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.uwl-chart-panel {
+    background: linear-gradient(135deg, rgba(8, 21, 38, 0.7) 0%, rgba(5, 14, 24, 0.9) 100%);
+    border: 1px solid rgba(0, 242, 254, 0.16);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+}
+
+.uwl-chart-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.uwl-chart-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin: 0;
+}
+
+.uwl-lake-pill {
+    font-size: 11px;
+    color: #00f2fe;
+    background: rgba(0, 242, 254, 0.08);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    border-radius: 999px;
+    padding: 3px 10px;
+}
+
+.uwl-chart-wrap {
+    position: relative;
+    height: 220px;
+    width: 100%;
+}
+
+/* ── Monthly Performance Heatmap ── */
+.heatmap-scroll-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.heatmap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 12px;
+}
+
+.heatmap-table th {
+    padding: 8px 12px;
+    background: rgba(15, 23, 42, 0.95);
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid rgba(0, 242, 254, 0.2);
+    text-align: center;
+}
+
+.heatmap-th-month, .heatmap-td-month {
+    text-align: left !important;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.heatmap-cell {
+    padding: 8px 12px;
+    text-align: center;
+    border-radius: 6px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    font-weight: 600;
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.05);
+    z-index: 2;
+    box-shadow: 0 0 12px rgba(0, 242, 254, 0.35);
+}
+
+.history-wallet-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.history-wallet-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(14, 165, 233, 0.2);
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.history-wallet-btn.is-active {
+    background: rgba(0, 242, 254, 0.15);
+    border-color: #00f2fe;
+    color: #eef7ff;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.25);
+}
+
+@media (max-width: 900px) {
+    .uwl-chart-grid,
+    .uwl-stat-grid {
+        grid-template-columns: 1fr;
+    }
+}

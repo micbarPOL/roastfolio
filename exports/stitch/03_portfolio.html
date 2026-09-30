@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <title>Roastfolio — Portfolio Breakdown & Holdings</title>
+    <link rel="stylesheet" href="../../src/styles/main.css">
+    <link rel="stylesheet" href="00_design_tokens.css">
+    <link rel="stylesheet" href="03_portfolio.css">
+    <style>
+        /* Scoped layout wrapper for Google Stitch preview */
+        body {
+            margin: 0;
+            padding: 24px;
+            background-color: #050e18;
+            color: #eef7ff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .stitch-screen-container {
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="stitch-screen-container">
+        <!-- SCREEN: Portfolio Breakdown & Holdings -->
+        
+        <!-- Portfolio Swipe Carousel -->
+        <div class="mini-charts-grid" id="portfolio-wallet-mini-charts">
+            <section class="chart-container mini-chart-section" id="portfolio-composition-container" data-dom-id="Portfolio">
+                <h3 style="font-size: 14px; margin-top: 0;">Total Portfolio <span id="portfolio-updated" style="font-size:11px;font-weight:normal;color:#888;">— last updated: 2026-09-23 19:30:00 Warsaw</span></h3>
+                <div class="pie-with-legend">
+                    <div class="pie-wrapper-mini"><canvas id="portfolioChart" style="width: 1130px; height: 320px; filter: drop-shadow(rgba(255, 255, 255, 0.35) 0px 0px 10px); box-sizing: border-box; display: block;" width="1130" height="320"></canvas></div>
+                    <div class="pie-legend pie-legend-mini" id="legendPortfolio"><div class="legend-item legend-item-clickable" onclick="window.openAnalysisForTicker('AAPL')" style="cursor:pointer;">
+            <span class="legend-color-bar" style="background:#00f0ff"></span>
+            
+            <span class="legend-text">Apple Inc.</span>
+            <span class="legend-pct">27.1%</span>
+        </div><div class="legend-item legend-item-clickable" onclick="window.openAnalysisForTicker('MSFT')" style="cursor:pointer;">
+            <span class="legend-color-bar" style="background:#ffea00"></span>
+            
+            <span class="legend-text">Microsoft Corporation</span>
+            <span class="legend-pct">26.1%</span>
+        </div><div class="legend-item legend-item-clickable" onclick="window.openAnalysisForTicker('XTB.WA')" style="cursor:pointer;">
+            <span class="legend-color-bar" style="background:#39ff14"></span>
+            
+            <span class="legend-text">XTB S.A.</span>
+            <span class="legend-pct">23.6%</span>
+        </div><div class="legend-item">
+            <span class="legend-color-bar" style="background:#bc13fe"></span>
+            
+            <span class="legend-text">Cash (PLN)</span>
+            <span class="legend-pct">9.1%</span>
+        </div><div class="legend-item legend-item-clickable" onclick="window.openAnalysisForTicker('CDR.WA')" style="cursor:pointer;">
+            <span class="legend-color-bar" style="background:#ff003c"></span>
+            
+            <span class="legend-text">CD Projekt S.A.</span>
+            <span class="legend-pct">7.9%</span>
+        </div><div class="legend-item">
+            <span class="legend-color-bar" style="background:#005eff"></span>
+            
+            <span class="legend-text">Cash (IKE)</span>
+            <span class="legend-pct">6.2%</span>
+        </div></div>
+                </div>
+            </section>
+        
+            
+            
+            
+            
+            <section class="chart-container mini-chart-section dynamic-wallet-section" data-dom-id="xtb-brokerage">
+                <h3 style="font-size: 14px; margin-top: 0;">XTB Brokerage</h3>
+                <div class="pie-with-legend">
+                    <div class="pie-wrapper-mini"><canvas id="portfolioChartWallet-xtb-brokerage" width="346" height="220" style="filter: drop-shadow(rgba(255, 255, 255, 0.35) 0px 0px 10px); display: block; box-sizing: border-box; height: 220px; width: 346px;"></canvas></div>
+                    <div class="pie-legend pie-legend-mini" id="legendWallet-xtb-brokerage"><div class="legend-item legend-item-clickable" onclick="window.openAnalysisForTicker('AAPL')" style="cursor:pointer;">
+            <span class="legend-color-bar" style="background:#00f0ff"></span>
+            
+            <span class="legend-text">Apple Inc.</span>
+            <span class="legend-pct">45.4%</span>
+        </div><div class="legend-item legend-item-clickable" onclick="window.openAnalysisForTicker('XTB.WA')" style="cursor:pointer;">
+            <span class="legend-color-bar" style="background:#39ff14"></span>
+            
+            <span class="legend-text">XTB S.A.</span>
+            <span class="legend-pct">39.4%</span>
+        </div><div class="legend-item">
+            <span class="legend-color-bar" style="background:#bc13fe"></span>
+            
+            <span class="legend-text">Cash (PLN)</span>
+            <span class="legend-pct">15.3%</span>
+        </div></div>
+                </div>
+            </section>
+            <section class="chart-container mini-chart-section dynamic-wallet-section" data-dom-id="ike-retirement">
+                <h3 style="font-size: 14px; margin-top: 0;">IKE Retirement</h3>
+                <div class="pie-with-legend">
+                    <div class="pie-wrapper-mini"><canvas id="portfolioChartWallet-ike-retirement" width="346" height="220" style="filter: drop-shadow(rgba(255, 255, 255, 0.35) 0px 0px 10px); display: block; box-sizing: border-box; height: 220px; width: 346px;"></canvas></div>
+                    <div class="pie-legend pie-legend-mini" id="legendWallet-ike-retirement"><div class="legend-item legend-item-clickable" onclick="window.openAnalysisForTicker('MSFT')" style="cursor:pointer;">
+            <span class="legend-color-bar" style="background:#ffea00"></span>
+            
+            <span class="legend-text">Microsoft Corporation</span>
+            <span class="legend-pct">65%</span>
+        </div><div class="legend-item legend-item-clickable" onclick="window.openAnalysisForTicker('CDR.WA')" style="cursor:pointer;">
+            <span class="legend-color-bar" style="background:#ff003c"></span>
+            
+            <span class="legend-text">CD Projekt S.A.</span>
+            <span class="legend-pct">19.7%</span>
+        </div><div class="legend-item">
+            <span class="legend-color-bar" style="background:#005eff"></span>
+            
+            <span class="legend-text">Cash (IKE)</span>
+            <span class="legend-pct">15.3%</span>
+        </div></div>
+                </div>
+            </section></div>
+
+        <!-- Holdings tables -->
+        <section class="table-container">
+            <h2 class="tx-section-title" style="margin-top:0;">Holdings</h2>
+            <div class="holdings-tabs">
+                <button class="holdings-tab-btn active" data-dom-id="Portfolio" onclick="showHoldingsTab('holdings-Portfolio', this)">Portfolio</button>
+                <div id="holdings-wallet-tabs" class="holdings-wallet-tabs"><button class="holdings-tab-btn" data-dom-id="xtb-brokerage" onclick="showHoldingsTab('holdings-wallet-xtb-brokerage', this)">XTB Brokerage</button><button class="holdings-tab-btn" data-dom-id="ike-retirement" onclick="showHoldingsTab('holdings-wallet-ike-retirement', this)">IKE Retirement</button></div>
+            </div>
+            <div id="holdings-Portfolio" class="holdings-content active">
+                <table id="portfolio-table" class="holdings-table">
+                    <thead><tr><th>Company</th><th class="hide-on-mobile">Price (PLN)</th><th class="hide-on-mobile">Today</th><th class="hide-on-mobile">YTD</th><th>Current Value (PLN)</th><th class="hide-on-mobile">Purchase Value (PLN)</th><th>Profit / Loss (PLN)</th><th class="hide-on-mobile">Total Return</th><th class="hide-on-mobile">Portfolio %</th></tr></thead>
+                    <tbody><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>Apple Inc.</td><td class="hide-on-mobile">945,20<br><small style="color:#94a3b8">236.3 USD</small></td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+1.74%</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+22.8%</td><td>94&nbsp;520,00</td><td class="hide-on-mobile">70&nbsp;000,00</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+24&nbsp;520,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+35.03%</td><td class="hide-on-mobile">27.1%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="9">
+                <div class="mobile-expanded-details">
+                    <div class="mobile-detail-item">
+                        <span>Price:</span>
+                        <span>945,20 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Today:</span>
+                        <span style="color:#34d399">+1.74%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>YTD:</span>
+                        <span style="color:#34d399">+22.8%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Purchase Value:</span>
+                        <span>70&nbsp;000,00 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Total Return:</span>
+                        <span style="color:#34d399">+35.03%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Portfolio %:</span>
+                        <span>27.1%</span>
+                    </div>
+                    <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('AAPL')">Analyze Asset</button>
+                </div>
+            </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>Microsoft Corporation</td><td class="hide-on-mobile">1820,00<br><small style="color:#94a3b8">455 USD</small></td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+1.09%</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+18.5%</td><td>91&nbsp;000,00</td><td class="hide-on-mobile">72&nbsp;000,00</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+19&nbsp;000,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+26.39%</td><td class="hide-on-mobile">26.1%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="9">
+                <div class="mobile-expanded-details">
+                    <div class="mobile-detail-item">
+                        <span>Price:</span>
+                        <span>1820,00 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Today:</span>
+                        <span style="color:#34d399">+1.09%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>YTD:</span>
+                        <span style="color:#34d399">+18.5%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Purchase Value:</span>
+                        <span>72&nbsp;000,00 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Total Return:</span>
+                        <span style="color:#34d399">+26.39%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Portfolio %:</span>
+                        <span>26.1%</span>
+                    </div>
+                    <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('MSFT')">Analyze Asset</button>
+                </div>
+            </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>XTB S.A.</td><td class="hide-on-mobile">68,40</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+2.09%</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+41.2%</td><td>82&nbsp;080,00</td><td class="hide-on-mobile">54&nbsp;000,00</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+28&nbsp;080,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+52%</td><td class="hide-on-mobile">23.6%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="9">
+                <div class="mobile-expanded-details">
+                    <div class="mobile-detail-item">
+                        <span>Price:</span>
+                        <span>68,40 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Today:</span>
+                        <span style="color:#34d399">+2.09%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>YTD:</span>
+                        <span style="color:#34d399">+41.2%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Purchase Value:</span>
+                        <span>54&nbsp;000,00 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Total Return:</span>
+                        <span style="color:#34d399">+52%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Portfolio %:</span>
+                        <span>23.6%</span>
+                    </div>
+                    <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('XTB.WA')">Analyze Asset</button>
+                </div>
+            </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>Cash (PLN)</td><td class="hide-on-mobile">1,00</td><td class="hide-on-mobile">—</td><td class="hide-on-mobile">—</td><td>31&nbsp;820,50</td><td class="hide-on-mobile">31&nbsp;820,50</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+0,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+0%</td><td class="hide-on-mobile">9.1%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="9">
+                <div class="mobile-expanded-details">
+                    <div class="mobile-detail-item">
+                        <span>Price:</span>
+                        <span>1,00 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Today:</span>
+                        <span style="color:#34d399">+0%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>YTD:</span>
+                        <span style="color:#34d399">+0%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Purchase Value:</span>
+                        <span>31&nbsp;820,50 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Total Return:</span>
+                        <span style="color:#34d399">+0%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Portfolio %:</span>
+                        <span>9.1%</span>
+                    </div>
+                    <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('CASH')">Analyze Asset</button>
+                </div>
+            </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>CD Projekt S.A.</td><td class="hide-on-mobile">172,50</td><td class="hide-on-mobile" style="color: rgb(248, 113, 113); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">-0.93%</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+8.4%</td><td>27&nbsp;600,00</td><td class="hide-on-mobile">29&nbsp;000,00</td><td style="color: rgb(248, 113, 113); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">-1400,00</td><td class="hide-on-mobile" style="color: rgb(248, 113, 113); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">-4.83%</td><td class="hide-on-mobile">7.9%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="9">
+                <div class="mobile-expanded-details">
+                    <div class="mobile-detail-item">
+                        <span>Price:</span>
+                        <span>172,50 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Today:</span>
+                        <span style="color:#f87171">-0.93%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>YTD:</span>
+                        <span style="color:#34d399">+8.4%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Purchase Value:</span>
+                        <span>29&nbsp;000,00 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Total Return:</span>
+                        <span style="color:#f87171">-4.83%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Portfolio %:</span>
+                        <span>7.9%</span>
+                    </div>
+                    <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('CDR.WA')">Analyze Asset</button>
+                </div>
+            </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>Cash (IKE)</td><td class="hide-on-mobile">1,00</td><td class="hide-on-mobile">—</td><td class="hide-on-mobile">—</td><td>21&nbsp;500,00</td><td class="hide-on-mobile">21&nbsp;500,00</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+0,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+0%</td><td class="hide-on-mobile">6.2%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="9">
+                <div class="mobile-expanded-details">
+                    <div class="mobile-detail-item">
+                        <span>Price:</span>
+                        <span>1,00 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Today:</span>
+                        <span style="color:#34d399">+0%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>YTD:</span>
+                        <span style="color:#34d399">+0%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Purchase Value:</span>
+                        <span>21&nbsp;500,00 PLN</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Total Return:</span>
+                        <span style="color:#34d399">+0%</span>
+                    </div>
+                    <div class="mobile-detail-item">
+                        <span>Portfolio %:</span>
+                        <span>6.2%</span>
+                    </div>
+                    <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('CASH')">Analyze Asset</button>
+                </div>
+            </td></tr></tbody>
+                </table>
+            </div>
+            <div id="holdings-wallet-sections">
+            <div id="holdings-wallet-xtb-brokerage" class="holdings-content">
+                <table id="portfolio-table-wallet-xtb-brokerage" class="holdings-table">
+                    <thead><tr><th>Company</th><th>Current Value (PLN)</th><th class="hide-on-mobile">Purchase Value (PLN)</th><th>Profit / Loss (PLN)</th><th class="hide-on-mobile">Total Return</th><th class="hide-on-mobile">Portfolio %</th></tr></thead>
+                    <tbody><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>Apple Inc.</td><td>94&nbsp;520,00</td><td class="hide-on-mobile">70&nbsp;000,00</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+24&nbsp;520,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+35.03%</td><td class="hide-on-mobile">45.4%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="6">
+            <div class="mobile-expanded-details">
+                <div class="mobile-detail-item">
+                    <span>Purchase Value:</span>
+                    <span>70&nbsp;000,00 PLN</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Total Return:</span>
+                    <span style="color:#34d399">+35.03%</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Portfolio %:</span>
+                    <span>45.4%</span>
+                </div>
+                <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('AAPL')">Analyze Asset</button>
+            </div>
+        </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>XTB S.A.</td><td>82&nbsp;080,00</td><td class="hide-on-mobile">54&nbsp;000,00</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+28&nbsp;080,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+52%</td><td class="hide-on-mobile">39.4%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="6">
+            <div class="mobile-expanded-details">
+                <div class="mobile-detail-item">
+                    <span>Purchase Value:</span>
+                    <span>54&nbsp;000,00 PLN</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Total Return:</span>
+                    <span style="color:#34d399">+52%</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Portfolio %:</span>
+                    <span>39.4%</span>
+                </div>
+                <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('XTB.WA')">Analyze Asset</button>
+            </div>
+        </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>Cash (PLN)</td><td>31&nbsp;820,50</td><td class="hide-on-mobile">31&nbsp;820,50</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+0,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+0%</td><td class="hide-on-mobile">15.3%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="6">
+            <div class="mobile-expanded-details">
+                <div class="mobile-detail-item">
+                    <span>Purchase Value:</span>
+                    <span>31&nbsp;820,50 PLN</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Total Return:</span>
+                    <span style="color:#34d399">+0%</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Portfolio %:</span>
+                    <span>15.3%</span>
+                </div>
+                <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('CASH')">Analyze Asset</button>
+            </div>
+        </td></tr></tbody>
+                </table>
+            </div>
+            <div id="holdings-wallet-ike-retirement" class="holdings-content">
+                <table id="portfolio-table-wallet-ike-retirement" class="holdings-table">
+                    <thead><tr><th>Company</th><th>Current Value (PLN)</th><th class="hide-on-mobile">Purchase Value (PLN)</th><th>Profit / Loss (PLN)</th><th class="hide-on-mobile">Total Return</th><th class="hide-on-mobile">Portfolio %</th></tr></thead>
+                    <tbody><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>Microsoft Corporation</td><td>91&nbsp;000,00</td><td class="hide-on-mobile">72&nbsp;000,00</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+19&nbsp;000,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+26.39%</td><td class="hide-on-mobile">65%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="6">
+            <div class="mobile-expanded-details">
+                <div class="mobile-detail-item">
+                    <span>Purchase Value:</span>
+                    <span>72&nbsp;000,00 PLN</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Total Return:</span>
+                    <span style="color:#34d399">+26.39%</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Portfolio %:</span>
+                    <span>65%</span>
+                </div>
+                <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('MSFT')">Analyze Asset</button>
+            </div>
+        </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>CD Projekt S.A.</td><td>27&nbsp;600,00</td><td class="hide-on-mobile">29&nbsp;000,00</td><td style="color: rgb(248, 113, 113); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">-1400,00</td><td class="hide-on-mobile" style="color: rgb(248, 113, 113); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">-4.83%</td><td class="hide-on-mobile">19.7%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="6">
+            <div class="mobile-expanded-details">
+                <div class="mobile-detail-item">
+                    <span>Purchase Value:</span>
+                    <span>29&nbsp;000,00 PLN</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Total Return:</span>
+                    <span style="color:#f87171">-4.83%</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Portfolio %:</span>
+                    <span>19.7%</span>
+                </div>
+                <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('CDR.WA')">Analyze Asset</button>
+            </div>
+        </td></tr><tr class="holding-row-clickable" style="font-family: monospace; color: rgb(226, 232, 240); cursor: pointer;"><td>Cash (IKE)</td><td>21&nbsp;500,00</td><td class="hide-on-mobile">21&nbsp;500,00</td><td style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+0,00</td><td class="hide-on-mobile" style="color: rgb(52, 211, 153); font-weight: bold; text-shadow: currentcolor 0px 0px 5px;">+0%</td><td class="hide-on-mobile">15.3%</td></tr><tr class="expanded-details-row" style="display: none;"><td colspan="6">
+            <div class="mobile-expanded-details">
+                <div class="mobile-detail-item">
+                    <span>Purchase Value:</span>
+                    <span>21&nbsp;500,00 PLN</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Total Return:</span>
+                    <span style="color:#34d399">+0%</span>
+                </div>
+                <div class="mobile-detail-item">
+                    <span>Portfolio %:</span>
+                    <span>15.3%</span>
+                </div>
+                <button class="mobile-analyze-btn" onclick="window.openAnalysisForTicker('CASH')">Analyze Asset</button>
+            </div>
+        </td></tr></tbody>
+                </table>
+            </div></div>
+        </section>
+    
+    </div>
+</body>
+</html>
