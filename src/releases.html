@@ -12,13 +12,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.3.6">
-    <link rel="shortcut icon" href="favicon.ico?v=14.3.6">
-    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.3.6">
-    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.3.6">
-    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.3.6">
-    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.3.6">
-    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.3.6">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=14.3.7">
+    <link rel="shortcut icon" href="favicon.ico?v=14.3.7">
+    <link rel="icon" type="image/png" sizes="32x32" href="data/logos/icon-32.png?v=14.3.7">
+    <link rel="icon" type="image/png" sizes="16x16" href="data/logos/icon-16.png?v=14.3.7">
+    <link rel="icon" type="image/png" sizes="192x192" href="data/logos/icon-192.png?v=14.3.7">
+    <link rel="icon" type="image/png" sizes="512x512" href="data/logos/icon-512.png?v=14.3.7">
+    <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.3.7">
 
     <script>
         (function() {
@@ -769,7 +769,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v14.3.6</span>
+                    <span>v14.3.7</span>
                 </div>
             </div>
 
@@ -790,7 +790,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Released:</span>
-                    <strong id="rel-latest-date">September 30, 2026</strong>
+                    <strong id="rel-latest-date">October 1, 2026</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -832,6 +832,23 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <!-- v14.3.7 -->
+            <article class="rel-card" data-tier="service" data-version="14.3.7">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v14.3.7</span>
+                        <h2 class="rel-card-title">Recalculation Email Suppression Safeguard</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-01" title="2026-10-01 15:35 UTC">October 1, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-features">
+                        <li class="rel-item"><strong>Duplicate Recap Email Protection:</strong> Forced recalculations and maintenance runs for monthly wraps now default to suppressing email dispatch (<code>send_email=False</code> / <code>skip_email=True</code>), preventing duplicate email deliveries to users when regenerating historical recaps.</li>
+                        <li class="rel-item"><strong>Strict Delivery Scoping:</strong> Automated recap emails remain strictly limited to the scheduled monthly cron on day 1 of the month or explicit user clicks in the UI.</li>
+                    </ul>
+                </div>
+            </article>
 
             <!-- v14.3.6 -->
             <article class="rel-card" data-tier="service" data-version="14.3.6">

@@ -300,6 +300,7 @@ def generate_previous_month_wraps(
     now: datetime | None = None,
     user_ids: list[str] | None = None,
     force: bool = False,
+    send_email: bool = True,
 ) -> list[dict]:
     """Compile the preceding month's audit for every user on day one."""
     run_at = now or datetime.now(timezone.utc)
@@ -327,13 +328,14 @@ def generate_previous_month_wraps(
                 previous_month_last_day.year,
                 previous_month_last_day.month,
             )
-            try:
-                import email_service
-                user_profile = db.get_user(user_id)
-                if user_profile:
-                    email_service.send_monthly_recap_email_if_enabled(user_profile, document)
-            except Exception as mail_exc:
-                print(f"Monthly wrap email notification failed for {user_id}: {mail_exc}")
+            if send_email:
+                try:
+                    import email_service
+                    user_profile = db.get_user(user_id)
+                    if user_profile:
+                        email_service.send_monthly_recap_email_if_enabled(user_profile, document)
+                except Exception as mail_exc:
+                    print(f"Monthly wrap email notification failed for {user_id}: {mail_exc}")
             results.append({"userId": user_id, "period": document["period"], "status": "ok"})
         except Exception as exc:
             print(f"Monthly wrap failed for {user_id}: {exc}")
@@ -378,11 +380,20 @@ def monthly_wrap_handler(event, _context):
             "portfolioRecalculated": port_res,
             "summaryRecalculated": summary_res,
         }
-    if event.get("action") != "scheduled" or set(event) - {"action", "asOfDate", "force"}:
+    allowed_keys = {"action", "asOfDate", "force", "send_email", "skip_email"}
+    if event.get("action") != "scheduled" or set(event) - allowed_keys:
         raise ValueError("Explicit scheduled or user-scoped recalculate action required")
     as_of_raw = str(event.get("asOfDate") or "").strip()
     run_at = datetime.fromisoformat(as_of_raw.replace("Z", "+00:00")) if as_of_raw else datetime.now(timezone.utc)
-    results = generate_previous_month_wraps(run_at, force=bool(event.get("force", False)))
+    force = bool(event.get("force", False))
+    # By default, normal scheduled runs (force=False) send emails.
+    # Forced recalculations or maintenance runs (force=True) suppress emails to prevent duplicate spam.
+    send_email = event.get("send_email")
+    if send_email is None:
+        send_email = not force
+    if bool(event.get("skip_email", False)):
+        send_email = False
+    results = generate_previous_month_wraps(run_at, force=force, send_email=send_email)
     return {
         "statusCode": 200,
         "generated": sum(result["status"] == "ok" for result in results),
