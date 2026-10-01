@@ -301,3 +301,47 @@ def test_monthly_sweep_generates_preceding_month_only_on_day_one(monkeypatch):
         {"userId": "user-1", "period": "2026-09", "status": "ok"},
         {"userId": "user-2", "period": "2026-09", "status": "ok"},
     ]
+
+
+def test_primary_profit_engine_wallet_uses_algebraic_max_not_absolute(monkeypatch):
+    summary = [_snapshot("2026-09-01", 20000, 100), _snapshot("2026-10-01", 7070, 35.35)]
+    # Wallet A: start 15000, end 2068 -> nominal loss = -12932 PLN
+    wallet_a = [_snapshot("2026-09-01", 15000, 100), _snapshot("2026-10-01", 2068, 13.78)]
+    # Wallet B: start 5000, end 5002 -> nominal gain = +2 PLN
+    wallet_b = [_snapshot("2026-09-01", 5000, 100), _snapshot("2026-10-01", 5002, 100.04)]
+
+    monkeypatch.setattr(
+        wrap_generator.portfolios,
+        "list_portfolios",
+        lambda _user_id: [{"portfolioId": "loss_wallet", "name": "Loss Wallet"}, {"portfolioId": "profit_wallet", "name": "Profit Wallet"}],
+    )
+    monkeypatch.setattr(
+        wrap_generator.portfolios,
+        "list_all_transactions",
+        lambda _user_id, _pid, **_kwargs: [],
+    )
+    monkeypatch.setattr(
+        wrap_generator.snapshots,
+        "list_snapshots",
+        lambda _user_id, portfolio_id, **_kwargs: {
+            "summary": summary,
+            "loss_wallet": wallet_a,
+            "profit_wallet": wallet_b,
+        }[portfolio_id],
+    )
+    monkeypatch.setattr(wrap_generator, "_extremes", lambda *_args: {})
+    monkeypatch.setattr(wrap_generator, "_seasonality", lambda *_args: {})
+    monkeypatch.setattr(wrap_generator, "_retirement_target", lambda *_args: {})
+    monkeypatch.setattr(wrap_generator, "_avco_gains", lambda *_args: {})
+    monkeypatch.setattr(wrap_generator, "_asset_contributions", lambda *_args: {"carry": None, "anchor": None})
+    monkeypatch.setattr(wrap_generator, "_diary_audit", lambda *_args: {})
+    monkeypatch.setattr(wrap_generator.db, "get_user", lambda _user: {"settings": {"benchmark": "SP500"}})
+    monkeypatch.setattr(wrap_generator, "_benchmark_daily", lambda *_args: {
+        "2026-08-31": Decimal("100"), "2026-09-01": Decimal("100"),
+        "2026-09-30": Decimal("100"), "2026-10-01": Decimal("100"),
+    })
+    monkeypatch.setattr(wrap_generator, "_wrap_table", lambda: type("Table", (), {"put_item": lambda _self, **kwargs: None})())
+
+    result = wrap_generator.generate_monthly_wrap("user-99", 2026, 9)
+    assert result["primary_profit_engine_wallet"]["portfolio_id"] == "profit_wallet"
+    assert result["primary_profit_engine_wallet"]["nominal_change_pln"] == Decimal("2.00")

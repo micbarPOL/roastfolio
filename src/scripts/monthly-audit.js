@@ -431,8 +431,13 @@
     }
 
     function flowsCard(item) {
-        const best = item.best_efficiency_wallet || {};
-        const engine = item.primary_profit_engine_wallet || {};
+        const wallets = Array.isArray(item.wallet_performance) ? item.wallet_performance : [];
+        const best = wallets.length > 0
+            ? [...wallets].sort((a, b) => (Number(b.twr_pct) || 0) - (Number(a.twr_pct) || 0))[0]
+            : (item.best_efficiency_wallet || {});
+        const engine = wallets.length > 0
+            ? [...wallets].sort((a, b) => (Number(b.nominal_change_pln) || 0) - (Number(a.nominal_change_pln) || 0))[0]
+            : (item.primary_profit_engine_wallet || {});
         const body = `
             <div class="monthly-audit-summary-grid">
                 ${metric('Deposits', formatPLN(item.deposits_pln), 'is-positive')}

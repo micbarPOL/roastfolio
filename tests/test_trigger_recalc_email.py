@@ -64,6 +64,31 @@ def test_generate_previous_month_wraps_sends_email_only_if_enabled():
     assert sent_calls == ["user-enabled"]
 
 
+def test_generate_previous_month_wraps_respects_send_email_false():
+    user_enabled = {
+        "userId": "user-enabled",
+        "email": "enabled@example.com",
+        "settings": {"emailNotifications": True},
+    }
+    mock_doc = {"period": "2026-08", "overall_twr_pct": 2.5}
+    mock_send = MagicMock()
+
+    with patch.object(trigger_recalc.wrap_generator, "generate_monthly_wrap", return_value=mock_doc), \
+         patch("db.get_user", return_value=user_enabled), \
+         patch("email_service.send_monthly_recap_email_if_enabled", mock_send):
+        
+        results = trigger_recalc.generate_previous_month_wraps(
+            now=datetime(2026, 9, 1, 8, 0, 0, tzinfo=timezone.utc),
+            user_ids=["user-enabled"],
+            force=True,
+            send_email=False,
+        )
+
+    assert len(results) == 1
+    assert results[0]["status"] == "ok"
+    mock_send.assert_not_called()
+
+
 def test_monthly_recalculation_does_not_send_emails():
     user_id = "user-1"
     job = {

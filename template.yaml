@@ -1036,7 +1036,7 @@ Resources:
       Target:
         Arn: !GetAtt SnapshotFunction.Arn
         RoleArn: !GetAtt SnapshotScheduleRole.Arn
-        Input: '{"overwrite": false}'
+        Input: '{"overwrite": true}'
 
   # ── Dev-only: private S3 bucket + CloudFront distribution ────
   #

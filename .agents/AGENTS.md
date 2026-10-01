@@ -23,3 +23,10 @@
   - NEVER create live Cognito users, send verification emails, or perform password reset flows for UI testing.
   - Always use the instant mock auth bypass: `?devAuth=1` or `localStorage.setItem('roastfolio.devAuth', '1')` as implemented in `src/scripts/auth-guard.js`.
 
+## Email Notification & Recalculation Safeguards
+- **NEVER Send Emails During Recalculation, Maintenance, or Testing**:
+  - When recalculating historical snapshots, backfilling data, running maintenance jobs, or regenerating monthly wraps, NEVER send emails to users.
+  - Wrap recalculations and manual invocations must always suppress email dispatch (`send_email=False` / `skip_email=True`).
+  - Emails may only be sent by the scheduled monthly cron on the 1st of the month, or upon explicit user-initiated action in the UI (e.g. clicking "Send Email" in the recap view).
+
+

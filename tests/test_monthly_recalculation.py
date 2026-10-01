@@ -228,7 +228,23 @@ def test_trusted_scheduler_still_processes_all_users(monkeypatch):
     monkeypatch.setattr(trigger_recalc, "generate_previous_month_wraps", scheduled)
     result = trigger_recalc.monthly_wrap_handler({"action": "scheduled", "asOfDate": "2026-09-01"}, None)
     assert result["generated"] == result["failed"] == 1
-    assert scheduled.call_args.kwargs == {"force": False}
+    assert scheduled.call_args.kwargs == {"force": False, "send_email": True}
+
+
+def test_monthly_wrap_handler_force_suppresses_email_by_default(monkeypatch):
+    scheduled = Mock(return_value=[{"status": "ok"}])
+    monkeypatch.setattr(trigger_recalc, "generate_previous_month_wraps", scheduled)
+    result = trigger_recalc.monthly_wrap_handler({"action": "scheduled", "asOfDate": "2026-09-01", "force": True}, None)
+    assert result["generated"] == 1
+    assert scheduled.call_args.kwargs == {"force": True, "send_email": False}
+
+
+def test_monthly_wrap_handler_respects_skip_email(monkeypatch):
+    scheduled = Mock(return_value=[{"status": "ok"}])
+    monkeypatch.setattr(trigger_recalc, "generate_previous_month_wraps", scheduled)
+    result = trigger_recalc.monthly_wrap_handler({"action": "scheduled", "asOfDate": "2026-09-01", "skip_email": True}, None)
+    assert result["generated"] == 1
+    assert scheduled.call_args.kwargs == {"force": False, "send_email": False}
 
 def test_monthly_wrap_handler_recalculate_snapshots(monkeypatch):
     mock_port_recalc = Mock(return_value={"updated": 10})
