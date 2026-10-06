@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Aborts any local update of dev, test or prod that would bring in roastfolio_ui_20 work.
+# Fires for merge commits, fast-forwards, reset, branch -f, etc.
+. "$(dirname "$0")/_branch_guard.sh"
+
+[ "$1" = "prepared" ] || exit 0
+override_enabled && exit 0
+
+zero="0000000000000000000000000000000000000000"
+
+while read -r old new ref; do
+  case "$ref" in refs/heads/dev|refs/heads/test|refs/heads/prod) ;; *) continue ;; esac
+  [ "$new" = "$zero" ] && continue
+
+  if [ "$old" = "$zero" ]; then
+    incoming="$(git rev-list "$new")"
+  else
+    incoming="$(git rev-list "$new" --not "$old")"
+  fi
+
+  if [ -n "$(printf '%s\n' "$incoming" | intersect_with_feature)" ]; then
+    block_message
+    exit 1
+  fi
+done
+exit 0

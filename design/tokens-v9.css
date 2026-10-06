@@ -1,0 +1,119 @@
+/* GENERATED from docs/DESIGN_SYSTEM_2026_V9.md Section 2. Do not edit by hand.
+   Regenerate: .venv/bin/python design/design_system.py --write-tokens */
+
+:root {
+  /* ==========================================================================
+     1. DESKTOP & MOBILE DARK MODE (Default System State)
+     ========================================================================== */
+  --bg-canvas: #090f18;          /* Base app background (Roastfolio Dark Slate) */
+  --bg-surface-1: #0e1a2a;       /* Secondary background / cards */
+  --bg-surface-2: #132032;       /* Elevated surfaces, hover states, chips */
+  --bg-surface-3: #1a2c42;       /* Modals, popups, active states */
+  --bg-glass: rgba(14, 26, 42, 0.75); /* Glassmorphism backdrop fill */
+  
+  /* Text Hierarchy (Dark) */
+  --text-primary: #e8f0f8;     /* High-contrast headings & financial figures */
+  --text-secondary: #a8c0d8;   /* Field labels, captions, metadata */
+  --text-muted: #6a8ba8;       /* Disabled text, inactive placeholders */
+  --text-inverse: #090f18;     /* Dark text on bright accent buttons */
+
+  /* Brand Accents (Dark) */
+  --accent-primary: #2b88cf;   /* Core brand electric blue */
+  --accent-hover: #36a3f0;     /* Hover state for primary actions */
+  --accent-glow: rgba(43, 136, 207, 0.25);
+  --color-bottle-green: #0d5c3a; /* Deep bottle green for Candlestick Logo Body */
+
+  /* Semantic Financial Colors (Dark - Muzli 2026 Vivid Boost) */
+  --color-success: #10b981;    /* Emerald green: Profit / Buy / True */
+  --color-success-bg: rgba(16, 185, 129, 0.12);
+  --color-danger: #ef4444;     /* Vivid coral/red: Loss / Sell / Anchor */
+  --color-danger-bg: rgba(239, 68, 68, 0.12);
+  --color-warning: #f59e0b;    /* Amber: Caution / Overdue / #Coping tag */
+  --color-warning-bg: rgba(245, 158, 11, 0.12);
+  --color-purple: #a855f7;     /* Gamification / Coping Diary / Hypotheses */
+  --color-purple-bg: rgba(168, 85, 247, 0.12);
+
+  /* Borders & Shadows (Dark) */
+  --border-subtle: rgba(74, 159, 212, 0.12);
+  --border-strong: rgba(74, 159, 212, 0.25);
+  --border-glow: rgba(168, 85, 247, 0.3);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-accent: 0 8px 24px rgba(43, 136, 207, 0.3);
+
+  /* Layout & Glass Filter */
+  --blur-glass: blur(12px);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+
+  /* Typography, Spacing, Layout & Motion (theme-independent) */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 15px;
+  --fs-lg: 18px;
+  --fs-xl: 24px;
+  --fs-hero: clamp(2rem, 5vw, 3rem);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --sidebar-w: 240px;
+  --sidebar-w-collapsed: 64px;
+  --bottom-tabs-h: 64px;
+  --touch-min: 44px;
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-slow: 250ms;
+  --ease-enter: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-hover: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ==========================================================================
+   2. LIGHT MODE OVERRIDES (:root[data-theme="light"], same switch as the app)
+   ========================================================================== */
+:root[data-theme="light"] {
+  --bg-canvas: #f8fafc;          /* Clean light gray canvas */
+  --bg-surface-1: #ffffff;       /* Pure white card container */
+  --bg-surface-2: #f1f5f9;       /* Elevated light gray fill */
+  --bg-surface-3: #e2e8f0;       /* Active / hover surface */
+  --bg-glass: rgba(255, 255, 255, 0.85);
+
+  /* Text Hierarchy (Light) */
+  --text-primary: #0f172a;     /* Deep slate for WCAG AA readability */
+  --text-secondary: #475569;   /* Muted dark slate for captions */
+  --text-muted: #5b6b82;       /* Subtle placeholders, 4.95:1 or better on surfaces 0-2 */
+  --text-inverse: #ffffff;
+
+  /* Brand Accents (Light) */
+  --accent-primary: #1d72b8;   /* Deepened electric blue for 4.5:1 contrast */
+  --accent-hover: #155a92;
+  --accent-glow: rgba(29, 114, 184, 0.15);
+  --color-bottle-green: #064e3b;
+
+  /* Semantic Financial Colors (Light) */
+  --color-success: #047857;    /* Deeper emerald green, 5.24:1 on canvas */
+  --color-success-bg: rgba(4, 120, 87, 0.1);
+  --color-danger: #dc2626;     /* Deep crimson red */
+  --color-danger-bg: rgba(220, 38, 38, 0.1);
+  --color-warning: #b45309;    /* Darker amber, 4.80:1 on canvas */
+  --color-warning-bg: rgba(180, 83, 9, 0.1);
+  --color-purple: #9333ea;     /* Vibrant purple */
+  --color-purple-bg: rgba(147, 51, 234, 0.1);
+
+  /* Borders & Shadows (Light) */
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-glow: rgba(147, 51, 234, 0.25);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+  --shadow-accent: 0 6px 20px rgba(29, 114, 184, 0.2);
+}

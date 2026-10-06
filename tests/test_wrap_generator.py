@@ -45,6 +45,24 @@ def test_monthly_performance_isolates_cash_flow_and_uses_month_boundaries():
     )
 
     assert result == {
+        "start_value_pln": Decimal("950.00"),
+        "end_value_pln": Decimal("1300.00"),
+        "twr_pct": Decimal("26.3158"),
+        "nominal_change_pln": Decimal("250.00"),
+    }
+
+
+def test_monthly_performance_falls_back_when_no_prior_month_snapshot():
+    rows = [
+        _snapshot("2026-09-01", 1000, 100),
+        _snapshot("2026-10-01", 1300, 120),
+    ]
+
+    result = wrap_generator._monthly_performance(
+        rows, date(2026, 9, 1), date(2026, 10, 1), Decimal("100")
+    )
+
+    assert result == {
         "start_value_pln": Decimal("1000.00"),
         "end_value_pln": Decimal("1300.00"),
         "twr_pct": Decimal("20.0000"),

@@ -37,17 +37,22 @@ case "$COMMAND" in
         echo "🌐 Running Playwright browser regressions..."
         exec $PYTEST tests/test_monthly_audit_browser.py tests/test_benchmark_consent_browser.py "${@:2}"
         ;;
+    design)
+        echo "🎨 Checking design system consistency (document, mockups, decisions, browser)..."
+        exec $PYTEST tests/test_design_system_doc.py tests/test_design_mockups_contract.py tests/test_design_mockups_browser.py "${@:2}"
+        ;;
     all)
         echo "🚀 Running all tests..."
         exec $PYTEST "$@"
         ;;
     help|--help|-h)
-        echo "Usage: ./test.sh [smoke|full|browser|all] [pytest-options]"
+        echo "Usage: ./test.sh [smoke|full|browser|design|all] [pytest-options]"
         echo ""
         echo "Subcommands:"
         echo "  smoke (or ui): Fast UI contract & template tests (< 1s). Run after UI/CSS changes."
         echo "  full:          Comprehensive financial calculation & backend tests (excluding browser)."
         echo "  browser:       Playwright browser regressions."
+        echo "  design:        Design system consistency: doc health, mockup rules, decision log, browser checks."
         echo "  all:           Run entire test suite."
         exit 0
         ;;

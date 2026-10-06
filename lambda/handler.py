@@ -2356,10 +2356,17 @@ def monthly_wraps_handler(event: dict) -> dict:
         current_date = datetime.now(timezone.utc)
         if period == current_date.strftime("%Y-%m"):
             try:
+                live_val_str = str(_query_value(event, "live_value", "") or "").strip()
+                live_value = None
+                if live_val_str:
+                    try:
+                        live_value = Decimal(live_val_str)
+                    except Exception:
+                        pass
                 import snapshots
-                snapshots.generate_user_snapshots(user_id, current_date.strftime("%Y-%m-%d"), overwrite=True)
+                snapshots.generate_user_snapshots(user_id, current_date.strftime("%Y-%m-%d"), overwrite=True, live_value=live_value)
                 import wrap_generator
-                item = wrap_generator.generate_monthly_wrap(user_id, current_date.year, current_date.month)
+                item = wrap_generator.generate_monthly_wrap(user_id, current_date.year, current_date.month, live_value=live_value)
                 if item:
                     item["is_live"] = True
             except Exception as exc:
