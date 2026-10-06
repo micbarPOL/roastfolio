@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.3.8`  
-*Target Release Numbering Standard — v14.3.8*
+**Current Release:** `14.3.9`  
+*Target Release Numbering Standard — v14.3.9*
 
 ---
 
@@ -52,11 +52,13 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.3.8`
+* **Current Active Release:** `14.3.9`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
   * **Minor 3:** Monthly audit commentary bank scaling (320 AI scenario templates across 4 tone profiles), scenario classification integration, and email wrap commentary injection.
-  * **Service Release 7:** Added email suppression safeguard for monthly wrap recalculation and maintenance invocations (`send_email=False`/`skip_email=True`), preventing duplicate recap emails to users during recalculations; forced recalculation events now default to suppressing email dispatch.
+  * **Service Release 9:** Removed redundant Schema declaration from `AWS::Cognito::UserPool` in `template.yaml` to prevent Cognito `UpdateUserPool` 400 errors ("Required custom attributes are not supported currently") during CloudFormation stack updates, unblocking CI/CD deployment pipelines.
 * **Prior Releases:**
+  * **14.3.8:** Fixed history summary recalculation drop in multi-portfolio accounts by carrying forward the latest known snapshot value for portfolios without a new transaction on the recalculation date instead of omitting them.
+  * **14.3.7:** Added email suppression safeguard for monthly wrap recalculation and maintenance invocations (`send_email=False`/`skip_email=True`), preventing duplicate recap emails to users during recalculations; forced recalculation events now default to suppressing email dispatch.
   * **14.3.6:** Nightly closing snapshot schedule updated to `overwrite: true` to prevent incomplete intra-day valuations from blocking final post-close market records; updated live monthly wrap handler to allow dynamic intraday updates and recalculated historical weekend snapshots.
   * **14.3.5:** Fixed Primary Profit Engine wallet calculation to use true algebraic maximum nominal return instead of absolute value (preventing large loss wallets from overshadowing profitable wallets); added client-side and email fallback resolution.
   * **14.3.4:** Fixed monthly recap email background in Gmail by applying explicit `bgcolor="#07091A"` and inline background styling to every table cell; styled monthly audit commentary with dedicated secondary ink color (`#344634`) and prevented hero from inheriting accent colors.
