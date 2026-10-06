@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="dashboard">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>roastfolio · Dashboard mockup (design system v9)</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="dashboard.js" defer></script>
+</head>
+<body>
+
+<!-- Icon sprite. Colours come from CSS only. -->
+<svg width="0" height="0" class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="arc-gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" class="stop-danger"/>
+      <stop offset="0.5" class="stop-warning"/>
+      <stop offset="1" class="stop-success"/>
+    </linearGradient>
+    <linearGradient id="area-gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="stop-accent-strong"/>
+      <stop offset="1" class="stop-accent-none"/>
+    </linearGradient>
+    <linearGradient id="lake-gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="stop-lake-top"/>
+      <stop offset="1" class="stop-lake-bottom"/>
+    </linearGradient>
+  </defs>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></symbol>
+  <symbol id="i-pie" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><polyline points="11 8 11 12 14 15"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
+  <symbol id="i-logo" viewBox="0 0 32 32">
+    <rect class="logo-body" x="11" y="9" width="8" height="15" rx="2"/>
+    <line class="logo-wick" x1="15" y1="4" x2="15" y2="9"/><line class="logo-wick" x1="15" y1="24" x2="15" y2="29"/>
+    <path class="logo-r" d="M13 24V8h6a4 4 0 0 1 0 8h-6m6 0 5 8"/>
+  </symbol>
+</svg>
+
+<div class="app" data-sidebar="expanded">
+
+  <!-- ============ Desktop sidebar (D-002, D-012) ============ -->
+  <nav class="sidebar-nav glass-island" data-state="expanded" aria-label="Main navigation">
+    <div class="sidebar-head">
+      <a class="brand" href="#">
+        <svg class="brand-logo" aria-hidden="true"><use href="#i-logo"/></svg>
+        <span class="brand-wordmark nav-label" data-field="brand-wordmark">roastfolio</span>
+      </a>
+    </div>
+
+    <div class="nav-scroll">
+      <a class="nav-item" href="#" data-field="nav-dashboard" data-label="Dashboard" aria-current="page"><svg class="ico"><use href="#i-home"/></svg><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="#" data-field="nav-wallets" data-label="Wallets"><svg class="ico"><use href="#i-wallet"/></svg><span class="nav-label">Wallets</span></a>
+      <a class="nav-item" href="#" data-field="nav-portfolio" data-label="Portfolio"><svg class="ico"><use href="#i-pie"/></svg><span class="nav-label">Portfolio</span></a>
+
+      <div class="nav-section nav-label">Analytics</div>
+      <a class="nav-item" href="#" data-field="nav-history" data-label="History"><svg class="ico"><use href="#i-trend"/></svg><span class="nav-label">History</span></a>
+      <a class="nav-item" href="#" data-field="nav-statistics" data-label="Statistics"><svg class="ico"><use href="#i-bars"/></svg><span class="nav-label">Statistics</span></a>
+      <a class="nav-item" href="#" data-field="nav-retirement" data-label="Retirement"><svg class="ico"><use href="#i-calendar"/></svg><span class="nav-label">Retirement</span></a>
+      <a class="nav-item" href="#" data-field="nav-transactions" data-label="Transactions"><svg class="ico"><use href="#i-list"/></svg><span class="nav-label">Transactions</span></a>
+      <a class="nav-item" href="#" data-field="nav-analysis" data-label="Analysis"><svg class="ico"><use href="#i-search"/></svg><span class="nav-label">Analysis</span></a>
+      <a class="nav-item" href="#" data-field="nav-diary" data-label="Coping Diary"><svg class="ico"><use href="#i-book"/></svg><span class="nav-label">Coping Diary</span></a>
+
+      <div class="nav-section nav-label">Account</div>
+      <a class="nav-item" href="#" data-field="nav-guide" data-label="User Guide"><svg class="ico"><use href="#i-help"/></svg><span class="nav-label">User Guide</span></a>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="theme-switch nav-label" role="group" aria-label="Color mode" data-field="theme-switch">
+        <button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button>
+        <button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button>
+      </div>
+      <a class="user-card" href="#" data-field="user-card" data-label="User settings">
+        <span class="avatar" aria-hidden="true">M</span>
+        <span class="user-meta nav-label"><span class="user-name">Michał B.</span><span class="user-role">Premium</span></span>
+      </a>
+      <div class="brand-footer nav-label" data-field="brand-footer">Powered by <strong>TOMINEX</strong> <span class="version num">v14.3.7</span></div>
+      <button type="button" class="sidebar-collapse" aria-label="Collapse sidebar (Ctrl+B)" aria-pressed="false">
+        <svg class="ico"><use href="#i-chevron-left"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============ Mobile drawer (D-003) ============ -->
+  <div class="drawer-backdrop" hidden></div>
+  <aside class="mobile-side-drawer glass-island" hidden aria-label="More navigation">
+    <div class="drawer-head">
+      <a class="brand" href="#"><svg class="brand-logo" aria-hidden="true"><use href="#i-logo"/></svg><span class="brand-wordmark">roastfolio</span></a>
+      <button type="button" class="icon-btn drawer-close" aria-label="Close menu"><svg class="ico"><use href="#i-close"/></svg></button>
+    </div>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-pie"/></svg><span>Portfolio</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-trend"/></svg><span>History</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-bars"/></svg><span>Statistics</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-calendar"/></svg><span>Retirement</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-list"/></svg><span>Transactions</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-help"/></svg><span>User Guide</span></a>
+    <div class="theme-switch" role="group" aria-label="Color mode">
+      <button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button>
+      <button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button>
+    </div>
+    <a class="user-card" href="#"><span class="avatar" aria-hidden="true">M</span><span class="user-meta"><span class="user-name">Michał B.</span><span class="user-role">Premium</span></span></a>
+  </aside>
+
+  <div class="app-main">
+
+    <!-- ============ Top bar ============ -->
+    <header class="top-bar">
+      <button type="button" class="icon-btn drawer-open" aria-label="Open menu"><svg class="ico"><use href="#i-menu"/></svg></button>
+      <a class="brand brand-mobile" href="#"><svg class="brand-logo" aria-hidden="true"><use href="#i-logo"/></svg><span class="brand-wordmark">roastfolio</span></a>
+      <h1 class="page-title">Dashboard</h1>
+      <span class="live-status" data-field="live-data-status" role="status"><span class="live-dot" aria-hidden="true"></span>Live prices · updated 12:41</span>
+    </header>
+
+    <!-- ============ Ticker tape, mounted once (D-014, D-017) ============ -->
+    <section class="ticker-tape-container" aria-label="Major indices">
+      <div class="ticker-track">
+        <div class="ticker-lane">
+          <span class="ticker-item" data-index-id="WIG" data-field="index-WIG"><span class="ticker-symbol">WIG</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.62%</span></span>
+          <span class="ticker-item" data-index-id="WIG20" data-field="index-WIG20"><span class="ticker-symbol">WIG20</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.48%</span></span>
+          <span class="ticker-item" data-index-id="SP500" data-field="index-SP500"><span class="ticker-symbol">S&amp;P 500</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.41%</span></span>
+          <span class="ticker-item" data-index-id="NASDAQ" data-field="index-NASDAQ"><span class="ticker-symbol">NASDAQ</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.73%</span></span>
+          <span class="ticker-item" data-index-id="DAX" data-field="index-DAX"><span class="ticker-symbol">DAX</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.19%</span></span>
+          <span class="ticker-item" data-index-id="MSCI_WORLD" data-field="index-MSCI_WORLD"><span class="ticker-symbol">MSCI World</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.22%</span></span>
+        </div>
+        <div class="ticker-lane" aria-hidden="true">
+          <span class="ticker-item"><span class="ticker-symbol">WIG</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.62%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">WIG20</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.48%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">S&amp;P 500</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.41%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">NASDAQ</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.73%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">DAX</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.19%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">MSCI World</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.22%</span></span>
+        </div>
+      </div>
+    </section>
+
+    <p class="market-commentary" data-field="market-commentary">WIG is up <span class="num">0.62%</span> and you are up <span class="num">1.40%</span>. Still far below the peak, but who is counting.</p>
+
+    <main class="dash-main">
+
+      <!-- ============ Empty state: reuses the app's 4-part card ============ -->
+      <section class="empty-state-card" data-field="state-empty" hidden>
+        <div class="empty-state-icon" aria-hidden="true"><svg class="ico ico-xl"><use href="#i-pie"/></svg></div>
+        <h2 class="empty-state-title">Your portfolio is empty. Bold strategy.</h2>
+        <p class="empty-state-desc">Add your first portfolio and holdings to see live prices, daily performance and sarcastic commentary.</p>
+        <button type="button" class="empty-state-btn">+ Set up your portfolio</button>
+      </section>
+
+      <div class="dash-grid">
+
+        <!-- ============ Hero (Tier 1) ============ -->
+        <section class="hero-card glass-island reveal" style="--i:0" aria-labelledby="hero-label">
+          <div class="card-cl-overlay" data-field="state-loading">
+            <div class="cl-loader">
+              <div class="cl-candles">
+                <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+              </div>
+              <span class="cl-loader-text">Loading your worst investments…</span>
+            </div>
+          </div>
+
+          <div class="hero-top">
+            <div class="hero-figures">
+              <div class="card-label" id="hero-label">Portfolio — Total Value</div>
+              <div class="hero-total num" data-field="total-value" data-countup="348520.5" data-decimals="2">348&nbsp;520,50&nbsp;PLN</div>
+              <div class="hero-daily">
+                <span class="delta up"><svg class="ico"><use href="#i-arrow-up"/></svg><span class="num" data-field="daily-pln">+4&nbsp;820,30&nbsp;PLN</span></span>
+                <span class="delta up num" data-field="daily-pct">(+1.40%)</span>
+              </div>
+            </div>
+
+            <div class="ath-block">
+              <div class="ath-lake" role="img" aria-label="Portfolio is 29.94 percent below its all-time high">
+                <svg viewBox="0 0 120 80">
+                  <rect class="lake-bed" x="0" y="0" width="120" height="80" rx="8"/>
+                  <rect class="lake-fill" x="0" y="4" width="120" height="48"/>
+                  <g class="lake-waves">
+                    <path class="lake-wave" d="M0 4 Q 15 0 30 4 T 60 4 T 90 4 T 120 4 T 150 4 T 180 4 V 12 H 0 Z"/>
+                  </g>
+                  <line class="lake-ath-line" x1="0" y1="4" x2="120" y2="4"/>
+                  <line class="lake-now-line" x1="0" y1="52" x2="120" y2="52"/>
+                  <text class="lake-label" x="6" y="17">ATH</text>
+                  <text class="lake-label" x="6" y="65">now</text>
+                </svg>
+              </div>
+              <div class="ath-text">
+                <div class="ath-title">From All-Time High</div>
+                <div class="ath-line">
+                  <span class="num down" data-field="ath-drawdown-pct">-29.94%</span>
+                  <span class="num down" data-field="ath-drawdown-pln">(-148&nbsp;941,62&nbsp;PLN)</span>
+                </div>
+                <div class="ath-meta">Last recorded ATH: <span class="num" data-field="ath-value">497&nbsp;462,12&nbsp;PLN</span> <span class="num" data-field="ath-date">(2026-09-01)</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ath-celebration" data-field="ath-celebration" hidden>
+            <span class="badge-new">New All-Time High</span>
+            <strong>Portfolio broke its own ceiling.</strong>
+            <span>Enjoy it. The market will remind you who is in charge.</span>
+          </div>
+
+          <figure class="spark6m" data-field="sparkline-6m">
+            <figcaption>Returns, last 6 months</figcaption>
+            <svg viewBox="0 0 300 70" preserveAspectRatio="none" role="img" aria-label="Monthly returns from April to September">
+              <path class="spark-area" d="M0 18 L50 30 L100 22 L150 40 L200 34 L250 52 L300 62 V70 H0 Z"/>
+              <polyline class="spark-line" points="0,18 50,30 100,22 150,40 200,34 250,52 300,62"/>
+            </svg>
+            <div class="spark-months" aria-hidden="true"><span>Apr</span><span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span></div>
+          </figure>
+
+          <div class="eng-chips" role="list" aria-label="Your progress">
+            <a class="eng-chip eng-chip-level" role="listitem" href="#" data-field="eng-level" aria-label="Level Contributor, 2075 XP">
+              <svg class="xp-ring" viewBox="0 0 24 24" aria-hidden="true"><circle class="xp-track" cx="12" cy="12" r="9" pathLength="100"/><circle class="xp-fill" cx="12" cy="12" r="9" pathLength="100"/></svg>
+              <span class="chip-text"><strong>Contributor</strong><span class="num">2&nbsp;075 XP · 72%</span></span>
+            </a>
+            <a class="eng-chip" role="listitem" href="#" data-field="eng-streak-contribution"><svg class="ico"><use href="#i-arrow-up"/></svg><span class="chip-text"><strong>1 mo</strong><span>Deposit streak</span></span></a>
+            <a class="eng-chip" role="listitem" href="#" data-field="eng-streak-checkin"><svg class="ico"><use href="#i-eye"/></svg><span class="chip-text"><strong>8 days</strong><span>Active days</span></span></a>
+            <a class="eng-chip" role="listitem" href="#" data-field="eng-streak-withdrawal"><svg class="ico"><use href="#i-lock"/></svg><span class="chip-text"><strong>5 mo</strong><span>Withdrawal-free</span></span></a>
+            <a class="eng-chip" role="listitem" href="#" data-field="eng-streak-goal"><svg class="ico"><use href="#i-target"/></svg><span class="chip-text"><strong>2 mo</strong><span>Goal streak</span></span></a>
+            <a class="eng-chip" role="listitem" href="#" data-field="eng-streak-green"><svg class="ico"><use href="#i-trend"/></svg><span class="chip-text"><strong>0 mo</strong><span>Green months</span></span></a>
+            <a class="eng-chip" role="listitem" href="#" data-field="eng-badge"><svg class="ico"><use href="#i-award"/></svg><span class="chip-text"><strong>Diamond Hands</strong><span>Silver</span></span></a>
+            <a class="eng-chip eng-chip-all" role="listitem" href="#" data-field="eng-all"><span>All achievements</span><svg class="ico"><use href="#i-chevron-right"/></svg></a>
+          </div>
+        </section>
+
+        <!-- ============ Gauge (D-006) ============ -->
+        <section class="gauge-widget speedometer-gauge-widget glass-island reveal" style="--i:1" data-mode="daily" aria-labelledby="gauge-label">
+          <div class="card-cl-overlay">
+            <div class="cl-loader"><div class="cl-candles">
+              <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+              <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+              <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+              <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+              <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+              <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+            </div></div>
+          </div>
+          <div class="gauge-head">
+            <div class="card-label" id="gauge-label">Portfolio — Gauge</div>
+            <div class="segmented" role="tablist" aria-label="Gauge mode">
+              <button type="button" role="tab" id="tab-gauge-daily" class="seg-btn" aria-selected="true" aria-controls="panel-gauge-daily" data-mode="daily" data-angle="25.2">vs Benchmark</button>
+              <button type="button" role="tab" id="tab-gauge-ath" class="seg-btn" aria-selected="false" aria-controls="panel-gauge-ath" data-mode="ath" data-angle="-17.8" tabindex="-1">ATH distance</button>
+            </div>
+          </div>
+
+          <svg class="gauge-svg" viewBox="0 0 200 112" role="img" aria-label="Portfolio gauge">
+            <path class="gauge-track" d="M 20 100 A 80 80 0 0 1 180 100" pathLength="100"/>
+            <path class="gauge-arc" d="M 20 100 A 80 80 0 0 1 180 100" pathLength="100"/>
+            <line class="bench-tick" x1="100" y1="28" x2="100" y2="42"/>
+            <g class="needle"><line x1="100" y1="100" x2="100" y2="30"/><circle cx="100" cy="100" r="5"/></g>
+          </svg>
+
+          <div class="gauge-readouts">
+            <div id="panel-gauge-daily" role="tabpanel" aria-labelledby="tab-gauge-daily" class="gauge-readout" data-field="gauge-daily">
+              <div class="gauge-value num up">+1.40%</div>
+              <div class="gauge-sub"><span data-field="gauge-benchmark-name">WIG</span> <span class="num" data-field="gauge-benchmark-pct">+0.62%</span></div>
+            </div>
+            <div id="panel-gauge-ath" role="tabpanel" aria-labelledby="tab-gauge-ath" class="gauge-readout" data-field="gauge-ath" hidden>
+              <div class="gauge-value num down">-29.94%</div>
+              <div class="gauge-sub">do ATH</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ Roast card (D-007) ============ -->
+        <section class="roast-card glass-island reveal" style="--i:2" aria-label="Roastfolio says">
+          <button type="button" class="roast-toggle" aria-expanded="false" aria-controls="roast-reactions">
+            <span class="roast-label">Roastfolio says</span>
+            <span class="roast-message" data-field="roast-message">“You beat the benchmark today. Enjoy the delusion before the next drawdown hits.”</span>
+          </button>
+          <div class="roast-reactions" id="roast-reactions" data-field="roast-reactions" hidden>
+            <button type="button" class="chip-btn">Good</button>
+            <button type="button" class="chip-btn">Repetitive</button>
+            <button type="button" class="chip-btn">Wrong</button>
+            <button type="button" class="chip-btn">Boring</button>
+          </div>
+        </section>
+
+        <!-- ============ Control Room (Tier 2 accordion) ============ -->
+        <section class="control-room panel reveal" style="--i:3" aria-labelledby="control-label">
+          <div class="panel-head">
+            <div class="card-label" id="control-label"><span class="status-light" aria-hidden="true"></span>Portfolios Control Room</div>
+          </div>
+          <div class="wallet-grid">
+
+            <article class="wallet-card">
+              <button type="button" class="wallet-toggle" aria-expanded="false" aria-controls="wallet-xtb-more">
+                <svg class="wallet-dial" viewBox="0 0 100 60" data-field="wallet-dial" style="--angle:32.4deg" aria-hidden="true">
+                  <path class="gauge-track" d="M 10 54 A 40 40 0 0 1 90 54"/>
+                  <path class="gauge-arc" d="M 10 54 A 40 40 0 0 1 90 54"/>
+                  <g class="needle"><line x1="50" y1="54" x2="50" y2="20"/></g>
+                </svg>
+                <span class="wallet-info">
+                  <span class="wallet-name" data-field="wallet-name">XTB Brokerage</span>
+                  <span class="wallet-total num" data-field="wallet-total">208&nbsp;420,50&nbsp;PLN</span>
+                  <span class="wallet-daily up"><span class="num" data-field="wallet-daily-pct">+1.80%</span> <span class="num" data-field="wallet-daily-pln">(+3&nbsp;715,00&nbsp;PLN)</span></span>
+                  <span class="wallet-ath" data-field="wallet-ath-status">ATH Drawdown: <strong class="num down">-30.53%</strong></span>
+                </span>
+                <svg class="ico chevron" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+              </button>
+              <div class="wallet-more" id="wallet-xtb-more" hidden><a class="link-btn" href="#">Open history <svg class="ico"><use href="#i-chevron-right"/></svg></a></div>
+            </article>
+
+            <article class="wallet-card">
+              <button type="button" class="wallet-toggle" aria-expanded="false" aria-controls="wallet-ike-more">
+                <svg class="wallet-dial" viewBox="0 0 100 60" style="--angle:14.4deg" aria-hidden="true">
+                  <path class="gauge-track" d="M 10 54 A 40 40 0 0 1 90 54"/>
+                  <path class="gauge-arc" d="M 10 54 A 40 40 0 0 1 90 54"/>
+                  <g class="needle"><line x1="50" y1="54" x2="50" y2="20"/></g>
+                </svg>
+                <span class="wallet-info">
+                  <span class="wallet-name">IKE Retirement</span>
+                  <span class="wallet-total num">140&nbsp;100,00&nbsp;PLN</span>
+                  <span class="wallet-daily up"><span class="num">+0.80%</span> <span class="num">(+1&nbsp;105,00&nbsp;PLN)</span></span>
+                  <span class="wallet-ath">ATH Drawdown: <strong class="num down">-29.05%</strong></span>
+                </span>
+                <svg class="ico chevron" aria-hidden="true"><use href="#i-chevron-down"/></svg>
+              </button>
+              <div class="wallet-more" id="wallet-ike-more" hidden><a class="link-btn" href="#">Open history <svg class="ico"><use href="#i-chevron-right"/></svg></a></div>
+            </article>
+
+          </div>
+        </section>
+
+        <!-- ============ Monthly / Yearly in one card (D-004) ============ -->
+        <section class="period-card panel reveal" style="--i:4" aria-labelledby="period-label">
+          <div class="panel-head">
+            <div class="card-label" id="period-label">Summary</div>
+            <div class="segmented" role="tablist" aria-label="Summary period">
+              <button type="button" role="tab" id="tab-monthly" class="seg-btn" aria-selected="true" aria-controls="panel-monthly">Month</button>
+              <button type="button" role="tab" id="tab-yearly" class="seg-btn" aria-selected="false" aria-controls="panel-yearly" tabindex="-1">Year</button>
+            </div>
+          </div>
+
+          <div id="panel-monthly" role="tabpanel" aria-labelledby="tab-monthly" class="period-panel">
+            <div class="metric">
+              <span class="metric-title">Monthly Return</span>
+              <span class="metric-value num down" data-field="monthly-return-pln">-142&nbsp;102,15&nbsp;PLN</span>
+              <span class="metric-sub num down" data-field="monthly-return-pct">-29.08%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-title">Benchmark Comparison</span>
+              <span class="metric-value" data-field="monthly-benchmark-score"><span class="up">Beat 4</span> / <span class="down">Lost 1</span></span>
+              <span class="dots" aria-hidden="true"><i class="dot win"></i><i class="dot win"></i><i class="dot win"></i><i class="dot win"></i><i class="dot loss"></i></span>
+              <button type="button" class="link-btn disclosure" aria-expanded="false" aria-controls="bm-monthly">Show benchmarks <svg class="ico"><use href="#i-chevron-down"/></svg></button>
+              <ul class="bm-list" id="bm-monthly" data-field="monthly-benchmark-list" hidden>
+                <li><span>WIG20</span><span class="num up">-31.20%</span></li>
+                <li><span>mWIG40</span><span class="num up">-33.00%</span></li>
+                <li><span>S&amp;P 500</span><span class="num up">-30.10%</span></li>
+                <li><span>NASDAQ</span><span class="num up">-34.80%</span></li>
+                <li><span>DAX</span><span class="num down">-12.40%</span></li>
+              </ul>
+            </div>
+            <div class="metric metric-goals">
+              <span class="metric-title">Retirement Goals</span>
+              <div class="goal" data-field="monthly-goal-deposit">
+                <div class="goal-meta"><span>Monthly Deposit</span><span class="num">5&nbsp;000 / 5&nbsp;000&nbsp;PLN</span></div>
+                <div class="progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Monthly deposit goal"><span class="progress-fill" style="--p:1"></span></div>
+                <span class="goal-pct num">100%</span>
+              </div>
+              <div class="goal" data-field="monthly-goal-return">
+                <div class="goal-meta"><span>Monthly Return</span><span class="num">-142&nbsp;102 / 0&nbsp;PLN</span></div>
+                <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Monthly return goal"><span class="progress-fill" style="--p:0"></span></div>
+                <span class="goal-pct num">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="panel-yearly" role="tabpanel" aria-labelledby="tab-yearly" class="period-panel" hidden>
+            <div class="metric">
+              <span class="metric-title">Yearly Return</span>
+              <span class="metric-value num down" data-field="yearly-return-pln">-91&nbsp;887,73&nbsp;PLN</span>
+              <span class="metric-sub num down" data-field="yearly-return-pct">-21.75%</span>
+            </div>
+            <div class="metric">
+              <span class="metric-title">Benchmark Comparison</span>
+              <span class="metric-value" data-field="yearly-benchmark-score"><span class="up">Beat 5</span> / <span class="down">Lost 0</span></span>
+              <span class="dots" aria-hidden="true"><i class="dot win"></i><i class="dot win"></i><i class="dot win"></i><i class="dot win"></i><i class="dot win"></i></span>
+              <button type="button" class="link-btn disclosure" aria-expanded="false" aria-controls="bm-yearly">Show benchmarks <svg class="ico"><use href="#i-chevron-down"/></svg></button>
+              <ul class="bm-list" id="bm-yearly" data-field="yearly-benchmark-list" hidden>
+                <li><span>WIG20</span><span class="num up">-25.40%</span></li>
+                <li><span>mWIG40</span><span class="num up">-27.90%</span></li>
+                <li><span>S&amp;P 500</span><span class="num up">-24.10%</span></li>
+                <li><span>NASDAQ</span><span class="num up">-26.30%</span></li>
+                <li><span>DAX</span><span class="num up">-22.80%</span></li>
+              </ul>
+            </div>
+            <div class="metric metric-goals">
+              <span class="metric-title">Retirement Goals</span>
+              <div class="goal" data-field="yearly-goal-deposit">
+                <div class="goal-meta"><span>Yearly Deposit</span><span class="num">20&nbsp;000 / 60&nbsp;000&nbsp;PLN</span></div>
+                <div class="progress" role="progressbar" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100" aria-label="Yearly deposit goal"><span class="progress-fill" style="--p:0.33"></span></div>
+                <span class="goal-pct num">33%</span>
+              </div>
+              <div class="goal" data-field="yearly-goal-return">
+                <div class="goal-meta"><span>Yearly Return</span><span class="num">-91&nbsp;888 / 0&nbsp;PLN</span></div>
+                <div class="progress" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Yearly return goal"><span class="progress-fill" style="--p:0"></span></div>
+                <span class="goal-pct num">0%</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ Today's Movers: solid surface, no glass (Section 4.16.B) ============ -->
+        <section class="movers-card panel reveal" style="--i:5" aria-labelledby="movers-label">
+          <div class="panel-head">
+            <div class="card-label" id="movers-label">Today's Movers</div>
+            <span class="hint">Sorted by biggest daily impact</span>
+            <div class="segmented" role="tablist" aria-label="Sparkline range" data-field="mover-range-toggle">
+              <button type="button" role="tab" class="seg-btn" aria-selected="true" data-range="1d">1D</button>
+              <button type="button" role="tab" class="seg-btn" aria-selected="false" data-range="1y" tabindex="-1">1Y</button>
+            </div>
+          </div>
+
+          <div class="movers" role="table" aria-label="Today's movers">
+            <div class="mover-head" role="row">
+              <span role="columnheader">Company</span><span role="columnheader">Chart</span><span role="columnheader" class="col-price">Price</span><span role="columnheader" class="col-change">Change</span><span role="columnheader" class="col-pln">Daily PLN</span>
+            </div>
+
+            <a class="mover-row" role="row" href="#">
+              <span class="mover-company" role="cell"><img class="mover-logo" data-field="mover-logo" src="../../src/data/logos/xtb.png" alt=""><span class="mover-name" data-field="mover-name">XTB S.A.</span></span>
+              <span class="mover-chart" role="cell" data-field="mover-spark"><svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"><polyline class="spark-line up" data-1d="0,28 10,26 20,27 30,22 40,23 50,18 60,19 70,14 80,15 90,10 100,12 110,6 120,4" data-1y="0,30 10,31 20,26 30,28 40,20 50,22 60,16 70,18 80,12 90,14 100,8 110,9 120,5" points="0,28 10,26 20,27 30,22 40,23 50,18 60,19 70,14 80,15 90,10 100,12 110,6 120,4"/></svg></span>
+              <span class="mover-price" role="cell"><span class="num" data-field="mover-price-pln">63,40&nbsp;PLN</span></span>
+              <span class="mover-change" role="cell"><span class="num up" data-field="mover-pct">+3.20%</span><span class="vol-badge vol-surge" data-field="mover-volume" title="Volume pace versus the daily average">🔥 <span class="num">168%</span> vol</span></span>
+              <span class="mover-pln num up" role="cell" data-field="mover-daily-pln">+1&nbsp;980,40&nbsp;PLN</span>
+            </a>
+
+            <a class="mover-row" role="row" href="#">
+              <span class="mover-company" role="cell"><span class="logo-fallback" aria-hidden="true">A</span><span class="mover-name">Apple Inc.</span></span>
+              <span class="mover-chart" role="cell"><svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"><polyline class="spark-line up" data-1d="0,24 10,22 20,25 30,20 40,21 50,17 60,18 70,15 80,16 90,12 100,14 110,10 120,9" data-1y="0,28 10,26 20,22 30,24 40,18 50,20 60,14 70,16 80,10 90,12 100,9 110,11 120,6" points="0,24 10,22 20,25 30,20 40,21 50,17 60,18 70,15 80,16 90,12 100,14 110,10 120,9"/></svg></span>
+              <span class="mover-price" role="cell"><span class="num">892,10&nbsp;PLN</span><small class="num" data-field="mover-price-orig">240.25 USD</small></span>
+              <span class="mover-change" role="cell"><span class="num up">+0.90%</span><span class="vol-badge vol-elevated">⚡ <span class="num">124%</span> vol</span></span>
+              <span class="mover-pln num up" role="cell">+1&nbsp;214,70&nbsp;PLN</span>
+            </a>
+
+            <a class="mover-row" role="row" href="#">
+              <span class="mover-company" role="cell"><img class="mover-logo" src="../../src/data/logos/CDPROJEKT.png" alt=""><span class="mover-name">CD Projekt S.A.</span></span>
+              <span class="mover-chart" role="cell"><svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"><polyline class="spark-line down" data-1d="0,8 10,10 20,9 30,14 40,13 50,18 60,17 70,22 80,21 90,26 100,24 110,28 120,30" data-1y="0,6 10,10 20,8 30,14 40,18 50,16 60,22 70,24 80,28 90,26 100,30 110,31 120,32" points="0,8 10,10 20,9 30,14 40,13 50,18 60,17 70,22 80,21 90,26 100,24 110,28 120,30"/></svg></span>
+              <span class="mover-price" role="cell"><span class="num">241,80&nbsp;PLN</span></span>
+              <span class="mover-change" role="cell"><span class="num down">-1.90%</span><span class="vol-badge vol-light">❄️ <span class="num">62%</span> vol</span></span>
+              <span class="mover-pln num down" role="cell">-865,20&nbsp;PLN</span>
+            </a>
+
+            <a class="mover-row" role="row" href="#">
+              <span class="mover-company" role="cell"><span class="logo-fallback" aria-hidden="true">M</span><span class="mover-name">Microsoft Corporation</span></span>
+              <span class="mover-chart" role="cell"><svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"><polyline class="spark-line up" data-1d="0,20 10,19 20,21 30,18 40,19 50,17 60,18 70,16 80,17 90,15 100,16 110,14 120,14" data-1y="0,26 10,24 20,25 30,20 40,22 50,18 60,19 70,15 80,17 90,13 100,14 110,11 120,10" points="0,20 10,19 20,21 30,18 40,19 50,17 60,18 70,16 80,17 90,15 100,16 110,14 120,14"/></svg></span>
+              <span class="mover-price" role="cell"><span class="num">1&nbsp;610,35&nbsp;PLN</span><small class="num">433.90 USD</small></span>
+              <span class="mover-change" role="cell"><span class="num up">+0.35%</span><span class="vol-badge vol-normal">📊 <span class="num">95%</span> vol</span></span>
+              <span class="mover-pln num up" role="cell">+402,15&nbsp;PLN</span>
+            </a>
+
+            <a class="mover-row" role="row" href="#">
+              <span class="mover-company" role="cell"><img class="mover-logo" src="../../src/data/logos/META.png" alt=""><span class="mover-name">Meta Platforms</span></span>
+              <span class="mover-chart" role="cell"><svg viewBox="0 0 120 36" preserveAspectRatio="none" aria-hidden="true"><polyline class="spark-line down" data-1d="0,14 10,15 20,13 30,16 40,15 50,18 60,17 70,19 80,18 90,21 100,20 110,22 120,22" data-1y="0,10 10,12 20,9 30,14 40,13 50,18 60,16 70,20 80,22 90,21 100,25 110,24 120,27" points="0,14 10,15 20,13 30,16 40,15 50,18 60,17 70,19 80,18 90,21 100,20 110,22 120,22"/></svg></span>
+              <span class="mover-price" role="cell"><span class="num">2&nbsp;180,60&nbsp;PLN</span><small class="num">587.40 USD</small></span>
+              <span class="mover-change" role="cell"><span class="num down">-0.60%</span><span class="vol-badge vol-normal">📊 <span class="num">101%</span> vol</span></span>
+              <span class="mover-pln num down" role="cell">-310,50&nbsp;PLN</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- ============ Benchmark chart ============ -->
+        <section class="bench-card panel reveal" style="--i:6" aria-labelledby="bench-title">
+          <div class="bench-head">
+            <div class="bench-title-row">
+              <span class="bench-title" id="bench-title" data-field="bench-title">WIG</span>
+              <span class="bench-change num up" data-field="bench-change">+0.62%</span>
+              <span class="bench-ohlc" data-field="bench-ohlc"><span class="num">O 118&nbsp;420,15</span> <span class="num">H 119&nbsp;210,40</span> <span class="num">L 117&nbsp;960,10</span> <span class="num">C 119&nbsp;155,82</span></span>
+            </div>
+            <div class="bench-controls">
+              <div class="segmented" role="tablist" aria-label="Chart range" data-field="bench-range">
+                <button type="button" role="tab" class="seg-btn" aria-selected="true" data-range="1D">1D</button>
+                <button type="button" role="tab" class="seg-btn" aria-selected="false" data-range="YTD" tabindex="-1">YTD</button>
+                <button type="button" role="tab" class="seg-btn" aria-selected="false" data-range="1Y" tabindex="-1">1Y</button>
+              </div>
+              <div class="segmented" role="tablist" aria-label="Chart type" data-field="bench-type">
+                <button type="button" role="tab" class="seg-btn" aria-selected="true" data-type="line">Line</button>
+                <button type="button" role="tab" class="seg-btn" aria-selected="false" data-type="candle" tabindex="-1">Candle</button>
+              </div>
+            </div>
+          </div>
+          <div class="bench-chart">
+            <div class="card-cl-overlay" id="benchmark-cl-loader">
+              <div class="cl-loader"><div class="cl-candles">
+                <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+              </div><span class="cl-loader-text">Loading chart…</span></div>
+            </div>
+            <svg class="bench-svg" viewBox="0 0 800 240" preserveAspectRatio="none" role="img" aria-label="Benchmark price chart"></svg>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ============ Mobile bottom tabs (D-003) ============ -->
+  <nav class="bottom-tabs glass-island" aria-label="Primary">
+    <a href="#" aria-current="page"><svg class="ico"><use href="#i-home"/></svg><span>Dashboard</span></a>
+    <a href="#"><svg class="ico"><use href="#i-wallet"/></svg><span>Wallets</span></a>
+    <a href="#"><svg class="ico"><use href="#i-book"/></svg><span>Diary</span></a>
+    <a href="#"><svg class="ico"><use href="#i-search"/></svg><span>Analysis</span></a>
+  </nav>
+</div>
+
+</body>
+</html>

@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.3.7`  
-*Target Release Numbering Standard — v14.3.7*
+**Current Release:** `14.3.8`  
+*Target Release Numbering Standard — v14.3.8*
 
 ---
 
@@ -52,7 +52,7 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.3.7`
+* **Current Active Release:** `14.3.8`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
   * **Minor 3:** Monthly audit commentary bank scaling (320 AI scenario templates across 4 tone profiles), scenario classification integration, and email wrap commentary injection.
   * **Service Release 7:** Added email suppression safeguard for monthly wrap recalculation and maintenance invocations (`send_email=False`/`skip_email=True`), preventing duplicate recap emails to users during recalculations; forced recalculation events now default to suppressing email dispatch.

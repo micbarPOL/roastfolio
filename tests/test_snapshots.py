@@ -601,6 +601,51 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(put_items[2]["portfolioValue"], Decimal("1650.00"))
         self.assertEqual(put_items[2]["investmentValue"], Decimal("1500.00"))
 
+    def test_recalculate_summary_carries_forward_wallets_missing_latest_day(self):
+        """Prod bug: editing one wallet today wrote a summary with only that wallet."""
+        user_portfolios = [{"portfolioId": "xtb"}, {"portfolioId": "ike"}]
+        xtb_snaps = [
+            {"snapshotDate": "2026-10-04", "portfolioValue": Decimal("900.00"), "investmentValue": Decimal("600.00"), "netCashFlow": Decimal("0")},
+            {"snapshotDate": "2026-10-05", "portfolioValue": Decimal("910.00"), "investmentValue": Decimal("600.00"), "netCashFlow": Decimal("0")},
+        ]
+        ike_snaps = [
+            {"snapshotDate": "2026-10-04", "portfolioValue": Decimal("160.00"), "investmentValue": Decimal("130.00"), "netCashFlow": Decimal("0")},
+            {"snapshotDate": "2026-10-05", "portfolioValue": Decimal("161.00"), "investmentValue": Decimal("130.00"), "netCashFlow": Decimal("0")},
+            {"snapshotDate": "2026-10-06", "portfolioValue": Decimal("165.00"), "investmentValue": Decimal("130.00"), "netCashFlow": Decimal("0")},
+        ]
+        summary_snaps = [
+            {"snapshotDate": "2026-10-04", "portfolioValue": Decimal("1060.00"), "investmentValue": Decimal("730.00"), "netCashFlow": Decimal("0")},
+        ]
+
+        def mock_list_snaps(user_id, pid, limit=None):
+            return {"xtb": xtb_snaps, "ike": ike_snaps, "summary": summary_snaps}[pid]
+
+        put_items = []
+
+        class MockBatch:
+            def put_item(self, Item):
+                put_items.append(Item)
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                pass
+
+        mock_table = MagicMock()
+        mock_table.batch_writer.return_value = MockBatch()
+
+        with patch.object(snapshots, "_table", return_value=mock_table), \
+             patch.object(snapshots.portfolios, "list_portfolios", return_value=user_portfolios), \
+             patch.object(snapshots, "list_snapshots", side_effect=mock_list_snaps), \
+             patch.object(snapshots, "recalculate_ath"):
+            snapshots.recalculate_summary_snapshots_from_date("user-1", "2026-10-05")
+
+        by_date = {item["snapshotDate"]: item for item in put_items}
+        self.assertEqual(by_date["2026-10-05"]["investmentValue"], Decimal("730.00"))
+        # xtb has no 10-06 snapshot: carried forward at 910, not dropped.
+        self.assertEqual(by_date["2026-10-06"]["investmentValue"], Decimal("730.00"))
+        self.assertEqual(by_date["2026-10-06"]["portfolioValue"], Decimal("1075.00"))
+        self.assertEqual(by_date["2026-10-06"]["netCashFlow"], Decimal("0.00"))
+
 
 if __name__ == "__main__":
     unittest.main()

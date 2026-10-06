@@ -71,7 +71,15 @@ def _period_boundaries(items: list[dict], start: date, next_month: date) -> tupl
     ordered = _ordered_snapshots(items)
     start_key = start.isoformat()
     end_key = next_month.isoformat()
-    start_snapshot = next((item for item in ordered if _snapshot_date(item) >= start_key), None)
+    # Baseline: last snapshot in the immediately preceding month (e.g. Sep 30 close for October)
+    prev_month_end = start - timedelta(days=1)
+    prev_month_start = date(prev_month_end.year, prev_month_end.month, 1).isoformat()
+    prev_snaps = [item for item in ordered if prev_month_start <= _snapshot_date(item) < start_key]
+    if prev_snaps:
+        start_snapshot = prev_snaps[-1]
+    else:
+        # Fallback: first snapshot on or after start_key (e.g. first month of account)
+        start_snapshot = next((item for item in ordered if _snapshot_date(item) >= start_key), None)
     if not start_snapshot or _snapshot_date(start_snapshot) >= end_key:
         return None, None
     end_snapshot = next((item for item in ordered if _snapshot_date(item) >= end_key), None)
@@ -725,7 +733,7 @@ def _trailing_turnover_average(user_id: str, year: int, month: int) -> Decimal |
     return _money(sum(turnovers) / Decimal(len(turnovers)))
 
 
-def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: str | None = None, is_email: bool = False) -> dict:
+def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: str | None = None, is_email: bool = False, live_value: Decimal | None = None) -> dict:
     """Compile and persist one complete monthly audit document."""
     if not str(user_id or "").strip():
         raise ValueError("user_id is required")
@@ -750,6 +758,19 @@ def generate_monthly_wrap(user_id: str, year: int, month: int, *, benchmark_id: 
     total_cash_flow = cash_flow_breakdown["net_cash_flow_pln"]
 
     summary_snapshots = snapshots.list_snapshots(user_id, "summary", limit=5000)
+    if live_value is not None and live_value > ZERO:
+        today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        existing_today = next((s for s in summary_snapshots if _snapshot_date(s) == today_str), None)
+        if existing_today:
+            existing_today["portfolioValue"] = live_value
+        else:
+            latest_inv = summary_snapshots[-1].get("investmentValue", ZERO) if summary_snapshots else ZERO
+            summary_snapshots.append({
+                "snapshotDate": today_str,
+                "portfolioValue": live_value,
+                "investmentValue": latest_inv,
+            })
+        summary_snapshots = _with_unit_prices(summary_snapshots)
     overall = _monthly_performance(summary_snapshots, start, next_month, total_cash_flow)
     wallet_performance = []
     for portfolio in portfolio_rows:

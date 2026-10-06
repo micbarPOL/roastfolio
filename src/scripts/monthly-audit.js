@@ -1045,10 +1045,62 @@
         return card('What changed hands.', 'Trading activity', body, 'ma-trading');
     }
 
+    function resolveLiveMtdItem(rawItem) {
+        if (!rawItem || (!rawItem.is_live && !isCurrentMonth(rawItem.period))) return rawItem;
+        if (typeof window === 'undefined' || !window.PORTFOLIO_TOTAL_VALUE || Number(window.PORTFOLIO_TOTAL_VALUE) <= 0) return rawItem;
+
+        const liveTotal = Number(window.PORTFOLIO_TOTAL_VALUE);
+        const startVal = Number(rawItem.start_value_pln || 0);
+        const cashFlow = Number(rawItem.cash_flow_pln || 0);
+        const nominalChange = Number((liveTotal - startVal - cashFlow).toFixed(2));
+
+        let twrPct = rawItem.overall_twr_pct;
+        if (startVal > 0) {
+            const denom = startVal + (cashFlow * 0.5);
+            if (denom > 0) {
+                twrPct = Number(((nominalChange / denom) * 100).toFixed(4));
+            }
+        }
+
+        const patched = {
+            ...rawItem,
+            is_live: true,
+            end_value_pln: liveTotal,
+            overall_nominal_change_pln: nominalChange,
+            overall_twr_pct: twrPct,
+        };
+
+        if (patched.retirement_target) {
+            const targetGoal = Number(patched.retirement_target.monthly_target_nominal_pln || 0);
+            patched.retirement_target = {
+                ...patched.retirement_target,
+                actual_nominal_gain_pln: nominalChange,
+                pct_achieved: targetGoal > 0 ? Number(((nominalChange / targetGoal) * 100).toFixed(4)) : 0,
+            };
+        }
+
+        if (patched.journey && Array.isArray(patched.journey.points) && patched.journey.points.length > 0) {
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const pts = [...patched.journey.points];
+            const lastPt = pts[pts.length - 1];
+            if (lastPt.date === todayStr) {
+                pts[pts.length - 1] = { ...lastPt, portfolio_pct: twrPct };
+            } else {
+                pts.push({ date: todayStr, portfolio_pct: twrPct, benchmark_pct: lastPt.benchmark_pct });
+            }
+            patched.journey = { ...patched.journey, points: pts };
+        }
+
+        return patched;
+    }
+
     function renderReport() {
         const root = document.getElementById('monthly-audit-root');
         if (!root) return;
-        const item = state.items.get(state.selectedPeriod);
+        let item = state.items.get(state.selectedPeriod);
+        if (item) {
+            item = resolveLiveMtdItem(item);
+        }
         const periodTitle = window.MonthlyAuditPresentation.periodTitle(state.selectedPeriod);
         const isReady = item && !item._isLiveStub;
         const wigReturn = isReady ? resolveMarketReturn(item, 'WIG') : null;
@@ -1091,8 +1143,9 @@
     }
 
     window.shareMonthlyAudit = () => {
-        const item = state.items.get(state.selectedPeriod);
+        let item = state.items.get(state.selectedPeriod);
         if (item) {
+            item = resolveLiveMtdItem(item);
             item._heroBenchmarks = {
                 wig: resolveMarketReturn(item, 'WIG'),
                 msci: resolveMarketReturn(item, 'MSCI_WORLD'),
@@ -1107,7 +1160,10 @@
         const item = state.items.get(period);
         if (item && !item._isLiveStub && !isCurrentMonth(period)) return item;
         try {
-            const payload = await fetchJson(`/monthly-wraps?period=${encodeURIComponent(period)}`);
+            const liveQuery = (isCurrentMonth(period) && typeof window !== 'undefined' && window.PORTFOLIO_TOTAL_VALUE && Number(window.PORTFOLIO_TOTAL_VALUE) > 0)
+                ? `&live_value=${encodeURIComponent(window.PORTFOLIO_TOTAL_VALUE)}`
+                : '';
+            const payload = await fetchJson(`/monthly-wraps?period=${encodeURIComponent(period)}${liveQuery}`);
             if (payload.item) ingestItems([payload.item]);
         } catch (error) {
             if (error.status !== 404) throw error;
@@ -1179,6 +1235,14 @@
             loadAllBenchmarkMonthlyReturns();
         }
     };
+
+    if (typeof window !== 'undefined') {
+        window.addEventListener('liveDataReady', () => {
+            if (isCurrentMonth(state.selectedPeriod) && state.items.has(state.selectedPeriod)) {
+                renderReport();
+            }
+        });
+    }
 
     window.loadMonthlyAuditBenchmarkReturns = loadAllBenchmarkMonthlyReturns;
     window._monthlyAuditBenchmarkReturns = _benchmarkReturns;

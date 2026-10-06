@@ -656,7 +656,7 @@ def calculate_benchmark_close(benchmark_id: str, snapshot_date: str | None = Non
     return _quantize_money(close_price)
 
 
-def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, overwrite: bool = False) -> dict:
+def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, overwrite: bool = False, live_value: Decimal | None = None) -> dict:
     snapshot_date = _normalize_snapshot_date(snapshot_date)
     profile = db.get_user(user_id) or {}
     benchmark_id = profile.get("settings", {}).get("benchmark", db.DEFAULT_BENCHMARK)
@@ -747,6 +747,8 @@ def generate_user_snapshots(user_id: str, snapshot_date: str | None = None, over
 
     if portfolios_out:
         summary_snapshot = calculate_portfolio_snapshot(summary_holdings, snapshot_date=snapshot_date)
+        if live_value is not None and live_value > Decimal("0"):
+            summary_snapshot["portfolioValue"] = _quantize_money(live_value)
         summary_net_cash_flow = _quantize_money(sum((_to_decimal(p.get("netCashFlow", 0)) for p in portfolios_out), Decimal("0")))
         summary_history_all = list_snapshots(user_id, "summary")
         xirr_history = [s for s in summary_history_all if str(s.get("snapshotDate", "")) < snapshot_date]
@@ -1483,19 +1485,35 @@ def recalculate_summary_snapshots_from_date(user_id: str, from_date: str) -> int
             twr_prev_value = _to_decimal(seed_last["ending_value"])
             twr_prev_unit_price = _to_decimal(seed_last["unit_price"])
 
+    # Seed each wallet's last known snapshot before the rebuild window. A wallet
+    # that lacks a snapshot on a given day (e.g. only one wallet was edited
+    # today) must still contribute its latest value, otherwise the summary
+    # drops that wallet's whole balance and books it as a fake withdrawal.
+    last_seen: dict = {}
+    for pid, snaps_by_date in portfolio_snap_map.items():
+        earlier = [d for d in snaps_by_date if d < start_date]
+        if earlier:
+            last_seen[pid] = snaps_by_date[max(earlier)]
+
     with _table().batch_writer() as batch:
         for snap_date in summary_dates:
             total_portfolio_value = Decimal("0")
             total_investment_value = Decimal("0")
             total_net_cash_flow = Decimal("0")
             has_portfolio_data = False
-            for snaps_by_date in portfolio_snap_map.values():
+            for pid, snaps_by_date in portfolio_snap_map.items():
                 day_snap = snaps_by_date.get(snap_date)
                 if day_snap:
                     has_portfolio_data = True
+                    last_seen[pid] = day_snap
                     total_portfolio_value += _to_decimal(day_snap.get("portfolioValue", 0))
                     total_investment_value += _to_decimal(day_snap.get("investmentValue", 0))
                     total_net_cash_flow += _to_decimal(day_snap.get("netCashFlow", 0))
+                elif pid in last_seen:
+                    # Carry forward: same value/investment, no cash flow today.
+                    carried = last_seen[pid]
+                    total_portfolio_value += _to_decimal(carried.get("portfolioValue", 0))
+                    total_investment_value += _to_decimal(carried.get("investmentValue", 0))
 
             if not has_portfolio_data and snap_date in existing_summary_by_date:
                 prev_s = existing_summary_by_date[snap_date]

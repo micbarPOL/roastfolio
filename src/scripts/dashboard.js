@@ -2344,6 +2344,10 @@ async function renderDashSparkline() {
         for (const row of data) {
             byMonth[row.date.slice(0, 7)] = { value: row.value, investment: row.investment };
         }
+        const currentMonthStr = new Date().toISOString().slice(0, 7);
+        if (typeof window !== 'undefined' && window.PORTFOLIO_TOTAL_VALUE && byMonth[currentMonthStr]) {
+            byMonth[currentMonthStr].value = Number(window.PORTFOLIO_TOTAL_VALUE);
+        }
 
         const months = Object.keys(byMonth).sort();
         const recentMonths = months.slice(-7);

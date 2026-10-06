@@ -65,7 +65,7 @@ class MonthlySummaryContractTests(unittest.TestCase):
         self.assertIn("function benchmarkReturnForPeriod(returns, monthStr, livePrice, completedMonth)", self.dashboard_js)
         self.assertIn("function previousMonthString(monthStr)", self.dashboard_js)
         self.assertIn("prevMonthReturn?.closePrice", self.dashboard_js)
-        self.assertIn("const monthStartSnap = firstSnapshotOnOrAfter(snapshots, monthlyPeriod.startDate)", self.dashboard_js)
+        self.assertIn("snapshots.filter(r => r.date < monthlyPeriod.startDate)", self.dashboard_js)
         self.assertIn("benchmarkReturnForPeriod(returns, currentMonthStr, livePrice, monthlyPeriod.completedMonth)", self.dashboard_js)
         self.assertIn("getPreviousYearEndString", self.dashboard_js)
         self.assertIn("liveDataReady", self.dashboard_js)
@@ -73,9 +73,8 @@ class MonthlySummaryContractTests(unittest.TestCase):
 
     def test_statistics_monthly_history_uses_month_start_periods(self):
         self.assertIn("function _buildPortfolioMonthlyPeriods(snapshots)", self.statistics_js)
-        self.assertIn("function _firstSnapshotOnOrAfter(snapshots, date)", self.statistics_js)
-        self.assertIn("const completedEnd = _firstSnapshotOnOrAfter(sorted, `${nextMonth}-01`);", self.statistics_js)
-        self.assertIn("const rows = _buildPortfolioMonthlyPeriods(data).reverse();", self.statistics_js)
+        self.assertIn("sorted.filter(r => r.date < `${month}-01`)", self.statistics_js)
+        self.assertIn("const rows = (isDaily ? _buildPortfolioDailyPeriods(data) : _buildPortfolioMonthlyPeriods(data)).reverse();", self.statistics_js)
         self.assertIn("const monthlyPeriods = _buildPortfolioMonthlyPeriods(snapshotData);", self.statistics_js)
         self.assertNotIn("function _buildPortfolioMonthlyMap", self.statistics_js)
 

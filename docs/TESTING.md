@@ -13,6 +13,7 @@ To maintain rapid development velocity and ensure rock-solid stability, tests in
 | **Smoke Tests** | `./test.sh smoke` or `npm run test:smoke` | **< 1.0 second** | UI changes, CSS tweaks, DOM IDs, footer versioning, template contracts, layout regressions |
 | **Full Tests** | `./test.sh full` or `npm run test:full` | ~15–30 seconds | Backend calculations, financial models (XIRR, TWR, AVCO), ledger sync, Lambda handlers |
 | **Browser Tests** | `./test.sh browser` or `npm run test:browser` | ~3–5 seconds | Playwright/Chromium isolated frontend behavior and dialog interactions (mock fixtures) |
+| **Design Tests** | `./test.sh design` or `npm run test:design` | ~1 minute | Design system document health, mockup rules, Decision Log checks and mockup behavior in Chromium (see `docs/DESIGN_SYSTEM_2026_V9.md` Section 10) |
 
 ---
 
