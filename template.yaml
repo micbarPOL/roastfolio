@@ -40,16 +40,7 @@ Resources:
         - email
       AutoVerifiedAttributes:
         - email
-      # Collect email (required) and nickname (required, displayed in app)
-      Schema:
-        - Name: email
-          AttributeDataType: String
-          Required: true
-          Mutable: false
-        - Name: nickname
-          AttributeDataType: String
-          Required: true
-          Mutable: true
+      # Email and nickname schema attributes were provisioned at pool creation and are immutable in Cognito
       Policies:
         PasswordPolicy:
           MinimumLength: 6
