@@ -226,7 +226,10 @@
     const { preferTicker = false } = options;
     if (!preferTicker && tx && tx.holdingId) return `id:${String(tx.holdingId)}`;
     const ticker = String(tx && tx.ticker || '').trim().toUpperCase();
-    if (ticker) return `ticker:${ticker}`;
+    if (ticker) {
+      const canonicalTicker = ticker.endsWith('.WA') ? ticker.slice(0, -3) : ticker;
+      return `ticker:${canonicalTicker}`;
+    }
     return `name:${String(tx && tx.name || '').trim().toLowerCase()}`;
   }
 
@@ -700,9 +703,15 @@
   }
 
   function _findCurrentHolding(ticker, name) {
+    const cleanSym = String(ticker || '').trim().toUpperCase();
+    const cleanBase = cleanSym.endsWith('.WA') ? cleanSym.slice(0, -3) : cleanSym;
+    const cleanName = String(name || '').trim().toLowerCase();
     return (_currentHoldings || []).find(h => {
-      if (ticker && h.ticker && String(h.ticker).toUpperCase() === String(ticker).toUpperCase()) return true;
-      return String(h.name || '').trim().toLowerCase() === String(name || '').trim().toLowerCase();
+      const hTicker = String(h.ticker || '').trim().toUpperCase();
+      const hBase = hTicker.endsWith('.WA') ? hTicker.slice(0, -3) : hTicker;
+      if (cleanSym && hTicker && cleanSym === hTicker) return true;
+      if (cleanBase && hBase && cleanBase === hBase) return true;
+      return Boolean(cleanName && String(h.name || '').trim().toLowerCase() === cleanName);
     }) || null;
   }
 
