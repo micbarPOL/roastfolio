@@ -310,6 +310,30 @@ def list_all_holdings(user_id: str) -> list[dict]:
     return items
 
 
+def _canonical_ticker(ticker: str | None, currency: str = "PLN", existing_ticker: str | None = None) -> str | None:
+    if not ticker and existing_ticker:
+        return existing_ticker
+    if not ticker:
+        return None
+    raw = str(ticker).strip().upper()
+    if not raw:
+        return existing_ticker or None
+
+    # If existing ticker ends with .WA and new ticker is just the base without .WA, retain existing .WA
+    if existing_ticker:
+        ex_upper = str(existing_ticker).strip().upper()
+        if ex_upper.endswith(".WA") and raw == ex_upper[:-3]:
+            return ex_upper
+
+    # Polish tickers on WSE: if currency is PLN and symbol has no dot, canonicalize to .WA
+    if str(currency or "PLN").strip().upper() == "PLN" and "." not in raw:
+        import re
+        if re.fullmatch(r"[A-Z0-9_-]{2,12}", raw):
+            return f"{raw}.WA"
+
+    return raw
+
+
 def _resolve_existing_holding(user_id: str, portfolio_id: str, holding_id=None, ticker=None, name=None):
     holdings = _list_holdings_raw(user_id, portfolio_id)
     ticker_norm = (ticker or "").strip().upper()
@@ -320,8 +344,13 @@ def _resolve_existing_holding(user_id: str, portfolio_id: str, holding_id=None, 
             if h.get("holdingId") == holding_id:
                 return h
     if ticker_norm:
+        t_base = ticker_norm[:-3] if ticker_norm.endswith(".WA") else ticker_norm
         for h in holdings:
-            if str(h.get("ticker") or "").strip().upper() == ticker_norm:
+            h_ticker = str(h.get("ticker") or "").strip().upper()
+            if h_ticker == ticker_norm:
+                return h
+            h_base = h_ticker[:-3] if h_ticker.endswith(".WA") else h_ticker
+            if t_base and h_base and t_base == h_base:
                 return h
     if name_norm:
         for h in holdings:
@@ -422,13 +451,13 @@ def rebuild_holdings_from_transactions(user_id: str, portfolio_id: str) -> list[
             current = holdings.get(holding_id, {
                 "holdingId": holding_id,
                 "name": tx.get("name") or tx.get("ticker") or holding_id,
-                "ticker": ticker,
+                "ticker": _canonical_ticker(ticker, currency=holding_currency),
                 "currency": holding_currency,
                 "units": Decimal("0"),
                 "purchaseValue": Decimal("0"),
             })
             current["name"] = tx.get("name") or current["name"]
-            current["ticker"] = ticker or current.get("ticker")
+            current["ticker"] = _canonical_ticker(ticker, currency=holding_currency, existing_ticker=current.get("ticker"))
             current["currency"] = holding_currency
             current["units"] += quantity
             current["purchaseValue"] += value
@@ -730,6 +759,8 @@ def update_transaction(user_id: str, portfolio_id: str, transaction_id: str, upd
         ).strip()[:120]
         ticker = updates.get("ticker", existing.get("ticker"))
         ticker = str(ticker).strip() if ticker not in (None, "") else None
+        currency = updates.get("currency") or existing.get("currency") or portfolio.get("currency", "PLN")
+        ticker = _canonical_ticker(ticker, currency=currency, existing_ticker=existing.get("ticker"))
 
         current_asset_id = _safe_id(ticker or name or "")
         existing_holding_id = str(existing.get("holdingId") or "").strip()
@@ -745,7 +776,6 @@ def update_transaction(user_id: str, portfolio_id: str, transaction_id: str, upd
 
         if not holding_id:
             raise ValueError("holdingId, name, or ticker is required")
-        currency = updates.get("currency") or existing.get("currency") or portfolio.get("currency", "PLN")
 
     raw_value = updates.get("value") if "value" in updates else None
     if raw_value not in (None, ""):
@@ -897,8 +927,12 @@ def record_transaction(user_id: str, portfolio_id: str, transaction: dict) -> di
             or transaction.get("ticker")
             or holding_id
         ).strip()[:120]
-        ticker = transaction.get("ticker") or (existing or {}).get("ticker") or None
         currency = transaction.get("currency") or (existing or {}).get("currency") or portfolio.get("currency", "PLN")
+        ticker = _canonical_ticker(
+            transaction.get("ticker"),
+            currency=currency,
+            existing_ticker=(existing or {}).get("ticker")
+        )
 
     value = _transaction_value(tx_type, transaction, quantity, price, commission, affect_cash)
     price = _derived_price(tx_type, quantity, price, value, commission)

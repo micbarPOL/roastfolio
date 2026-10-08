@@ -1324,9 +1324,54 @@ function renderDailyBreakdown() {
         return false;
     }
 
-    // Filter out cash holdings and sort by absolute daily PLN change descending
-    const sorted = [...PORTFOLIO_DATA]
-        .filter(d => !isCashHoldingItem(d))
+    function consolidateHoldingsForDisplay(holdings) {
+        if (!Array.isArray(holdings)) return [];
+        const map = new Map();
+        for (const item of holdings) {
+            if (!item || isCashHoldingItem(item)) continue;
+            const ticker = String(item.ticker || '').trim().toUpperCase();
+            const name = String(item.name || '').trim().toLowerCase();
+            const baseTicker = ticker.endsWith('.WA') ? ticker.slice(0, -3) : ticker;
+            const key = baseTicker || name;
+
+            if (!map.has(key)) {
+                map.set(key, { ...item });
+            } else {
+                const existing = map.get(key);
+                const exVal = Number(existing.currentValue || 0);
+                const itemVal = Number(item.currentValue || 0);
+                const exPrice = Number(existing.pricePLN || 0);
+                const itemPrice = Number(item.pricePLN || 0);
+
+                const preferItem = (exPrice <= 0 && itemPrice > 0) || (itemPrice > 0 && itemVal > exVal);
+                if (preferItem) {
+                    existing.pricePLN = item.pricePLN;
+                    existing.priceOriginal = item.priceOriginal;
+                    existing.priceOriginalCurrency = item.priceOriginalCurrency;
+                    existing.dailyChangePct = item.dailyChangePct;
+                    existing.ytdChangePct = item.ytdChangePct;
+                    existing.todayBars = item.todayBars || existing.todayBars;
+                    existing.yearBars = item.yearBars || existing.yearBars;
+                    existing.recentBars = item.recentBars || existing.recentBars;
+                    existing.volume = item.volume || existing.volume;
+                    existing.avgVolume = item.avgVolume || existing.avgVolume;
+                    existing.volumeTz = item.volumeTz || existing.volumeTz;
+                }
+                if (String(item.ticker || '').toUpperCase().endsWith('.WA')) {
+                    existing.ticker = item.ticker;
+                }
+                existing.units = (Number(existing.units) || 0) + (Number(item.units) || 0);
+                existing.purchaseValue = (Number(existing.purchaseValue) || 0) + (Number(item.purchaseValue) || 0);
+                existing.currentValue = (Number(existing.currentValue) || 0) + (Number(item.currentValue) || 0);
+                existing.dailyChangePLN = (Number(existing.dailyChangePLN) || 0) + (Number(item.dailyChangePLN) || 0);
+            }
+        }
+        return Array.from(map.values());
+    }
+
+    // Filter out cash holdings, defensively consolidate any split lots, and sort by absolute daily PLN change descending
+    const filtered = [...PORTFOLIO_DATA].filter(d => !isCashHoldingItem(d));
+    const sorted = consolidateHoldingsForDisplay(filtered)
         .map(d => ({
             ...d,
             dailyChangePLNSafe: Number.isFinite(Number(d.dailyChangePLN)) ? Number(d.dailyChangePLN) : 0,

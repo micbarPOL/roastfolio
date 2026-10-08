@@ -2196,14 +2196,25 @@ def _load_wallets_from_csv() -> dict[str, list[dict]]:
     return result
 
 
+def _canonical_holding_key(h: dict) -> str:
+    ticker = str(h.get("ticker") or "").strip().upper()
+    name = str(h.get("name") or "").strip().lower()
+    currency = str(h.get("currency") or "PLN").strip().upper()
+
+    if ticker:
+        base = ticker[:-3] if ticker.endswith(".WA") else ticker
+        return f"ticker:{base}:{currency}"
+    return f"name:{name}:{currency}"
+
+
 def _build_summary_wallet(wallets_out: dict) -> dict:
     """
     Compute the virtual Summary wallet by aggregating all real portfolios.
 
-    Holdings with the same ticker are consolidated into one row:
+    Holdings with the same canonical ticker/name are consolidated into one row:
       - units, purchaseValue, currentValue, dailyChangePLN  → summed
-      - pricePLN, dailyChangePct, ytdChangePct               → taken from the largest-value lot
-      - todayBars, yearBars                                  → taken from the largest-value lot
+      - pricePLN, dailyChangePct, ytdChangePct               → taken from the largest-value lot with live price
+      - todayBars, yearBars                                  → taken from the largest-value lot with live price
       - name                                                  → first occurrence
 
     Summary metrics:
@@ -2216,19 +2227,37 @@ def _build_summary_wallet(wallets_out: dict) -> dict:
     base        = total_value - total_daily
     daily_pct   = round((total_daily / base) * 100, 4) if base else 0.0
 
-    # Consolidate holdings by ticker (None-ticker items kept separate by name)
+    # Consolidate holdings by canonical key (None-ticker items kept separate by name)
     consolidated: dict[str, dict] = {}
     for w in wallets_out.values():
         for h in w.get("holdings", []):
-            key = h.get("ticker") or f"__noticker__{h.get('name', '')}"
+            key = _canonical_holding_key(h)
             if key not in consolidated:
                 consolidated[key] = dict(h)
             else:
                 existing = consolidated[key]
-                # Use the lot with the larger currentValue as the price/bar reference
-                if h.get("currentValue", 0) > existing.get("currentValue", 0):
+                # Maintain canonical ticker (prefer .WA)
+                h_ticker = str(h.get("ticker") or "").strip().upper()
+                ex_ticker = str(existing.get("ticker") or "").strip().upper()
+                if h_ticker.endswith(".WA") and not ex_ticker.endswith(".WA"):
+                    existing["ticker"] = h.get("ticker")
+
+                # Use the lot with valid price / larger currentValue as price/bar reference
+                h_price = h.get("pricePLN", 0) or 0
+                ex_price = existing.get("pricePLN", 0) or 0
+                prefer_h = False
+                if ex_price <= 0 and h_price > 0:
+                    prefer_h = True
+                elif h_price > 0 and h.get("currentValue", 0) > existing.get("currentValue", 0):
+                    prefer_h = True
+                elif ex_price <= 0 and h.get("currentValue", 0) > existing.get("currentValue", 0):
+                    prefer_h = True
+
+                if prefer_h:
                     existing["pricePLN"]        = h.get("pricePLN",        existing.get("pricePLN"))
                     existing["priceOriginal"]    = h.get("priceOriginal",   existing.get("priceOriginal"))
+                    if "priceOriginalCurrency" in h:
+                        existing["priceOriginalCurrency"] = h.get("priceOriginalCurrency")
                     existing["dailyChangePct"]   = h.get("dailyChangePct",  existing.get("dailyChangePct"))
                     existing["ytdChangePct"]     = h.get("ytdChangePct",    existing.get("ytdChangePct"))
                     existing["todayBars"]        = h.get("todayBars",       existing.get("todayBars"))
@@ -2242,11 +2271,11 @@ def _build_summary_wallet(wallets_out: dict) -> dict:
                 pv = existing["purchaseValue"]
                 existing["returnPct"]     = round((existing["profit"] / pv) * 100, 2) if pv else 0.0
                 if h.get("volume") is not None:
-                    existing["volume"]    = h.get("volume", existing.get("volume", 0))
+                    existing["volume"]    = max(existing.get("volume", 0) or 0, h.get("volume", 0) or 0)
                 if h.get("avgVolume") is not None:
-                    existing["avgVolume"] = h.get("avgVolume", existing.get("avgVolume", 0))
-                if h.get("volumeTz") is not None:
-                    existing["volumeTz"]  = h.get("volumeTz", existing.get("volumeTz"))
+                    existing["avgVolume"] = max(existing.get("avgVolume", 0) or 0, h.get("avgVolume", 0) or 0)
+                if h.get("volumeTz") is not None and not existing.get("volumeTz"):
+                    existing["volumeTz"]  = h.get("volumeTz")
 
     all_holdings = list(consolidated.values())
 
