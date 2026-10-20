@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `14.3.7`  
-*Target Release Numbering Standard — v14.3.7*
+**Current Release:** `15.3.1`
+*Target Release Numbering Standard — v15.3.1*
 
 ---
 
@@ -52,7 +52,19 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `14.3.7`
+* **Current Active Release:** `15.3.1`
+  * **Service 1:** Fixed the History section tabs so only the selected tab (Overview or Summaries) is highlighted; previously both looked selected on Summaries.
+* **Previous Active Release:** `15.3.0`
+  * **Minor 3:** History redesigned using the UI 20 design system: value hero with range facts, merged return-vs-benchmark chart, monthly and daily scatter analysis, recap poster, period navigator, privacy-first share invite, and data-backed recap headlines.
+* **Previous Active Release:** `15.2.0`
+  * **Minor 2:** Wallets redesigned using the UI 20 design system: wallet chips, value and performance hero, allocation bar, frameless holdings, inline settings, and responsive transaction sheets.
+* **Previous Active Release:** `15.1.6`
+  * **Patch 6:** Dashboard polish — breakout-style new-ATH banner, log-scale "Under the surface" lake with an above-ATH tide, phone hero with the roast and gauge side by side, a left-aligned header at every width, and the intraday portfolio line delayed 15 minutes to match exchange quotes.
+* **Previous Active Release:** `15.1.5`
+  * **Minor 1:** Browser-local dashboard timing history with JSON export, API server timing and response-size headers, per-view CloudWatch timings, and a reproducible synthetic before/after benchmark.
+  * **Major 15:** UI 20 dashboard with browser-synthesized minute-by-minute portfolio versus benchmark returns, saved benchmark-session/calendar-day windows, constant-FX valuation, data-quality disclosures, and a compact title/live-status header.
+  * **Minor 0 / Service 0:** Initial development deployment from `roastfolio_ui_20`; no merge into environment branches.
+* **Previous Active Release:** `14.3.7`
   * **Major 14:** Dedicated interactive **Release Summary & Changelog screen** (`src/releases.html`) featuring real-time tier filtering (All/Major/Minor/Service), keyword search, interactive timeline nodes, and universal footer navigation integration across all Roastfolio touchpoints.
   * **Minor 3:** Monthly audit commentary bank scaling (320 AI scenario templates across 4 tone profiles), scenario classification integration, and email wrap commentary injection.
   * **Service Release 7:** Added email suppression safeguard for monthly wrap recalculation and maintenance invocations (`send_email=False`/`skip_email=True`), preventing duplicate recap emails to users during recalculations; forced recalculation events now default to suppressing email dispatch.
