@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Blocks pushes that would put roastfolio_ui_20 work onto remote dev, test or prod.
+# Covers fast-forward merges, which do not trigger pre-merge-commit.
+. "$(dirname "$0")/_branch_guard.sh"
+
+override_enabled && exit 0
+
+zero="0000000000000000000000000000000000000000"
+
+while read -r _lref lsha rref rsha; do
+  case "$rref" in refs/heads/dev|refs/heads/test|refs/heads/prod) ;; *) continue ;; esac
+  [ "$lsha" = "$zero" ] && continue
+
+  if [ "$rsha" = "$zero" ]; then
+    pushed="$(git rev-list "$lsha")"
+  else
+    pushed="$(git rev-list "$lsha" --not "$rsha" 2>/dev/null || git rev-list "$lsha")"
+  fi
+
+  if [ -n "$(printf '%s\n' "$pushed" | intersect_with_feature remote)" ]; then
+    block_message
+    exit 1
+  fi
+done
+exit 0
