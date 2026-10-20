@@ -51,7 +51,7 @@ class WalletTransactionUiContractTests(unittest.TestCase):
             "function _applyOptimisticTransaction(",
             "Searching Yahoo Finance",
             "Insufficient quantity.",
-            "benchmarkSettingEl.style.display = isSummary ? '' : 'none';",
+            "benchmarkSettingEl.style.display = '';",
             "function _isCashTransactionType(",
             "autoAddCash",
             "Insufficient cash.",
@@ -85,7 +85,7 @@ class WalletTransactionUiContractTests(unittest.TestCase):
         self.assertIn(".filter(row => isTurnoverOperation(row.operation))", tx_js)
         self.assertIn("window.LedgerTransactions", stats_js)
         self.assertIn("loadRows()", stats_js)
-        self.assertIn("PortfolioClient.listSnapshots('summary')", stats_js)
+        self.assertIn("PortfolioClient.listSnapshots(portfolioId)", stats_js)
         self.assertNotIn("INVESTMENT_DATA", stats_js)
         self.assertIn("showTab('transactions'", html)
         self.assertIn("refreshTransactionsTabData()", html)

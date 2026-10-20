@@ -55,6 +55,9 @@
     };
 
     const tone = value => number(value) > 0 ? 'is-positive' : number(value) < 0 ? 'is-negative' : 'is-neutral';
+    const shortBenchmarkName = value => window.MonthlyAuditPresentation?.shortBenchmarkName
+        ? window.MonthlyAuditPresentation.shortBenchmarkName(value)
+        : String(value || 'Benchmark').replace(/\s*[·-]\s*(IWDA proxy|proxy).*$/i, '').trim();
 
     function apiBase() {
         const config = window.__CONFIG__ || window.APP_CONFIG || {};
@@ -181,18 +184,35 @@
     }
 
     function timelineMarkup() {
-        const periods = [...new Set([...state.items.keys(), state.selectedPeriod])].filter(Boolean).sort();
+        const periods = [...new Set([...state.items.keys(), state.selectedPeriod])]
+            .filter(period => {
+                if (!period) return false;
+                const item = state.items.get(period) || {};
+                return !item._isLiveStub || isCurrentMonth(period) || period === state.selectedPeriod;
+            })
+            .sort();
         const current = periods.indexOf(state.selectedPeriod);
-        const options = [...periods].reverse().map(period => `<option value="${period}" ${period === state.selectedPeriod ? 'selected' : ''}>${escapeHtml(window.MonthlyAuditPresentation.periodTitle(period))}${isCurrentMonth(period) ? ' (Live MTD)' : (state.items.has(period) ? '' : ' · No report')}</option>`).join('');
+        const periodButton = period => {
+            const item = state.items.get(period) || {};
+            const active = period === state.selectedPeriod;
+            const title = window.MonthlyAuditPresentation.periodTitle(period).replace(/\s+\d{4}$/, '');
+            const yearMark = period.endsWith('-01') ? `<span class="rc-year-mark">${escapeHtml(period.slice(0, 4))}</span>` : '';
+            const value = item._isLiveStub && isCurrentMonth(period) ? 'Live MTD' : formatPct(item.overall_twr_pct, true);
+            return `<button type="button" class="rc-period${active ? ' is-active' : ''}" data-period="${period}" aria-current="${active ? 'date' : 'false'}" onclick="selectMonthlyAuditPeriod('${period}')">
+                ${yearMark}<span>${escapeHtml(title)}</span><strong class="${tone(item.overall_twr_pct)}">${escapeHtml(value)}</strong>${isCurrentMonth(period) ? '<i class="rc-live-dot" aria-label="Live month"></i>' : ''}</button>`;
+        };
         return `
-            <div class="ma-toolbar">
-                <div class="ma-edition">YOUR MONTHLY EDITION <span>Less noise. More perspective.</span></div>
-                <nav class="ma-period-control" aria-label="Summary months">
-                    <button type="button" aria-label="Previous available month" ${current <= 0 ? 'disabled' : ''} onclick="selectMonthlyAuditPeriod('${periods[current - 1] || state.selectedPeriod}')">‹</button>
-                    <select aria-label="Choose summary month" onchange="selectMonthlyAuditPeriod(this.value)">${options}</select>
-                    <button type="button" aria-label="Next available month" ${current >= periods.length - 1 ? 'disabled' : ''} onclick="selectMonthlyAuditPeriod('${periods[current + 1] || state.selectedPeriod}')">›</button>
-                </nav>
-            </div>`;
+            <nav class="rc-nav" aria-label="Summary period navigator">
+                <div class="segmented rc-kind" role="tablist" aria-label="Summary type">
+                    <button type="button" class="seg-btn active" role="tab" aria-selected="true">Monthly</button>
+                    <button type="button" class="seg-btn" role="tab" aria-selected="false" aria-disabled="true" disabled>Yearly <span class="rc-soon">Soon</span></button>
+                </div>
+                <div class="rc-strip-wrap">
+                    <button class="rc-step" type="button" aria-label="Previous available month" ${current <= 0 ? 'disabled' : ''} onclick="selectMonthlyAuditPeriod('${periods[current - 1] || state.selectedPeriod}')">‹</button>
+                    <div class="rc-strip" data-field="recap-month-picker">${periods.map(periodButton).join('')}</div>
+                    <button class="rc-step" type="button" aria-label="Next available month" ${current >= periods.length - 1 ? 'disabled' : ''} onclick="selectMonthlyAuditPeriod('${periods[current + 1] || state.selectedPeriod}')">›</button>
+                </div>
+            </nav>`;
     }
 
     function metric(label, value, className = '') {
@@ -283,7 +303,7 @@
         const available = key => points.some(point => Number.isFinite(dateTime(point.date)) && finite(point[key]));
         const delta = finite(item.trajectory_delta_pp) ? `${number(item.trajectory_delta_pp) > 0 ? '+' : ''}${number(item.trajectory_delta_pp).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pp` : 'No data';
         const body = `
-            <div class="ma-return-legend"><span class="ma-legend-portfolio">Portfolio · cumulative TWR</span><span class="ma-legend-benchmark">${escapeHtml(journey.benchmark_name || 'Benchmark')}${journey.benchmark_id === 'MSCI_WORLD' && !/proxy/i.test(journey.benchmark_name || '') ? ' · MSCI World proxy' : ''} · ${escapeHtml(journey.benchmark_currency || 'currency unavailable')}</span></div>
+            <div class="ma-return-legend"><span class="ma-legend-portfolio">Portfolio · cumulative TWR</span><span class="ma-legend-benchmark">${escapeHtml(shortBenchmarkName(journey.benchmark_name || 'Benchmark'))} · ${escapeHtml(journey.benchmark_currency || 'currency unavailable')}</span></div>
             ${!available('portfolio_pct') ? '<p class="ma-muted">Portfolio return history unavailable.</p>' : ''}
             ${!available('benchmark_pct') ? '<p class="ma-muted">Benchmark return history unavailable.</p>' : ''}
             ${journeyVisual(points)}
@@ -1045,6 +1065,71 @@
         return card('What changed hands.', 'Trading activity', body, 'ma-trading');
     }
 
+    function benchmarkGap(item) {
+        const journey = window.MonthlyAuditPresentation.buildJourney(item || {});
+        const portfolio = finite(item?.overall_twr_pct) ? number(item.overall_twr_pct) : null;
+        const benchmark = finite(item?.journey?.benchmark_return_pct) ? number(item.journey.benchmark_return_pct) : null;
+        return {
+            benchmarkName: shortBenchmarkName(journey.benchmark_name || 'Benchmark'),
+            gap: portfolio !== null && benchmark !== null ? portfolio - benchmark : null,
+        };
+    }
+
+    function posterSparkline(item) {
+        const journey = window.MonthlyAuditPresentation.buildJourney(item || {});
+        const points = journey.points || [];
+        const values = points.flatMap(point => [point.portfolio_pct, point.benchmark_pct].filter(finite).map(Number));
+        if (points.length < 2 || !values.length) return '';
+        const min = Math.min(...values, 0);
+        const max = Math.max(...values, 0);
+        const span = max - min || 1;
+        const x = index => 8 + index / Math.max(points.length - 1, 1) * 224;
+        const y = value => 92 - (Number(value) - min) / span * 72;
+        const path = key => points.map((point, index) => finite(point[key]) ? `${index ? 'L' : 'M'}${x(index).toFixed(1)} ${y(point[key]).toFixed(1)}` : '').filter(Boolean).join(' ');
+        return `<svg class="rc-spark" viewBox="0 0 240 110" role="img" aria-label="Portfolio versus ${escapeHtml(shortBenchmarkName(journey.benchmark_name))} sparkline">
+            <path class="rc-spark-zero" d="M8 ${y(0).toFixed(1)} H232"></path>
+            <path class="rc-spark-benchmark" d="${path('benchmark_pct')}"></path>
+            <path class="rc-spark-portfolio" d="${path('portfolio_pct')}"></path>
+        </svg>`;
+    }
+
+    function recapNumbers(item) {
+        const days = getMonthDaysMap(item);
+        const closed = [...days.values()].filter(day => day.has_data || day.change_pln != null);
+        const upDays = closed.filter(day => number(day.change_pln) > 0).length;
+        const nominal = Math.abs(number(item.overall_nominal_change_pln));
+        const carryContribution = finite(item.carry?.net_contribution_pln) ? number(item.carry.net_contribution_pln) : null;
+        const carryShareValue = carryContribution != null && nominal > 0 ? Math.round(Math.abs(carryContribution) / nominal * 100) : null;
+        const carryValue = carryShareValue
+            ? (carryShareValue > 100 ? formatPLN(carryContribution, true) : `${carryShareValue}%`)
+            : null;
+        const pieces = [];
+        if (closed.length) pieces.push(`<div><strong>${upDays}/${closed.length}</strong><span>Sessions closed green</span></div>`);
+        if (carryValue) pieces.push(`<div><strong>${escapeHtml(carryValue)}</strong><span>${carryShareValue > 100 ? `from ${escapeHtml(item.carry?.ticker || item.carry?.name || 'leader')}` : `of gain from ${escapeHtml(item.carry?.ticker || item.carry?.name || 'leader')}`}</span></div>`);
+        if (item.best_day?.date) pieces.push(`<div><strong>${escapeHtml(finite(item.best_day.change_pct) ? formatPct(item.best_day.change_pct, true) : formatPLN(item.best_day.change_pln, true))}</strong><span>Best day</span><small>${escapeHtml(formatDate(item.best_day.date))}</small></div>`);
+        return pieces.length ? `<section class="rc-numbers" aria-label="Three numbers">${pieces.join('')}</section>` : '';
+    }
+
+    function shareInvite(item) {
+        const gapInfo = benchmarkGap(item);
+        const beaten = finite(gapInfo.gap) && number(gapInfo.gap) > 0;
+        return `<section class="rc-invite" data-field="recap-share-invite">
+            <div class="rc-mini-poster" data-mood="${number(item.overall_twr_pct) > 0 ? 'up' : number(item.overall_twr_pct) < 0 ? 'down' : 'flat'}">
+                <span>roastfolio</span><small>${escapeHtml(window.MonthlyAuditPresentation.periodTitle(item.period))} Wrapped.</small><strong>${escapeHtml(formatPct(item.overall_twr_pct, true))}</strong>${finite(gapInfo.gap) ? `<em>${escapeHtml(number(gapInfo.gap) > 0 ? '+' : '')}${escapeHtml(number(gapInfo.gap).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }))} pp vs ${escapeHtml(gapInfo.benchmarkName)}</em>` : ''}
+            </div>
+            <div class="rc-invite-copy">
+                <span class="eyebrow">Share your month</span>
+                <h2>${beaten ? `Beat the ${escapeHtml(gapInfo.benchmarkName)}? Let the group chat know.` : 'Share your month anyway.'}</h2>
+                <p>Generate the same privacy-first recap image. PLN amounts stay hidden unless you opt in.</p>
+                <label class="rc-switch"><input type="checkbox" id="recap-show-amounts-switch" role="switch" aria-checked="false" onchange="this.setAttribute('aria-checked', String(this.checked))"><span>Show PLN amounts</span></label>
+                <div class="rc-invite-actions">
+                    <button type="button" class="btn btn-primary" onclick="shareMonthlyAuditFromInvite('share')">Share poster</button>
+                    <button type="button" class="btn btn-quiet" onclick="shareMonthlyAuditFromInvite('download')">Download image</button>
+                </div>
+            </div>
+        </section>`;
+    }
+
     function renderReport() {
         const root = document.getElementById('monthly-audit-root');
         if (!root) return;
@@ -1053,10 +1138,14 @@
         const isReady = item && !item._isLiveStub;
         const wigReturn = isReady ? resolveMarketReturn(item, 'WIG') : null;
         const msciReturn = isReady ? resolveMarketReturn(item, 'MSCI_WORLD') : null;
+        const gapInfo = isReady ? benchmarkGap(item) : { benchmarkName: 'Benchmark', gap: null };
+        const beaten = finite(gapInfo.gap) && number(gapInfo.gap) > 0;
+        const mood = !isReady || !finite(item.overall_twr_pct) || number(item.overall_twr_pct) === 0 ? 'flat' : number(item.overall_twr_pct) > 0 ? 'up' : 'down';
+        const gapText = finite(gapInfo.gap) ? `${number(gapInfo.gap) > 0 ? '+' : ''}${number(gapInfo.gap).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pp` : '';
         root.innerHTML = `
             ${timelineMarkup()}
-            ${isReady ? `<header class="monthly-audit-hero ${tone(item.overall_twr_pct)}">
-                <div class="ma-cover-top"><div class="ma-cover-brand"><span class="ma-wordmark">roastfolio</span><span class="ma-cover-edition">MONTHLY AUDIT</span></div><button type="button" class="ma-share-button" onclick="shareMonthlyAudit()"><span aria-hidden="true">↗</span> Share recap</button></div>
+            ${isReady ? `<header class="monthly-audit-hero rc-poster ${tone(item.overall_twr_pct)}" data-mood="${mood}">
+                <div class="ma-cover-top"><div class="ma-cover-brand"><span class="ma-wordmark">roastfolio</span><span class="ma-cover-edition">Monthly audit</span></div><button type="button" class="ma-share-button" aria-label="Share recap" onclick="shareMonthlyAudit()"><span aria-hidden="true">↗</span> Share</button></div>
                 <h1>${escapeHtml(periodTitle)}<br><em>${item.is_live ? 'Live MTD.' : 'Wrapped.'}</em></h1>
                 <p class="ma-cover-story">${escapeHtml(window.MonthlyAuditPresentation.headline(item))}</p>
                 <div class="monthly-audit-hero-bottom">
@@ -1077,17 +1166,22 @@
                             </div>
                         </div>
                     </div>
+                    ${posterSparkline(item)}
                 </div>
-                ${item.commentary ? `<div class="monthly-audit-hero-commentary">"${escapeHtml(item.commentary)}"</div>` : ''}
+                ${beaten ? `<div class="rc-sticker" aria-label="Beat ${escapeHtml(gapInfo.benchmarkName)} by ${escapeHtml(gapText)}"><span>BEAT THE ${escapeHtml(gapInfo.benchmarkName)}</span><strong>${escapeHtml(gapText)}</strong></div>` : ''}
+                ${item.commentary ? `<blockquote class="monthly-audit-hero-commentary">"${escapeHtml(item.commentary)}"</blockquote>` : ''}
             </header>` : ''}
-            <div class="monthly-audit-content">
+            ${isReady ? recapNumbers(item) : ''}
+            <div class="monthly-audit-content rc-grid">
                 ${isReady ? [journeyCard(item), extremesCard(item), carryCard(item), retirementCard(item), seasonalityCard(item), flowsCard(item), tradingCard(item)].join('') : renderEmpty(state.selectedPeriod)}
             </div>
+            ${isReady ? shareInvite(item) : ''}
             <p class="ma-footer">${item?.is_live ? 'Month to date (Live). Not investment advice.' : 'A month in perspective. Not investment advice.'}</p>`;
         if (isReady) {
             bindJourney(item);
             bindMilestones(item);
         }
+        root.querySelector('.rc-period.is-active')?.scrollIntoView({ inline: 'center', block: 'nearest' });
     }
 
     window.shareMonthlyAudit = () => {
@@ -1100,6 +1194,29 @@
             window.MonthlyAuditShare.open(item, {
                 onEmail: (emailOpts) => sendRecapEmail(item.period, emailOpts),
             });
+        }
+    };
+
+    window.shareMonthlyAuditFromInvite = action => {
+        const item = state.items.get(state.selectedPeriod);
+        if (!item) return;
+        const showAmounts = Boolean(document.getElementById('recap-show-amounts-switch')?.checked);
+        item._heroBenchmarks = {
+            wig: resolveMarketReturn(item, 'WIG'),
+            msci: resolveMarketReturn(item, 'MSCI_WORLD'),
+        };
+        window.MonthlyAuditShare.open(item, {
+            onEmail: (emailOpts) => sendRecapEmail(item.period, emailOpts),
+            hideAmounts: !showAmounts,
+        });
+        if (action === 'download') {
+            const started = Date.now();
+            const clickWhenReady = () => {
+                const button = document.querySelector('.monthly-share-dialog [data-download]');
+                if (button && !button.disabled) button.click();
+                else if (Date.now() - started < 8000) setTimeout(clickWhenReady, 120);
+            };
+            setTimeout(clickWhenReady, 120);
         }
     };
 
@@ -1126,7 +1243,7 @@
         } catch (error) {
             if (state.selectedPeriod === period) renderError(error.message);
         }
-        document.querySelector('#monthly-audit-root select')?.focus({ preventScroll: true });
+        document.querySelector('#monthly-audit-root .rc-period.is-active')?.focus({ preventScroll: true });
     };
 
     window.shiftMonthlyAuditYear = direction => {
@@ -1152,7 +1269,11 @@
                 const payload = await fetchJson('/monthly-wraps');
                 ingestItems(payload.items || []);
             }
-            const latest = [...state.items.keys()].sort().pop();
+            const latest = [...state.items.entries()]
+                .filter(([, item]) => item && !item._isLiveStub)
+                .map(([period]) => period)
+                .sort()
+                .pop() || [...state.items.keys()].sort().pop();
             state.initialized = true;
             await window.selectMonthlyAuditPeriod(latest || latestExpectedPeriod());
         } catch (error) {
@@ -1171,8 +1292,11 @@
         if (recaps) recaps.hidden = !showRecaps;
         document.querySelectorAll('[data-history-section]').forEach(button => {
             const active = button.dataset.historySection === section;
+            // `.seg-btn.active` drives the selected styling; keep `is-active` for legacy hooks.
+            button.classList.toggle('active', active);
             button.classList.toggle('is-active', active);
             button.setAttribute('aria-selected', String(active));
+            button.tabIndex = active ? 0 : -1;
         });
         if (showRecaps) {
             window.initMonthlyAudit(false);

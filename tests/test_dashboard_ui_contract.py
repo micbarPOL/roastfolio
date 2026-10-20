@@ -39,7 +39,7 @@ class DashboardUiContractTests(unittest.TestCase):
 
     def test_gauge_sarcastic_comment_uses_readable_typography(self):
         self.assertIn("styles/main.css?v=20260915b", self.index_html)
-        self.assertIn("const CACHE_NAME = 'roastfolio-v71';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v80';", self.service_worker_js)
         self.assertIn("font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', sans-serif !important;", self.main_css)
         self.assertIn("font-style: normal;", self.main_css)
         self.assertIn("line-height: 1.55 !important;", self.main_css)
@@ -67,9 +67,16 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("renderMarketCommentary(_bmVal, _bmName);", self.live_data_js)
 
     def test_mobile_gauge_exposes_benchmark_sarcasm_contract(self):
-        self.assertIn("id=\"gauge-benchmark-tooltip-mobile\"", self.index_html)
+        # UI 20: one hero roast serves every viewport; the mobile duplicate is gone
+        self.assertIn("id=\"gauge-benchmark-tooltip\"", self.index_html)
+        self.assertNotIn("id=\"gauge-benchmark-tooltip-mobile\"", self.index_html)
         self.assertIn("canvas.id === 'gaugeChart-mobile'", self.dashboard_js)
         self.assertIn("? 'gauge-benchmark-tooltip-mobile'", self.dashboard_js)
+
+    def test_roast_reaction_sends_selection_context(self):
+        self.assertIn("window.submitRoastReaction = function(reaction, event)", self.dashboard_js)
+        self.assertIn("reaction: reaction", self.dashboard_js)
+        self.assertIn("selectionContext: rd.selectionContext", self.dashboard_js)
 
     def test_live_data_prefers_chart_series_for_benchmark_pct(self):
         self.assertIn("function _benchmarkDailyPctCacheKey(benchmarkId)", self.live_data_js)
@@ -101,9 +108,19 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("return doFetch(view, attempt + 1, options);", self.live_data_js)
         self.assertNotIn("reloadScript('scripts/portfolio-data.js')", self.live_data_js)
 
+    def test_intraday_chart_explains_open_baseline_vs_gauge(self):
+        self.assertIn('id="intraday-comparison-basis"', self.index_html)
+        self.assertIn("overnight price gaps are excluded", self.index_html)
+        self.assertIn("measures from yesterday's close", self.index_html)
+        self.assertIn('class="intraday-info-btn" aria-label="How this chart is measured" aria-describedby="intraday-comparison-basis"', self.index_html)
+        self.assertIn('id="intraday-comparison-basis" class="intraday-info-tip" role="tooltip"', self.index_html)
+        self.assertIn('aria-describedby="intraday-comparison-status"', self.index_html)
+
     def test_market_index_carousel_hooks_exist(self):
         self.assertIn("id=\"market-index-carousel\"", self.index_html)
-        self.assertIn("id=\"market-index-carousel-top-mobile\"", self.index_html)
+        # UI 20: the ticker tape is mounted exactly once (no separate mobile copy)
+        self.assertNotIn("id=\"market-index-carousel-top-mobile\"", self.index_html)
+        self.assertEqual(self.index_html.count("data-market-carousel"), 1)
         self.assertIn("data-market-carousel", self.index_html)
         self.assertIn("market-index-carousel-shell", self.index_html)
         self.assertIn("function renderMarketIndexCarousel()", self.dashboard_js)
@@ -139,9 +156,12 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("athRecordCore", self.main_css)
         self.assertIn(":root[data-theme=\"light\"] .gauge-ath-celebration", self.main_css)
         self.assertIn("@media (prefers-reduced-motion: reduce)", self.main_css)
+        self.assertIn("function athBreakoutMarkup(title, note, gain)", self.dashboard_js)
+        self.assertIn("ath20-ceiling", self.dashboard_js)
+        self.assertIn("el.dataset.athKey === key", self.dashboard_js)
 
     def test_service_worker_prefers_fresh_shell_assets(self):
-        self.assertIn("const CACHE_NAME = 'roastfolio-v71';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v80';", self.service_worker_js)
         self.assertIn("/scripts/ledger-transactions.js", self.service_worker_js)
         self.assertIn("function isShellAsset(url, request)", self.service_worker_js)
         self.assertIn("request.mode === 'navigate'", self.service_worker_js)
@@ -179,7 +199,7 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("splash-to-gauge", self.index_html)
         self.assertIn("body.splash-to-gauge", self.main_css)
         self.assertIn("styles/main.css?v=20260915b", self.index_html)
-        self.assertIn("scripts/dashboard.js?v=20260709b", self.index_html)
+        self.assertIn("scripts/dashboard.js?v=ui20b", self.index_html)
         self.assertIn("candleTransmitOut", self.main_css)
         self.assertIn("gaugeCardHandoff", self.main_css)
         self.assertIn("roastTransmissionSweep", self.main_css)

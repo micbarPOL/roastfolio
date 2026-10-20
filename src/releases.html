@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Release Summary &amp; Changelog — roastfolio</title>
 
+    <script src="scripts/api-throttle.js?v=20261015a"></script>
     <script src="scripts/config.js" onerror="window.__CONFIG__={}"></script>
 
     <meta name="theme-color" content="#070d17">
@@ -769,7 +770,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v14.3.7</span>
+                    <span>v15.3.1</span>
                 </div>
             </div>
 
@@ -785,12 +786,12 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v14.2.2 (Release Notes Publication Dates &amp; Milestone Timeline Precision)</strong>
+                    <strong>v15.3.1 (History Tab Highlight Fix)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Released:</span>
-                    <strong id="rel-latest-date">October 1, 2026</strong>
+                    <strong id="rel-latest-date">October 20, 2026</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -832,6 +833,191 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.3.1">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.3.1</span>
+                        <h2 class="rel-card-title">History: Section Tab Highlight Fix</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-20">October 20, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Fixed the History Overview / Summaries tabs: only the selected tab is highlighted now, instead of both looking selected on Summaries.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="minor" data-version="15.3.0">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.3.0</span>
+                        <h2 class="rel-card-title">History: UI 20 Redesign</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-19">October 19, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Overview now has a value hero with range gain, invested capital, deposits in range, market gain and the existing value/invested/deposit chart.</li>
+                        <li class="rel-item">Cumulative return and benchmark comparison are merged into one chart; benchmark chips are available in % mode and hidden with an explanation in PLN mode.</li>
+                        <li class="rel-item">Monthly bars sit beside a single daily scatter chart with best/worst halos, average line, %/PLN toggle and focused stats.</li>
+                        <li class="rel-item">Summaries now use a month strip navigator and a recap poster cover with mood tokens, sparkline, benchmark gap sticker and three-number strip.</li>
+                        <li class="rel-item">The share invite defaults to hiding PLN amounts and can either open the existing share flow or download the locally generated image.</li>
+                        <li class="rel-item">Recap headlines are data-backed from benchmark gaps plus carry/anchor contribution, then ATH, then sign-based fallback copy.</li>
+                        <li class="rel-item">Yearly summaries are visible as a disabled “Soon” segment until annual wrap data exists.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="minor" data-version="15.2.0">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.2.0</span>
+                        <h2 class="rel-card-title">Wallets: UI 20 Redesign</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-16">October 16, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Wallet chips and an inline create form lead into a value and performance hero, consistent with the dashboard.</li>
+                        <li class="rel-item">An allocation bar replaces the donut; frameless holdings keep quick Buy/Sell actions and a separate Cemetery tab.</li>
+                        <li class="rel-item">Quick entry and wallet settings sit in an inline rail. All wallets remains a combined read-only view.</li>
+                        <li class="rel-item">Transactions open in a desktop side sheet or a phone bottom sheet, with a mobile transaction shortcut above navigation.</li>
+                        <li class="rel-item">Design-system decisions and a Wallets field registry now cover the screen and its responsive states.</li>
+                        <li class="rel-item">Fixed: annual return no longer shows −99.99% when a wallet is down; the solver now finds the real rate.</li>
+                        <li class="rel-item">Fixed: holding rows show each position's share of the wallet instead of 0.0%.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="service" data-version="15.1.6">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.1.6</span>
+                        <h2 class="rel-card-title">Dashboard Polish: ATH, Lake, Header</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-16">October 16, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">New all-time highs get a redesigned banner: the line breaks through the previous peak and the new record pulses.</li>
+                        <li class="rel-item">"Under the surface" now spans the column and uses a log scale, so even a 0.3% dip is visible; above the ATH a green tide rises.</li>
+                        <li class="rel-item">On phones the roast and the gauge sit side by side.</li>
+                        <li class="rel-item">The header is left-aligned everywhere: screen name and live status, with the market comment underneath.</li>
+                        <li class="rel-item">The portfolio line on the intraday chart is delayed 15 minutes, like the exchange quotes, so it no longer ends in a flat stretch.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="service" data-version="15.1.5">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.1.5</span>
+                        <h2 class="rel-card-title">Compact Chart Baseline Note</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-16">October 16, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">The baseline explanation under the portfolio vs benchmark chart moved into a small info button next to the chart title, opened by hover, keyboard focus or tap.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="service" data-version="15.1.4">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.1.4</span>
+                        <h2 class="rel-card-title">Intraday Chart Baseline Explained</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-15">October 15, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">The portfolio vs benchmark chart now explains that it measures from the session open, while the daily gauge measures from yesterday's close, so overnight gaps make the two differ.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="service" data-version="15.1.3">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.1.3</span>
+                        <h2 class="rel-card-title">Intraday Comparison When the Index Opens Late</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-15">October 15, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Portfolio vs benchmark chart now appears when the index publishes its first value a few minutes after the open (e.g. WIG at 09:01); that first value is used as the benchmark opening level and disclosed under the chart.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="service" data-version="15.1.2">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.1.2</span>
+                        <h2 class="rel-card-title">Full Dashboard Load Fix</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-15">October 15, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Fixed the full price refresh failing (and breaking the gauge) when market data provided exchange session times as timestamps; intraday comparison now uses the exchange-reported session start and close.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="service" data-version="15.1.1">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.1.1</span>
+                        <h2 class="rel-card-title">Dashboard Load Reliability</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-15">October 15, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Fewer failed requests on a cold dashboard load: API calls are queued so they no longer burst past the server capacity, and throttled reads are retried automatically.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="minor" data-version="15.1.0">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.1.0</span>
+                        <h2 class="rel-card-title">Dashboard Performance Measurements</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-15">October 15, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Export browser-local timing history for the last 20 dashboard page loads from User settings, without recording holdings or credentials.</li>
+                        <li class="rel-item">Separate API wait, payload bytes, JSON parsing, dashboard rendering and intraday chart computation; distinguish backend lite/full/history timings.</li>
+                        <li class="rel-item">Repeatable before/after benchmarks with synthetic portfolios and explicit network and CPU assumptions.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="rel-card" data-tier="major" data-version="15.0.0">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.0.0</span>
+                        <h2 class="rel-card-title">UI 20 Dashboard &amp; Intraday Portfolio Comparison</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-10-14">October 14, 2026</time>
+                </header>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Compare portfolio and benchmark returns minute by minute from the benchmark session open, synthesized in the browser without snapshot jobs.</li>
+                        <li class="rel-item">Choose a saved session-only or calendar-day view; portfolio prices can continue after the benchmark closes, with constant-FX and data-quality disclosures.</li>
+                        <li class="rel-item">Redesigned dashboard with a compact header grouping the screen title and live-update status.</li>
+                    </ul>
+                </div>
+            </article>
 
             <!-- v14.3.7 -->
             <article class="rel-card" data-tier="service" data-version="14.3.7">

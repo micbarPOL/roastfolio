@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="wallets" data-frameless>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>roastfolio · Wallets mockup (frameless)</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="wallets.css">
+  <script src="wallets.js" defer></script>
+</head>
+<body>
+
+<!-- Icon sprite. Colours come from CSS only. -->
+<svg width="0" height="0" class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="arc-gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" class="stop-danger"/>
+      <stop offset="0.5" class="stop-warning"/>
+      <stop offset="1" class="stop-success"/>
+    </linearGradient>
+    <linearGradient id="area-gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="stop-accent-strong"/>
+      <stop offset="1" class="stop-accent-none"/>
+    </linearGradient>
+    <linearGradient id="lake-gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="stop-lake-top"/>
+      <stop offset="1" class="stop-lake-bottom"/>
+    </linearGradient>
+  </defs>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></symbol>
+  <symbol id="i-pie" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><polyline points="11 8 11 12 14 15"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><polyline points="7 15 12 20 17 15"/><polyline points="7 9 12 4 17 9"/></symbol>
+  <symbol id="i-logo" viewBox="0 0 32 32">
+    <rect class="logo-body" x="11" y="9" width="8" height="15" rx="2"/>
+    <line class="logo-wick" x1="15" y1="4" x2="15" y2="9"/><line class="logo-wick" x1="15" y1="24" x2="15" y2="29"/>
+    <path class="logo-r" d="M13 24V8h6a4 4 0 0 1 0 8h-6m6 0 5 8"/>
+  </symbol>
+</svg>
+
+<div class="app" data-sidebar="expanded">
+
+  <!-- ============ Desktop sidebar (D-002, D-012) ============ -->
+  <nav class="sidebar-nav glass-island" data-state="expanded" aria-label="Main navigation">
+    <div class="sidebar-head">
+      <a class="brand" href="#">
+        <svg class="brand-logo" aria-hidden="true"><use href="#i-logo"/></svg>
+        <span class="brand-wordmark nav-label" data-field="brand-wordmark">roastfolio</span>
+      </a>
+    </div>
+
+    <div class="nav-scroll">
+      <a class="nav-item" href="#" data-field="nav-dashboard" data-label="Dashboard"><svg class="ico"><use href="#i-home"/></svg><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="#" data-field="nav-wallets" data-label="Wallets" aria-current="page"><svg class="ico"><use href="#i-wallet"/></svg><span class="nav-label">Wallets</span></a>
+      <a class="nav-item" href="#" data-field="nav-portfolio" data-label="Portfolio"><svg class="ico"><use href="#i-pie"/></svg><span class="nav-label">Portfolio</span></a>
+
+      <div class="nav-section nav-label">Analytics</div>
+      <a class="nav-item" href="#" data-field="nav-history" data-label="History"><svg class="ico"><use href="#i-trend"/></svg><span class="nav-label">History</span></a>
+      <a class="nav-item" href="#" data-field="nav-statistics" data-label="Statistics"><svg class="ico"><use href="#i-bars"/></svg><span class="nav-label">Statistics</span></a>
+      <a class="nav-item" href="#" data-field="nav-retirement" data-label="Retirement"><svg class="ico"><use href="#i-calendar"/></svg><span class="nav-label">Retirement</span></a>
+      <a class="nav-item" href="#" data-field="nav-transactions" data-label="Transactions"><svg class="ico"><use href="#i-list"/></svg><span class="nav-label">Transactions</span></a>
+      <a class="nav-item" href="#" data-field="nav-analysis" data-label="Analysis"><svg class="ico"><use href="#i-search"/></svg><span class="nav-label">Analysis</span></a>
+      <a class="nav-item" href="#" data-field="nav-diary" data-label="Coping Diary"><svg class="ico"><use href="#i-book"/></svg><span class="nav-label">Coping Diary</span></a>
+
+      <div class="nav-section nav-label">Account</div>
+      <a class="nav-item" href="#" data-field="nav-guide" data-label="User Guide"><svg class="ico"><use href="#i-help"/></svg><span class="nav-label">User Guide</span></a>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="theme-switch nav-label" role="group" aria-label="Color mode" data-field="theme-switch">
+        <button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button>
+        <button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button>
+      </div>
+      <a class="user-card" href="#" data-field="user-card" data-label="User settings">
+        <span class="avatar" aria-hidden="true">M</span>
+        <span class="user-meta nav-label"><span class="user-name">Michał B.</span><span class="user-role">Premium</span></span>
+      </a>
+      <div class="brand-footer nav-label" data-field="brand-footer">Powered by <strong>TOMINEX</strong> <span class="version num">v14.3.7</span></div>
+      <button type="button" class="sidebar-collapse" aria-label="Collapse sidebar (Ctrl+B)" aria-pressed="false">
+        <svg class="ico"><use href="#i-chevron-left"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============ Mobile drawer (D-003) ============ -->
+  <div class="drawer-backdrop" hidden></div>
+  <aside class="mobile-side-drawer glass-island" hidden aria-label="More navigation">
+    <div class="drawer-head">
+      <a class="brand" href="#"><svg class="brand-logo" aria-hidden="true"><use href="#i-logo"/></svg><span class="brand-wordmark">roastfolio</span></a>
+      <button type="button" class="icon-btn drawer-close" aria-label="Close menu"><svg class="ico"><use href="#i-close"/></svg></button>
+    </div>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-pie"/></svg><span>Portfolio</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-trend"/></svg><span>History</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-bars"/></svg><span>Statistics</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-calendar"/></svg><span>Retirement</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-list"/></svg><span>Transactions</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-help"/></svg><span>User Guide</span></a>
+    <div class="theme-switch" role="group" aria-label="Color mode">
+      <button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button>
+      <button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button>
+    </div>
+    <a class="user-card" href="#"><span class="avatar" aria-hidden="true">M</span><span class="user-meta"><span class="user-name">Michał B.</span><span class="user-role">Premium</span></span></a>
+  </aside>
+
+  <div class="app-main">
+
+    <!-- ============ Top bar ============ -->
+    <header class="top-bar">
+      <button type="button" class="icon-btn drawer-open" aria-label="Open menu"><svg class="ico"><use href="#i-menu"/></svg></button>
+      <h1 class="page-title">Wallets</h1>
+      <span class="live-status" data-field="live-data-status" role="status"><span class="live-dot" aria-hidden="true"></span>Live prices · updated 12:41</span>
+    </header>
+
+    <!-- ============ Ticker tape, mounted once (D-014, D-017) ============ -->
+    <section class="ticker-tape-container" aria-label="Major indices">
+      <div class="ticker-track">
+        <div class="ticker-lane">
+          <span class="ticker-item" data-index-id="WIG" data-field="index-WIG"><span class="ticker-symbol">WIG</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.62%</span></span>
+          <span class="ticker-item" data-index-id="WIG20" data-field="index-WIG20"><span class="ticker-symbol">WIG20</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.48%</span></span>
+          <span class="ticker-item" data-index-id="SP500" data-field="index-SP500"><span class="ticker-symbol">S&amp;P 500</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.41%</span></span>
+          <span class="ticker-item" data-index-id="NASDAQ" data-field="index-NASDAQ"><span class="ticker-symbol">NASDAQ</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.73%</span></span>
+          <span class="ticker-item" data-index-id="DAX" data-field="index-DAX"><span class="ticker-symbol">DAX</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.19%</span></span>
+          <span class="ticker-item" data-index-id="MSCI_WORLD" data-field="index-MSCI_WORLD"><span class="ticker-symbol">MSCI World</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.22%</span></span>
+        </div>
+        <div class="ticker-lane" aria-hidden="true">
+          <span class="ticker-item"><span class="ticker-symbol">WIG</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.62%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">WIG20</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.48%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">S&amp;P 500</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.41%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">NASDAQ</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.73%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">DAX</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.19%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">MSCI World</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.22%</span></span>
+        </div>
+      </div>
+    </section>
+
+    <p class="market-commentary" data-field="market-commentary">WIG is up <span class="num">0.62%</span>. Your wallets are up <span class="num">1.40%</span>. Try not to rebalance out of excitement.</p>
+
+    <main class="dash-main w-main">
+      <div class="w-page">
+        <div class="w-switcher-row" data-o="1">
+          <div class="w-switcher" role="tablist" aria-label="Wallet" data-field="wallet-switcher">
+            <button type="button" role="tab" class="w-chip" aria-selected="false" tabindex="-1" data-wallet="all" data-name="All wallets" data-total="348&nbsp;520,50&nbsp;PLN" data-pln="+4&nbsp;820,30&nbsp;PLN" data-pct="+1.40%"><span class="w-chip-name">All wallets</span><span class="w-chip-total num">348&nbsp;520,50&nbsp;PLN</span></button>
+            <button type="button" role="tab" class="w-chip" aria-selected="true" data-wallet="xtb" data-name="XTB Brokerage" data-total="208&nbsp;420,50&nbsp;PLN" data-pln="+1&nbsp;965,66&nbsp;PLN" data-pct="+0.95%"><span class="w-chip-name"><i class="w-dot up" aria-hidden="true"></i>XTB Brokerage</span><span class="w-chip-total num">208&nbsp;420,50&nbsp;PLN</span></button>
+            <button type="button" role="tab" class="w-chip" aria-selected="false" tabindex="-1" data-wallet="ike" data-name="IKE Retirement" data-total="140&nbsp;100,00&nbsp;PLN" data-pln="+1&nbsp;105,00&nbsp;PLN" data-pct="+0.80%"><span class="w-chip-name"><i class="w-dot up" aria-hidden="true"></i>IKE Retirement</span><span class="w-chip-total num">140&nbsp;100,00&nbsp;PLN</span></button>
+          </div>
+          <button type="button" class="w-new" aria-expanded="false" aria-controls="w-create"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg><span>New wallet</span></button>
+        </div>
+        <form class="w-create" id="w-create" data-field="wallet-create" hidden><label class="field"><span class="field-label">Wallet name</span><input class="input" type="text" placeholder="e.g. Crypto regrets" autocomplete="off"></label><button type="submit" class="btn btn-primary">Create wallet</button><p class="w-flash" role="status">Wallet names must be unique.</p></form>
+
+        <section class="w-hero" data-o="2" aria-labelledby="w-hero-name">
+          <div class="card-cl-overlay" data-field="wallets-loading"><div class="cl-loader"><div class="cl-candles"><div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div><div class="cl-candle cl-bull" style="--d:0.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div><div class="cl-candle cl-bull" style="--d:0.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div><div class="cl-candle cl-bear" style="--d:0.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div><div class="cl-candle cl-bull" style="--d:0.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div><div class="cl-candle cl-bull" style="--d:0.9s"><span class="cl-body" style="--t:10%;--h:58%"></span></div></div><span class="cl-loader-text">Counting what is left of your money…</span></div></div>
+          <div class="w-hero-copy">
+            <div class="w-hero-head"><h2 class="eyebrow" id="w-hero-name" data-field="wallet-name">XTB Brokerage</h2></div>
+            <div class="w-total num" data-field="wallet-total">208&nbsp;420,50&nbsp;PLN</div>
+            <div class="w-deltas" data-field="wallet-daily"><span class="pill-delta up"><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"/></svg><span class="num" data-w="pln">+1&nbsp;965,66&nbsp;PLN</span></span><span class="pill-delta up num" data-w="pct">+0.95%</span><span class="w-today">today</span></div>
+            <dl class="w-facts">
+              <div class="w-fact" data-field="wallet-annual-return"><dt>Annual return</dt><dd class="num up">+12.40%</dd></div>
+              <div class="w-fact" data-field="wallet-ath"><dt>From all-time high</dt><dd><span class="num down">-3.12%</span> <span class="w-fact-sub num">ATH 215&nbsp;132,90&nbsp;PLN · 2026-08-28</span></dd></div>
+              <div class="w-fact" data-field="wallet-counts"><dt>Inside</dt><dd><span class="num">4</span> holdings · <span class="num">1</span> cash · <span class="num">38</span> transactions</dd></div>
+            </dl>
+            <div class="w-actions"><button type="button" class="btn btn-primary" data-open-tx data-field="tx-open"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg>New transaction</button><a class="btn btn-quiet" href="#" data-field="wallet-history-link"><svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>Transaction history</a></div>
+          </div>
+          <figure class="w-history" data-field="wallet-value-history">
+            <figcaption class="eyebrow">Value history · deposits marked</figcaption>
+            <svg class="w-history-svg" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Wallet value since March 2023, rising from 92 thousand to 208 thousand PLN with six deposits">
+              <path class="w-area" d="M0 160 L30 150 L60 156 L90 140 L120 146 L150 128 L180 132 L210 110 L240 96 L270 102 L300 78 L330 60 L360 66 L400 38 L400 180 L0 180 Z"/>
+              <path class="w-line" d="M0 160 L30 150 L60 156 L90 140 L120 146 L150 128 L180 132 L210 110 L240 96 L270 102 L300 78 L330 60 L360 66 L400 38"/>
+              <g class="w-deposits"><circle cx="90" cy="140" r="4"/><circle cx="150" cy="128" r="4"/><circle cx="210" cy="110" r="4"/><circle cx="270" cy="102" r="4"/><circle cx="330" cy="60" r="4"/></g>
+            </svg>
+            <div class="w-axis num" aria-hidden="true"><span>2023</span><span>2024</span><span>2025</span><span>2026</span></div>
+          </figure>
+        </section>
+
+        <section class="w-alloc" data-o="3" aria-labelledby="alloc-title" data-field="wallet-allocation">
+          <h2 class="section-title" id="alloc-title">Allocation</h2>
+          <div class="alloc-bar" role="img" aria-label="XTB 28.9%, Microsoft 23.2%, Apple 21.4%, Cash 14.9%, CD Projekt 11.6%"><span class="seg s1" style="--w:28.9"></span><span class="seg s2" style="--w:23.2"></span><span class="seg s3" style="--w:21.4"></span><span class="seg s0" style="--w:14.9"></span><span class="seg s4" style="--w:11.6"></span></div>
+          <ul class="alloc-legend"><li><i class="sw s1" aria-hidden="true"></i>XTB.WA <span class="num">28.9%</span></li><li><i class="sw s2" aria-hidden="true"></i>MSFT <span class="num">23.2%</span></li><li><i class="sw s3" aria-hidden="true"></i>AAPL <span class="num">21.4%</span></li><li><i class="sw s0" aria-hidden="true"></i>Cash <span class="num">14.9%</span></li><li><i class="sw s4" aria-hidden="true"></i>CDR.WA <span class="num">11.6%</span></li></ul>
+        </section>
+
+        <div class="w-cols">
+          <section class="w-holdings" data-o="4" aria-labelledby="holdings-title">
+            <div class="section-head"><h2 class="section-title" id="holdings-title">Holdings</h2>
+              <div class="segmented" role="tablist" aria-label="Holdings view" data-field="holdings-view"><button type="button" role="tab" id="tab-active" class="seg-btn" aria-selected="true" aria-controls="panel-active">Active</button><button type="button" role="tab" id="tab-cemetery" class="seg-btn" aria-selected="false" aria-controls="panel-cemetery" tabindex="-1">The Cemetery</button></div></div>
+            <p class="w-readonly-note" hidden><svg class="ico" aria-hidden="true"><use href="#i-lock"/></svg>All wallets is a combined, read-only view. Pick a wallet to trade.</p>
+            <div id="panel-active" role="tabpanel" aria-labelledby="tab-active">
+              <table class="h-table"><thead><tr><th scope="col">Company</th><th scope="col" class="r">Shares</th><th scope="col" class="r">Value</th><th scope="col" class="r">Today</th><th scope="col" class="r">Allocation</th><th scope="col"><span class="sr-only">Trade</span></th></tr></thead><tbody><tr class="h-row"><td class="h-co" data-field="holding-company"><span class="h-co-in"><img class="h-logo" src="../../src/data/logos/xtb.png" alt=""><span class="h-names"><span class="h-name">XTB S.A.</span><span class="h-ticker">XTB.WA</span></span></span></td><td class="h-units num" data-field="holding-units">950</td><td class="h-value num" data-field="holding-value">60&nbsp;230,00&nbsp;PLN</td><td class="h-today up" data-field="holding-today"><span class="num">+1&nbsp;867,52&nbsp;PLN</span><span class="num">+3.20%</span></td><td class="h-alloc" data-field="holding-alloc"><span class="alloc-track" aria-hidden="true"><span class="alloc-fill" style="--p:0.289"></span></span><span class="num">28.9%</span></td><td class="h-act" data-field="holding-actions"><button type="button" class="trade-btn is-buy" aria-label="Buy more XTB S.A."><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"/></svg><span>Buy</span></button><button type="button" class="trade-btn is-sell" aria-label="Sell XTB S.A."><svg class="ico" aria-hidden="true"><use href="#i-arrow-down"/></svg><span>Sell</span></button></td></tr><tr class="h-row"><td class="h-co"><span class="h-co-in"><span class="h-logo logo-fallback" aria-hidden="true">M</span><span class="h-names"><span class="h-name">Microsoft Corporation</span><span class="h-ticker">MSFT</span></span></span></td><td class="h-units num">30</td><td class="h-value num">48&nbsp;310,50&nbsp;PLN</td><td class="h-today up"><span class="num">+168,56&nbsp;PLN</span><span class="num">+0.35%</span></td><td class="h-alloc"><span class="alloc-track" aria-hidden="true"><span class="alloc-fill" style="--p:0.232"></span></span><span class="num">23.2%</span></td><td class="h-act"><button type="button" class="trade-btn is-buy" aria-label="Buy more Microsoft Corporation"><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"/></svg><span>Buy</span></button><button type="button" class="trade-btn is-sell" aria-label="Sell Microsoft Corporation"><svg class="ico" aria-hidden="true"><use href="#i-arrow-down"/></svg><span>Sell</span></button></td></tr><tr class="h-row"><td class="h-co"><span class="h-co-in"><span class="h-logo logo-fallback" aria-hidden="true">A</span><span class="h-names"><span class="h-name">Apple Inc.</span><span class="h-ticker">AAPL</span></span></span></td><td class="h-units num">50</td><td class="h-value num">44&nbsp;605,00&nbsp;PLN</td><td class="h-today up"><span class="num">+397,88&nbsp;PLN</span><span class="num">+0.90%</span></td><td class="h-alloc"><span class="alloc-track" aria-hidden="true"><span class="alloc-fill" style="--p:0.214"></span></span><span class="num">21.4%</span></td><td class="h-act"><button type="button" class="trade-btn is-buy" aria-label="Buy more Apple Inc."><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"/></svg><span>Buy</span></button><button type="button" class="trade-btn is-sell" aria-label="Sell Apple Inc."><svg class="ico" aria-hidden="true"><use href="#i-arrow-down"/></svg><span>Sell</span></button></td></tr><tr class="h-row"><td class="h-co"><span class="h-co-in"><img class="h-logo" src="../../src/data/logos/CDPROJEKT.png" alt=""><span class="h-names"><span class="h-name">CD Projekt S.A.</span><span class="h-ticker">CDR.WA</span><span class="h-realized num up" data-field="holding-realized">Realized +2&nbsp;340,00&nbsp;PLN</span></span></span></td><td class="h-units num">100</td><td class="h-value num">24&nbsp;180,00&nbsp;PLN</td><td class="h-today down"><span class="num">-468,30&nbsp;PLN</span><span class="num">-1.90%</span></td><td class="h-alloc"><span class="alloc-track" aria-hidden="true"><span class="alloc-fill" style="--p:0.116"></span></span><span class="num">11.6%</span></td><td class="h-act"><button type="button" class="trade-btn is-buy" aria-label="Buy more CD Projekt S.A."><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"/></svg><span>Buy</span></button><button type="button" class="trade-btn is-sell" aria-label="Sell CD Projekt S.A."><svg class="ico" aria-hidden="true"><use href="#i-arrow-down"/></svg><span>Sell</span></button></td></tr><tr class="h-row is-cash"><td class="h-co"><span class="h-co-in"><span class="h-logo logo-fallback" aria-hidden="true">C</span><span class="h-names"><span class="h-name">Cash</span><span class="h-ticker">PLN</span></span></span></td><td class="h-units num">—</td><td class="h-value num">31&nbsp;095,00&nbsp;PLN</td><td class="h-today flat"><span class="num">0,00&nbsp;PLN</span><span class="num">0.00%</span></td><td class="h-alloc"><span class="alloc-track" aria-hidden="true"><span class="alloc-fill" style="--p:0.149"></span></span><span class="num">14.9%</span></td><td class="h-act"><span class="h-cash-tag">Cash</span></td></tr></tbody></table>
+            </div>
+            <div id="panel-cemetery" role="tabpanel" aria-labelledby="tab-cemetery" hidden>
+              <div class="g-tools"><p class="g-meta" data-field="cemetery-count"><span class="num">3</span> closed positions · net realized <span class="num up">+2&nbsp;632,50&nbsp;PLN</span></p><label class="select-label">Show <select class="select" data-field="cemetery-filter"><option>All</option><option>Still held</option><option>Closed</option></select></label></div>
+              <table class="h-table g-table"><thead><tr><th scope="col">Asset</th><th scope="col"><button type="button" class="sort-btn" aria-label="Sort by holding lifespan">Holding lifespan <svg class="ico" aria-hidden="true"><use href="#i-sort"/></svg></button></th><th scope="col" class="r"><button type="button" class="sort-btn" aria-label="Sort by realized return">Realized return <svg class="ico" aria-hidden="true"><use href="#i-sort"/></svg></button></th></tr></thead><tbody><tr class="h-row" data-status="closed"><td class="h-co" data-field="cemetery-asset"><span class="h-co-in"><span class="h-logo logo-fallback" aria-hidden="true">T</span><span class="h-names"><span class="h-name">Tesla, Inc.</span><span class="h-ticker">TSLA · Closed</span></span></span></td><td class="g-life" data-field="cemetery-lifespan"><span class="num">2024-01-05 → 2024-12-18</span><span class="g-span">11 months</span></td><td class="h-today up" data-field="cemetery-return"><span class="num">+3&nbsp;940,10&nbsp;PLN</span><span class="num">+52.30%</span></td></tr><tr class="h-row" data-status="closed"><td class="h-co"><span class="h-co-in"><span class="h-logo logo-fallback" aria-hidden="true">P</span><span class="h-names"><span class="h-name">Orlen S.A.</span><span class="h-ticker">PKN.WA · Closed</span></span></span></td><td class="g-life"><span class="num">2023-03-14 → 2025-11-02</span><span class="g-span">2 years 8 months</span></td><td class="h-today up"><span class="num">+4&nbsp;812,40&nbsp;PLN</span><span class="num">+18.60%</span></td></tr><tr class="h-row" data-status="closed"><td class="h-co"><span class="h-co-in"><span class="h-logo logo-fallback" aria-hidden="true">A</span><span class="h-names"><span class="h-name">Allegro.eu</span><span class="h-ticker">ALE.WA · Closed</span></span></span></td><td class="g-life"><span class="num">2021-10-12 → 2024-05-20</span><span class="g-span">2 years 7 months</span></td><td class="h-today down"><span class="num">-6&nbsp;120,00&nbsp;PLN</span><span class="num">-41.20%</span></td></tr></tbody></table>
+            </div>
+          </section>
+
+          <aside class="w-rail" aria-label="Quick entry and wallet settings">
+            <section class="w-quick" data-o="5" aria-labelledby="qe-title">
+              <h2 class="section-title" id="qe-title"><svg class="ico" aria-hidden="true"><use href="#i-sparkle"/></svg>Quick entry</h2>
+              <p class="w-sub">Write the trade in plain English. We fill in the form.</p>
+              <label class="field"><span class="sr-only">Transaction in plain English</span><input class="input" type="text" data-field="quick-entry-input" placeholder="Buy 10 AAPL for 185.50 on 2025-06-01"></label>
+              <div class="qe-examples" data-field="quick-entry-examples" aria-label="Examples"><button type="button" class="chip-btn num">Buy 10 AAPL for 185.50</button><button type="button" class="chip-btn">Sell 5 CDR.WA for 120</button><button type="button" class="chip-btn">Deposit 5000</button></div>
+              <div class="qe-actions" data-field="quick-entry-actions"><button type="button" class="btn btn-quiet" data-open-tx>Full form</button><button type="button" class="btn btn-primary">Save entry</button></div>
+              <p class="qe-status num" role="status" data-field="quick-entry-status">Parsed: Buy · AAPL · 10 shares · 185.50 USD</p>
+            </section>
+
+            <section class="w-settings" data-o="6" aria-labelledby="settings-title" data-field="wallet-settings">
+              <h2 class="section-title" id="settings-title"><svg class="ico" aria-hidden="true"><use href="#i-settings"/></svg>Wallet settings</h2>
+              <div class="set-row" data-field="wallet-benchmark"><span class="set-label">Benchmark</span><select class="select" aria-label="Benchmark"><option>WIG</option><option>WIG20</option><option>S&amp;P 500</option><option>MSCI World</option></select></div>
+              <div class="set-row" data-field="wallet-ath-setting"><span class="set-label">All-time high</span><span class="set-value">Automatic · <span class="num">215&nbsp;132,90&nbsp;PLN</span></span><button type="button" class="link-btn disclosure" aria-expanded="false" aria-controls="ath-form">Set manually <svg class="ico" aria-hidden="true"><use href="#i-chevron-down"/></svg></button></div>
+              <form class="set-form" id="ath-form" hidden><label class="field"><span class="field-label">ATH date</span><input class="input" type="date" value="2026-08-28"></label><label class="field"><span class="field-label">ATH value (PLN)</span><input class="input num" type="text" inputmode="decimal" value="215132.90"></label><div class="set-form-actions"><button type="button" class="btn btn-quiet">Use automatic</button><button type="submit" class="btn btn-primary">Save</button></div></form>
+              <div class="set-row w-owned" data-field="wallet-rename"><span class="set-label">Name</span><span class="set-value">XTB Brokerage</span><button type="button" class="link-btn disclosure" aria-expanded="false" aria-controls="rename-form">Rename <svg class="ico" aria-hidden="true"><use href="#i-chevron-down"/></svg></button></div>
+              <form class="set-form" id="rename-form" hidden><label class="field"><span class="field-label">Wallet name</span><input class="input" type="text" value="XTB Brokerage"></label><div class="set-form-actions"><button type="submit" class="btn btn-primary">Save name</button></div></form>
+              <div class="set-row w-owned" data-field="wallet-delete"><span class="set-label">Danger zone</span><button type="button" class="btn btn-danger">Delete wallet</button></div>
+            </section>
+          </aside>
+        </div>
+      </div>
+
+      <section class="empty-state-card" data-field="wallets-empty"><div class="empty-state-icon" aria-hidden="true"><svg class="ico ico-xl" aria-hidden="true"><use href="#i-wallet"/></svg></div><h2 class="empty-state-title">No wallets yet. Very low risk.</h2><p class="empty-state-desc">Create a wallet for each broker or account, then add your first deposit or trade.</p><button type="button" class="empty-state-btn">Create your first wallet</button></section>
+    </main>
+
+    <button type="button" class="w-fab glass-island" data-open-tx aria-label="New transaction"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg><span>Transaction</span></button>
+  </div>
+
+  <!-- ============ Transaction sheet (D-039) ============ -->
+  <div class="sheet-backdrop" hidden></div>
+  <section class="tx-sheet glass-island" role="dialog" aria-modal="true" aria-labelledby="tx-title" hidden>
+    <header class="tx-head"><h2 class="tx-title" id="tx-title">New transaction · <span data-w="name">XTB Brokerage</span></h2><button type="button" class="icon-btn tx-close" aria-label="Close"><svg class="ico" aria-hidden="true"><use href="#i-close"/></svg></button></header>
+    <div class="tx-body">
+      <div class="segmented tx-types" role="tablist" aria-label="Transaction type" data-field="tx-type"><button type="button" role="tab" class="seg-btn" aria-selected="true" data-type="Buy">Buy</button><button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-type="Sell">Sell</button><button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-type="Deposit">Deposit</button><button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-type="Withdrawal">Withdrawal</button><button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-type="Dividend">Dividend</button></div>
+      <p class="hint tx-hint">Buying adds to an existing holding or creates a new one.</p>
+      <label class="field" data-field="tx-date"><span class="field-label">Date</span><input class="input" type="date" value="2026-09-17"></label>
+      <div class="field" data-field="tx-asset-search"><span class="field-label">Asset</span><div class="segmented tx-source" role="tablist" aria-label="Asset source"><button type="button" role="tab" class="seg-btn" aria-selected="true">Yahoo Finance</button><button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1">Polish TFI</button></div><input class="input" type="search" placeholder="Search company or ticker" value="Apple" aria-label="Search company or ticker"><ul class="tx-results"><li><button type="button" class="tx-result"><strong>AAPL</strong><span>Apple Inc. · NASDAQ</span></button></li><li><button type="button" class="tx-result"><strong>APLE</strong><span>Apple Hospitality REIT · NYSE</span></button></li></ul></div>
+      <div class="tx-grid">
+        <label class="field" data-field="tx-quantity"><span class="field-label">Quantity</span><span class="input-group"><input class="input num" type="text" inputmode="decimal" value="10"><button type="button" class="btn btn-quiet btn-inline">Max</button></span></label>
+        <label class="field" data-field="tx-price"><span class="field-label">Price per share</span><span class="input-group"><input class="input num" type="text" inputmode="decimal" value="185.50"><span class="suffix">USD</span></span></label>
+        <label class="field" data-field="tx-total"><span class="field-label">Trade value</span><span class="input-group"><input class="input num" type="text" inputmode="decimal" value="1855.00"><span class="suffix">USD</span></span></label>
+      </div>
+      <button type="button" class="link-btn disclosure" aria-expanded="false" aria-controls="tx-advanced">Fee and comment <svg class="ico" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
+      <div class="tx-grid" id="tx-advanced" data-field="tx-advanced" hidden><label class="field"><span class="field-label">Commission or fee</span><input class="input num" type="text" inputmode="decimal" placeholder="0.00"></label><label class="field"><span class="field-label">Comment</span><input class="input" type="text" placeholder="Why, though?"></label></div>
+      <label class="check" data-field="tx-auto-cash"><input type="checkbox" checked><span>Add missing cash automatically before a buy</span></label>
+      <dl class="tx-review" data-field="tx-review"><div><dt>Type</dt><dd data-w="type">Buy</dd></div><div><dt>Asset</dt><dd>AAPL</dd></div><div><dt>Quantity</dt><dd class="num">10</dd></div><div><dt>Value</dt><dd class="num">1&nbsp;855,00&nbsp;USD</dd></div><div><dt>Cash effect</dt><dd class="num down">-6&nbsp;878,34&nbsp;PLN</dd></div></dl>
+    </div>
+    <footer class="tx-foot" data-field="tx-submit"><button type="button" class="btn btn-quiet tx-close">Cancel</button><button type="button" class="btn btn-primary"><span>Save <span data-w="type">Buy</span></span></button></footer>
+  </section>
+
+  <!-- ============ Mobile bottom tabs (D-003) ============ -->
+  <nav class="bottom-tabs glass-island" aria-label="Primary">
+    <a href="#"><svg class="ico"><use href="#i-home"/></svg><span>Dashboard</span></a>
+    <a href="#" aria-current="page"><svg class="ico"><use href="#i-wallet"/></svg><span>Wallets</span></a>
+    <a href="#"><svg class="ico"><use href="#i-book"/></svg><span>Diary</span></a>
+    <a href="#"><svg class="ico"><use href="#i-search"/></svg><span>Analysis</span></a>
+  </nav>
+</div>
+
+</body>
+</html>

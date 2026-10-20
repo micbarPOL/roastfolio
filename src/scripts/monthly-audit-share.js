@@ -10,8 +10,15 @@
         WIG: ['WIG', 'PLN'], DAX: ['DAX', 'EUR'], FTSE100: ['FTSE 100', 'GBP'],
         WIG20: ['WIG20', 'PLN'], MWIG40: ['mWIG40', 'PLN'], SWIG80: ['sWIG80', 'PLN'],
         SP500: ['S&P 500', 'USD'], NASDAQ: ['NASDAQ Composite', 'USD'],
-        MSCI_WORLD: ['MSCI World · IWDA proxy', 'EUR'],
+        MSCI_WORLD: ['MSCI World', 'EUR'],
     });
+    function shortBenchmarkName(value) {
+        const name = String(value || 'Benchmark');
+        return name
+            .replace(/\s*[·-]\s*(IWDA proxy|proxy).*$/i, '')
+            .replace(/\s*\((IWDA|proxy).*?\)\s*$/i, '')
+            .trim() || 'Benchmark';
+    }
     function buildJourney(item) {
         const journey = item.journey || {};
         const id = typeof journey.benchmark_id === 'string' && Object.hasOwn(benchmarks, journey.benchmark_id) ? journey.benchmark_id : null;
@@ -38,7 +45,7 @@
             };
         });
         return {
-            benchmark_id: id, benchmark_name: name, benchmark_currency: currency,
+            benchmark_id: id, benchmark_name: shortBenchmarkName(name), benchmark_currency: currency,
             points,
         };
     }
@@ -50,10 +57,40 @@
         if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period || '')) return 'Monthly recap';
         return new Date(`${period}-01T12:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
     };
-    const headline = item => !finite(item.overall_twr_pct) ? 'Your month, in perspective.'
-        : Number(item.overall_twr_pct) > 0 ? 'A little more momentum.'
-        : Number(item.overall_twr_pct) < 0 ? 'A step back. The story continues.'
-        : 'Holding your ground.';
+    function headline(item) {
+        const journey = buildJourney(item || {});
+        const benchmarkName = shortBenchmarkName(journey.benchmark_name || 'benchmark');
+        const portfolioReturn = finite(item?.overall_twr_pct) ? Number(item.overall_twr_pct) : null;
+        const benchmarkReturn = finite(item?.journey?.benchmark_return_pct) ? Number(item.journey.benchmark_return_pct) : null;
+        if (portfolioReturn !== null && benchmarkReturn !== null) {
+            const gap = portfolioReturn - benchmarkReturn;
+            const gapText = `${Math.abs(gap).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} pp`;
+            const carry = item?.carry || {};
+            const anchor = item?.anchor || {};
+            const nominal = finite(item?.overall_nominal_change_pln) ? Math.abs(Number(item.overall_nominal_change_pln)) : null;
+            if (Number(item?.overall_twr_pct) >= 0 && finite(carry.net_contribution_pln) && nominal && nominal > 0) {
+                const contribution = Number(carry.net_contribution_pln);
+                const share = Math.round(Math.abs(contribution) / nominal * 100);
+                const name = carry.ticker || carry.name || 'your leader';
+                if (share > 100) {
+                    return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}, and ${name} did all the heavy lifting (${money(contribution)}).`;
+                }
+                return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}, and ${name} carried ${share}% of the gain.`;
+            }
+            if (Number(item?.overall_twr_pct) < 0 && finite(anchor.net_contribution_pln)) {
+                const name = anchor.ticker || anchor.name || 'your anchor';
+                return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}, while ${name} cost ${money(Math.abs(Number(anchor.net_contribution_pln)))}.`;
+            }
+            return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}.`;
+        }
+        if (item?.is_new_ath) {
+            return `New all-time high in ${periodTitle(item.period)}.`;
+        }
+        return !finite(item?.overall_twr_pct) ? 'Your month, in perspective.'
+            : Number(item.overall_twr_pct) > 0 ? 'A little more momentum.'
+            : Number(item.overall_twr_pct) < 0 ? 'A step back. The story continues.'
+            : 'Holding your ground.';
+    }
 
     // Allowlist, not a copy of the wrap: never include identity, wallet names,
     // holdings, diary entries, balances or private amounts when privacy is on.
@@ -170,7 +207,7 @@
         // Compact inline legend: colored dots + labels, right-aligned at top
         const dot = (cx, cy, r, color) => { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); };
         ctx.font = '500 18px system-ui, sans-serif';
-        const bmLabel = benchmarkName || 'Benchmark';
+        const bmLabel = shortBenchmarkName(benchmarkName || 'Benchmark');
         const bmW = ctx.measureText(bmLabel).width;
         const pLabel = 'Portfolio';
         const pW = ctx.measureText(pLabel).width;
@@ -320,7 +357,7 @@
                 <button type="button" data-close aria-label="Close share preview">×</button></div>
             <div class="monthly-share-layout"><div class="monthly-share-preview"><canvas role="img" aria-label="Monthly recap image preview"></canvas></div>
                 <div class="monthly-share-options"><h3>Make it yours.</h3>
-                    <label><input type="checkbox" data-private checked> Hide PLN amounts</label>
+                    <label><input type="checkbox" data-private ${options.hideAmounts === false ? '' : 'checked'}> Hide PLN amounts</label>
                     <p>Returns and drawdowns are visible. Your identity, balances, holdings and diary are never included.</p>
                     <p>Only this image is shared. Nothing is uploaded automatically.</p>
                     <button type="button" data-share disabled>Share image</button>
@@ -507,6 +544,6 @@
         prepare();
     }
 
-    window.MonthlyAuditPresentation = Object.freeze({ buildModel, buildJourney, drawPoster, headline, periodTitle });
+    window.MonthlyAuditPresentation = Object.freeze({ buildModel, buildJourney, drawPoster, headline, periodTitle, shortBenchmarkName });
     window.MonthlyAuditShare = Object.freeze({ open });
 })();

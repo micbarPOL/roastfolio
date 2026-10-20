@@ -13,7 +13,10 @@ class MonthlySummaryContractTests(unittest.TestCase):
         self.server_py = (ROOT / "server.py").read_text()
 
     def test_html_elements_exist(self):
-        self.assertIn("dash-monthly-summary-card", self.index_html)
+        # UI 20: Month and Year are two panels of one Summary section
+        self.assertIn("id=\"tab-summary-monthly\"", self.index_html)
+        self.assertIn("id=\"tab-summary-yearly\"", self.index_html)
+        self.assertIn("period-panel", self.index_html)
         self.assertIn("id=\"monthly-return-val\"", self.index_html)
         self.assertIn("id=\"monthly-return-pct\"", self.index_html)
         self.assertIn("id=\"monthly-benchmarks-btn\"", self.index_html)
@@ -27,7 +30,6 @@ class MonthlySummaryContractTests(unittest.TestCase):
         self.assertIn("id=\"monthly-return-pct-goal\"", self.index_html)
 
         # Yearly summary elements
-        self.assertIn("dash-yearly-summary-card", self.index_html)
         self.assertIn("id=\"yearly-return-val\"", self.index_html)
         self.assertIn("id=\"yearly-return-pct\"", self.index_html)
         self.assertIn("id=\"yearly-benchmarks-btn\"", self.index_html)

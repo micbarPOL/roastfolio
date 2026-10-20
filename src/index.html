@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script src="scripts/dashboard-performance.js?v=20261015a"></script>
+    <script src="scripts/api-throttle.js?v=20261015a"></script>
     <title>roastfolio</title>
 
     <!-- PWA manifest -->
-    <link rel="manifest" href="manifest.json?v=14.3.7">
+    <link rel="manifest" href="manifest.json?v=15.3.1">
 
     <!-- Theme & status-bar colour (light + dark) -->
     <meta name="theme-color" content="#cde8f7" media="(prefers-color-scheme: light)">
@@ -34,7 +36,9 @@
     <meta property="og:type" content="website">
 
     <link rel="stylesheet" href="styles/main.css?v=20260915b">
-    <link rel="stylesheet" href="styles/monthly-audit.css?v=20260915-interactive3">
+    <link rel="stylesheet" href="styles/tokens-v9.css?v=ui20a">
+    <link rel="stylesheet" href="styles/monthly-audit.css?v=15.3.1">
+    <link rel="stylesheet" href="styles/ui20.css?v=15.3.1">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         (function() {
@@ -157,6 +161,7 @@
                     <div id="live-data-status" class="live-data-status" aria-live="polite"></div>
                 </div>
             </div>
+            <span id="header-tab-indicator" class="page-title" aria-live="polite">Dashboard</span>
         </div>
         <div id="market-commentary" class="market-commentary" data-market-commentary></div>
     </header>
@@ -238,9 +243,32 @@
         </div>
         <div class="sidenav-bottom-brand">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="sidenav-version-tag">v14.3.7</span>
+            <span class="sidenav-version-tag">v15.3.1</span>
         </div>
+        <button type="button" class="sidenav-collapse" id="sidenav-collapse" aria-label="Collapse sidebar" aria-pressed="false" title="Collapse sidebar (Ctrl+B)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
     </aside>
+
+    <!-- Mobile primary navigation (thumb zone). The sidebar above is the drawer for everything else. -->
+    <nav class="bottom-tabs" aria-label="Primary">
+        <button type="button" class="bottom-tab active" data-tab="dashboard" onclick="showTab('dashboard')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Dashboard</span>
+        </button>
+        <button type="button" class="bottom-tab" data-tab="wallets" onclick="showTab('wallets')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+            <span>Wallets</span>
+        </button>
+        <button type="button" class="bottom-tab" data-tab="diary" data-role="ADVANCED" onclick="showTab('diary')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></svg>
+            <span>Diary</span>
+        </button>
+        <button type="button" class="bottom-tab" data-tab="analysis" data-role="ADVANCED" onclick="showTab('analysis')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><polyline points="11 8 11 12 14 15"/></svg>
+            <span>Analysis</span>
+        </button>
+    </nav>
 
 
     <div id="brand-logo-modal" class="brand-modal" aria-hidden="true" onclick="if (event.target === this) toggleBrandModal(false)">
@@ -250,464 +278,393 @@
         </div>
     </div>
 
-    <!-- Tab: Dashboard -->
+    <!-- Shared SVG gradient for the account dials -->
+    <svg width="0" height="0" class="sprite" aria-hidden="true" focusable="false">
+        <defs>
+            <linearGradient id="arc-gradient" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" class="stop-danger"/>
+                <stop offset="0.5" class="stop-warning"/>
+                <stop offset="1" class="stop-success"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- Tab: Dashboard (ui20: hero + benchmark chart + ATH/6 months + summary, rail with movers and accounts) -->
     <main id="tab-dashboard" class="tab-content active is-loading">
-        <section id="market-index-carousel-top-mobile" class="market-index-carousel market-index-carousel-top-mobile" data-market-carousel aria-label="Major indices banner" hidden>
+        <section id="market-index-carousel" class="market-index-carousel" data-market-carousel aria-label="Major indices" hidden>
             <div class="market-index-carousel-shell">
                 <div class="market-index-carousel-track"></div>
             </div>
-            <div class="market-index-carousel-dots"></div>
         </section>
-        <!-- Engagement strip — streak + level + badge pills, links to achievements.html -->
-        <div id="engagement-strip" class="eng-strip-wrap" aria-label="Your progress"></div>
-        <div class="dashboard-grid">
-            <section class="dash-card dash-summary">
-                <div class="dash-label">Portfolio — Total Value</div>
-                <div class="skel-line skel-lg" aria-hidden="true"></div>
-                <div class="skel-line skel-md" aria-hidden="true"></div>
-                <div class="skel-line skel-sm" aria-hidden="true"></div>
-                <div id="dash-total-value" class="dash-total">—</div>
-                <div id="dash-daily-pln" class="dash-daily">—</div>
-                <div id="dash-drawdown" class="dash-drawdown">—</div>
-                <div id="dash-ath-celebration" class="gauge-ath-celebration dash-ath-celebration" hidden></div>
-                <!-- Sparkline chart for last 6 months returns -->
-                <div class="dash-sparkline-container" style="height: 65px; margin-top: 12px; margin-bottom: -10px; width: 100%;">
-                    <canvas id="dashSparklineChart"></canvas>
+
+        <div class="d-page">
+            <div class="col-main">
+
+                <section class="hero" data-o="1" aria-labelledby="hero-label">
+                    <div class="card-cl-overlay">
+                        <div class="cl-loader">
+                            <div class="cl-candles">
+                                <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                                <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                                <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                                <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                                <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
+                                <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                                <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                                <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-grid">
+                        <div class="hero-copy">
+                            <span class="eyebrow" id="hero-label"><i class="status-light" aria-hidden="true"></i>Roastfolio says</span>
+                            <div id="gauge-benchmark-tooltip" class="hero-roast"></div>
+                            <div class="hero-figures">
+                                <span class="eyebrow">Total value</span>
+                                <div id="dash-total-value" class="hero-total num">—</div>
+                                <div id="dash-daily-pln" class="hero-deltas">—</div>
+                            </div>
+                        </div>
+                        <div class="d-gauge is-fetching-data">
+                            <div class="eyebrow">Today vs benchmark</div>
+                            <div class="gauge-wrapper">
+                                <canvas id="gaugeChart"></canvas>
+                            </div>
+                            <div id="gauge-lead" class="gauge-lead" aria-live="polite"></div>
+                        </div>
+                    </div>
+                    <div id="dash-ath-celebration" class="gauge-ath-celebration dash-ath-celebration" hidden></div>
+                    <!-- Engagement strip: streak + level + badge pills, links to achievements.html -->
+                    <div id="engagement-strip" class="eng-strip-wrap" aria-label="Your progress"></div>
+                </section>
+
+                <section class="bench" data-o="2" aria-labelledby="benchmark-chart-title">
+                    <div class="section-head">
+                        <div class="bench-title-row">
+                            <span id="benchmark-chart-title" class="bench-title">Benchmark</span>
+                            <span id="benchmark-change-badge" class="bench-change num"></span>
+                            <span id="benchmark-ohlc-legend" class="bench-ohlc num"></span>
+                        </div>
+                        <div class="bench-actions">
+                            <div class="benchmark-range-btns segmented" role="group" aria-label="Chart range">
+                                <button type="button" class="benchmark-range-btn seg-btn" data-range="1D" onclick="setBenchmarkRange('1D')">1D</button>
+                                <button type="button" class="benchmark-range-btn seg-btn" data-range="YTD" onclick="setBenchmarkRange('YTD')">YTD</button>
+                                <button type="button" class="benchmark-range-btn seg-btn" data-range="1Y" onclick="setBenchmarkRange('1Y')">1Y</button>
+                            </div>
+                            <div class="benchmark-type-btns segmented" role="group" aria-label="Chart type">
+                                <button type="button" class="benchmark-type-btn seg-btn active" data-type="line" onclick="setBenchmarkChartType('line')">Line</button>
+                                <button type="button" class="benchmark-type-btn seg-btn" data-type="candle" onclick="setBenchmarkChartType('candle')">Candle</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="benchmarkChartContainer" class="bench-chart" style="position:relative;">
+                        <div id="benchmark-cl-loader" class="card-cl-overlay" style="display:flex;">
+                            <div class="cl-loader">
+                                <div class="cl-candles">
+                                    <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                                    <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                                    <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                                    <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                                    <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                                    <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                                </div>
+                                <span class="cl-loader-text">Loading chart…</span>
+                            </div>
+                        </div>
+                        <div id="benchmark-no-data" class="bench-no-data" style="display:none;">Refresh prices to load benchmark chart data</div>
+                    </div>
+                    <section class="bench-foot intraday-comparison" aria-labelledby="intraday-comparison-title">
+                        <div class="section-head">
+                            <div class="intraday-title-wrap">
+                                <h3 class="section-title" id="intraday-comparison-title">Portfolio vs benchmark · since open</h3>
+                                <span class="intraday-info">
+                                    <button type="button" class="intraday-info-btn" aria-label="How this chart is measured" aria-describedby="intraday-comparison-basis">i</button>
+                                    <span id="intraday-comparison-basis" class="intraday-info-tip" role="tooltip">Both lines start at 0% at the benchmark open, so overnight price gaps are excluded. The daily gauge measures from yesterday's close, so its figures can differ from this chart, especially after a large opening gap.</span>
+                                </span>
+                            </div>
+                            <label class="intraday-window-label">Portfolio window
+                                <select id="intraday-comparison-window">
+                                    <option value="session">Benchmark session</option>
+                                    <option value="day">24 hours</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="intraday-chart-wrap">
+                            <canvas id="intraday-comparison-chart" role="img" aria-label="Portfolio and benchmark percentage returns since benchmark session open" aria-describedby="intraday-comparison-status"></canvas>
+                        </div>
+                        <p id="intraday-comparison-status" role="status">Waiting for minute bars…</p>
+                    </section>
+                </section>
+
+                <section class="ath-six" data-o="5" aria-label="All-time high and the last six months">
+                    <div class="ath-part">
+                        <h2 class="section-title">Under the surface</h2>
+                        <div class="ath-wrap">
+                            <div id="dash-ath-lake" class="ath-lake" data-state="pending" role="img" aria-label="Distance from the all-time high">
+                                <div class="lake-water" aria-hidden="true">
+                                    <svg class="lake-waves" viewBox="0 0 240 10" preserveAspectRatio="none"><path d="M0 5 Q 15 0 30 5 T 60 5 T 90 5 T 120 5 T 150 5 T 180 5 T 210 5 T 240 5 V 10 H 0 Z"/></svg>
+                                </div>
+                                <div class="lake-gap" aria-hidden="true"></div>
+                                <div class="lake-peak" aria-hidden="true"></div>
+                                <div class="lake-sparks" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i></div>
+                                <div class="lake-bubbles" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i></div>
+                                <div class="lake-ath" aria-hidden="true"><span class="lake-tag">ATH</span></div>
+                                <div class="lake-now" aria-hidden="true"><span class="lake-tag lake-tag-now">now</span></div>
+                            </div>
+                            <div id="dash-drawdown" class="ath-text">—</div>
+                        </div>
+                    </div>
+                    <div class="six-part">
+                        <h2 class="section-title">Last 6 months</h2>
+                        <div class="six-chart"><canvas id="dashSparklineChart"></canvas></div>
+                    </div>
+                </section>
+
+                <!-- Summary: month and year against benchmarks and retirement goals (ids are written by dashboard.js) -->
+                <section class="summary" data-o="6" aria-labelledby="summary-label">
+                    <div class="section-head">
+                        <h2 class="section-title" id="summary-label">Summary</h2>
+                        <div class="segmented" role="tablist" aria-label="Summary period">
+                            <button type="button" role="tab" id="tab-summary-monthly" class="seg-btn" aria-selected="true" aria-controls="panel-summary-monthly">Month</button>
+                            <button type="button" role="tab" id="tab-summary-yearly" class="seg-btn" aria-selected="false" aria-controls="panel-summary-yearly" tabindex="-1">Year</button>
+                        </div>
+                    </div>
+
+                    <div id="panel-summary-monthly" role="tabpanel" aria-labelledby="tab-summary-monthly" class="period-panel">
+                        <div class="metric">
+                            <span class="metric-title">Monthly Return</span>
+                            <div id="monthly-return-val" class="metric-value num">—</div>
+                            <div id="monthly-return-pct" class="metric-sub num">—</div>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-title">Benchmark Comparison</span>
+                            <div id="monthly-benchmarks-score" class="metric-value">—</div>
+                            <button type="button" id="monthly-benchmarks-btn" class="link-btn disclosure" aria-expanded="false" aria-controls="monthly-benchmarks-dropdown" onclick="toggleMonthlyBenchmarksList()">Overtook vs lost <span class="arrow-indicator" aria-hidden="true">▼</span></button>
+                            <div id="monthly-benchmarks-dropdown" class="bm-list" style="display: none;"></div>
+                        </div>
+                        <div class="metric metric-goals">
+                            <span class="metric-title">Retirement Goals</span>
+                            <div class="goal">
+                                <div class="goal-meta"><span>Monthly Deposit</span><span id="monthly-deposit-status" class="num">—</span></div>
+                                <div class="progress"><div id="monthly-deposit-bar" class="progress-bar" style="width: 0%;"></div></div>
+                                <span id="monthly-deposit-pct" class="goal-pct num">0%</span>
+                            </div>
+                            <div class="goal">
+                                <div class="goal-meta"><span>Monthly Return</span><span id="monthly-return-goal-status" class="num">—</span></div>
+                                <div class="progress"><div id="monthly-return-bar" class="progress-bar" style="width: 0%;"></div></div>
+                                <span id="monthly-return-pct-goal" class="goal-pct num">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="panel-summary-yearly" role="tabpanel" aria-labelledby="tab-summary-yearly" class="period-panel" hidden>
+                        <div class="metric">
+                            <span class="metric-title">Yearly Return</span>
+                            <div id="yearly-return-val" class="metric-value num">—</div>
+                            <div id="yearly-return-pct" class="metric-sub num">—</div>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-title">Benchmark Comparison</span>
+                            <div id="yearly-benchmarks-score" class="metric-value">—</div>
+                            <button type="button" id="yearly-benchmarks-btn" class="link-btn disclosure" aria-expanded="false" aria-controls="yearly-benchmarks-dropdown" onclick="toggleYearlyBenchmarksList()">Overtook vs lost <span class="arrow-indicator" aria-hidden="true">▼</span></button>
+                            <div id="yearly-benchmarks-dropdown" class="bm-list" style="display: none;"></div>
+                        </div>
+                        <div class="metric metric-goals">
+                            <span class="metric-title">Retirement Goals</span>
+                            <div class="goal">
+                                <div class="goal-meta"><span>Yearly Deposit</span><span id="yearly-deposit-status" class="num">—</span></div>
+                                <div class="progress"><div id="yearly-deposit-bar" class="progress-bar" style="width: 0%;"></div></div>
+                                <span id="yearly-deposit-pct" class="goal-pct num">0%</span>
+                            </div>
+                            <div class="goal">
+                                <div class="goal-meta"><span>Yearly Return</span><span id="yearly-return-goal-status" class="num">—</span></div>
+                                <div class="progress"><div id="yearly-return-bar" class="progress-bar" style="width: 0%;"></div></div>
+                                <span id="yearly-return-pct-goal" class="goal-pct num">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="col-rail" aria-label="Movers and accounts">
+                <section class="movers" data-o="3" aria-labelledby="movers-label">
+                    <div class="section-head">
+                        <h2 class="section-title" id="movers-label">Today's movers</h2>
+                        <div class="segmented" role="group" aria-label="Sparkline range">
+                            <button type="button" class="spark-mode-btn seg-btn" data-mode="today" aria-pressed="true" onclick="setSparkMode('today')">1D</button>
+                            <button type="button" class="spark-mode-btn seg-btn" data-mode="year" aria-pressed="false" onclick="setSparkMode('year')">1Y</button>
+                        </div>
+                    </div>
+                    <div id="dash-breakdown" class="m-list" role="list"></div>
+                </section>
+
+                <section class="accounts" data-o="4" aria-labelledby="accounts-label">
+                    <div class="section-head">
+                        <h2 class="section-title" id="accounts-label"><span class="status-light" aria-hidden="true"></span>Accounts</h2>
+                    </div>
+                    <div id="dash-mini-wallets" class="acct-list"></div>
+                </section>
+            </aside>
+        </div>
+
+        <div class="d-player glass-island" role="region" aria-label="Portfolio now playing">
+            <span class="avatar" aria-hidden="true">R</span>
+            <span class="d-player-text">
+                <span id="dash-player-total" class="d-player-total num">—</span>
+                <span id="dash-player-say" class="d-player-say">Waiting for live prices…</span>
+            </span>
+            <span id="dash-player-delta" class="pill-delta num">—</span>
+            <button type="button" class="round-ico d-player-top" aria-label="Back to top" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </button>
+        </div>
+    </main>
+
+    <main id="tab-wallets" class="tab-content">
+        <section class="w-main" aria-labelledby="wallets-title">
+            <div id="wallet-sticky-sentinel" class="wallet-sticky-sentinel" aria-hidden="true"></div>
+            <div class="w-page">
+                <header class="wallet-screen-header">
+                    <h2 id="wallets-title">Wallets</h2>
+                </header>
+
+                <div class="wallet-sticky-top">
+                    <div class="w-switcher-row" data-field="wallet-switcher">
+                        <div id="mgmt-wallet-chips-strip" class="w-switcher wallet-chips-strip" role="tablist" aria-label="Select wallet"></div>
+                        <button id="mgmt-toggle-create-btn" class="w-new" type="button" aria-expanded="false" aria-controls="mgmt-create-row-wrap"
+                                onclick="window._mgmt.toggleCreatePortfolioComposer()">
+                            <span aria-hidden="true">+</span><span>New wallet</span>
+                        </button>
+                        <div id="mgmt-wallet-chips-dots" class="wallet-chips-dots" aria-hidden="true"></div>
+                    </div>
+                    <div id="mgmt-wallet-overflow-menu" class="wallet-overflow-menu" hidden aria-hidden="true">
+                        <button class="wallet-overflow-item" type="button" onclick="window._mgmt.toggleCreatePortfolioComposer()">+ Add wallet</button>
+                        <button class="wallet-overflow-item" type="button" onclick="window._mgmt.openTransactionsPanel('history')">Transaction history</button>
+                    </div>
+                    <div id="mgmt-mobile-wallet-summary" class="wallet-mobile-summary" hidden>
+                        <span id="mgmt-mobile-wallet-name" class="wallet-mobile-summary-name">Select wallet</span>
+                        <strong id="mgmt-mobile-wallet-total" class="wallet-mobile-summary-total">—</strong>
+                        <span id="mgmt-mobile-wallet-pct" class="wallet-mobile-summary-pct is-neutral">—</span>
+                    </div>
+                    <div id="mgmt-port-flash" class="mgmt-flash" style="display:none"></div>
+                    <div id="mgmt-create-row-wrap" class="w-create" hidden aria-hidden="true" data-field="wallet-create">
+                        <label class="field" for="mgmt-new-port-name">
+                            <span class="field-label">New wallet name</span>
+                            <input id="mgmt-new-port-name" type="text" class="input mgmt-input" placeholder="Long-term compounder…"
+                                   onkeydown="if(event.key==='Enter')window._mgmt.createPortfolio()">
+                        </label>
+                        <button id="mgmt-create-port-btn" class="btn btn-primary mgmt-btn mgmt-btn-primary" type="button" onclick="window._mgmt.createPortfolio()">Create</button>
+                    </div>
                 </div>
-            </section>
-            <section class="dash-card dash-gauge-card is-fetching-data" style="position:relative;">
-                <div class="dash-label">Portfolio — Daily Change</div>
-                <div class="skel-circle" aria-hidden="true"></div>
-                <div class="card-cl-overlay">
-                    <div class="cl-loader">
-                        <div class="cl-candles">
+
+                <section class="w-hero" data-o="1" aria-labelledby="mgmt-holdings-title">
+                    <div class="card-cl-overlay">
+                        <div class="cl-loader"><div class="cl-candles">
                             <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
                             <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
                             <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
                             <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
                             <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
-                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
-                            <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
-                            <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
+                        </div></div>
+                    </div>
+                    <div class="w-hero-copy">
+                        <span class="eyebrow">Selected wallet</span>
+                        <h2 id="mgmt-holdings-title" class="w-wallet-name" data-field="wallet-name">Select a wallet</h2>
+                        <div id="wob-kpi-total" class="w-total num" data-field="wallet-total">—</div>
+                        <div class="w-deltas" data-field="wallet-daily">
+                            <span class="pill-delta num wallet-day-pln">—</span>
+                            <span class="pill-delta num wallet-day-pct">—</span>
+                            <span class="w-today">today</span>
+                        </div>
+                        <dl class="w-facts">
+                            <div class="w-fact" data-field="wallet-annual-return"><dt>Annual return</dt><dd id="wob-kpi-return" class="num">—</dd></div>
+                            <div class="w-fact" data-field="wallet-ath"><dt>From all-time high</dt><dd id="wallet-hero-ath" class="num">—<span class="w-fact-sub" id="wallet-hero-ath-meta">Waiting for ATH</span></dd></div>
+                            <div class="w-fact" data-field="wallet-counts"><dt>Inside</dt><dd id="wallet-hero-counts">—</dd></div>
+                        </dl>
+                        <div class="w-actions">
+                            <button id="mgmt-open-trade-btn" class="btn btn-primary" type="button" data-open-tx data-field="tx-open" onclick="window._mgmt.openTransactionsPanel('trade')">New transaction</button>
+                            <button class="btn btn-quiet" type="button" data-field="wallet-history-link" onclick="window._mgmt.openTransactionsPanel('history')">Transaction history</button>
                         </div>
                     </div>
-                </div>
-                <div class="gauge-wrapper" style="position:relative;">
-                    <canvas id="gaugeChart"></canvas>
-                </div>
-                <div id="gauge-benchmark-tooltip"></div>
-                <section id="market-index-carousel" class="market-index-carousel" data-market-carousel aria-label="Major indices banner" hidden>
-                    <div class="market-index-carousel-shell">
-                        <div class="market-index-carousel-track"></div>
-                    </div>
+                    <div id="wallet-summary-visuals" class="w-history wallet-summary-visuals" data-field="wallet-value-history"></div>
                 </section>
-            </section>
 
-            <!-- Mobile swipeable gauge carousel — hidden on desktop, rebuilt dynamically after data loads -->
-            <section class="dash-card dash-gauge-carousel-card is-fetching-data">
-                <div class="gauge-carousel-track" id="gauge-carousel-track">
-                    <!-- Slot 0: Summary (always present) -->
-                    <div class="gauge-slide is-active" data-wallet="Summary">
-                        <div class="gauge-slide-inner">
-                            <div class="dash-label gauge-slide-title">Portfolio</div>
-                            <div class="skel-circle" aria-hidden="true"></div>
-                            <div class="card-cl-overlay">
-                                <div class="cl-loader">
-                                    <div class="cl-candles">
-                                        <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
-                                        <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
-                                        <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
-                                        <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
-                                        <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
-                                        <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
-                                        <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
-                                        <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="gauge-wrapper-mini" style="position:relative;">
-                                <canvas id="gaugeChart-mobile" style="width:100%;height:160px;"></canvas>
-                            </div>
-                            <div id="gauge-benchmark-tooltip-mobile"></div>
-                            <div id="gauge-mobile-meta-summary" class="gauge-mobile-meta"></div>
-                        </div>
-                    </div>
-                    <!-- Wallet slides injected dynamically by rebuildCarousel() after API response -->
-                </div>
-                <!-- Dot indicators — rebuilt dynamically -->
-                <div class="gauge-carousel-dots" id="gauge-carousel-dots">
-                    <span class="gauge-dot active" data-slide="0"></span>
-                </div>
-            </section>
+                <section id="wallet-allocation" class="w-alloc" data-field="wallet-allocation" data-o="2">
+                    <div class="section-head"><h3 class="section-title">Allocation</h3><span id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading holdings…</span></div>
+                    <div class="alloc-bar" aria-label="Wallet allocation"></div>
+                    <div class="alloc-legend"></div>
+                </section>
 
-            <div id="dash-mini-wallets" class="dash-mini-wallets"></div>
-
-            <!-- Monthly Summary Card -->
-            <section class="dash-card dash-monthly-summary-card">
-                <div class="dash-label">Monthly Summary</div>
-                <div class="monthly-summary-grid">
-                    <!-- Column 1: Monthly Return -->
-                    <div class="monthly-metric-card">
-                        <span class="monthly-metric-title">Monthly Return</span>
-                        <div id="monthly-return-val" class="monthly-metric-value">—</div>
-                        <div id="monthly-return-pct" class="monthly-metric-sub">—</div>
-                    </div>
-                    <!-- Column 2: Benchmark Comparison -->
-                    <div class="monthly-metric-card clickable-card" id="monthly-benchmarks-btn" onclick="toggleMonthlyBenchmarksList()">
-                        <span class="monthly-metric-title">Benchmark Comparison</span>
-                        <div id="monthly-benchmarks-score" class="monthly-metric-value">—</div>
-                        <div class="monthly-metric-sub">Overtook vs Lost <span class="arrow-indicator">▼</span></div>
-                        <div id="monthly-benchmarks-dropdown" class="monthly-benchmarks-list" style="display: none;" onclick="event.stopPropagation()">
-                            <!-- list of benchmarks will be dynamically populated -->
-                        </div>
-                    </div>
-                    <!-- Column 3: Retirement Goals -->
-                    <div class="monthly-metric-card monthly-goals-card">
-                        <span class="monthly-metric-title">Retirement Goals</span>
-                        <div class="monthly-goal-row">
-                            <div class="monthly-goal-meta">
-                                <span class="goal-label">Monthly Deposit:</span>
-                                <span id="monthly-deposit-status" class="goal-value">—</span>
-                            </div>
-                            <div class="progress-container">
-                                <div id="monthly-deposit-bar" class="progress-bar" style="width: 0%;"></div>
-                                <span id="monthly-deposit-pct" class="progress-pct">0%</span>
+                <div id="mgmt-holdings-panel" class="w-cols wallet-screen-content wallet-holdings-shell" data-o="3">
+                    <div class="w-holdings wallet-card-holdings">
+                        <div class="card-cl-overlay"><div class="cl-loader"><div class="cl-candles">
+                            <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                        </div></div></div>
+                        <div class="section-head">
+                            <div><h3 class="section-title">Holdings</h3><div id="mgmt-holdings-subtitle" class="wallet-table-subtitle">Live value, allocation, and quick trade actions.</div></div>
+                            <div class="holdings-view-toggle segmented" role="tablist" aria-label="Holdings view" data-field="holdings-view">
+                                <button type="button" class="holdings-view-btn seg-btn is-active" data-holdings-view="active" role="tab" aria-selected="true" onclick="window._mgmt.setHoldingsView('active')">Active</button>
+                                <button type="button" class="holdings-view-btn seg-btn" data-holdings-view="cemetery" role="tab" aria-selected="false" onclick="window._mgmt.setHoldingsView('cemetery')">The Cemetery</button>
                             </div>
                         </div>
-                        <div class="monthly-goal-row">
-                            <div class="monthly-goal-meta">
-                                <span class="goal-label">Monthly Return:</span>
-                                <span id="monthly-return-goal-status" class="goal-value">—</span>
-                            </div>
-                            <div class="progress-container">
-                                <div id="monthly-return-bar" class="progress-bar" style="width: 0%;"></div>
-                                <span id="monthly-return-pct-goal" class="progress-pct">0%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Yearly Summary Card -->
-            <section class="dash-card dash-yearly-summary-card">
-                <div class="dash-label">Yearly Summary</div>
-                <div class="yearly-summary-grid">
-                    <!-- Column 1: Yearly Return -->
-                    <div class="yearly-metric-card">
-                        <span class="yearly-metric-title">Yearly Return</span>
-                        <div id="yearly-return-val" class="yearly-metric-value">—</div>
-                        <div id="yearly-return-pct" class="yearly-metric-sub">—</div>
-                    </div>
-                    <!-- Column 2: Benchmark Comparison -->
-                    <div class="yearly-metric-card clickable-card" id="yearly-benchmarks-btn" onclick="toggleYearlyBenchmarksList()">
-                        <span class="yearly-metric-title">Benchmark Comparison</span>
-                        <div id="yearly-benchmarks-score" class="yearly-metric-value">—</div>
-                        <div class="yearly-metric-sub">Overtook vs Lost <span class="arrow-indicator">▼</span></div>
-                        <div id="yearly-benchmarks-dropdown" class="yearly-benchmarks-list" style="display: none;" onclick="event.stopPropagation()">
-                            <!-- list of benchmarks will be dynamically populated -->
-                        </div>
-                    </div>
-                    <!-- Column 3: Retirement Goals -->
-                    <div class="yearly-metric-card yearly-goals-card">
-                        <span class="yearly-metric-title">Retirement Goals</span>
-                        <div class="yearly-goal-row">
-                            <div class="yearly-goal-meta">
-                                <span class="goal-label">Yearly Deposit:</span>
-                                <span id="yearly-deposit-status" class="goal-value">—</span>
-                            </div>
-                            <div class="progress-container">
-                                <div id="yearly-deposit-bar" class="progress-bar" style="width: 0%;"></div>
-                                <span id="yearly-deposit-pct" class="progress-pct">0%</span>
-                            </div>
-                        </div>
-                        <div class="yearly-goal-row">
-                            <div class="yearly-goal-meta">
-                                <span class="goal-label">Yearly Return:</span>
-                                <span id="yearly-return-goal-status" class="goal-value">—</span>
-                            </div>
-                            <div class="progress-container">
-                                <div id="yearly-return-bar" class="progress-bar" style="width: 0%;"></div>
-                                <span id="yearly-return-pct-goal" class="progress-pct">0%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="dash-card dash-breakdown-card">
-                <div class="dash-label">Today's Movers</div>
-                <div id="dash-breakdown"></div>
-            </section>
-        </div>
-
-        <!-- Benchmark Chart -->
-        <section class="dash-card wig-chart-card">
-            <div class="wig-chart-header">
-                <div class="wig-title-row">
-                    <span id="benchmark-chart-title" class="wig-title">Benchmark</span>
-                    <span id="benchmark-change-badge" class="wig-change-badge"></span>
-                    <span id="benchmark-ohlc-legend" class="wig-ohlc-legend"></span>
-                </div>
-                <div class="wig-controls">
-                    <div class="benchmark-range-btns wig-range-btns">
-                        <button class="benchmark-range-btn wig-range-btn" data-range="1D"  onclick="setBenchmarkRange('1D')">1D</button>
-                        <button class="benchmark-range-btn wig-range-btn" data-range="YTD" onclick="setBenchmarkRange('YTD')">YTD</button>
-                        <button class="benchmark-range-btn wig-range-btn" data-range="1Y"  onclick="setBenchmarkRange('1Y')">1Y</button>
-                    </div>
-                    <div class="benchmark-type-btns wig-type-btns">
-                        <button class="benchmark-type-btn wig-type-btn active" data-type="line"   onclick="setBenchmarkChartType('line')">Line</button>
-                        <button class="benchmark-type-btn wig-type-btn"        data-type="candle" onclick="setBenchmarkChartType('candle')">Candle</button>
-                    </div>
-                </div>
-            </div>
-            <div id="benchmarkChartContainer" class="wig-chart-wrapper" style="position:relative;">
-                <div id="benchmark-cl-loader" class="card-cl-overlay" style="display:flex;">
-                    <div class="cl-loader">
-                        <div class="cl-candles">
-                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
-                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
-                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
-                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
-                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
-                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
-                        </div>
-                        <span class="cl-loader-text">Loading chart…</span>
-                    </div>
-                </div>
-                <div id="benchmark-no-data" style="display:none;align-items:center;justify-content:center;height:100%;color:#888">
-                    Refresh prices to load benchmark chart data
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <main id="tab-wallets" class="tab-content">
-        <section class="wallet-screen">
-            <div class="wallet-screen-header">
-                <h2>Wallet Management</h2>
-            </div>
-
-            <!-- ── Sticky wallet selector ─────────────────────── -->
-            <div id="wallet-sticky-sentinel" class="wallet-sticky-sentinel" aria-hidden="true"></div>
-            <div class="wallet-sticky-top">
-                <div class="wallet-card wallet-selector-card">
-                    <!-- Mobile: compact header + overflow menu -->
-                    <div class="wallet-mobile-header">
-                        <h2 class="wallet-mobile-title">Wallets</h2>
-                        <button class="wallet-overflow-btn" type="button" aria-label="More options"
-                                onclick="window._mgmt.toggleWalletOverflow()">···</button>
-                    </div>
-                    <div id="mgmt-wallet-overflow-menu" class="wallet-overflow-menu" hidden aria-hidden="true">
-                        <button class="wallet-overflow-item" type="button"
-                                onclick="window._mgmt.toggleCreatePortfolioComposer()">+ Add wallet</button>
-                        <button class="wallet-overflow-item" type="button"
-                                onclick="window._mgmt.openTransactionsPanel('history')">Transaction history</button>
-                    </div>
-                    <!-- Mobile: horizontal wallet chip carousel -->
-                    <div class="wallet-chips-carousel">
-                        <div id="mgmt-wallet-chips-strip" class="wallet-chips-strip" role="listbox" aria-label="Select wallet"></div>
-                        <div id="mgmt-wallet-chips-dots" class="wallet-chips-dots" aria-hidden="true"></div>
-                    </div>
-                    <!-- Mobile: selected wallet value summary -->
-                    <div id="mgmt-mobile-wallet-summary" class="wallet-mobile-summary">
-                        <span id="mgmt-mobile-wallet-name" class="wallet-mobile-summary-name">Select wallet</span>
-                        <strong id="mgmt-mobile-wallet-total" class="wallet-mobile-summary-total">—</strong>
-                        <span id="mgmt-mobile-wallet-pct" class="wallet-mobile-summary-pct is-neutral">—</span>
-                    </div>
-                    <!-- Desktop: wallet list label + create button -->
-                    <div class="wallet-selector-head wallet-desktop-only">
-                        <div class="mgmt-section-title">Wallets</div>
-                        <button id="mgmt-toggle-create-btn" class="mgmt-btn mgmt-btn-secondary wallet-create-toggle"
-                                onclick="window._mgmt.toggleCreatePortfolioComposer()">+ Wallet</button>
-                    </div>
-                    <div id="mgmt-port-flash" class="mgmt-flash" style="display:none"></div>
-                    <!-- (Desktop dropdown selector removed in favor of universal chips strip) -->
-                    <div id="mgmt-create-row-wrap" class="wallet-create-shell" hidden aria-hidden="true">
-                        <div class="mgmt-create-row">
-                            <input id="mgmt-new-port-name" type="text" class="mgmt-input" placeholder="New wallet name…"
-                                   onkeydown="if(event.key==='Enter')window._mgmt.createPortfolio()">
-                            <button id="mgmt-create-port-btn" class="mgmt-btn mgmt-btn-primary"
-                                    onclick="window._mgmt.createPortfolio()">Create</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ── Holdings — always visible ───────────────────
-                 No display:none. Skeleton shows while loading.
-                 Transactions open in overlay without touching this.
-            ── -->
-            <div id="mgmt-holdings-panel" class="wallet-screen-content wallet-holdings-shell">
-                    <div class="wallet-card wallet-card-holdings">
-                        <div class="card-cl-overlay">
-                            <div class="cl-loader">
-                                <div class="cl-candles">
-                                    <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
-                                    <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
-                                    <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
-                                    <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
-                                    <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
-                                    <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
-                                    <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
-                                    <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="wallet-table-header">
-                            <div>
-                                <div class="mgmt-section-title">Holdings</div>
-                                <div id="mgmt-holdings-subtitle" class="wallet-table-subtitle">Live value, allocation, and quick trade actions.</div>
-                            </div>
-                            <div id="mgmt-holdings-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading holdings…</div>
-                        </div>
-                        <div class="holdings-view-toggle" role="tablist" aria-label="Holdings view">
-                            <button type="button" class="holdings-view-btn is-active" data-holdings-view="active" role="tab" aria-selected="true" onclick="window._mgmt.setHoldingsView('active')">Active Holdings</button>
-                            <button type="button" class="holdings-view-btn" data-holdings-view="cemetery" role="tab" aria-selected="false" onclick="window._mgmt.setHoldingsView('cemetery')">The Cemetery</button>
-                        </div>
+                        <div class="w-readonly-note" hidden>Select a specific wallet to trade. All wallets is a combined read-only view.</div>
                         <div data-holdings-view-panel="active">
-                        <div class="wallet-table-wrap wallet-table-wrap-stable wallet-desktop-only">
-                                <table class="wallet-holdings-table">
-                                    <colgroup>
-                                        <col class="wht-col-company">
-                                        <col class="wht-col-shares">
-                                        <col class="wht-col-value">
-                                        <col class="wht-col-today">
-                                        <col class="wht-col-alloc">
-                                        <col class="wht-col-actions">
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <th class="wht-th">Company</th>
-                                            <th class="wht-th wht-th-r">Shares</th>
-                                            <th class="wht-th wht-th-r">Value</th>
-                                            <th class="wht-th wht-th-r">Today</th>
-                                            <th class="wht-th wht-th-r">Alloc</th>
-                                            <th class="wht-th"></th>
-                                        </tr>
-                                    </thead>
-                                <tbody id="mgmt-holdings-body"></tbody>
-                            </table>
-                        </div>
-                        <!-- Mobile: holdings as stacked cards -->
-                        <div id="mgmt-holdings-cards" class="wallet-holdings-cards"></div>
+                            <div class="wallet-table-wrap wallet-table-wrap-stable">
+                                <table class="wallet-holdings-table h-table">
+                                    <colgroup><col class="wht-col-company"><col class="wht-col-shares"><col class="wht-col-value"><col class="wht-col-today"><col class="wht-col-alloc"><col class="wht-col-actions"></colgroup>
+                                    <thead><tr><th class="wht-th">Company</th><th class="wht-th wht-th-r">Shares</th><th class="wht-th wht-th-r">Value</th><th class="wht-th wht-th-r">Today</th><th class="wht-th wht-th-r">Alloc</th><th class="wht-th"></th></tr></thead>
+                                    <tbody id="mgmt-holdings-body"></tbody>
+                                </table>
+                            </div>
+                            <div id="mgmt-holdings-cards" class="wallet-holdings-cards"></div>
                         </div>
                         <div data-holdings-view-panel="cemetery" hidden>
                             <div class="cemetery-header">
-                                <div>
-                                    <div class="cemetery-title">Closed Positions</div>
-                                    <div class="wallet-table-subtitle">Closed positions with lifecycle and total return.</div>
-                                </div>
-                                <div class="cemetery-controls">
-                                    <label for="cemetery-filter" class="cemetery-filter-label">View</label>
-                                    <select id="cemetery-filter" class="cemetery-filter-select">
-                                        <option value="all">All</option>
-                                        <option value="active">Active</option>
-                                        <option value="closed">Closed</option>
-                                    </select>
-                                    <div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div>
-                                </div>
+                                <div><div class="cemetery-title">Closed Positions</div><div class="wallet-table-subtitle" data-field="cemetery-count">Closed positions with lifecycle and total return.</div></div>
+                                <div class="cemetery-controls"><label for="cemetery-filter" class="cemetery-filter-label">View</label><select id="cemetery-filter" class="cemetery-filter-select" data-field="cemetery-filter"><option value="all">All</option><option value="active">Active</option><option value="closed">Closed</option></select><div id="mgmt-cemetery-meta" class="wallet-settings-pill wallet-settings-pill-muted">Loading archive…</div></div>
                             </div>
-                            <div class="wallet-table-wrap cemetery-table-wrap">
-                                <table class="wallet-holdings-table cemetery-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Asset</th>
-                                            <th><button type="button" id="cemetery-sort-date" class="cemetery-sort-btn" aria-label="Sort by close date">Holding lifespan</button></th>
-                                            <th><button type="button" id="cemetery-sort-return" class="cemetery-sort-btn" aria-label="Sort by return">Total (Realized) Return</button></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="mgmt-cemetery-body"></tbody>
-                                </table>
-                            </div>
+                            <div class="wallet-table-wrap cemetery-table-wrap"><table class="wallet-holdings-table cemetery-table"><thead><tr><th>Asset</th><th><button type="button" id="cemetery-sort-date" class="cemetery-sort-btn" aria-label="Sort by close date">Holding lifespan</button></th><th><button type="button" id="cemetery-sort-return" class="cemetery-sort-btn" aria-label="Sort by return">Total (Realized) Return</button></th></tr></thead><tbody id="mgmt-cemetery-body"></tbody></table></div>
                         </div>
                     </div>
+
+                    <aside class="w-rail" aria-label="Wallet tools">
+                        <section id="wallet-quick-entry-card" class="w-quick wallet-qe-card" data-field="quick-entry-actions">
+                            <div class="section-head"><h3 class="section-title">Quick entry</h3></div>
+                            <p class="wallet-qe-inline-copy">Record buys, sells, deposits, and withdrawals without filling a long form.</p>
+                            <textarea id="mgmt-quick-entry-input" class="wallet-qe-input input" rows="3" data-field="quick-entry-input" placeholder="e.g. Buy 10 AAPL for 185.50 to XTB on 2025-06-01" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" oninput="window._mgmt.onQuickEntryInput(event)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._mgmt.parseQuickEntry();}"></textarea>
+                            <div class="wallet-qe-action-row"><button type="button" id="mgmt-qe-open-trade-btn" class="btn btn-quiet" onclick="window._mgmt.openTransactionsPanel('trade')">Full form</button><button type="button" id="mgmt-qe-parse-btn" class="btn btn-primary" onclick="window._mgmt.parseQuickEntry()">Save entry</button></div>
+                            <div class="wallet-qe-examples" data-field="quick-entry-examples"><button type="button" class="chip-btn" onclick="window._mgmt.applyQeTemplate('buy')">Buy 10 AAPL for 185.50 to XTB</button><button type="button" class="chip-btn" onclick="window._mgmt.applyQeTemplate('sell')">Sell 5 CDR.WA for 120 to IKE</button><button type="button" class="chip-btn" onclick="window._mgmt.applyQeTemplate('deposit')">Deposit 5000 to IKZE</button></div>
+                            <div id="mgmt-qe-status" class="wallet-qe-status" data-field="quick-entry-status"></div>
+                        </section>
+
+                        <section class="w-settings" data-field="wallet-settings">
+                            <div class="section-head"><h3 class="section-title">Wallet settings</h3><div id="mgmt-settings-actions" class="wallet-settings-actions wob-settings-actions"></div></div>
+                            <div id="mgmt-settings-summary" class="wallet-settings-summary wob-summary">Summary stays pinned first. Select a wallet to manage it.</div>
+                            <div id="mgmt-benchmark-setting" class="wallet-setting-item set-row" data-field="wallet-benchmark">
+                                <span class="set-label">Benchmark<span class="set-hint">Applies to all wallets</span></span>
+                                <span id="wallet-settings-benchmark-current" class="set-value">WIG</span>
+                                <button type="button" id="wallet-settings-benchmark-change" class="link-btn" onclick="openUserModal()">Change</button>
+                            </div>
+                            <div class="set-row" data-field="wallet-ath-setting"><span class="set-label">All-time high</span><span id="wallet-settings-ath-current" class="set-value">—</span></div>
+                            <details class="w-disclosure w-owned" data-field="wallet-ath-manual"><summary>Set ATH manually</summary><div class="w-ath-grid"><label class="field" for="wallet-settings-ath-date"><span class="field-label">ATH date</span><input id="wallet-settings-ath-date" type="date" class="input user-field-input"></label><label class="field" for="wallet-settings-ath-value"><span class="field-label">ATH value</span><input id="wallet-settings-ath-value" type="number" class="input user-field-input" min="0" step="0.01" inputmode="decimal"></label></div><div id="wallet-settings-ath-flash" class="user-flash" role="status" style="display:none"></div><div class="w-disclosure-actions"><button type="button" id="wallet-settings-save-ath-btn" class="btn btn-primary" onclick="window._mgmt.saveWalletAth()">Save ATH</button><button type="button" id="wallet-settings-reset-ath-btn" class="btn btn-quiet" onclick="window._mgmt.resetSelectedWalletAth()">Reset from history</button></div></details>
+                            <details class="w-disclosure w-owned" data-field="wallet-rename"><summary>Rename wallet</summary><label class="field" for="wallet-settings-name"><span class="field-label">Name</span><input id="wallet-settings-name" type="text" class="input user-field-input" maxlength="80"></label><div id="wallet-settings-flash" class="user-flash" role="status" style="display:none"></div><div class="w-disclosure-actions"><button type="button" id="wallet-settings-save-name-btn" class="btn btn-primary" onclick="window._mgmt.saveWalletName()">Save name</button></div></details>
+                            <button id="wallet-settings-delete-btn" class="btn btn-danger w-owned" type="button" data-field="wallet-delete" onclick="window._mgmt.deleteSelectedWallet()">Delete wallet</button>
+                        </section>
+                    </aside>
                 </div>
 
-            <!-- ── Quick Entry — always visible on wallet screen ── -->
-            <div id="wallet-quick-entry-card" class="wallet-card wallet-qe-card">
-                <div class="wallet-qe-header">
-                    <svg class="wallet-qe-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                        <path d="M3 6h14M3 10h10M3 14h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                    </svg>
-                    <span class="wallet-qe-title">Quick entry</span>
-                    <span class="wallet-qe-subtitle">Add a transaction in plain English</span>
-                </div>
-                <div class="wallet-qe-body">
-                    <div class="wallet-qe-inline-copy">Use this to record buys, sells, deposits, and withdrawals without filling a long form.</div>
-                    <div class="wallet-qe-input-row">
-                        <textarea id="mgmt-quick-entry-input"
-                            class="wallet-qe-input"
-                            rows="1"
-                            placeholder="e.g. Buy 10 AAPL for 185.50 to XTB on 2025-06-01"
-                            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-                            oninput="window._mgmt.onQuickEntryInput(event)"
-                            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._mgmt.parseQuickEntry();}"></textarea>
-                    </div>
-                    <div class="wallet-qe-action-row" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
-                        <button type="button" id="mgmt-qe-open-trade-btn" class="wallet-qe-btn wallet-qe-btn-secondary"
-                                onclick="window._mgmt.openTransactionsPanel('trade')">
-                            Full form
-                        </button>
-                        <button type="button" id="mgmt-qe-parse-btn" class="wallet-qe-btn"
-                                onclick="window._mgmt.parseQuickEntry()">
-                            <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" style="width: 16px; height: 16px; margin-right: 6px;">
-                                <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                            Save entry
-                        </button>
-                    </div>
-                    <div class="wallet-qe-examples">
-                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('buy')">📈 Buy 10 AAPL for 185.50 to XTB on 2025-06-01</span>
-                        <span class="wallet-qe-sep">·</span>
-                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('sell')">📉 Sell 5 CDR.WA for 120 to IKE</span>
-                        <span class="wallet-qe-sep">·</span>
-                        <span class="wallet-qe-example" onclick="window._mgmt.applyQeTemplate('deposit')">💰 Deposit 5000 to IKZE</span>
-                    </div>
-                    <div id="mgmt-qe-status" class="wallet-qe-status"></div>
+                <div class="empty-state-card" id="wallets-empty-state" data-field="wallets-empty" hidden>
+                    <div class="empty-state-icon" aria-hidden="true">👛</div>
+                    <h3 class="empty-state-title">No wallets yet</h3>
+                    <p class="empty-state-desc">Create your first wallet and start feeding the compounding machine.</p>
+                    <button type="button" class="empty-state-btn btn btn-primary" onclick="window._mgmt.toggleCreatePortfolioComposer()">Create wallet</button>
                 </div>
             </div>
 
-            <!-- ── Compact overview bar ─────────────────────────
-                 Always visible. Replaces the old wallet-card-overview.
-                 Shows wallet name, rename/delete actions, benchmark
-                 (Summary only), and quick-action buttons on desktop.
-            ── -->
-            <div class="wallet-overview-bar wallet-card">
-                <div class="wob-head">
-                    <div class="wob-name-group">
-                        <span class="mgmt-section-title">Selected wallet</span>
-                        <h3 id="mgmt-holdings-title" class="wob-wallet-name">Select a wallet</h3>
-                    </div>
-                    <div id="mgmt-settings-actions" class="wallet-settings-actions wob-settings-actions"></div>
-                </div>
-                <div id="mgmt-settings-summary" class="wallet-settings-summary wob-summary">Summary stays pinned first. Select a wallet to manage it.</div>
-                <div class="wob-kpi-strip" aria-label="Wallet summary metrics">
-                    <div class="wob-kpi">
-                        <span class="wob-kpi-label">Total value</span>
-                        <strong id="wob-kpi-total">—</strong>
-                    </div>
-                    <div class="wob-kpi">
-                        <span class="wob-kpi-label">Today</span>
-                        <strong id="wob-kpi-day">—</strong>
-                    </div>
-                    <div class="wob-kpi">
-                        <span class="wob-kpi-label">Annual return</span>
-                        <strong id="wob-kpi-return">—</strong>
-                    </div>
-                </div>
-                <div id="wallet-summary-visuals" class="wallet-summary-visuals"></div>
-                <div id="mgmt-benchmark-setting" style="display:none"></div>
-                <!-- ── ATH management ────────────────────────────────── -->
-                <div id="mgmt-ath-setting" class="wallet-setting-item" style="display:none">
-                    <span class="wallet-setting-label">All-Time High (ATH)</span>
-                    <div id="mgmt-ath-content"></div>
-                    <div id="mgmt-ath-status" class="portfolio-ath-status" aria-live="polite"></div>
-                </div>
-                <div class="wob-actions"></div>
-            </div>
-
-            <!-- ── Inline Transaction Form ─────────────────── -->
-            <div id="wallet-transaction-card" class="wallet-card wallet-tx-card" style="display: none;">
+            <div class="sheet-backdrop" hidden></div>
+            <div id="wallet-transaction-card" class="wallet-card wallet-tx-card" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="mgmt-overlay-title">
                     <!-- visually-hidden title for aria-labelledby -->
                     <h2 id="mgmt-overlay-title" class="tflow-sr-only">Transaction</h2>
 
@@ -914,13 +871,7 @@
 
             </div><!-- /#wallet-transaction-card -->
 
-            <!-- Mobile FAB: quick new transaction -->
-            <button class="wallet-fab" id="mgmt-wallet-fab" type="button" aria-label="New transaction"
-                    onclick="window._mgmt.openTransactionsPanel('trade')">
-                <span class="wallet-fab-icon" aria-hidden="true">+</span>
-                <span class="wallet-fab-label">Transaction</span>
-            </button>
-
+            <button class="wallet-fab glass-island" id="mgmt-wallet-fab" type="button" aria-label="New transaction" onclick="window._mgmt.openTransactionsPanel('trade')"><span class="wallet-fab-icon" aria-hidden="true">+</span><span class="wallet-fab-label">Transaction</span></button>
         </section>
     </main>
     <main id="tab-portfolio" class="tab-content">
@@ -954,95 +905,114 @@
 
     <!-- Tab: History -->
     <main id="tab-history" class="tab-content">
-        <nav class="history-subnav" aria-label="History sections" role="tablist">
-            <button class="history-subnav-btn is-active" type="button" role="tab" aria-selected="true"
-                data-history-section="overview" onclick="setHistorySection('overview')">Overview</button>
-            <button class="history-subnav-btn" type="button" role="tab" aria-selected="false"
-                data-history-section="recaps" onclick="setHistorySection('recaps')">Summaries</button>
-        </nav>
+        <div class="history-ui20-shell">
+            <nav class="segmented hx-sections" aria-label="History sections" role="tablist">
+                <button class="seg-btn active" type="button" role="tab" aria-selected="true"
+                    data-history-section="overview" onclick="setHistorySection('overview')">Overview</button>
+                <button class="seg-btn" type="button" role="tab" aria-selected="false"
+                    data-history-section="recaps" onclick="setHistorySection('recaps')">Summaries</button>
+            </nav>
 
-        <div id="history-overview-view">
-        <section class="chart-container history-header-section">
-            <div class="history-top-row">
-                <h2 class="history-main-title">Portfolio History</h2>
-                <div class="benchmark-range-btns wig-range-btns" id="history-range-btns">
-                    <button class="benchmark-range-btn wig-range-btn active" data-history-range="ALL" onclick="setHistoryRange('ALL')">All</button>
-                    <button class="benchmark-range-btn wig-range-btn" data-history-range="5Y" onclick="setHistoryRange('5Y')">5Y</button>
-                    <button class="benchmark-range-btn wig-range-btn" data-history-range="3Y" onclick="setHistoryRange('3Y')">3Y</button>
-                    <button class="benchmark-range-btn wig-range-btn" data-history-range="1Y" onclick="setHistoryRange('1Y')">1Y</button>
-                    <button class="benchmark-range-btn wig-range-btn" data-history-range="YTD" onclick="setHistoryRange('YTD')">YTD</button>
-                    <button class="benchmark-range-btn wig-range-btn" data-history-range="1M" onclick="setHistoryRange('1M')">1M</button>
-                    <button class="benchmark-range-btn wig-range-btn" data-history-range="1W" onclick="setHistoryRange('1W')">1W</button>
-                </div>
-            </div>
-            <div class="history-wallet-btns" id="history-wallet-btns" role="tablist" aria-label="Select portfolio"></div>
-        </section>
-
-        <section id="historyOverviewPanel" class="chart-container">
-            <div class="chart-wrapper" style="height:360px;"><canvas id="investmentChart"></canvas></div>
-        </section>
-
-        <section class="chart-container">
-            <div class="history-sub-row">
-                <h2 class="tx-section-title" style="margin:0;">Monthly Returns</h2>
-                <div class="wig-type-btns" id="history-monthly-metric-btns">
-                    <button class="wig-type-btn active" data-history-monthly-metric="gain" onclick="setHistoryMonthlyMetric('gain')">Monthly Net Gains</button>
-                    <button class="wig-type-btn" data-history-monthly-metric="deposit" onclick="setHistoryMonthlyMetric('deposit')">Monthly Net Deposits</button>
-                </div>
-            </div>
-            <div class="chart-wrapper" style="height:280px;">
-                <canvas id="monthlyReturnsChart"></canvas>
-            </div>
-        </section>
-        <section class="chart-container">
-            <div class="history-sub-row">
-                <h2 class="tx-section-title" style="margin:0;">Cumulative Return</h2>
-                <div class="wig-type-btns" id="history-return-mode-btns">
-                    <button class="wig-type-btn active" data-history-return-mode="pct" onclick="setHistoryReturnMode('pct')">% Return</button>
-                    <button class="wig-type-btn" data-history-return-mode="pln" onclick="setHistoryReturnMode('pln')">PLN Return</button>
-                </div>
-            </div>
-            <div class="chart-wrapper" style="height:360px;">
-                <canvas id="returnsChart"></canvas>
-            </div>
-        </section>
-        <section class="chart-container">
-            <h2 class="tx-section-title">Daily % Change</h2>
-            <div class="chart-wrapper" style="height:560px;">
-                <canvas id="dailyChangeChart"></canvas>
-            </div>
-        </section>
-        <section class="chart-container">
-            <h2 class="tx-section-title">Daily PLN Change</h2>
-            <div class="chart-wrapper" style="height:560px;">
-                <canvas id="dailyPLNChart"></canvas>
-            </div>
-        </section>
-        <section class="chart-container">
-
-            <div class="history-sub-row">
-                <h2 class="tx-section-title" style="margin:0;">Return vs Benchmark</h2>
-                <div class="bm-vs-header-controls">
-                    <div class="wig-range-btns" id="bm-vs-range-btns">
-                        <button class="wig-range-btn" data-bm-range="1M" onclick="setBenchmarkRange('1M')">1M</button>
-                        <button class="wig-range-btn" data-bm-range="3M" onclick="setBenchmarkRange('3M')">3M</button>
-                        <button class="wig-range-btn" data-bm-range="6M" onclick="setBenchmarkRange('6M')">6M</button>
-                        <button class="wig-range-btn active" data-bm-range="1Y" onclick="setBenchmarkRange('1Y')">1Y</button>
-                        <button class="wig-range-btn" data-bm-range="5Y" onclick="setBenchmarkRange('5Y')">5Y</button>
-                        <button class="wig-range-btn" data-bm-range="10Y" onclick="setBenchmarkRange('10Y')">10Y</button>
+            <div id="history-overview-view" class="hx-panel" role="tabpanel" aria-label="Portfolio history overview">
+                <div class="hx-filters">
+                    <div class="hx-wallets history-wallet-btns" id="history-wallet-btns" role="tablist" aria-label="Select portfolio"></div>
+                    <div class="segmented hx-range" id="history-range-btns" role="tablist" aria-label="Time range">
+                        <button class="seg-btn" type="button" role="tab" data-history-range="ALL" onclick="setHistoryRange('ALL')">ALL</button>
+                        <button class="seg-btn" type="button" role="tab" data-history-range="5Y" onclick="setHistoryRange('5Y')">5Y</button>
+                        <button class="seg-btn" type="button" role="tab" data-history-range="3Y" onclick="setHistoryRange('3Y')">3Y</button>
+                        <button class="seg-btn active" type="button" role="tab" data-history-range="1Y" onclick="setHistoryRange('1Y')">1Y</button>
+                        <button class="seg-btn" type="button" role="tab" data-history-range="YTD" onclick="setHistoryRange('YTD')">YTD</button>
+                        <button class="seg-btn" type="button" role="tab" data-history-range="1M" onclick="setHistoryRange('1M')">1M</button>
+                        <button class="seg-btn" type="button" role="tab" data-history-range="1W" onclick="setHistoryRange('1W')">1W</button>
                     </div>
-                    <button class="bm-vs-picker-btn" id="bm-vs-picker-btn" onclick="openBenchmarkSelector()">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                        Select series
-                    </button>
                 </div>
+
+                <section id="historyOverviewPanel" class="hx-hero" aria-labelledby="hx-value-title">
+                    <div class="hx-hero-copy" data-field="history-value">
+                        <h2 class="eyebrow" id="hx-value-title"><span id="history-hero-wallet">Total</span> · value</h2>
+                        <div class="hx-total num" id="history-hero-total">—</div>
+                        <div class="hx-deltas">
+                            <span class="pill-delta" id="history-hero-gain-pill"><span class="num" id="history-hero-gain">—</span></span>
+                            <span class="pill-delta num" id="history-hero-gain-pct">—</span>
+                            <span class="hx-range-label" id="history-hero-range">selected range</span>
+                        </div>
+                        <dl class="hx-facts">
+                            <div class="hx-fact"><dt>Invested capital</dt><dd class="num" id="history-hero-invested">—</dd></div>
+                            <div class="hx-fact"><dt>Deposits in range</dt><dd class="num" id="history-hero-deposits">—</dd></div>
+                            <div class="hx-fact"><dt>Market gain in range</dt><dd class="num" id="history-hero-market">—</dd></div>
+                        </dl>
+                    </div>
+                    <figure class="hx-chart">
+                        <ul class="hx-legend">
+                            <li><i class="key" aria-hidden="true"></i>Value</li>
+                            <li><i class="key is-invested" aria-hidden="true"></i>Invested capital</li>
+                            <li><i class="key is-deposit" aria-hidden="true"></i>Deposit</li>
+                        </ul>
+                        <div class="chart-wrapper hx-chart-wrapper hx-value-wrapper">
+                            <canvas id="investmentChart"></canvas>
+                        </div>
+                    </figure>
+                </section>
+
+                <section class="hx-return" aria-labelledby="hx-return-title">
+                    <div class="section-head">
+                        <div>
+                            <h2 class="section-title" id="hx-return-title">Return</h2>
+                            <p class="section-sub">Cumulative return and account benchmark in one view.</p>
+                        </div>
+                        <div class="segmented" id="history-return-mode-btns" role="tablist" aria-label="Return unit">
+                            <button class="seg-btn active" type="button" role="tab" data-history-return-mode="pct" onclick="setHistoryReturnMode('pct')">%</button>
+                            <button class="seg-btn" type="button" role="tab" data-history-return-mode="pln" onclick="setHistoryReturnMode('pln')">PLN</button>
+                        </div>
+                    </div>
+                    <div class="hx-series" id="history-benchmark-series" role="group" aria-label="Benchmark series">
+                        <button type="button" class="series-chip is-fixed" aria-pressed="true" aria-disabled="true"><i class="key" aria-hidden="true"></i>Portfolio</button>
+                        <button type="button" class="series-chip" aria-pressed="true" data-history-benchmark="WIG"><i class="key s1" aria-hidden="true"></i>WIG</button>
+                        <button type="button" class="series-chip" aria-pressed="false" data-history-benchmark="SP500"><i class="key s2" aria-hidden="true"></i>S&amp;P 500</button>
+                        <button type="button" class="series-chip" aria-pressed="false" data-history-benchmark="MSCI_WORLD"><i class="key s3" aria-hidden="true"></i>MSCI World</button>
+                    </div>
+                    <p class="hx-note" id="history-return-pln-note" hidden>Benchmarks have no PLN value. PLN mode shows portfolio nominal return only.</p>
+                    <div class="chart-wrapper hx-chart-wrapper hx-return-wrapper">
+                        <canvas id="returnsChart"></canvas>
+                    </div>
+                </section>
+
+                <section class="hx-pair" aria-label="Monthly and daily return detail">
+                    <article class="hx-monthly">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">Monthly bars</h2>
+                                <p class="section-sub">Net gain or deposits for each month.</p>
+                            </div>
+                            <div class="segmented" id="history-monthly-metric-btns" role="tablist" aria-label="Monthly metric">
+                                <button class="seg-btn active" type="button" role="tab" data-history-monthly-metric="gain" onclick="setHistoryMonthlyMetric('gain')">Gain</button>
+                                <button class="seg-btn" type="button" role="tab" data-history-monthly-metric="deposit" onclick="setHistoryMonthlyMetric('deposit')">Deposits</button>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper hx-chart-wrapper hx-bars-wrapper">
+                            <canvas id="monthlyReturnsChart"></canvas>
+                        </div>
+                        <div class="hx-stat-row" id="history-monthly-stats" aria-live="polite"></div>
+                    </article>
+                    <article class="hx-daily">
+                        <div class="section-head">
+                            <div>
+                                <h2 class="section-title">Daily change</h2>
+                                <p class="section-sub">Scatter of up to 90 closing sessions.</p>
+                            </div>
+                            <div class="segmented" id="history-daily-mode-btns" role="tablist" aria-label="Daily unit">
+                                <button class="seg-btn active" type="button" role="tab" data-history-daily-mode="pct" onclick="setHistoryDailyMode('pct')">%</button>
+                                <button class="seg-btn" type="button" role="tab" data-history-daily-mode="pln" onclick="setHistoryDailyMode('pln')">PLN</button>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper hx-chart-wrapper hx-daily-wrapper" data-chart-kind="scatter">
+                            <canvas id="dailyChangeChart" data-chart-kind="scatter"></canvas>
+                            <canvas id="dailyPLNChart" hidden></canvas>
+                        </div>
+                        <div class="hx-stat-row" id="history-daily-stats" aria-live="polite"></div>
+                    </article>
+                </section>
             </div>
-            <div class="chart-wrapper" style="position:relative;height:420px;">
-                <canvas id="benchmarkVsPortfolioChart"></canvas>
-            </div>
-            <!-- Selector panel — shown when picker btn is clicked -->
-            <div class="bm-vs-panel" id="bm-vs-panel" hidden></div>
-        </section>
         </div>
 
         <section id="history-recaps-view" class="monthly-audit-shell" aria-live="polite" hidden>
@@ -1776,7 +1746,7 @@
                     <span class="app-footer-version-pill" title="Current Release Version">
                         <span class="app-footer-status-indicator" aria-hidden="true"></span>
                         <span class="app-footer-version-prefix">Version</span>
-                        <strong id="app-version-display" class="app-footer-version-code">14.3.7</strong>
+                        <strong id="app-version-display" class="app-footer-version-code">15.3.1</strong>
                     </span>
                     <a href="releases.html" class="app-footer-release-link" id="app-footer-release-link" title="View interactive release summary & changelog">
                         <span>Release Summary &amp; Notes</span>
@@ -1812,11 +1782,11 @@
     <script src="scripts/roast-engine.js"></script>
     <script src="scripts/xp-engine.js"></script>
     <script src="scripts/engagement-strip.js"></script>
-    <script src="scripts/dashboard.js?v=20260709b"></script>
+    <script src="scripts/dashboard.js?v=ui20b"></script>
     <script src="scripts/wig-chart.js?v=20260625a"></script>
     <script src="scripts/statistics.js?v=20260702b"></script>
     <script src="scripts/transactions.js?v=20260702a"></script>
-    <script src="scripts/chart.js?v=20260625b"></script>
+    <script src="scripts/chart.js?v=15.3.1"></script>
     <script>
         (function() {
             const isLocalHost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
@@ -1851,7 +1821,15 @@
                     buy: 1000, sell: 400, dividends: 25,
                     trades: [{date: '2026-08-12', type: 'BUY', ticker: 'NVDA', value_pln: 1000}, {date: '2026-08-24', type: 'SELL', ticker: 'BND', value_pln: 400}], ath: true,
                     athValue: 14911.2, athDate: '2026-09-01', daysSinceAth: 0,
-                    best: {date: '2026-08-19', change_pln: 100}, worst: {date: '2026-08-13', change_pln: -80} }
+                    best: {date: '2026-08-19', change_pln: 100}, worst: {date: '2026-08-13', change_pln: -80} },
+                { period: '2026-09', end: '2026-10-01', prior: '2026-08-31', close: '2026-09-30',
+                    returns: [0, .8, 1.4, .2, 2.4, 2.05], benchmark: [0, .3, .8, -.1, 1.2, 1.5], startPeak: 102.63,
+                    market: [1.1, .9, 2.2, .6, .4, 1.7], nominal: 305.6796, deposits: 1200,
+                    leader: ['XTB', 620], anchor: ['BND', -180], goal: 250, actual: 305.6796,
+                    buy: 1200, sell: 0, dividends: 14,
+                    trades: [{date: '2026-09-14', type: 'BUY', ticker: 'XTB', value_pln: 1200}], ath: true,
+                    athValue: 16416.8796, athDate: '2026-10-01', daysSinceAth: 0,
+                    best: {date: '2026-09-25', change_pln: 96, change_pct: .84}, worst: {date: '2026-09-18', change_pln: -64, change_pct: -.51} }
             ];
             window.MONTHLY_WRAP_DATA = scenes.map(scene => {
                 const dates = ['01', '07', '13', '19', '25'].map(day => `${scene.period}-${day}`).concat(scene.end);
@@ -1884,9 +1862,10 @@
             });
         })();
     </script>
-    <script src="scripts/monthly-audit-share.js?v=20260915-interactive3"></script>
-    <script src="scripts/monthly-audit.js?v=20260921-live-mtd"></script>
-    <script src="scripts/benchmark-chart.js?v=20260720a"></script>
+    <script src="scripts/monthly-audit-share.js?v=15.3.1"></script>
+    <script src="scripts/monthly-audit.js?v=15.3.1"></script>
+    <script src="scripts/benchmark-chart.js?v=15.3.1"></script>
+    <script src="scripts/intraday-comparison.js?v=20261016b"></script>
     <script src="scripts/analysis.js?v=20260625a"></script>
 
     <script src="scripts/portfolio-chart.js"></script>
@@ -1930,7 +1909,71 @@
             if (toggle) toggle.setAttribute('aria-expanded', 'false');
         }
 
+        // The sidebar is always visible on desktop, so the user card is filled on load, not only when the drawer opens.
+        function populateSidenavUser() {
+            const nameEl = document.getElementById('sidenav-user-name');
+            const footerName = document.getElementById('sidenav-footer-name');
+            const footerRole = document.getElementById('sidenav-footer-role');
+            if (window.AuthGuard && AuthGuard.getDisplayName) {
+                const name = AuthGuard.getDisplayName();
+                if (nameEl) nameEl.textContent = name;
+                if (footerName) footerName.textContent = name;
+            }
+            if (window.AuthGuard && AuthGuard.getRole && footerRole) {
+                footerRole.textContent = AuthGuard.getRole() || 'Member';
+            }
+        }
+
+        // Desktop sidebar: collapsible icon rail (labels fade, then the width swaps), remembered between visits.
+        (function initSidebarRail() {
+            const STORAGE_KEY = 'roastfolio-sidebar';
+            const nav = document.getElementById('sidenav');
+            const button = document.getElementById('sidenav-collapse');
+            if (!nav || !button) return;
+            const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            nav.querySelectorAll('.sidenav-item').forEach(item => {
+                const label = item.querySelector('.sidenav-item-label');
+                if (label) item.dataset.label = label.textContent.trim();
+            });
+
+            function apply(collapsed) {
+                document.body.dataset.sidebar = collapsed ? 'collapsed' : 'expanded';
+                nav.dataset.state = collapsed ? 'collapsed' : 'expanded';
+                button.setAttribute('aria-pressed', String(collapsed));
+                button.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            }
+
+            function setCollapsed(collapsed, remember) {
+                if (remember) {
+                    try { localStorage.setItem(STORAGE_KEY, collapsed ? 'collapsed' : 'expanded'); } catch (e) {}
+                }
+                if (collapsed && !reduced) {
+                    nav.dataset.state = 'collapsing';
+                    setTimeout(() => apply(true), 150);
+                } else {
+                    apply(collapsed);
+                }
+            }
+
+            let stored = null;
+            try { stored = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+            const tablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+            apply(stored ? stored === 'collapsed' : tablet);
+
+            button.addEventListener('click', () => setCollapsed(nav.dataset.state !== 'collapsed', true));
+            document.addEventListener('keydown', event => {
+                if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'b') return;
+                const target = event.target;
+                if (target && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))) return;
+                event.preventDefault();
+                setCollapsed(nav.dataset.state !== 'collapsed', true);
+            });
+        })();
+
         document.addEventListener('DOMContentLoaded', function () {
+            populateSidenavUser();
+            window.addEventListener('load', populateSidenavUser);
             const toggleBtn = document.getElementById('sidenav-toggle');
             if (toggleBtn) {
                 toggleBtn.addEventListener('click', function (event) {
@@ -1980,6 +2023,7 @@
             // Update sidebar active state
             document.querySelectorAll('.sidenav-item').forEach(el => el.classList.remove('active'));
             if (sideItem) sideItem.classList.add('active');
+            document.querySelectorAll('.bottom-tab').forEach(el => el.classList.toggle('active', el.dataset.tab === name));
             // Also update current tab indicator in header
             const indicator = document.getElementById('header-tab-indicator');
             if (indicator && sideItem) indicator.textContent = sideItem.querySelector('.sidenav-item-label')?.textContent || '';
@@ -2982,7 +3026,7 @@
     <!-- Swipe-to-refresh (mobile pull-down gesture) -->
     <script src="scripts/swipe-refresh.js" defer></script>
     <!-- Portfolio management -->
-    <script src="scripts/manage.js?v=20260915-recap2"></script>
+    <script src="scripts/manage.js?v=15.3.1"></script>
 
     <!-- ── User Settings Modal ──────────────────────────────── -->
     <div id="user-modal" class="user-modal-overlay" style="display:none" onclick="if(event.target===this)closeUserModal()">
@@ -3089,15 +3133,21 @@
             <div id="user-email-flash" class="user-flash" style="display:none"></div>
           </div>
 
+          <div class="user-field-group">
+            <span class="user-field-label">Dashboard performance</span>
+            <p>Timings from the last 20 page loads stay in this browser. No holdings, prices, account IDs or tokens are recorded.</p>
+            <button type="button" class="user-save-btn" onclick="DashboardPerformance.export()">Export timings</button>
+            <button type="button" class="user-save-btn" onclick="DashboardPerformance.clear()">Clear timings</button>
+          </div>
         </div>
         <div class="user-modal-footer" style="flex-wrap: wrap; gap: 12px; justify-content: space-between;">
           <div class="user-modal-branding">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="user-modal-version">v14.3.7</span>
+            <span class="user-modal-version">v15.3.1</span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <a href="releases.html" class="user-guide-link">
-              <span aria-hidden="true">🏷️</span> Release Summary v14.3.7
+              <span aria-hidden="true">🏷️</span> Release Summary v15.3.1
             </a>
             <a href="guide.html" class="user-guide-link">
               <span aria-hidden="true">📖</span> User Guide
@@ -3115,43 +3165,5 @@
         </div>
       </div>
     </div><!-- /#user-modal -->
-    <!-- ── Wallet Settings Modal ──────────────────────────────── -->
-    <div id="wallet-settings-modal" class="user-modal-overlay" style="display:none" onclick="if(event.target===this)window._mgmt.closeWalletSettingsModal()">
-      <div class="user-modal-dialog">
-        <div class="user-modal-header">
-          <span class="user-modal-title">⚙️ Wallet Settings</span>
-          <button class="user-modal-close" onclick="window._mgmt.closeWalletSettingsModal()" aria-label="Close">✕</button>
-        </div>
-        <div class="user-modal-body">
-          <div id="wallet-settings-flash" class="user-flash" style="display:none"></div>
-
-          <div class="user-field-group">
-            <label class="user-field-label">Wallet Name</label>
-            <div class="user-field-row">
-              <input id="wallet-settings-name" type="text" class="user-field-input" placeholder="Wallet name" maxlength="80">
-            </div>
-          </div>
-
-          <div class="user-field-group" id="wallet-settings-ath-group">
-            <label class="user-field-label">Manual All-Time High (ATH)</label>
-            <div class="user-field-row" style="margin-bottom: 8px;">
-              <input id="wallet-settings-ath-date" type="date" class="user-field-input" style="flex:1">
-            </div>
-            <div class="user-field-row">
-              <input id="wallet-settings-ath-value" type="number" class="user-field-input" placeholder="ATH value (PLN)" min="0" step="0.01">
-            </div>
-          </div>
-        </div>
-        <div class="user-modal-footer" style="justify-content: space-between;">
-            <button id="wallet-settings-delete-btn" class="user-logout-btn mgmt-danger" onclick="window._mgmt.deleteSelectedWallet()">
-              <span>🗑️</span> Delete Wallet
-            </button>
-            <div style="display:flex; gap: 8px;">
-                <button id="wallet-settings-reset-ath-btn" class="mgmt-btn" onclick="window._mgmt.resetSelectedWalletAth()">Auto ATH</button>
-                <button class="mgmt-btn mgmt-btn-primary" onclick="window._mgmt.saveWalletSettings()">Save</button>
-            </div>
-        </div>
-      </div>
-    </div><!-- /#wallet-settings-modal -->
 </body>
 </html>
