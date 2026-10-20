@@ -7,6 +7,9 @@ Globals:
     Timeout: 60
     MemorySize: 512
     Runtime: python3.12
+    Environment:
+      Variables:
+        APP_ENV: !Ref Environment
 
 Parameters:
   BucketName:
@@ -41,15 +44,18 @@ Resources:
       AutoVerifiedAttributes:
         - email
       # Collect email (required) and nickname (required, displayed in app)
-      Schema:
-        - Name: email
-          AttributeDataType: String
-          Required: true
-          Mutable: false
-        - Name: nickname
-          AttributeDataType: String
-          Required: true
-          Mutable: true
+      # The existing dev pool schema is managed outside this stack and immutable.
+      Schema: !If
+        - IsDev
+        - !Ref AWS::NoValue
+        - - Name: email
+            AttributeDataType: String
+            Required: true
+            Mutable: false
+          - Name: nickname
+            AttributeDataType: String
+            Required: true
+            Mutable: true
       Policies:
         PasswordPolicy:
           MinimumLength: 6
@@ -1141,7 +1147,39 @@ Resources:
               Access-Control-Allow-Headers: "'Content-Type,Authorization'"
               Access-Control-Allow-Methods: "'GET,PUT,POST,DELETE,OPTIONS'"
 
+  ObservabilityDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "${AWS::StackName}-performance"
+      DashboardBody: !Sub
+        - |
+          {
+            "start": "-PT6H",
+            "periodOverride": "inherit",
+            "widgets": [
+              {"type":"text","x":0,"y":0,"width":24,"height":2,"properties":{"markdown":"# Roastfolio ${Environment} observability\nAPI latency/errors, Lambda concurrency, DynamoDB operation timings and capacity."}},
+              {"type":"metric","x":0,"y":2,"width":12,"height":6,"properties":{"title":"API duration by route (p95, ms)","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[[{"expression":"SEARCH('{Roastfolio/API,Environment,Route,Method} MetricName=\"DurationMs\" Environment=\"${Environment}\"','p95',60)","id":"apiLatency","label":"API p95"}]],"yAxis":{"left":{"min":0,"label":"milliseconds"}}}},
+              {"type":"metric","x":12,"y":2,"width":12,"height":6,"properties":{"title":"API requests and 5xx by route","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[[{"expression":"SEARCH('{Roastfolio/API,Environment,Route,Method} MetricName=\"RequestCount\" Environment=\"${Environment}\"','Sum',60)","id":"apiRequests","label":"Requests"}],[{"expression":"SEARCH('{Roastfolio/API,Environment,Route,Method} MetricName=\"ErrorCount\" Environment=\"${Environment}\"','Sum',60)","id":"apiErrors","label":"5xx"}]],"yAxis":{"left":{"min":0}}}},
+              {"type":"metric","x":0,"y":8,"width":12,"height":6,"properties":{"title":"API internal stages (p95, ms)","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[[{"expression":"SEARCH('{Roastfolio/Performance,Environment,Route,Stage} MetricName=\"StageDurationMs\" Environment=\"${Environment}\"','p95',60)","id":"apiStages","label":"Stage p95"}]],"yAxis":{"left":{"min":0,"label":"milliseconds"}}}},
+              {"type":"metric","x":12,"y":8,"width":12,"height":6,"properties":{"title":"DynamoDB operation latency (p95, ms)","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[[{"expression":"SEARCH('{Roastfolio/Storage,Environment,Table,Operation} MetricName=\"OperationDurationMs\" Environment=\"${Environment}\"','p95',60)","id":"ddbLatency","label":"DynamoDB p95"}]],"yAxis":{"left":{"min":0,"label":"milliseconds"}}}},
+              {"type":"metric","x":0,"y":14,"width":12,"height":6,"properties":{"title":"DynamoDB capacity consumed (units)","region":"${AWS::Region}","view":"timeSeries","period":300,"metrics":[[{"expression":"SEARCH('{Roastfolio/Storage,Environment,Table,Operation} MetricName=\"ConsumedCapacityUnits\" Environment=\"${Environment}\"','Sum',300)","id":"appCapacity","label":"Per-operation capacity"}],["AWS/DynamoDB","ConsumedReadCapacityUnits","TableName","${DataTable}",{"id":"readData","stat":"Sum"}],["AWS/DynamoDB","ConsumedWriteCapacityUnits","TableName","${DataTable}",{"id":"writeData","stat":"Sum"}],["AWS/DynamoDB","ConsumedReadCapacityUnits","TableName","${TransactionsTable}",{"id":"readTx","stat":"Sum"}],["AWS/DynamoDB","ConsumedWriteCapacityUnits","TableName","${TransactionsTable}",{"id":"writeTx","stat":"Sum"}],["AWS/DynamoDB","ConsumedReadCapacityUnits","TableName","${SnapshotsTable}",{"id":"readSnapshots","stat":"Sum"}],["AWS/DynamoDB","ConsumedWriteCapacityUnits","TableName","${SnapshotsTable}",{"id":"writeSnapshots","stat":"Sum"}],["AWS/DynamoDB","ConsumedReadCapacityUnits","TableName","${UsersTable}",{"id":"readUsers","stat":"Sum"}],["AWS/DynamoDB","ConsumedWriteCapacityUnits","TableName","${UsersTable}",{"id":"writeUsers","stat":"Sum"}],["AWS/DynamoDB","ConsumedReadCapacityUnits","TableName","${RetirementPlansTable}",{"id":"readRetirement","stat":"Sum"}],["AWS/DynamoDB","ConsumedWriteCapacityUnits","TableName","${RetirementPlansTable}",{"id":"writeRetirement","stat":"Sum"}],["AWS/DynamoDB","ConsumedReadCapacityUnits","TableName","${DiaryTable}",{"id":"readDiary","stat":"Sum"}],["AWS/DynamoDB","ConsumedWriteCapacityUnits","TableName","${DiaryTable}",{"id":"writeDiary","stat":"Sum"}]],"yAxis":{"left":{"min":0}}}},
+              {"type":"metric","x":12,"y":14,"width":12,"height":6,"properties":{"title":"DynamoDB throttles and application storage errors","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[["AWS/DynamoDB","ThrottledRequests","TableName","${DataTable}",{"id":"throttleData","stat":"Sum"}],["AWS/DynamoDB","ThrottledRequests","TableName","${TransactionsTable}",{"id":"throttleTx","stat":"Sum"}],["AWS/DynamoDB","ThrottledRequests","TableName","${SnapshotsTable}",{"id":"throttleSnapshots","stat":"Sum"}],["AWS/DynamoDB","ThrottledRequests","TableName","${UsersTable}",{"id":"throttleUsers","stat":"Sum"}],["AWS/DynamoDB","ThrottledRequests","TableName","${RetirementPlansTable}",{"id":"throttleRetirement","stat":"Sum"}],["AWS/DynamoDB","ThrottledRequests","TableName","${DiaryTable}",{"id":"throttleDiary","stat":"Sum"}],[{"expression":"SEARCH('{Roastfolio/Storage,Environment,Table,Operation} MetricName=\"OperationErrorCount\" Environment=\"${Environment}\"','Sum',60)","id":"ddbErrors","label":"Storage errors"}]],"yAxis":{"left":{"min":0}}}},
+              {"type":"metric","x":0,"y":20,"width":12,"height":6,"properties":{"title":"Lambda concurrency, throttles, errors and duration","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[["AWS/Lambda","ConcurrentExecutions","FunctionName","${PricesFunction}",{"id":"concurrency","stat":"Maximum","label":"Concurrent"}],["AWS/Lambda","Throttles","FunctionName","${PricesFunction}",{"id":"lambdaThrottles","stat":"Sum","label":"Throttles"}],["AWS/Lambda","Errors","FunctionName","${PricesFunction}",{"id":"lambdaErrors","stat":"Sum","label":"Errors"}],["AWS/Lambda","Duration","FunctionName","${PricesFunction}",{"id":"lambdaDuration","stat":"p95","label":"Duration p95 (ms)"}],["AWS/Lambda","Invocations","FunctionName","${PricesFunction}",{"id":"lambdaInvocations","stat":"Sum","label":"Invocations"}]],"yAxis":{"left":{"min":0}}}},
+              {"type":"metric","x":12,"y":20,"width":12,"height":6,"properties":{"title":"API Gateway latency and errors","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[["AWS/ApiGateway","Latency","ApiName","${ApiName}","Stage","prod",{"id":"gatewayLatency","stat":"p95","label":"Gateway p95 (ms)"}],["AWS/ApiGateway","IntegrationLatency","ApiName","${ApiName}","Stage","prod",{"id":"integrationLatency","stat":"p95","label":"Integration p95 (ms)"}],["AWS/ApiGateway","5XXError","ApiName","${ApiName}","Stage","prod",{"id":"gateway5xx","stat":"Sum","label":"5xx"}],["AWS/ApiGateway","Count","ApiName","${ApiName}","Stage","prod",{"id":"gatewayCount","stat":"Sum","label":"Requests"}]],"yAxis":{"left":{"min":0}}}},
+              {"type":"log","x":0,"y":26,"width":24,"height":8,"properties":{"title":"Recent API, stage and DynamoDB calls (no payloads or keys)","region":"${AWS::Region}","view":"table","query":"SOURCE '/aws/lambda/${PricesFunction}' | filter eventType = \"api_request\" or eventType = \"api_stage\" or eventType = \"dynamodb_operation\" | fields @timestamp, eventType, Route, Method, Stage, Table, Operation, DurationMs, StageDurationMs, OperationDurationMs, StatusCode, Error, ConsumedCapacityUnits | sort @timestamp desc | limit 100"}}
+              ,{"type":"metric","x":0,"y":34,"width":12,"height":6,"properties":{"title":"DynamoDB table size (bytes; daily)","region":"${AWS::Region}","start":"-P30D","view":"timeSeries","period":86400,"metrics":[["AWS/DynamoDB","TableSizeBytes","TableName","${DataTable}",{"id":"sizeData","stat":"Maximum"}],["AWS/DynamoDB","TableSizeBytes","TableName","${TransactionsTable}",{"id":"sizeTx","stat":"Maximum"}],["AWS/DynamoDB","TableSizeBytes","TableName","${SnapshotsTable}",{"id":"sizeSnapshots","stat":"Maximum"}],["AWS/DynamoDB","TableSizeBytes","TableName","${UsersTable}",{"id":"sizeUsers","stat":"Maximum"}],["AWS/DynamoDB","TableSizeBytes","TableName","${RetirementPlansTable}",{"id":"sizeRetirement","stat":"Maximum"}],["AWS/DynamoDB","TableSizeBytes","TableName","${DiaryTable}",{"id":"sizeDiary","stat":"Maximum"}]],"yAxis":{"left":{"min":0,"label":"bytes"}}}},
+              {"type":"metric","x":12,"y":34,"width":12,"height":6,"properties":{"title":"DynamoDB table items (daily)","region":"${AWS::Region}","start":"-P30D","view":"timeSeries","period":86400,"metrics":[["AWS/DynamoDB","ItemCount","TableName","${DataTable}",{"id":"countData","stat":"Maximum"}],["AWS/DynamoDB","ItemCount","TableName","${TransactionsTable}",{"id":"countTx","stat":"Maximum"}],["AWS/DynamoDB","ItemCount","TableName","${SnapshotsTable}",{"id":"countSnapshots","stat":"Maximum"}],["AWS/DynamoDB","ItemCount","TableName","${UsersTable}",{"id":"countUsers","stat":"Maximum"}],["AWS/DynamoDB","ItemCount","TableName","${RetirementPlansTable}",{"id":"countRetirement","stat":"Maximum"}],["AWS/DynamoDB","ItemCount","TableName","${DiaryTable}",{"id":"countDiary","stat":"Maximum"}]],"yAxis":{"left":{"min":0,"label":"items"}}}}
+              ,{"type":"metric","x":0,"y":42,"width":12,"height":6,"properties":{"title":"Yahoo Finance latency by operation (p95, ms)","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[[{"expression":"SEARCH('{Roastfolio/Dependencies,Environment,Provider,Feature,Operation} MetricName=\"DurationMs\" Environment=\"${Environment}\" Provider=\"YahooFinance\"','p95',60)","id":"yahooLatency","label":"Yahoo p95"}]],"yAxis":{"left":{"min":0,"label":"milliseconds"}}}},
+              {"type":"metric","x":12,"y":42,"width":12,"height":6,"properties":{"title":"Yahoo Finance calls and errors by operation","region":"${AWS::Region}","view":"timeSeries","period":60,"metrics":[[{"expression":"SEARCH('{Roastfolio/Dependencies,Environment,Provider,Feature,Operation} MetricName=\"CallCount\" Environment=\"${Environment}\" Provider=\"YahooFinance\"','Sum',60)","id":"yahooCalls","label":"Calls"}],[{"expression":"SEARCH('{Roastfolio/Dependencies,Environment,Provider,Feature,Operation} MetricName=\"ErrorCount\" Environment=\"${Environment}\" Provider=\"YahooFinance\"','Sum',60)","id":"yahooErrors","label":"Errors"}]],"yAxis":{"left":{"min":0}}}}
+            ]
+          }
+        - ApiName: !If [IsDev, dev-emerytura-prices-api, emerytura-prices-api]
+
 Outputs:
+  ObservabilityDashboardUrl:
+    Description: CloudWatch performance and storage dashboard
+    Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${ObservabilityDashboard}"
+
   ApiEndpoint:
     Description: Live prices API URL
     Value: !Sub https://${PricesApi}.execute-api.${AWS::Region}.amazonaws.com/prod/prices

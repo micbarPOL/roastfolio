@@ -21,6 +21,7 @@ from decimal import Decimal
 
 import boto3
 from boto3.dynamodb.conditions import Key
+from observability import instrument_table
 
 import snapshots
 
@@ -40,7 +41,7 @@ _PLAN_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
 def _table():
     global _dynamodb
     if _dynamodb is None:
-        _dynamodb = boto3.resource("dynamodb").Table(_TABLE_NAME)
+        _dynamodb = instrument_table(boto3.resource("dynamodb").Table(_TABLE_NAME))
     return _dynamodb
 
 

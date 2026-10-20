@@ -26,6 +26,9 @@ import portfolios  # DynamoDB portfolios + holdings helpers
 import retirement_plans
 import snapshots   # Daily snapshot + ATH helpers
 import roast_engine
+from observability import instrument_table, instrument_yahoo_module, observe_api, observe_stage
+
+yf = instrument_yahoo_module(yf, "prices_and_widgets")
 
 CLOUDFRONT_ORIGIN = "https://d750c9gknegtj.cloudfront.net"
 
@@ -434,6 +437,25 @@ def _build_market_carousel_entry(benchmark_id: str, benchmark_data: dict, daily_
         "sparkline": sparkline,
     }
 
+def _epoch_seconds(value):
+    """Epoch seconds from yfinance metadata (int, or pandas Timestamp in yfinance >= 0.2.x)."""
+    if isinstance(value, bool) or value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return int(value) if value == value else None
+    if hasattr(value, "timestamp"):
+        try:
+            return int(value.timestamp())
+        except (TypeError, ValueError, OverflowError):
+            return None
+    return None
+
+
+def _regular_session(metadata):
+    regular = ((metadata or {}).get("currentTradingPeriod") or {}).get("regular") or {}
+    return _epoch_seconds(regular.get("start")), _epoch_seconds(regular.get("end"))
+
+
 def _to_ts_rows_plain(df):
     """Convert a yfinance DataFrame to [{t, o, h, l, c, v}] with unix timestamps."""
     import pandas as pd
@@ -490,6 +512,7 @@ def _resp(status, body, cache_seconds=0):
     except Exception as e:
         print(f"JSON SERIALIZE ERROR: {e}")
         payload = '{"error": "Internal serialization error"}'
+        status = 500
     return {"statusCode": status, "headers": _cors_headers(cache_seconds), "body": payload}
 
 
@@ -578,6 +601,7 @@ def get_pln_rate(currency, rates_cache, s3_cache):
 
 def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
     t = yf.Ticker(ticker_sym)
+    h5d = None
     info = t.fast_info
     price = getattr(info, 'last_price', None)
     prev_close = getattr(info, 'previous_close', None)
@@ -617,18 +641,46 @@ def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
         cached   = (bars_cache or {}).get(ticker_sym)
 
         # todayBars: use S3 cache if < 3 minutes stale, else re-fetch from yfinance
-        if cached and now_ts - cached.get('ts', 0) < 180:
+        bars_from_cache = bool(cached and cached.get('intradayBaseline') and
+                               cached.get('comparisonBars') and now_ts - cached.get('ts', 0) < 180)
+        if bars_from_cache:
             today_bars = list(cached.get('todayBars', []))
+            comparison_bars = list(cached.get('comparisonBars', []))
+            intraday_baseline = cached.get('intradayBaseline')
             print(f"  {ticker_sym}: todayBars from cache ({len(today_bars)} pts)")
         else:
+            intraday_baseline = None
+            comparison_bars = []
             try:
-                intra = t.history(period='1d', interval='1m')
+                intra = t.history(period='2d', interval='1m')
+                latest_date = intra.index[-1].date() if not intra.empty else None
                 for ts, row in intra.iterrows():
                     c = row['Close']
                     if c and c == c:
-                        today_bars.append([int(ts.timestamp() * 1000), round(float(c), 4)])
-            except Exception:
-                pass
+                        point = [int(ts.timestamp() * 1000), round(float(c), 4)]
+                        comparison_bars.append(point)
+                        if ts.date() == latest_date:
+                            today_bars.append(point)
+                if today_bars:
+                    latest = intra.loc[intra.index.date == latest_date]
+                    first = latest.loc[latest['Close'].notna()].iloc[0]
+                    session_start, _ = _regular_session(t.history_metadata)
+                    intraday_baseline = {
+                        "openTime": today_bars[0][0],
+                        "openPrice": float(first['Open']),
+                        "previousClose": float(prev_close) if prev_close else None,
+                        "sessionStart": session_start * 1000 if session_start is not None else None,
+                    }
+            except Exception as bars_err:
+                print(f"  {ticker_sym} intraday bars unavailable: {bars_err}")
+
+        if bars_cache is not None:
+            bars_cache[ticker_sym] = {
+                **(cached or {}),
+                "intradayBaseline": intraday_baseline,
+                "comparisonBars": comparison_bars,
+                "ts": cached['ts'] if bars_from_cache else now_ts,
+            }
 
         # yearBars: valid for the entire calendar day — re-fetch only on a new trading day
         if cached and cached.get('date') == today_str:
@@ -647,12 +699,8 @@ def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
             except Exception:
                 ytd_pct = 0.0
 
-        # Pin the last data point to current price and timestamp
+        # Intraday bars retain their exchange timestamps; live quotes are not candles.
         now_ms = int(now_ts * 1000)
-        if today_bars:
-            today_bars[-1] = [now_ms, round(price, 4)]
-        else:
-            today_bars.append([now_ms, round(price, 4)])
         if year_bars:
             year_bars[-1] = [now_ms, round(price, 4)]
         else:
@@ -663,7 +711,7 @@ def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
     tz = getattr(info, 'timezone', None)
 
     # Fallback volume from history if fast_info missing volume
-    if (vol is None or vol <= 0) and not h5d.empty and 'Volume' in h5d:
+    if (vol is None or vol <= 0) and h5d is not None and not h5d.empty and 'Volume' in h5d:
         try:
             vols = h5d['Volume'].dropna().tolist()
             if vols:
@@ -808,6 +856,9 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                           "dailyChangePct": gauge_pct, "ytdChangePct": ytd_pct,
                           "dailyChangePLN": daily_pln, "pct": 0,
                           "todayBars": today_bars, "yearBars": year_bars,
+                          "comparisonBars": (bars_cache or {}).get(h["ticker"], {}).get("comparisonBars", []) if include_bars else [],
+                          "intradayBaseline": (bars_cache or {}).get(h["ticker"], {}).get("intradayBaseline"),
+                          "intradayFxRate": rate,
                           "volume": vol_val, "avgVolume": avg_vol_val, "volumeTz": tz})
             results.append(entry)
         except Exception as e:
@@ -920,7 +971,8 @@ def widget_handler(event):
     #    (lightweight: no yfinance, just CSV + S3 cache math)
     print("Widget: no widget cache, computing from price cache")
     try:
-        s3_cache    = load_s3_cache()
+        with observe_stage("/widget", event.get("httpMethod", "GET"), "price_cache_load"):
+            s3_cache = load_s3_cache()
         price_cache = {}
         rates_cache = {}
         wallets_data = {}
@@ -2233,6 +2285,9 @@ def _build_summary_wallet(wallets_out: dict) -> dict:
                     existing["ytdChangePct"]     = h.get("ytdChangePct",    existing.get("ytdChangePct"))
                     existing["todayBars"]        = h.get("todayBars",       existing.get("todayBars"))
                     existing["yearBars"]         = h.get("yearBars",        existing.get("yearBars"))
+                    existing["intradayBaseline"] = h.get("intradayBaseline")
+                    existing["intradayFxRate"]   = h.get("intradayFxRate")
+                    existing["comparisonBars"]   = h.get("comparisonBars", [])
                 # Always sum the money fields
                 existing["units"]         = round(existing.get("units", 0)         + h.get("units", 0), 6)
                 existing["purchaseValue"] = round(existing.get("purchaseValue", 0) + h.get("purchaseValue", 0), 2)
@@ -2347,7 +2402,7 @@ def monthly_wraps_handler(event: dict) -> dict:
         return _resp(400, {"error": "period must use YYYY-MM format"})
 
     table_name = os.environ.get("WRAPS_TABLE", os.environ.get("DIARY_TABLE", "roastfolio-diary"))
-    table = boto3.resource("dynamodb").Table(table_name)
+    table = instrument_table(boto3.resource("dynamodb").Table(table_name))
     partition_key = f"USER#{user_id}"
 
     if period:
@@ -2414,7 +2469,7 @@ def monthly_wrap_send_email_handler(event: dict) -> dict:
         return _resp(400, {"error": "period must use YYYY-MM format"})
 
     table_name = os.environ.get("WRAPS_TABLE", os.environ.get("DIARY_TABLE", "roastfolio-diary"))
-    table = boto3.resource("dynamodb").Table(table_name)
+    table = instrument_table(boto3.resource("dynamodb").Table(table_name))
     partition_key = f"USER#{user_id}"
     item = table.get_item(Key={"PK": partition_key, "SK": f"WRAP#MONTH#{period}"}).get("Item")
     if not item:
@@ -2458,6 +2513,36 @@ def monthly_wrap_send_email_handler(event: dict) -> dict:
 
 # ── Lambda entry point ────────────────────────────────────────
 
+def _record_roast_display_events(user_id, roast_data, portfolio_change, benchmark_change):
+    import roast_tracking
+
+    telemetry = roast_data.get("telemetry", {})
+    selection_context = roast_data.get("selectionContext", {})
+    event_payload = {
+        "eventType": "roast_displayed",
+        "userId": user_id or "anonymous",
+        "templateId": telemetry.get("templateId", roast_data.get("templateId", "unknown")),
+        "scenarioKey": telemetry.get("scenarioKey", roast_data.get("scenarioKey", "unknown")),
+        "intensity": telemetry.get("intensity", "unknown"),
+        "messageAngle": telemetry.get("messageAngle", "unknown"),
+        "structureFamily": telemetry.get("structureFamily", "unknown"),
+        "source": telemetry.get("source", selection_context.get("source", "unknown")),
+        "scenarioGroup": selection_context.get("scenario", {}).get("scenarioGroup"),
+        "outcomeType": selection_context.get("scenario", {}).get("outcomeType"),
+        "severity": selection_context.get("scenario", {}).get("severity"),
+        "commentaryMode": selection_context.get("commentaryMode"),
+        "fallbackReason": selection_context.get("fallbackReason", telemetry.get("fallbackReason")),
+        "selectionContext": selection_context,
+        "portfolioChange": portfolio_change,
+        "benchmarkChange": benchmark_change,
+    }
+    roast_tracking.record_event(event_payload)
+    if (roast_data.get("message") == roast_engine.FALLBACK_ROAST_MESSAGE
+            or telemetry.get("source") == "deterministic_fallback"):
+        roast_tracking.record_event({**event_payload, "eventType": "roast_fallback_displayed"})
+
+
+@observe_api
 def handler(event, context):
     path = event.get("path", "/prices")
 
@@ -2581,19 +2666,20 @@ def handler(event, context):
         # An authenticated user with no portfolios gets empty data — never
         # another user's CSV data.
         user_id, _, _ = _get_caller_identity(event)
-        if user_id:
-            source_wallets = _load_wallets_from_dynamo(user_id) or {}
-            data_source = "dynamodb"
-            print(f"User {user_id[:8]}… — {len(source_wallets)} portfolios from DynamoDB")
-            try:
-                for p in portfolios.list_portfolios(user_id):
-                    portfolio_id_by_name[p.get("name", p["portfolioId"])] = p["portfolioId"]
-            except Exception as pe:
-                print(f"Portfolio metadata load failed (non-fatal): {pe}")
-        else:
-            source_wallets = _load_wallets_from_csv()
-            data_source = "csv"
-            print("Unauthenticated request — using CSV fallback")
+        with observe_stage(path, event.get("httpMethod", "GET"), "portfolio_load"):
+            if user_id:
+                source_wallets = _load_wallets_from_dynamo(user_id) or {}
+                data_source = "dynamodb"
+                print(f"User {user_id[:8]}… — {len(source_wallets)} portfolios from DynamoDB")
+                try:
+                    for p in portfolios.list_portfolios(user_id):
+                        portfolio_id_by_name[p.get("name", p["portfolioId"])] = p["portfolioId"]
+                except Exception as pe:
+                    print(f"Portfolio metadata load failed (non-fatal): {pe}")
+            else:
+                source_wallets = _load_wallets_from_csv()
+                data_source = "csv"
+                print("Unauthenticated request — using CSV fallback")
 
         # ── Parallel price + bars prefetch ────────────────────
         # Collect every holding ticker plus (for full) the benchmark ticker so
@@ -2608,29 +2694,31 @@ def handler(event, context):
         # For lite we still prefetch all holdings in parallel; benchmark price
         # is resolved separately via fast_info (no bars needed for lite).
         prefetch_started = perf_counter()
-        _prefetch_prices_parallel(
-            all_tickers, include_deferred, s3_cache, price_cache,
-            bars_cache=bars_cache if include_deferred else None,
-        )
+        with observe_stage(path, event.get("httpMethod", "GET"), "market_data_fetch"):
+            _prefetch_prices_parallel(
+                all_tickers, include_deferred, s3_cache, price_cache,
+                bars_cache=bars_cache if include_deferred else None,
+            )
         print(f"Parallel prefetch: {perf_counter() - prefetch_started:.3f}s")
 
         holdings_started = perf_counter()
-        for wallet_name, holdings in source_wallets.items():
-            pid = portfolio_id_by_name.get(wallet_name, wallet_name)
-            results, total, daily_pln, daily_pct = compute_wallet(
-                user_id, pid,
-                holdings, price_cache, rates_cache, s3_cache,
-                include_bars=include_deferred,
-                # prev-close → current: market-standard "daily change" shown by brokers.
-                use_intraday=False,
-                bars_cache=bars_cache,
-            )
-            wallets_out[wallet_name] = {
-                "holdings": results,
-                "total":    total,
-                "dailyPLN": daily_pln,
-                "dailyPct": daily_pct,
-            }
+        with observe_stage(path, event.get("httpMethod", "GET"), "portfolio_valuation"):
+            for wallet_name, holdings in source_wallets.items():
+                pid = portfolio_id_by_name.get(wallet_name, wallet_name)
+                results, total, daily_pln, daily_pct = compute_wallet(
+                    user_id, pid,
+                    holdings, price_cache, rates_cache, s3_cache,
+                    include_bars=include_deferred,
+                    # prev-close → current: market-standard daily change shown by brokers.
+                    use_intraday=False,
+                    bars_cache=bars_cache,
+                )
+                wallets_out[wallet_name] = {
+                    "holdings": results,
+                    "total":    total,
+                    "dailyPLN": daily_pln,
+                    "dailyPct": daily_pct,
+                }
         holdings_duration = perf_counter() - holdings_started
 
         save_s3_cache(s3_cache)
@@ -2645,10 +2733,10 @@ def handler(event, context):
                     continue
                 if data[4] or data[5]:  # has todayBars or yearBars
                     bars_cache[ticker] = {
+                        **bars_cache.get(ticker, {}),
                         "todayBars": data[4], "yearBars": data[5],
-                        "ytdPct":    data[3], "ts": now_ts, "date": today_str,
+                        "ytdPct":    data[3], "ts": bars_cache.get(ticker, {}).get("ts", now_ts), "date": today_str,
                     }
-            save_bars_cache(bars_cache)
 
         # ── Compute virtual Summary portfolio ─────────────────
         summary = _build_summary_wallet(wallets_out)
@@ -2689,16 +2777,26 @@ def handler(event, context):
                 # bars_cache is keyed by ticker symbol — works for any user-selected benchmark.
                 bm_cached = bars_cache.get(bm_ticker, {})
                 bm_bars_fresh = _time.time() - bm_cached.get("ts", 0) < 180
-                if bm_bars_fresh and bm_cached.get("todayBars"):
+                if bm_bars_fresh and bm_cached.get("todayBars") and isinstance(bm_cached["todayBars"][0], dict):
                     bm_out["intraday"] = bm_cached["todayBars"]
+                    bm_out["session"] = bm_cached.get("session")
                     print(f"  {bm_ticker}: intraday bars from cache ({len(bm_out['intraday'])} pts)")
                 else:
                     try:
-                        intra_df = yf.Ticker(bm_ticker).history(period='1d', interval='1m')
+                        benchmark_ticker = yf.Ticker(bm_ticker)
+                        intra_df = benchmark_ticker.history(period='1d', interval='1m')
                         bm_out["intraday"] = _to_ts_rows_plain(intra_df) if not intra_df.empty else []
+                        metadata = benchmark_ticker.history_metadata or {}
+                        session_start, session_end = _regular_session(metadata)
+                        bm_out["session"] = {
+                            "start": session_start,
+                            "end": session_end,
+                            "timeZone": metadata.get("exchangeTimezoneName"),
+                        }
                         # Store in bars_cache so it is persisted alongside portfolio tickers
                         bars_cache[bm_ticker] = {
                             "todayBars": bm_out["intraday"], "yearBars": bm_cached.get("yearBars", []),
+                            "session": bm_out["session"],
                             "ytdPct":    bm_cached.get("ytdPct", 0.0),
                             "ts": _time.time(), "date": date.today().isoformat(),
                         }
@@ -2707,6 +2805,7 @@ def handler(event, context):
                         # Fall back to benchmark history cache (S3 daily key)
                         bm_cache = load_benchmark_cache(benchmark_id)
                         bm_out["intraday"] = bm_cache.get("intraday", [])
+                        bm_out["session"] = bm_cache.get("session")
                 benchmark_daily_pct = None  # gauge is owned by lite — don't override
 
                 # Carousel still needs benchmark data; build from intraday
@@ -2745,6 +2844,8 @@ def handler(event, context):
         except Exception as bm_err:
             print(f"{benchmark_id} benchmark section failed (non-fatal): {bm_err}")
         benchmark_duration = perf_counter() - benchmark_started
+        if include_deferred:
+            save_bars_cache(bars_cache)
 
         # Keep wig_out alias so widget builder and cached response work
         wig_out = bm_out
@@ -2950,19 +3051,9 @@ def handler(event, context):
 
                 if roast_data and isinstance(roast_data, dict):
                     try:
-                        import roast_tracking
-                        tel = roast_data.get("telemetry", {})
-                        roast_tracking.record_event({
-                            "eventType": "roast_displayed",
-                            "userId": user_id or "anonymous",
-                            "templateId": tel.get("templateId", roast_data.get("templateId", "unknown")),
-                            "scenarioKey": tel.get("scenarioKey", roast_data.get("scenarioKey", "unknown")),
-                            "intensity": tel.get("intensity", "unknown"),
-                            "messageAngle": tel.get("messageAngle", "unknown"),
-                            "structureFamily": tel.get("structureFamily", "unknown"),
-                            "portfolioChange": summary.get("dailyPct"),
-                            "benchmarkChange": roast_bm_pct
-                        })
+                        _record_roast_display_events(
+                            user_id, roast_data, summary.get("dailyPct"), roast_bm_pct
+                        )
                     except Exception as track_err:
                         print(f"Backend roast telemetry error (non-fatal): {track_err}")
             except Exception as e:

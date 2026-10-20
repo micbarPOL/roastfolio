@@ -14,6 +14,8 @@ import template_bank
 import prompt_builder
 import angle_selector
 
+FALLBACK_ROAST_MESSAGE = "We couldn't generate a fresh roast right now. Rest assured, you are probably still underperforming."
+
 def _build_template_vars(current: dict, bench: dict) -> dict:
     vars_dict = {}
     
@@ -153,7 +155,9 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
                         "commentaryMode": mode,
                         "messageAngle": last_roast.get("messageAngle"),
                         "structureFamily": last_roast.get("structureFamily"),
-                        "metaphorCategory": last_roast.get("metaphorCategory")
+                        "metaphorCategory": last_roast.get("metaphorCategory"),
+                        "selectionContext": last_roast.get("selectionContext", {}),
+                        "telemetry": last_roast.get("telemetry", {})
                     }
             except Exception:
                 pass
@@ -184,6 +188,53 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
     telemetry["scenarioKey"] = scenario_key
     telemetry["intensity"] = roast_intensity
     telemetry["messageAngle"] = message_angle
+
+    scenario_input = {
+        "is_new_ath": is_new_ath,
+        "drawdown_pct": data.get("drawdown_pct"),
+        "recent_deposit": bool(data.get("recent_deposit")),
+        "recent_withdrawal": bool(data.get("recent_withdrawal")),
+        "best_asset_contribution": data.get("best_asset_contribution"),
+        "second_best_asset_contribution": data.get("second_best_asset_contribution"),
+        "worst_asset_drag": data.get("worst_asset_drag"),
+        "second_worst_asset_drag": data.get("second_worst_asset_drag"),
+        "holdings_count": data.get("holdings_count"),
+        "portfolio_return": data.get("portfolio_return"),
+        "benchmark_return": data.get("benchmark_return"),
+        "total_portfolio_value_used": data.get("total_portfolio_value", data.get("portfolio_value", 0.0)),
+    }
+    angle_input = {
+        "portfolio_return": current_snapshot.get("dailyChangePct", current_snapshot.get("portfolioReturnPercent", 0)) or 0,
+        "benchmark_return": benchmark_snapshot.get("dailyChangePct", benchmark_snapshot.get("benchmarkReturnPercent", 0)) or 0,
+        "top_asset_pct": current_snapshot.get("topAssetPct", 0),
+        "worst_asset_pct": current_snapshot.get("worstAssetPct", 0),
+        "is_ath": bool(current_snapshot.get("isAth")),
+        "drawdown_pct": current_snapshot.get("drawdownPct", 0),
+        "recent_deposit": bool(current_snapshot.get("recentDeposit")),
+        "recent_withdrawal": bool(current_snapshot.get("recentWithdrawal")),
+        "concentration_risk": bool(current_snapshot.get("concentrationRisk")),
+    }
+    selection_context = {
+        "schemaVersion": 1,
+        "scenarioInput": scenario_input,
+        "scenarioThresholds": dict(scenario_classifier.DEFAULT_THRESHOLDS),
+        "scenario": {
+            "scenarioKey": scenario_key,
+            "scenarioGroup": scenario_info.get("scenarioGroup"),
+            "outcomeType": scenario_info.get("outcomeType"),
+            "severity": scenario_info.get("severity"),
+        },
+        "commentaryMode": mode,
+        "angleInput": angle_input,
+        "eligibleAngles": sorted(eligible_angles),
+        "selectedMessageAngle": message_angle,
+        "templateCriteria": dict(criteria),
+        "templateData": {
+            key: value for key, value in data.items()
+            if key not in {"portfolio", "benchmark"} and isinstance(value, (str, int, float, bool, type(None)))
+        },
+        "templateSelection": dict(telemetry),
+    }
     
     final_output = None
     debug_metadata = None
@@ -288,7 +339,7 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
         telemetry["source"] = "deterministic_fallback"
         final_output = {
             "title": "Portfolio Update",
-            "message": "We couldn't generate a fresh roast right now. Rest assured, you are probably still underperforming.",
+            "message": FALLBACK_ROAST_MESSAGE,
             "tone": "neutral",
             "severity": 1,
             "mainReason": "System error",
@@ -314,6 +365,9 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
     final_output["scenarioKey"] = scenario_key
     final_output["commentaryMode"] = mode
     final_output["messageAngle"] = message_angle
+    selection_context["source"] = telemetry.get("source")
+    selection_context["fallbackReason"] = telemetry.get("fallbackReason")
+    final_output["selectionContext"] = selection_context
     
     # Expose tracking parameters for frontend telemetry
     final_output["portfolioChange"] = current_snapshot.get("dailyChangePct")
@@ -350,6 +404,7 @@ def generate_daily_roast(user_id: str, current_snapshot: dict, benchmark_snapsho
     }
     
     roast_record["telemetry"] = telemetry
+    roast_record["selectionContext"] = selection_context
     final_output["telemetry"] = telemetry
     
     if enable_debug and debug_metadata:

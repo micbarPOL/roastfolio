@@ -26,6 +26,9 @@ from boto3.dynamodb.conditions import Key
 import db
 import portfolios
 import portfolio_avco
+from observability import instrument_table, instrument_yahoo_module
+
+yf = instrument_yahoo_module(yf, "portfolio_snapshots")
 
 
 _SNAPSHOTS_TABLE_NAME = os.environ.get("SNAPSHOTS_TABLE", "roastfolio-snapshots")
@@ -44,7 +47,7 @@ _BENCHMARK_RETURNS_REFRESHED = False
 def _table():
     global _snapshots_table_ref
     if _snapshots_table_ref is None:
-        _snapshots_table_ref = boto3.resource("dynamodb").Table(_SNAPSHOTS_TABLE_NAME)
+        _snapshots_table_ref = instrument_table(boto3.resource("dynamodb").Table(_SNAPSHOTS_TABLE_NAME))
     return _snapshots_table_ref
 
 
