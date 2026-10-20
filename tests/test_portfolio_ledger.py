@@ -510,6 +510,35 @@ class PortfolioLedgerTests(unittest.TestCase):
         self.assertEqual(stock["units"], Decimal("1"))
         self.assertEqual(first["transactionId"], second["transactionId"])
 
+    def test_rebuild_holdings_preserves_wa_suffix_when_transaction_omits_suffix(self):
+        self._deposit_cash(5000)
+        portfolios.record_transaction(self.user_id, self.portfolio_id, {
+            "type": "BUY",
+            "ticker": "XTB.WA",
+            "name": "XTB",
+            "currency": "PLN",
+            "quantity": 10,
+            "value": 1400,
+            "transactionDate": "2026-05-10",
+        })
+        portfolios.record_transaction(self.user_id, self.portfolio_id, {
+            "type": "BUY",
+            "ticker": "XTB",  # Omitted .WA suffix
+            "name": "XTB",
+            "currency": "PLN",
+            "quantity": 5,
+            "value": 700,
+            "transactionDate": "2026-05-11",
+        })
+
+        holdings = portfolios.rebuild_holdings_from_transactions(self.user_id, self.portfolio_id)
+        stock_holdings = [h for h in holdings if h.get("ticker")]
+        self.assertEqual(len(stock_holdings), 1)
+        xtb = stock_holdings[0]
+        self.assertEqual(xtb["ticker"], "XTB.WA")
+        self.assertEqual(xtb["units"], Decimal("15"))
+        self.assertEqual(xtb["purchaseValue"], Decimal("2100"))
+
 
 if __name__ == "__main__":
     unittest.main()

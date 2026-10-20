@@ -101,6 +101,68 @@ class PricesPayloadTests(unittest.TestCase):
         self.assertEqual(apple["avgVolume"], 50000)
         self.assertEqual(apple["volumeTz"], "America/New_York")
 
+    def test_build_summary_wallet_consolidates_polish_ticker_variations(self):
+        wallets = {
+            "IKE": {
+                "holdings": [{
+                    "name": "XTB",
+                    "ticker": "XTB.WA",
+                    "units": 500,
+                    "purchaseValue": 40000.0,
+                    "currentValue": 70000.0,
+                    "dailyChangePLN": 1200.0,
+                    "pricePLN": 140.0,
+                    "priceOriginal": 140.0,
+                    "priceOriginalCurrency": "PLN",
+                    "dailyChangePct": 1.74,
+                    "ytdChangePct": 25.0,
+                    "todayBars": [140.0],
+                    "yearBars": [],
+                    "volume": 100000,
+                    "avgVolume": 150000,
+                    "volumeTz": "Europe/Warsaw",
+                }],
+                "total": 70000.0,
+                "dailyPLN": 1200.0,
+                "dailyPct": 1.74,
+            },
+            "XTB": {
+                "holdings": [{
+                    "name": "XTB",
+                    "ticker": "XTB",
+                    "units": 3000,
+                    "purchaseValue": 400000.0,
+                    "currentValue": 420000.0,
+                    "dailyChangePLN": 0.0,
+                    "pricePLN": 0.0,
+                    "priceOriginal": 0.0,
+                    "priceOriginalCurrency": "PLN",
+                    "dailyChangePct": 0.0,
+                    "ytdChangePct": 0.0,
+                    "todayBars": [],
+                    "yearBars": [],
+                    "volume": 0,
+                    "avgVolume": 0,
+                    "volumeTz": None,
+                }],
+                "total": 420000.0,
+                "dailyPLN": 0.0,
+                "dailyPct": 0.0,
+            },
+        }
+
+        summary = handler._build_summary_wallet(wallets)
+        self.assertEqual(len(summary["holdings"]), 1)
+        xtb = summary["holdings"][0]
+        self.assertEqual(xtb["ticker"], "XTB.WA")
+        self.assertEqual(xtb["name"], "XTB")
+        self.assertEqual(xtb["units"], 3500)
+        self.assertEqual(xtb["purchaseValue"], 440000.0)
+        self.assertEqual(xtb["currentValue"], 490000.0)
+        self.assertEqual(xtb["pricePLN"], 140.0)
+        self.assertEqual(xtb["dailyChangePct"], 1.74)
+        self.assertEqual(xtb["todayBars"], [140.0])
+
     def test_prices_handler_returns_benchmark_ath_and_total_value(self):
         xtb_holdings = [{
             "name": "Apple",

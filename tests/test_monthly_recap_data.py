@@ -28,14 +28,15 @@ def test_journey_same_baseline_as_monthly_twr_no_interpolation():
               "2026-09-02": Decimal(105), "2026-10-01": Decimal(110)}
     result = wraps._journey(rows, date(2026, 9, 1), date(2026, 10, 1), "SP500", prices)
     assert result["points"] == [
-        {"date": "2026-09-01", "portfolio_pct": 0, "benchmark_pct": 0},
-        {"date": "2026-09-02", "portfolio_pct": None, "benchmark_pct": 5},
-        {"date": "2026-09-03", "portfolio_pct": 10, "benchmark_pct": None},
-        {"date": "2026-10-01", "portfolio_pct": 20, "benchmark_pct": 10},
+        {"date": "2026-08-31", "portfolio_pct": 0, "benchmark_pct": 0},
+        {"date": "2026-09-01", "portfolio_pct": Decimal("100.0000"), "benchmark_pct": Decimal("25.0000")},
+        {"date": "2026-09-02", "portfolio_pct": None, "benchmark_pct": Decimal("31.2500")},
+        {"date": "2026-09-03", "portfolio_pct": Decimal("120.0000"), "benchmark_pct": None},
+        {"date": "2026-10-01", "portfolio_pct": Decimal("140.0000"), "benchmark_pct": Decimal("37.5000")},
     ]
     performance = wraps._monthly_performance(rows, date(2026, 9, 1), date(2026, 10, 1), Decimal(7000))
     assert result["points"][-1]["portfolio_pct"] == performance["twr_pct"]
-    assert result["benchmark_return_pct"] == 10
+    assert result["benchmark_return_pct"] == Decimal("37.5000")
     assert result["benchmark_currency"] == "USD"
 
 

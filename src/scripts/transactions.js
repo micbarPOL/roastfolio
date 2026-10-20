@@ -129,6 +129,9 @@ function parseAssetEdit(value, row) {
     } else if (/^[A-Za-z0-9._=-]{1,16}$/.test(asset)) {
         ticker = asset.toUpperCase();
     }
+    if (row && row.ticker && row.ticker.toUpperCase().endsWith('.WA') && ticker.toUpperCase() === row.ticker.toUpperCase().slice(0, -3)) {
+        ticker = row.ticker.toUpperCase();
+    }
     const unchanged = normalizeAssetText(row.asset).toLowerCase() === asset.toLowerCase();
     return {
         name,
