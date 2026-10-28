@@ -79,7 +79,8 @@
             }
             if (Number(item?.overall_twr_pct) < 0 && finite(anchor.net_contribution_pln)) {
                 const name = anchor.ticker || anchor.name || 'your anchor';
-                return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}, while ${name} cost ${money(Math.abs(Number(anchor.net_contribution_pln)))}.`;
+                const costAmount = `${Math.round(Math.abs(Number(anchor.net_contribution_pln))).toLocaleString('en-GB')} PLN`;
+                return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}, while ${name} cost ${costAmount}.`;
             }
             return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}.`;
         }

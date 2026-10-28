@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.3.1`
-*Target Release Numbering Standard — v15.3.1*
+**Current Release:** `15.3.2`
+*Target Release Numbering Standard — v15.3.2*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.3.1`
+* **Current Active Release:** `15.3.2`
+  * **Service 2:** Fixed the Wallets value-history chart drawing old deposits/withdrawals (e.g. 2021) past today and below the x-axis; cash-flow markers now follow the plotted line and are hidden when outside the visible window. Also corrected the Monthly Recap headline so anchor losses no longer format with a misleading plus sign ("cost 16,173 PLN" instead of "cost +16,173 PLN").
+* **Previous Active Release:** `15.3.1`
   * **Service 1:** Fixed the History section tabs so only the selected tab (Overview or Summaries) is highlighted; previously both looked selected on Summaries.
 * **Previous Active Release:** `15.3.0`
   * **Minor 3:** History redesigned using the UI 20 design system: value hero with range facts, merged return-vs-benchmark chart, monthly and daily scatter analysis, recap poster, period navigator, privacy-first share invite, and data-backed recap headlines.

@@ -300,3 +300,34 @@ def test_wallet_text_contrast_meets_wcag(open_page, theme):
         if worst < needed:
             failures.append(f"{worst:.2f} < {needed} '{item['text']}' ({item['size']:.0f}px, {item['color']})")
     assert not failures, f"{theme}:\n" + "\n".join(failures)
+
+
+def test_value_history_cash_flow_markers_stay_inside_the_plotted_line(open_page):
+    """Regression: a 2021 deposit used to be drawn right of 'today' because its index in the
+    full snapshot list was divided by the (3-year) displayed series length."""
+    page, _ = open_page()
+    result = page.evaluate("""() => {
+      const day = 86400000, now = Date.now();
+      const iso = ts => new Date(ts).toISOString().slice(0, 10);
+      const snapshots = [];
+      // ~5 years of daily snapshots, so the 3-year display window is a strict subset.
+      for (let i = 5 * 365; i >= 1; i -= 1) {
+        snapshots.push({ snapshotDate: iso(now - i * day), portfolioValue: 10000 + (5 * 365 - i) * 10 });
+      }
+      const txs = [
+        { type: 'DEPOSIT', transactionDate: '2021-12-27', value: 5000 },
+        { type: 'DEPOSIT', transactionDate: iso(now - 200 * day), value: 1000 },
+        { type: 'WITHDRAWAL', transactionDate: iso(now - 30 * day), value: 500 },
+      ];
+      const host = document.createElement('div');
+      host.innerHTML = window._mgmt._buildSummarySparkline(snapshots, txs);
+      return [...host.querySelectorAll('.wallet-summary-event-marker')].map(el => ({
+        left: parseFloat(el.style.left), top: parseFloat(el.style.top), title: el.getAttribute('title'),
+      }));
+    }""")
+    titles = " | ".join(m["title"] for m in result)
+    assert "2021-12" not in titles and "2021-W" not in titles, f"out-of-window deposit drawn: {titles}"
+    assert len(result) == 2, titles
+    assert all(4 <= m["left"] <= 96 for m in result)
+    # Older marker sits left of the newer one, i.e. markers follow the time axis.
+    assert result[0]["left"] < result[1]["left"]
