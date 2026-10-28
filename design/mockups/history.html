@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="history" data-frameless>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>roastfolio · History mockup (frameless)</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="history.css">
+  <script src="history.js" defer></script>
+</head>
+<body>
+
+<!-- Icon sprite. Colours come from CSS only. -->
+<svg width="0" height="0" class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="arc-gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" class="stop-danger"/>
+      <stop offset="0.5" class="stop-warning"/>
+      <stop offset="1" class="stop-success"/>
+    </linearGradient>
+    <linearGradient id="area-gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="stop-accent-strong"/>
+      <stop offset="1" class="stop-accent-none"/>
+    </linearGradient>
+    <linearGradient id="lake-gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" class="stop-lake-top"/>
+      <stop offset="1" class="stop-lake-bottom"/>
+    </linearGradient>
+  </defs>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></symbol>
+  <symbol id="i-pie" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+  <symbol id="i-bars" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><polyline points="11 8 11 12 14 15"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+  <symbol id="i-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><polyline points="7 15 12 20 17 15"/><polyline points="7 9 12 4 17 9"/></symbol>
+  <symbol id="i-logo" viewBox="0 0 32 32">
+    <rect class="logo-body" x="11" y="9" width="8" height="15" rx="2"/>
+    <line class="logo-wick" x1="15" y1="4" x2="15" y2="9"/><line class="logo-wick" x1="15" y1="24" x2="15" y2="29"/>
+    <path class="logo-r" d="M13 24V8h6a4 4 0 0 1 0 8h-6m6 0 5 8"/>
+  </symbol>
+</svg>
+
+<div class="app" data-sidebar="expanded">
+
+  <!-- ============ Desktop sidebar (D-002, D-012) ============ -->
+  <nav class="sidebar-nav glass-island" data-state="expanded" aria-label="Main navigation">
+    <div class="sidebar-head">
+      <a class="brand" href="#">
+        <svg class="brand-logo" aria-hidden="true"><use href="#i-logo"/></svg>
+        <span class="brand-wordmark nav-label" data-field="brand-wordmark">roastfolio</span>
+      </a>
+    </div>
+
+    <div class="nav-scroll">
+      <a class="nav-item" href="#" data-field="nav-dashboard" data-label="Dashboard"><svg class="ico"><use href="#i-home"/></svg><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="#" data-field="nav-wallets" data-label="Wallets"><svg class="ico"><use href="#i-wallet"/></svg><span class="nav-label">Wallets</span></a>
+      <a class="nav-item" href="#" data-field="nav-portfolio" data-label="Portfolio"><svg class="ico"><use href="#i-pie"/></svg><span class="nav-label">Portfolio</span></a>
+
+      <div class="nav-section nav-label">Analytics</div>
+      <a class="nav-item" href="#" data-field="nav-history" data-label="History" aria-current="page"><svg class="ico"><use href="#i-trend"/></svg><span class="nav-label">History</span></a>
+      <a class="nav-item" href="#" data-field="nav-statistics" data-label="Statistics"><svg class="ico"><use href="#i-bars"/></svg><span class="nav-label">Statistics</span></a>
+      <a class="nav-item" href="#" data-field="nav-retirement" data-label="Retirement"><svg class="ico"><use href="#i-calendar"/></svg><span class="nav-label">Retirement</span></a>
+      <a class="nav-item" href="#" data-field="nav-transactions" data-label="Transactions"><svg class="ico"><use href="#i-list"/></svg><span class="nav-label">Transactions</span></a>
+      <a class="nav-item" href="#" data-field="nav-analysis" data-label="Analysis"><svg class="ico"><use href="#i-search"/></svg><span class="nav-label">Analysis</span></a>
+      <a class="nav-item" href="#" data-field="nav-diary" data-label="Coping Diary"><svg class="ico"><use href="#i-book"/></svg><span class="nav-label">Coping Diary</span></a>
+
+      <div class="nav-section nav-label">Account</div>
+      <a class="nav-item" href="#" data-field="nav-guide" data-label="User Guide"><svg class="ico"><use href="#i-help"/></svg><span class="nav-label">User Guide</span></a>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="theme-switch nav-label" role="group" aria-label="Color mode" data-field="theme-switch">
+        <button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button>
+        <button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button>
+      </div>
+      <a class="user-card" href="#" data-field="user-card" data-label="User settings">
+        <span class="avatar" aria-hidden="true">M</span>
+        <span class="user-meta nav-label"><span class="user-name">Michał B.</span><span class="user-role">Premium</span></span>
+      </a>
+      <div class="brand-footer nav-label" data-field="brand-footer">Powered by <strong>TOMINEX</strong> <span class="version num">v14.3.7</span></div>
+      <button type="button" class="sidebar-collapse" aria-label="Collapse sidebar (Ctrl+B)" aria-pressed="false">
+        <svg class="ico"><use href="#i-chevron-left"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============ Mobile drawer (D-003) ============ -->
+  <div class="drawer-backdrop" hidden></div>
+  <aside class="mobile-side-drawer glass-island" hidden aria-label="More navigation">
+    <div class="drawer-head">
+      <a class="brand" href="#"><svg class="brand-logo" aria-hidden="true"><use href="#i-logo"/></svg><span class="brand-wordmark">roastfolio</span></a>
+      <button type="button" class="icon-btn drawer-close" aria-label="Close menu"><svg class="ico"><use href="#i-close"/></svg></button>
+    </div>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-pie"/></svg><span>Portfolio</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-trend"/></svg><span>History</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-bars"/></svg><span>Statistics</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-calendar"/></svg><span>Retirement</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-list"/></svg><span>Transactions</span></a>
+    <a class="nav-item" href="#"><svg class="ico"><use href="#i-help"/></svg><span>User Guide</span></a>
+    <div class="theme-switch" role="group" aria-label="Color mode">
+      <button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button>
+      <button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button>
+    </div>
+    <a class="user-card" href="#"><span class="avatar" aria-hidden="true">M</span><span class="user-meta"><span class="user-name">Michał B.</span><span class="user-role">Premium</span></span></a>
+  </aside>
+
+  <div class="app-main">
+
+    <!-- ============ Top bar ============ -->
+    <header class="top-bar">
+      <button type="button" class="icon-btn drawer-open" aria-label="Open menu"><svg class="ico"><use href="#i-menu"/></svg></button>
+      <h1 class="page-title">History</h1>
+      <span class="live-status" data-field="live-data-status" role="status"><span class="live-dot" aria-hidden="true"></span>Live prices · updated 12:41</span>
+    </header>
+
+    <!-- ============ Ticker tape, mounted once (D-014, D-017) ============ -->
+    <section class="ticker-tape-container" aria-label="Major indices">
+      <div class="ticker-track">
+        <div class="ticker-lane">
+          <span class="ticker-item" data-index-id="WIG" data-field="index-WIG"><span class="ticker-symbol">WIG</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.62%</span></span>
+          <span class="ticker-item" data-index-id="WIG20" data-field="index-WIG20"><span class="ticker-symbol">WIG20</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.48%</span></span>
+          <span class="ticker-item" data-index-id="SP500" data-field="index-SP500"><span class="ticker-symbol">S&amp;P 500</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.41%</span></span>
+          <span class="ticker-item" data-index-id="NASDAQ" data-field="index-NASDAQ"><span class="ticker-symbol">NASDAQ</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.73%</span></span>
+          <span class="ticker-item" data-index-id="DAX" data-field="index-DAX"><span class="ticker-symbol">DAX</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.19%</span></span>
+          <span class="ticker-item" data-index-id="MSCI_WORLD" data-field="index-MSCI_WORLD"><span class="ticker-symbol">MSCI World</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.22%</span></span>
+        </div>
+        <div class="ticker-lane" aria-hidden="true">
+          <span class="ticker-item"><span class="ticker-symbol">WIG</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.62%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">WIG20</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.48%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">S&amp;P 500</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.41%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">NASDAQ</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.73%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">DAX</span><svg class="ico up"><use href="#i-arrow-up"/></svg><span class="num up">+0.19%</span></span>
+          <span class="ticker-item"><span class="ticker-symbol">MSCI World</span><svg class="ico down"><use href="#i-arrow-down"/></svg><span class="num down">-0.22%</span></span>
+        </div>
+      </div>
+    </section>
+
+    <p class="market-commentary" data-field="market-commentary">WIG is up <span class="num">0.62%</span> today. Over the year you are ahead of it by <span class="num">3.64</span> points. Do not let it go to your head.</p>
+
+    <main class="dash-main hx-main">
+      <div class="hx-page">
+        <div class="segmented hx-sections" role="tablist" aria-label="History section" data-field="history-sections" data-o="1">
+          <button type="button" role="tab" id="tab-overview" class="seg-btn" aria-selected="true" aria-controls="panel-overview">Overview</button>
+          <button type="button" role="tab" id="tab-summaries" class="seg-btn" aria-selected="false" aria-controls="panel-summaries" tabindex="-1">Summaries</button>
+        </div>
+
+        <!-- ================= Overview ================= -->
+        <div class="hx-panel" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+          <div class="hx-filters" data-o="2">
+            <div class="hx-wallets" role="tablist" aria-label="Wallet" data-field="history-wallet-filter">
+              <button type="button" role="tab" class="hx-chip" aria-selected="true" data-wallet="all" data-scale="1">All wallets</button>
+              <button type="button" role="tab" class="hx-chip" aria-selected="false" tabindex="-1" data-wallet="xtb" data-scale="0.598">XTB Brokerage</button>
+              <button type="button" role="tab" class="hx-chip" aria-selected="false" tabindex="-1" data-wallet="ike" data-scale="0.402">IKE Retirement</button>
+            </div>
+            <div class="segmented hx-range" role="tablist" aria-label="Time range" data-field="history-range">
+              <button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-range="ALL">ALL</button>
+              <button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-range="5Y">5Y</button>
+              <button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-range="3Y">3Y</button>
+              <button type="button" role="tab" class="seg-btn" aria-selected="true" data-range="1Y">1Y</button>
+              <button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-range="YTD">YTD</button>
+              <button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-range="1M">1M</button>
+              <button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-range="1W">1W</button>
+            </div>
+          </div>
+
+          <section class="hx-hero" data-o="3" aria-labelledby="hx-value-title">
+            <div class="card-cl-overlay" data-field="history-loading"><div class="cl-loader"><div class="cl-candles"><div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div><div class="cl-candle cl-bull" style="--d:0.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div><div class="cl-candle cl-bull" style="--d:0.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div><div class="cl-candle cl-bear" style="--d:0.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div><div class="cl-candle cl-bull" style="--d:0.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div><div class="cl-candle cl-bull" style="--d:0.9s"><span class="cl-body" style="--t:10%;--h:58%"></span></div></div><span class="cl-loader-text">Rewinding the tape…</span></div></div>
+            <div class="hx-hero-copy" data-field="history-value">
+              <h2 class="eyebrow" id="hx-value-title"><span data-h="wallet">All wallets</span> · value</h2>
+              <div class="hx-total num" data-h="total">348&nbsp;520,50&nbsp;PLN</div>
+              <div class="hx-deltas"><span class="pill-delta up"><svg class="ico" aria-hidden="true"><use href="#i-arrow-up"/></svg><span class="num" data-h="gain">+41&nbsp;206,10&nbsp;PLN</span></span><span class="pill-delta up num" data-h="gain-pct">+13.41%</span><span class="hx-range-label" data-h="range-label">in the last year</span></div>
+              <dl class="hx-facts">
+                <div class="hx-fact"><dt>Invested capital</dt><dd class="num" data-h="invested">290&nbsp;000,00&nbsp;PLN</dd></div>
+                <div class="hx-fact"><dt>Deposits in range</dt><dd class="num" data-h="deposits">+24&nbsp;000,00&nbsp;PLN</dd></div>
+                <div class="hx-fact"><dt>Market gain in range</dt><dd class="num up" data-h="market">+17&nbsp;206,10&nbsp;PLN</dd></div>
+              </dl>
+            </div>
+            <figure class="hx-chart" data-field="history-value-chart">
+              <ul class="hx-legend"><li><i class="key" aria-hidden="true"></i>Value</li><li><i class="key is-invested" aria-hidden="true"></i>Invested capital</li><li><i class="key is-deposit" aria-hidden="true"></i>Deposit</li></ul>
+              <div class="hx-plot" data-chart="value">
+                <svg class="hx-svg hx-value-svg" viewBox="0 0 600 300" preserveAspectRatio="none" role="img" aria-label="Portfolio value over the selected range"></svg>
+                <div class="hx-readout" hidden aria-live="polite"><span class="num" data-r="date">2026-09-14</span><strong class="num" data-r="value">348&nbsp;520,50&nbsp;PLN</strong><span class="num" data-r="invested">Invested 290&nbsp;000,00&nbsp;PLN</span></div>
+              </div>
+              <div class="hx-axis num" data-axis="value" aria-hidden="true"></div>
+            </figure>
+          </section>
+
+          <section class="hx-return" data-o="4" aria-labelledby="hx-return-title">
+            <div class="section-head">
+              <div><h2 class="section-title" id="hx-return-title"><svg class="ico" aria-hidden="true"><use href="#i-trend"/></svg>Return</h2><p class="section-sub">Cumulative, time-weighted. Deposits do not count as gains.</p></div>
+              <div class="segmented" role="tablist" aria-label="Return unit" data-field="history-return-mode"><button type="button" role="tab" class="seg-btn" aria-selected="true" data-mode="pct">%</button><button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-mode="pln">PLN</button></div>
+            </div>
+            <div class="hx-series" role="group" aria-label="Compare with" data-field="history-benchmark-series">
+              <button type="button" class="series-chip is-fixed" aria-pressed="true" aria-disabled="true"><i class="key" aria-hidden="true"></i>Portfolio</button>
+              <button type="button" class="series-chip" aria-pressed="true" data-series="s1"><i class="key s1" aria-hidden="true"></i>WIG</button>
+              <button type="button" class="series-chip" aria-pressed="false" data-series="s2"><i class="key s2" aria-hidden="true"></i>S&amp;P 500</button>
+              <button type="button" class="series-chip" aria-pressed="false" data-series="s3"><i class="key s3" aria-hidden="true"></i>MSCI World</button>
+              <button type="button" class="series-chip" aria-pressed="false" data-series="s4"><i class="key s4" aria-hidden="true"></i>WIG20</button>
+            </div>
+            <figure class="hx-chart" data-field="history-return-chart">
+              <div class="hx-plot" data-chart="return"><svg class="hx-svg hx-return-svg" viewBox="0 0 600 280" preserveAspectRatio="none" role="img" aria-label="Cumulative return of the portfolio and the selected benchmarks"></svg></div>
+              <div class="hx-axis num" data-axis="return" aria-hidden="true"></div>
+              <dl class="hx-return-ends">
+                <div class="hx-end"><dt>Portfolio</dt><dd class="num up" data-end="port">+11.84%</dd></div>
+                <div class="hx-end s1" data-end-wrap="s1"><dt>WIG</dt><dd class="num up" data-end="s1">+8.20%</dd></div>
+                <div class="hx-end s2" data-end-wrap="s2" hidden><dt>S&amp;P 500</dt><dd class="num up" data-end="s2">+14.65%</dd></div>
+                <div class="hx-end s3" data-end-wrap="s3" hidden><dt>MSCI World</dt><dd class="num up" data-end="s3">+10.12%</dd></div>
+                <div class="hx-end s4" data-end-wrap="s4" hidden><dt>WIG20</dt><dd class="num up" data-end="s4">+5.36%</dd></div>
+              </dl>
+              <p class="hx-note" data-note="pln" hidden>Benchmarks compare percentages, so they are hidden in PLN.</p>
+            </figure>
+          </section>
+
+          <div class="hx-pair">
+            <section class="hx-monthly" data-o="5" aria-labelledby="hx-monthly-title">
+              <div class="section-head">
+                <h2 class="section-title" id="hx-monthly-title"><svg class="ico" aria-hidden="true"><use href="#i-bars"/></svg>Monthly</h2>
+                <div class="segmented" role="tablist" aria-label="Monthly metric" data-field="history-monthly-metric"><button type="button" role="tab" class="seg-btn" aria-selected="true" data-metric="gain">Gain</button><button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-metric="flow">Deposits</button></div>
+              </div>
+              <p class="hx-stat-row" data-stat="monthly">Best <strong class="num up">+6.10%</strong> Worst <strong class="num down">-4.30%</strong> Positive <strong class="num">8 of 12</strong></p>
+              <figure class="hx-chart" data-field="history-monthly-chart">
+                <svg class="hx-svg hx-bars-svg" viewBox="0 0 600 200" preserveAspectRatio="none" role="img" aria-label="Monthly result for the last twelve months"></svg>
+                <div class="hx-axis num" data-axis="monthly" aria-hidden="true"></div>
+              </figure>
+            </section>
+
+            <section class="hx-daily" data-o="6" aria-labelledby="hx-daily-title">
+              <div class="section-head">
+                <h2 class="section-title" id="hx-daily-title"><svg class="ico" aria-hidden="true"><use href="#i-zap"/></svg>Daily change</h2>
+                <div class="segmented" role="tablist" aria-label="Daily change unit" data-field="history-daily-mode"><button type="button" role="tab" class="seg-btn" aria-selected="true" data-mode="pct">%</button><button type="button" role="tab" class="seg-btn" aria-selected="false" tabindex="-1" data-mode="pln">PLN</button></div>
+              </div>
+              <p class="hx-stat-row" data-stat="daily">Best <strong class="num up">+3.20%</strong> Worst <strong class="num down">-2.85%</strong> Up days <strong class="num">54%</strong></p>
+              <figure class="hx-chart" data-field="history-daily-chart">
+                <svg class="hx-svg hx-bars-svg hx-scatter-svg" viewBox="0 0 600 200" preserveAspectRatio="none" role="img" aria-label="Daily change for the last 90 sessions, one dot per session"></svg>
+                <div class="hx-axis num" data-axis="daily" aria-hidden="true"></div>
+              </figure>
+            </section>
+          </div>
+        </div>
+
+        <!-- ================= Summaries ================= -->
+        <div class="hx-panel" id="panel-summaries" role="tabpanel" aria-labelledby="tab-summaries" hidden>
+          <nav class="rc-nav" aria-label="Recap period">
+            <div class="segmented rc-kind" role="tablist" aria-label="Recap type" data-field="recap-period-type">
+              <button type="button" role="tab" id="rc-kind-month" class="seg-btn" aria-selected="true" aria-controls="rc-story" data-kind="month">Monthly</button>
+              <button type="button" role="tab" id="rc-kind-year" class="seg-btn" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-kind="year">Yearly</button>
+            </div>
+            <div class="rc-rail">
+              <button type="button" class="rc-step" data-step="-1" aria-label="Previous period"><svg class="ico" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
+              <div class="rc-strip" role="tablist" aria-label="Month" data-field="recap-month-picker" data-strip="month">
+                <span class="rc-year-mark num" aria-hidden="true">2025</span>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2025-10" data-label="October 2025" data-twr="1.84"><span class="rc-period-name">Oct</span><span class="num up">+1.84%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2025-11" data-label="November 2025" data-twr="-0.62"><span class="rc-period-name">Nov</span><span class="num down">-0.62%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2025-12" data-label="December 2025" data-twr="2.41"><span class="rc-period-name">Dec</span><span class="num up">+2.41%</span></button>
+                <span class="rc-year-mark num" aria-hidden="true">2026</span>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026-01" data-label="January 2026" data-twr="0.93"><span class="rc-period-name">Jan</span><span class="num up">+0.93%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026-02" data-label="February 2026" data-twr="-2.08"><span class="rc-period-name">Feb</span><span class="num down">-2.08%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026-03" data-label="March 2026" data-twr="3.16"><span class="rc-period-name">Mar</span><span class="num up">+3.16%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026-04" data-label="April 2026" data-twr="1.12"><span class="rc-period-name">Apr</span><span class="num up">+1.12%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026-05" data-label="May 2026" data-twr="-0.41"><span class="rc-period-name">May</span><span class="num down">-0.41%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026-06" data-label="June 2026" data-twr="2.73"><span class="rc-period-name">Jun</span><span class="num up">+2.73%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026-07" data-label="July 2026" data-twr="-1.27"><span class="rc-period-name">Jul</span><span class="num down">-1.27%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="true" aria-controls="rc-story" data-period="2026-08" data-label="August 2026" data-twr="4.12"><span class="rc-period-name">Aug</span><span class="num up">+4.12%</span></button>
+                <button type="button" role="tab" class="rc-period is-live" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026-09" data-label="September 2026" data-twr="0.84" data-live><span class="rc-period-name">Sep<i class="rc-live-dot" aria-hidden="true"></i></span><span class="num up">+0.84%</span></button>
+              </div>
+              <div class="rc-strip" role="tablist" aria-label="Year" data-field="recap-year-picker" data-strip="year" hidden>
+                <button type="button" role="tab" class="rc-period" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2024" data-label="2024" data-twr="11.40"><span class="rc-period-name num">2024</span><span class="num up">+11.40%</span></button>
+                <button type="button" role="tab" class="rc-period" aria-selected="true" aria-controls="rc-story" data-period="2025" data-label="2025" data-twr="8.92"><span class="rc-period-name num">2025</span><span class="num up">+8.92%</span></button>
+                <button type="button" role="tab" class="rc-period is-live" aria-selected="false" aria-controls="rc-story" tabindex="-1" data-period="2026" data-label="2026" data-twr="9.63" data-live><span class="rc-period-name"><span class="num">2026</span><i class="rc-live-dot" aria-hidden="true"></i></span><span class="num up">+9.63%</span></button>
+              </div>
+              <button type="button" class="rc-step" data-step="1" aria-label="Next period"><svg class="ico" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+            </div>
+          </nav>
+
+          <div class="rc-story" id="rc-story" role="tabpanel" aria-label="Selected recap">
+          <header class="rc-poster" data-mood="up" data-o="2">
+            <svg class="rc-poster-lines" viewBox="0 0 900 450" preserveAspectRatio="none" aria-hidden="true"><path d="M-100 400 C 140 180, 480 480, 1000 220"/><path d="M-100 320 C 180 120, 450 400, 1000 150"/><path d="M-100 240 C 220 60, 420 320, 1000 90"/><path d="M-100 160 C 260 0, 400 240, 1000 30"/></svg>
+            <div class="rc-poster-top">
+              <p class="rc-brand"><span class="rc-wordmark">roastfolio</span><span class="rc-edition" data-rc="edition">Monthly audit</span></p>
+              <button type="button" class="rc-poster-share" data-field="recap-share"><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg>Share</button>
+            </div>
+            <h2 class="rc-title" data-field="recap-title"><span data-rc="month">August 2026</span> <em data-rc="kind">Wrapped.</em></h2>
+            <p class="rc-headline" data-field="recap-headline">You beat the WIG by <span class="num">1.92</span> pp, and XTB carried <span class="num">67%</span> of the gain.</p>
+            <div class="rc-poster-body">
+              <div class="rc-twr" data-field="recap-twr"><span class="rc-label">Time-weighted return</span><strong class="num" data-rc="twr">+4.12%</strong></div>
+              <div class="rc-poster-side">
+                <div class="rc-nominal" data-field="recap-nominal"><span class="rc-label">Nominal, net of deposits</span><strong class="num">+13&nbsp;802,40&nbsp;PLN</strong></div>
+                <dl class="rc-benchmarks" data-field="recap-benchmarks">
+                  <div><dt>WIG</dt><dd class="num">+2.20%</dd><span class="rc-gap">You <span class="num">+1.92</span> pp</span></div>
+                  <div><dt>MSCI ACWI</dt><dd class="num">+1.05%</dd><span class="rc-gap">You <span class="num">+3.07</span> pp</span></div>
+                </dl>
+              </div>
+              <svg class="rc-poster-spark" viewBox="0 0 300 90" preserveAspectRatio="none" aria-hidden="true"></svg>
+            </div>
+            <blockquote class="rc-commentary" data-field="recap-commentary">“A good month. Do not mistake it for a strategy. Half of it was XTB, and the other half was not panicking.”</blockquote>
+            <span class="rc-sticker" data-rc="sticker" aria-hidden="true"><svg viewBox="0 0 120 120"><defs><path id="rc-sticker-ring" d="M60 60 m-46 0 a46 46 0 1 1 92 0 a46 46 0 1 1 -92 0"/></defs><text><textPath href="#rc-sticker-ring">BEAT THE WIG · BEAT THE WIG · BEAT THE WIG ·</textPath></text></svg><strong class="num">+1.9<small>pp</small></strong></span>
+          </header>
+
+          <section class="rc-numbers" data-o="3" aria-labelledby="rc-numbers-title" data-field="recap-numbers">
+            <h2 class="sr-only" id="rc-numbers-title">August in three numbers</h2>
+            <div class="rc-number"><strong class="num is-up">15<small>/21</small></strong><span>sessions closed green</span></div>
+            <div class="rc-number"><strong class="num is-accent">67%</strong><span>of the gain came from XTB</span></div>
+            <div class="rc-number"><strong class="num is-up">+2.31%</strong><span>best day, Tue <span class="num">11</span> Aug</span></div>
+          </section>
+
+          <div class="rc-grid">
+            <section class="rc-sec is-wide" data-o="3" aria-labelledby="rc-journey-title" data-field="recap-journey">
+              <div class="section-head"><div><h2 class="section-title" id="rc-journey-title"><span class="rc-ch num">01</span>The journey</h2><p class="rc-kicker">Ahead of the WIG from day 6 and never looked back</p></div></div>
+              <figure class="hx-chart">
+                <ul class="hx-legend"><li><i class="key" aria-hidden="true"></i>Portfolio</li><li><i class="key s1" aria-hidden="true"></i>WIG</li><li><i class="key is-lead" aria-hidden="true"></i>Your lead</li></ul>
+                <div class="hx-plot" data-chart="journey"><svg class="hx-svg rc-journey-svg" viewBox="0 0 600 220" preserveAspectRatio="none" role="img" aria-label="Cumulative return through August: portfolio against WIG"></svg></div>
+                <label class="sr-only" for="rc-scrub">Day of the month</label>
+                <input class="rc-scrub" id="rc-scrub" type="range" min="0" max="20" value="20">
+                <p class="rc-journey-read" aria-live="polite"><span class="num" data-j="date">2026-08-31</span><span>Portfolio <strong class="num" data-j="port">+4.12%</strong></span><span>WIG <strong class="num" data-j="bench">+2.20%</strong></span><span>Gap <strong class="num" data-j="gap">+1.92 pp</strong></span></p>
+              </figure>
+            </section>
+
+            <section class="rc-sec" data-o="4" aria-labelledby="rc-moments-title">
+              <div><h2 class="section-title" id="rc-moments-title"><span class="rc-ch num">02</span>Moments that mattered</h2><p class="rc-kicker">A new high, then one bad Thursday</p></div>
+              <dl class="rc-facts">
+                <div class="rc-fact" data-field="recap-ath-status"><dt>All-time high</dt><dd>New high on <span class="num">2026-08-28</span><span class="rc-sub"><span class="num">3</span> days since · <span class="num">-0.42%</span> below it</span></dd></div>
+                <div class="rc-fact" data-field="recap-best-worst"><dt>Best and worst day</dt><dd><span class="num up">+2.31%</span> <span class="rc-sub">Tue <span class="num">2026-08-11</span></span><span class="num down">-1.74%</span> <span class="rc-sub">Thu <span class="num">2026-08-20</span></span></dd></div>
+              </dl>
+              <div class="rc-cal-wrap" data-field="recap-calendar">
+                <ol class="rc-cal" aria-label="August 2026, daily result"><li class="rc-cal-head" aria-hidden="true">M</li><li class="rc-cal-head" aria-hidden="true">T</li><li class="rc-cal-head" aria-hidden="true">W</li><li class="rc-cal-head" aria-hidden="true">T</li><li class="rc-cal-head" aria-hidden="true">F</li><li class="rc-cal-head" aria-hidden="true">S</li><li class="rc-cal-head" aria-hidden="true">S</li><li class="rc-day is-pad" aria-hidden="true"></li><li class="rc-day is-pad" aria-hidden="true"></li><li class="rc-day is-pad" aria-hidden="true"></li><li class="rc-day is-pad" aria-hidden="true"></li><li class="rc-day is-pad" aria-hidden="true"></li><li class="rc-day is-off" aria-label="Sat 1 August, market closed">1</li><li class="rc-day is-off" aria-label="Sun 2 August, market closed">2</li><li class="rc-day" data-heat="u1" aria-label="Mon 3 August, +0.40 percent">3</li><li class="rc-day" data-heat="u2" aria-label="Tue 4 August, +1.10 percent">4</li><li class="rc-day" data-heat="d1" aria-label="Wed 5 August, -0.30 percent">5</li><li class="rc-day" data-heat="u2" aria-label="Thu 6 August, +0.60 percent">6</li><li class="rc-day" data-heat="u1" aria-label="Fri 7 August, +0.20 percent">7</li><li class="rc-day is-off" aria-label="Sat 8 August, market closed">8</li><li class="rc-day is-off" aria-label="Sun 9 August, market closed">9</li><li class="rc-day" data-heat="u2" aria-label="Mon 10 August, +0.90 percent">10</li><li class="rc-day is-best" data-heat="u3" aria-label="Tue 11 August, +2.31 percent">11</li><li class="rc-day" data-heat="u1" aria-label="Wed 12 August, +0.30 percent">12</li><li class="rc-day" data-heat="d2" aria-label="Thu 13 August, -0.50 percent">13</li><li class="rc-day" data-heat="u2" aria-label="Fri 14 August, +0.70 percent">14</li><li class="rc-day is-off" aria-label="Sat 15 August, market closed">15</li><li class="rc-day is-off" aria-label="Sun 16 August, market closed">16</li><li class="rc-day" data-heat="u1" aria-label="Mon 17 August, +0.10 percent">17</li><li class="rc-day" data-heat="d1" aria-label="Tue 18 August, -0.20 percent">18</li><li class="rc-day" data-heat="u2" aria-label="Wed 19 August, +0.50 percent">19</li><li class="rc-day is-worst" data-heat="d3" aria-label="Thu 20 August, -1.74 percent">20</li><li class="rc-day" data-heat="d2" aria-label="Fri 21 August, -0.60 percent">21</li><li class="rc-day is-off" aria-label="Sat 22 August, market closed">22</li><li class="rc-day is-off" aria-label="Sun 23 August, market closed">23</li><li class="rc-day" data-heat="u2" aria-label="Mon 24 August, +0.80 percent">24</li><li class="rc-day" data-heat="u1" aria-label="Tue 25 August, +0.40 percent">25</li><li class="rc-day" data-heat="u3" aria-label="Wed 26 August, +1.20 percent">26</li><li class="rc-day" data-heat="u1" aria-label="Thu 27 August, +0.30 percent">27</li><li class="rc-day" data-heat="u2" aria-label="Fri 28 August, +0.90 percent">28</li><li class="rc-day is-off" aria-label="Sat 29 August, market closed">29</li><li class="rc-day is-off" aria-label="Sun 30 August, market closed">30</li><li class="rc-day" data-heat="d1" aria-label="Mon 31 August, -0.42 percent">31</li></ol>
+                <p class="rc-cal-legend"><span><i class="is-up" aria-hidden="true"></i>Up day</span><span><i class="is-down" aria-hidden="true"></i>Down day</span><span>Outlined: best and worst</span></p>
+              </div>
+            </section>
+
+            <section class="rc-sec" data-o="5" aria-labelledby="rc-movers-title" data-field="recap-movers">
+              <div><h2 class="section-title" id="rc-movers-title"><span class="rc-ch num">03</span>Who moved your month</h2><p class="rc-kicker">XTB carried, Allegro anchored</p></div>
+              <ul class="rc-movers">
+                <li class="rc-mover"><span class="rc-mover-name">XTB S.A.<span>Leader · <span class="num">+18.40%</span></span></span><span class="rc-track" aria-hidden="true"><span class="rc-fill up" style="--c:1"></span></span><span class="rc-mover-val num up">+9&nbsp;214,00&nbsp;PLN</span></li>
+                <li class="rc-mover"><span class="rc-mover-name">Microsoft<span><span class="num">+4.10%</span></span></span><span class="rc-track" aria-hidden="true"><span class="rc-fill up" style="--c:0.42"></span></span><span class="rc-mover-val num up">+3&nbsp;880,20&nbsp;PLN</span></li>
+                <li class="rc-mover"><span class="rc-mover-name">Apple<span><span class="num">+2.60%</span></span></span><span class="rc-track" aria-hidden="true"><span class="rc-fill up" style="--c:0.24"></span></span><span class="rc-mover-val num up">+2&nbsp;210,00&nbsp;PLN</span></li>
+                <li class="rc-mover"><span class="rc-mover-name">CD Projekt<span><span class="num">-1.90%</span></span></span><span class="rc-track" aria-hidden="true"><span class="rc-fill down" style="--c:0.09"></span></span><span class="rc-mover-val num down">-812,40&nbsp;PLN</span></li>
+                <li class="rc-mover"><span class="rc-mover-name">Allegro.eu<span>Anchor · <span class="num">-6.80%</span></span></span><span class="rc-track" aria-hidden="true"><span class="rc-fill down" style="--c:0.19"></span></span><span class="rc-mover-val num down">-1&nbsp;720,00&nbsp;PLN</span></li>
+              </ul>
+            </section>
+
+            <section class="rc-sec" data-o="6" aria-labelledby="rc-goal-title">
+              <div><h2 class="section-title" id="rc-goal-title"><span class="rc-ch num">04</span>Retirement goal</h2><p class="rc-kicker">Ahead of plan by <span class="num">7</span> months</p></div>
+              <div data-field="recap-goal">
+                <div class="rc-goal-track" role="img" aria-label="34.9% of the retirement target"><span class="rc-goal-fill" style="--p:0.349"></span></div>
+                <p class="rc-goal-meta"><span><strong class="num">348&nbsp;520,50&nbsp;PLN</strong> of <span class="num">1&nbsp;000&nbsp;000,00&nbsp;PLN</span></span><span class="num">34.9%</span></p>
+              </div>
+              <dl class="rc-facts" data-field="recap-avco">
+                <div class="rc-fact"><dt>Realized gains (AVCO)</dt><dd class="num up">+2&nbsp;104,00&nbsp;PLN</dd></div>
+                <div class="rc-fact"><dt>Unrealized gains</dt><dd class="num up">+56&nbsp;416,50&nbsp;PLN</dd></div>
+                <div class="rc-fact"><dt>Dividends</dt><dd class="num">412,30&nbsp;PLN</dd></div>
+                <div class="rc-fact"><dt>Belka tax estimate</dt><dd class="num">399,77&nbsp;PLN</dd></div>
+              </dl>
+            </section>
+
+            <section class="rc-sec" data-o="7" aria-labelledby="rc-markets-title">
+              <div><h2 class="section-title" id="rc-markets-title"><span class="rc-ch num">05</span>Markets in August</h2><p class="rc-kicker">A calm month almost everywhere</p></div>
+              <dl class="rc-markets" data-field="recap-markets">
+                <div><dt>WIG</dt><dd class="num up">+2.20%</dd></div>
+                <div><dt>DAX</dt><dd class="num up">+0.84%</dd></div>
+                <div><dt>FTSE 100</dt><dd class="num down">-0.36%</dd></div>
+                <div><dt>S&amp;P 500</dt><dd class="num up">+1.48%</dd></div>
+                <div><dt>NASDAQ</dt><dd class="num up">+1.92%</dd></div>
+                <div><dt>MSCI World</dt><dd class="num up">+1.05%</dd></div>
+              </dl>
+              <div data-field="recap-seasonality">
+                <p class="rc-verdict">Seasonality: August was up in <span class="num">6</span> of the last <span class="num">10</span> years for the WIG. This one beat the average of <span class="num">+0.62%</span>.</p>
+                <svg class="hx-svg rc-season-svg" viewBox="0 0 600 120" preserveAspectRatio="none" role="img" aria-label="WIG August return for each of the last ten years"></svg>
+                <div class="hx-axis num" data-axis="season" aria-hidden="true"></div>
+              </div>
+            </section>
+
+            <section class="rc-sec" data-o="8" aria-labelledby="rc-flows-title">
+              <div><h2 class="section-title" id="rc-flows-title"><span class="rc-ch num">06</span>Money in, money out</h2><p class="rc-kicker">Every złoty you added is working</p></div>
+              <dl class="rc-facts" data-field="recap-flows">
+                <div class="rc-fact"><dt>Deposits</dt><dd class="num up">+6&nbsp;000,00&nbsp;PLN</dd></div>
+                <div class="rc-fact"><dt>Withdrawals</dt><dd class="num">0,00&nbsp;PLN</dd></div>
+              </dl>
+              <dl class="rc-facts" data-field="recap-efficiency">
+                <div class="rc-fact"><dt>Efficiency leader</dt><dd>IKE Retirement<span class="rc-sub"><span class="num">+5.40%</span> TWR</span></dd></div>
+                <div class="rc-fact"><dt>Profit engine</dt><dd>XTB Brokerage<span class="rc-sub"><span class="num">+9&nbsp;102,10&nbsp;PLN</span> of the gain</span></dd></div>
+              </dl>
+              <table class="rc-table" data-field="recap-wallets">
+                <thead><tr><th scope="col">Wallet</th><th scope="col" class="r">Return</th><th scope="col" class="r hide-sm">Deposits</th><th scope="col" class="r">Change</th></tr></thead>
+                <tbody>
+                  <tr><td>XTB Brokerage</td><td class="r num up">+3.58%</td><td class="r num hide-sm">2&nbsp;000,00&nbsp;PLN</td><td class="r num up">+7&nbsp;204,30&nbsp;PLN</td></tr>
+                  <tr><td>IKE Retirement</td><td class="r num up">+5.40%</td><td class="r num hide-sm">4&nbsp;000,00&nbsp;PLN</td><td class="r num up">+6&nbsp;598,10&nbsp;PLN</td></tr>
+                </tbody>
+              </table>
+            </section>
+
+            <section class="rc-sec" data-o="9" aria-labelledby="rc-trading-title" data-field="recap-trading">
+              <div><h2 class="section-title" id="rc-trading-title"><span class="rc-ch num">07</span>Trading</h2><p class="rc-kicker">Quiet hands this month</p></div>
+              <dl class="rc-facts">
+                <div class="rc-fact"><dt>Turnover</dt><dd><span class="num">18&nbsp;640,00&nbsp;PLN</span><span class="rc-sub"><span class="num">5.3%</span> of the portfolio</span></dd></div>
+                <div class="rc-fact"><dt>Bought / sold</dt><dd><span class="num up">12&nbsp;400,00</span> / <span class="num down">6&nbsp;240,00&nbsp;PLN</span><span class="rc-sub"><span class="num">4</span> buys · <span class="num">2</span> sells</span></dd></div>
+              </dl>
+              <table class="rc-table">
+                <caption class="sr-only">Largest transactions</caption>
+                <thead><tr><th scope="col">Largest transactions</th><th scope="col" class="hide-sm">Date</th><th scope="col" class="r">Value</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="rc-tag up">Buy</span> Microsoft<span class="rc-sub num">10 × 409,20 USD</span></td><td class="num hide-sm">2026-08-04</td><td class="r num">15&nbsp;030,10&nbsp;PLN</td></tr>
+                  <tr><td><span class="rc-tag down">Sell</span> Allegro.eu<span class="rc-sub num">200 × 31,20 PLN</span></td><td class="num hide-sm">2026-08-21</td><td class="r num">6&nbsp;240,00&nbsp;PLN</td></tr>
+                  <tr><td><span class="rc-tag up">Buy</span> CD Projekt<span class="rc-sub num">10 × 248,00 PLN</span></td><td class="num hide-sm">2026-08-12</td><td class="r num">2&nbsp;480,00&nbsp;PLN</td></tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+          <section class="rc-invite" data-o="10" aria-labelledby="rc-invite-title" data-field="recap-share-invite">
+            <div class="rc-poster rc-poster-mini" data-mood="up" aria-hidden="true">
+              <svg class="rc-poster-lines" viewBox="0 0 900 450" preserveAspectRatio="none"><path d="M-100 400 C 140 180, 480 480, 1000 220"/><path d="M-100 240 C 220 60, 420 320, 1000 90"/></svg>
+              <span class="rc-wordmark">roastfolio</span>
+              <span class="rc-mini-title"><span data-rc="mini-month">August 2026</span> <em data-rc="mini-kind">Wrapped.</em></span>
+              <strong class="num rc-mini-twr" data-rc="mini-twr">+4.12%</strong>
+              <span class="rc-mini-gap">WIG <span class="num">+1.92</span> pp behind me</span>
+            </div>
+            <div class="rc-invite-copy">
+              <p class="eyebrow">Share your month</p>
+              <h2 class="rc-invite-title" id="rc-invite-title">Beat the WIG? Let the group chat know.</h2>
+              <p class="rc-invite-desc">Your recap turns into a poster sized for Stories and chats. Amounts in PLN stay hidden unless you switch them on.</p>
+              <label class="rc-switch"><input type="checkbox" role="switch" data-rc="amounts"><span class="rc-switch-track" aria-hidden="true"></span>Show PLN amounts</label>
+              <div class="rc-invite-actions"><button type="button" class="btn btn-primary"><svg class="ico" aria-hidden="true"><use href="#i-share"/></svg>Share poster</button><button type="button" class="btn btn-quiet">Download image</button></div>
+            </div>
+          </section>
+          </div>
+          <p class="rc-footer">A month in perspective. Not investment advice.</p>
+        </div>
+      </div>
+
+      <section class="empty-state-card" data-field="history-empty"><div class="empty-state-icon" aria-hidden="true"><svg class="ico ico-xl" aria-hidden="true"><use href="#i-trend"/></svg></div><h2 class="empty-state-title">No history yet. Nothing to regret.</h2><p class="empty-state-desc">History starts with your first deposit or trade. Add one and the charts fill in from that day.</p><button type="button" class="empty-state-btn">Add a transaction</button></section>
+    </main>
+
+      </div>
+
+  <nav class="bottom-tabs glass-island" aria-label="Primary">
+    <a href="#"><svg class="ico"><use href="#i-home"/></svg><span>Dashboard</span></a>
+    <a href="#"><svg class="ico"><use href="#i-wallet"/></svg><span>Wallets</span></a>
+    <a href="#"><svg class="ico"><use href="#i-book"/></svg><span>Diary</span></a>
+    <a href="#"><svg class="ico"><use href="#i-search"/></svg><span>Analysis</span></a>
+  </nav>
+</div>
+
+</body>
+</html>

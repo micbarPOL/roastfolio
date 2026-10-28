@@ -1,0 +1,74 @@
+/* Direction B "Shelves": Spotify-style. Greeting, filter chips, a bold feature banner and horizontal shelves of cover cards. */
+
+.b-page { display: flex; flex-direction: column; gap: var(--space-6); }
+.b-top { display: flex; flex-direction: column; gap: var(--space-3); }
+.b-greeting { margin: 0; font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 800; letter-spacing: -0.02em; }
+.b-chips { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; }
+.b-chips .chip { flex: none; }
+
+.b-feature { position: relative; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--space-6); padding: var(--space-6); border: 1px solid var(--border-strong); border-radius: var(--radius-xl); overflow: hidden;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-primary) 34%, var(--bg-surface-1)), color-mix(in srgb, var(--color-purple) 30%, var(--bg-surface-1))); animation: rise var(--dur-slow) var(--ease-enter) both; }
+.b-eyebrow { font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-primary); }
+.b-feature-copy { display: flex; flex-direction: column; gap: var(--space-3); }
+.b-roast { min-height: 0; padding: 0; border: 0; border-radius: 0; font-size: clamp(1.4rem, 2.8vw, 2.25rem); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; color: var(--text-primary); }
+.b-roast::after { content: none; }
+.b-roast .roast-message { font-size: inherit; color: var(--text-primary); }
+.b-tap { margin-top: var(--space-2); font-size: var(--fs-xs); font-weight: 600; color: var(--text-primary); }
+.b-feature .roast-reactions { padding: 0; }
+.b-feature .chip-btn { background: var(--bg-surface-1); color: var(--text-primary); }
+.b-feature-figures { display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: var(--space-2); }
+.b-total { font-size: clamp(2.25rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+.b-feature-delta { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.shelf-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.shelf-title { margin: 0; font-size: var(--fs-xl); font-weight: 800; letter-spacing: -0.02em; }
+.shelf-row { display: flex; gap: var(--space-4); overflow-x: auto; padding-bottom: var(--space-2); scroll-snap-type: x proximity; scrollbar-width: thin; mask-image: linear-gradient(to right, black calc(100% - 32px), transparent); }
+.shelf-row > * { flex: none; scroll-snap-align: start; }
+
+.b-card { background: var(--bg-surface-1); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: var(--space-5); box-shadow: var(--shadow-sm); text-decoration: none; color: inherit; }
+.b-card-title { margin: 0 0 var(--space-3); font-size: var(--fs-md); font-weight: 700; }
+.shelf-row > .b-card { width: min(320px, 80vw); }
+.shelf-row > .b-card-gauge { width: min(340px, 84vw); background: linear-gradient(160deg, color-mix(in srgb, var(--accent-primary) 26%, var(--bg-surface-1)), var(--bg-surface-1)); }
+.b-card-gauge .gauge-widget { padding: 0; }
+.shelf-row > .b-card-ath { border-top: 4px solid var(--color-danger); }
+.b-ath { display: flex; flex-direction: column; gap: var(--space-3); }
+.b-ath .ath-lake { width: 100%; height: 120px; }
+.b-card-bars .bars6 { height: 140px; }
+
+.b-chart { display: block; }
+.b-chart-controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-3); }
+
+.shelf-row > .b-mover { width: min(220px, 62vw); display: flex; flex-direction: column; gap: var(--space-2); }
+.b-mover:has(.spark-line.up) { border-top: 4px solid var(--color-success); }
+.b-mover:has(.spark-line.down) { border-top: 4px solid var(--color-danger); }
+.b-mover-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.b-mover .mover-logo, .b-mover .logo-fallback { width: 44px; height: 44px; border-radius: 50%; }
+.b-mover .mover-chart svg { width: 100%; height: 44px; }
+.b-mover-nums { display: flex; flex-direction: column; font-size: var(--fs-lg); font-weight: 800; }
+.b-mover-price { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--fs-xs); color: var(--text-secondary); }
+.b-mover-price small { color: var(--text-secondary); }
+
+.b-wallets .wallet-card { width: min(340px, 86vw); border-radius: var(--radius-xl); background: var(--bg-surface-1); border-top: 4px solid var(--accent-primary); }
+.shelf-row > .b-period { width: min(380px, 86vw); }
+.b-period-monthly { border-top: 4px solid var(--color-danger); }
+.b-period-yearly { border-top: 4px solid var(--color-purple); }
+.b-card .link-btn { color: var(--text-primary); text-decoration: underline; }
+.b-period .period-panel { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+
+.b-progress { display: block; overflow: visible; mask-image: none; }
+.b-chips-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--space-3); overflow: visible; mask-image: none; padding-top: 0; margin-top: 0; }
+.b-chips-cards .eng-chip { min-height: 72px; padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); }
+
+@media (max-width: 899px) {
+  .b-feature { grid-template-columns: minmax(0, 1fr); padding: var(--space-5); gap: var(--space-5); }
+}
+@media (max-width: 767px) {
+  .b-page { gap: var(--space-5); }
+  .b-chips .chip { min-height: var(--touch-min); }
+  .b-card { padding: var(--space-4); }
+}
+@media (hover: hover) {
+  .b-mover:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+  .b-mover { transition: transform var(--dur-base) var(--ease-hover), border-color var(--dur-base) var(--ease-hover); }
+  .chip:hover { border-color: var(--border-strong); }
+}

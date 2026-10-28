@@ -555,3 +555,44 @@ class PortfolioHandlerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_fallback_display_is_logged_with_selection_context(monkeypatch):
+    recorded = []
+
+    class Tracking:
+        @staticmethod
+        def record_event(payload):
+            recorded.append(payload)
+
+    monkeypatch.setitem(sys.modules, "roast_tracking", Tracking)
+    selection_context = {"scenario": {"scenarioKey": "BOTH_NEGATIVE_USER_WORSE"}, "templateCriteria": {"intensity": "sarcastic"}}
+    roast_data = {
+        "message": handler.roast_engine.FALLBACK_ROAST_MESSAGE,
+        "scenarioKey": "BOTH_NEGATIVE_USER_WORSE",
+        "selectionContext": selection_context,
+        "telemetry": {"source": "deterministic_fallback", "fallbackReason": "all templates too similar"},
+    }
+
+    handler._record_roast_display_events("user-1", roast_data, -1.2, 0.3)
+
+    assert [event["eventType"] for event in recorded] == ["roast_displayed", "roast_fallback_displayed"]
+    assert all(event["selectionContext"] == selection_context for event in recorded)
+    assert recorded[1]["fallbackReason"] == "all templates too similar"
+
+
+def test_widget_cache_miss_fallback_emits_stage_metric_without_yahoo(monkeypatch, capsys):
+    monkeypatch.setattr(handler, "load_widget_cache", lambda: {})
+    monkeypatch.setattr(handler, "load_s3_cache", lambda: {})
+    monkeypatch.setattr(handler, "WALLETS", {})
+    monkeypatch.setattr(handler, "build_widget_payload", lambda *_args: {})
+    monkeypatch.setattr(handler.yf, "Ticker", lambda *_args: pytest.fail("widget fallback must not call Yahoo"))
+
+    response = handler.widget_handler({"httpMethod": "GET", "path": "/widget"})
+
+    assert response["statusCode"] == 200
+    assert json.loads(response["body"]) == {"stale": True}
+    metrics = [json.loads(line) for line in capsys.readouterr().out.splitlines() if line.startswith("{")]
+    stage = next(metric for metric in metrics if metric.get("eventType") == "api_stage")
+    assert stage["Route"] == "/widget"
+    assert stage["Stage"] == "price_cache_load"

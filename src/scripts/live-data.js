@@ -523,6 +523,9 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
             const merged = { ...row };
             if ((!Array.isArray(merged.todayBars) || !merged.todayBars.length) && Array.isArray(prev.todayBars) && prev.todayBars.length) {
                 merged.todayBars = prev.todayBars;
+                merged.intradayBaseline = prev.intradayBaseline;
+                merged.intradayFxRate = prev.intradayFxRate;
+                merged.comparisonBars = prev.comparisonBars;
             }
             if ((!Array.isArray(merged.yearBars) || !merged.yearBars.length) && Array.isArray(prev.yearBars) && prev.yearBars.length) {
                 merged.yearBars = prev.yearBars;
@@ -687,9 +690,11 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
                 window.BENCHMARK_DATA = {
                     ...existing,
                     intraday: benchmarkPayload.intraday || existing.intraday || [],
+                    session: benchmarkPayload.session || null,
+                    benchmarkId: window.BENCHMARK_ID,
                 };
             } else {
-                window.BENCHMARK_DATA = benchmarkPayload;
+                window.BENCHMARK_DATA = { ...benchmarkPayload, benchmarkId: window.BENCHMARK_ID };
             }
             window.WIG_DATA = window.BENCHMARK_DATA;
         }
@@ -800,11 +805,15 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
     document.addEventListener('DOMContentLoaded', async () => {
         // New users start with empty portfolios — they use ⚙️ Manage to add holdings.
         // Do NOT auto-migrate CSV data (that's personal data belonging to one user).
+        const bootstrapStarted = performance.now();
         const hasWallets = await checkWalletBootstrapState();
+        window.DashboardPerformance?.record('bootstrap', performance.now() - bootstrapStarted);
+        window.DashboardPerformance?.mark('bootstrap-ready');
         if (!hasWallets && window.__walletBootstrapState === 'empty') return;
 
         // Apply cached Lambda response immediately so the user sees recent data right away
         const hadCache = applyCachedLambdaData();
+        if (hadCache) window.DashboardPerformance?.mark('cached-ready');
         if (!hadCache) showStatus('⟳ Refreshing prices…', 'loading');
         const liteOk = await doFetch('lite');
         if (liteOk) {
@@ -818,21 +827,38 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
         const isLite    = view === 'lite';
         const isHistory = view === 'history';
         const background = !!options.background;
+        const requestStarted = performance.now();
+        let headersRecorded = false;
         try {
             const timeoutMs = attempt > 1 ? RETRY_TIMEOUT_MS : TIMEOUT_MS;
             const res = await fetchWithTimeout(_buildApiUrl(view), timeoutMs, _authFetchOptions());
+            const serverTiming = res.headers.get('Server-Timing')?.match(/app;dur=([\d.]+)/);
+            const responseBytes = res.headers.get('X-Response-Bytes');
+            window.DashboardPerformance?.record('api-headers', performance.now() - requestStarted, {
+                view, status: res.ok ? 'ok' : 'error',
+                serverMs: serverTiming ? Number(serverTiming[1]) : undefined,
+                responseBytes: responseBytes ? Number(responseBytes) : undefined,
+            });
+            headersRecorded = true;
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
+            const bodyStarted = performance.now();
+            const text = await res.text();
+            window.DashboardPerformance?.record('api-body', performance.now() - bodyStarted, { view });
+            const parseStarted = performance.now();
+            const data = JSON.parse(text);
+            window.DashboardPerformance?.record('api-parse', performance.now() - parseStarted, { view });
 
             // History responses are handled entirely inside applyLiveData (early return)
             if (isHistory) {
                 applyLiveData(data, {});
                 return true;
             }
+            const applyStarted = performance.now();
             applyLiveData(data, {
                 preserveDeferredData: isLite,
                 persistCache: !isLite,
             });
+            window.DashboardPerformance?.record('data-apply', performance.now() - applyStarted, { view });
             if (isLite) {
                 window._gaugeDataReady = true;
             } else if (window._gaugeDataReady == null) {
@@ -851,6 +877,7 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
             const freezeSecondaryNarrative = background && !isLite;
             const frozenGaugeComment = freezeSecondaryNarrative ? _captureGaugeTooltipState() : null;
             const frozenMarketCommentary = freezeSecondaryNarrative ? _captureMarketCommentaryState() : null;
+            const renderStarted = performance.now();
             if (typeof renderDashboard === 'function') renderDashboard();
             if ((data.benchmarkData || data.wigData) && typeof renderBenchmarkChart === 'function') {
                 renderBenchmarkChart(data.benchmarkData || data.wigData, null, null);
@@ -888,6 +915,10 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
             } else {
                 _finalizeNarrative();
             }
+            window.DashboardPerformance?.record('dashboard-render', performance.now() - renderStarted, { view });
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                window.DashboardPerformance?.mark(isLite ? 'lite-ready' : 'full-ready');
+            }));
 
             // Refresh portfolio tab if it was already initialized (user has visited it)
             if (typeof initPortfolioCharts === 'function') {
@@ -899,6 +930,9 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
             }
             return true;
         } catch (e) {
+            if (!headersRecorded) {
+                window.DashboardPerformance?.record('api-headers', performance.now() - requestStarted, { view, status: 'error' });
+            }
             const isAbort = e && (
                 e.name === 'AbortError' ||
                 String(e.message || '').toLowerCase().includes('signal is aborted')

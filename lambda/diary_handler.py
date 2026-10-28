@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 import boto3
+from observability import instrument_table
 from boto3.dynamodb.conditions import Key
 
 
@@ -36,7 +37,7 @@ _TAG_RE = re.compile(r"(?<![A-Za-z0-9_])#([A-Za-z][A-Za-z0-9_-]*)(?=$|[^A-Za-z0-
 def _table():
     global _diary_table_ref
     if _diary_table_ref is None:
-        _diary_table_ref = boto3.resource("dynamodb").Table(_DIARY_TABLE_NAME)
+        _diary_table_ref = instrument_table(boto3.resource("dynamodb").Table(_DIARY_TABLE_NAME))
     return _diary_table_ref
 
 

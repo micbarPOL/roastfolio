@@ -65,6 +65,12 @@ def test_tokens_file_matches_document():
     )
 
 
+def test_app_tokens_file_is_identical_to_the_design_copy():
+    assert ds.APP_TOKENS_CSS.read_text(encoding="utf-8") == ds.TOKENS_CSS.read_text(encoding="utf-8"), (
+        "src/styles/tokens-v9.css differs from design/tokens-v9.css. Regenerate: .venv/bin/python design/design_system.py --write-tokens"
+    )
+
+
 def test_registry_has_both_themes_and_core_tokens():
     reg = ds.registry()
     for token in ("--bg-canvas", "--text-primary", "--accent-primary", "--color-success", "--dur-base", "--ease-enter"):
@@ -127,9 +133,10 @@ def test_mentioned_decisions_and_questions_exist():
     assert set(re.findall(r"\bOQ-\d+\b", text)) <= questions, "document mentions an open question that is not listed"
 
 
-def test_dashboard_registry_ids_are_unique():
-    fields = ds.dashboard_fields()
-    assert len(fields) == len(set(fields)), "duplicate field ids in Appendix A"
+@pytest.mark.parametrize("screen", ["dashboard", "wallets", "history"])
+def test_screen_registry_ids_are_unique(screen):
+    fields = ds.screen_fields(screen)
+    assert len(fields) == len(set(fields)), f"duplicate field ids in the {screen} registry"
 
 
 def test_document_does_not_name_components_the_app_lacks():

@@ -112,10 +112,30 @@ def _xirr(cashflows):
         r_new = r - f_r / f_prime_r
         if abs(r_new - r) < 1e-6:
             return r_new
+        if r_new <= -1.0:
+            return _xirr_bisect(amounts, years)
         r = r_new
-        if r <= -1.0:
-            return -0.9999
     return r
+
+
+def _xirr_bisect(amounts, years):
+    def npv(rate):
+        return sum(a / ((1.0 + rate) ** y) for a, y in zip(amounts, years))
+
+    lo, hi = -0.9999, 10.0
+    f_lo, f_hi = npv(lo), npv(hi)
+    if f_lo * f_hi > 0:
+        return -0.9999 if f_lo < 0 and f_hi < 0 else 0.0
+    for _ in range(200):
+        mid = (lo + hi) / 2.0
+        f_mid = npv(mid)
+        if abs(f_mid) < 1e-9 or (hi - lo) < 1e-9:
+            return mid
+        if f_lo * f_mid < 0:
+            hi = mid
+        else:
+            lo, f_lo = mid, f_mid
+    return (lo + hi) / 2.0
 
 # ── Mock prices helpers ────────────────────────────────────────────────────
 
@@ -651,7 +671,6 @@ class InvestmentHandler(http.server.SimpleHTTPRequestHandler):
 
         # /test-templates
         if path == '/test-templates':
-            import os, json
             templates_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lambda', 'roast_templates.json')
             feedback_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lambda', 'feedback.json')
             
@@ -729,7 +748,6 @@ class InvestmentHandler(http.server.SimpleHTTPRequestHandler):
 
         # /test-monthly-comments
         if path == '/test-monthly-comments':
-            import os, json
             monthly_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lambda', 'data', 'monthly_comments.json')
             feedback_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'lambda', 'feedback_monthly.json')
             
@@ -1092,9 +1110,14 @@ def open_browser():
     webbrowser.open(f'http://localhost:{PORT}')
 
 
+class ThreadedServer(socketserver.ThreadingTCPServer):
+    """One thread per connection: browsers open idle preconnects that would otherwise block a single-threaded server."""
+    daemon_threads = True
+    allow_reuse_address = True
+
+
 if __name__ == '__main__':
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(('', PORT), InvestmentHandler) as httpd:
+    with ThreadedServer(('', PORT), InvestmentHandler) as httpd:
         print(f'🚀 Investment dashboard at http://localhost:{PORT}')
         print(f'   Mock API: /prices, /profile, /portfolios, /transactions, /snapshots')
         print(f'   POST /refresh → runs update-all.sh (optional, real data).')

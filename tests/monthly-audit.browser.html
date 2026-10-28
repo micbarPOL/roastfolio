@@ -87,7 +87,7 @@
                 const publicModel = MonthlyAuditPresentation.buildModel(sample, {hideAmounts:false});
                 check('Opt-in nominal change', publicModel.nominalChange === '+24,680 PLN');
                 check('Missing is not zero', MonthlyAuditPresentation.buildModel({period:'2026-01'}).twr === 'No data');
-                check('Negative month narrative', MonthlyAuditPresentation.buildModel({...sample, overall_twr_pct:-1}).headline.includes('step back'));
+                check('Data-backed benchmark narrative', MonthlyAuditPresentation.buildModel({...sample, overall_twr_pct:-1}).headline.includes('MSCI World'));
                 check('Benchmark extrapolated from last available day', privateModel.journey.points[2].benchmark_pct === 0.5 && privateModel.journey.points[3].portfolio_pct === null && !('trajectory' in privateModel));
                 check('Wordmark replaces decorative glyph', document.querySelector('.ma-wordmark')?.textContent === 'roastfolio' && !document.querySelector('.ma-cover-glyph'));
                 check('Six markets in regional order', [...document.querySelectorAll('.ma-market-row')].map(row => row.dataset.marketId).join(',') === 'WIG,DAX,FTSE100,SP500,NASDAQ,MSCI_WORLD');

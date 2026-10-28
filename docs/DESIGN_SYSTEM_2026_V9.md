@@ -93,6 +93,13 @@ Roastfolio uses an **Adaptive Hybrid Model**. Rather than building two disconnec
   --color-purple: #a855f7;     /* Gamification / Coping Diary / Hypotheses */
   --color-purple-bg: rgba(168, 85, 247, 0.12);
 
+  /* Recap poster (theme-independent, D-047): pastel mood paper with dark ink */
+  --recap-up: #d0f5b0;         /* Month up: lime paper */
+  --recap-down: #f2c5b0;       /* Month down: peach paper */
+  --recap-flat: #d4caf2;       /* Flat or no data: lavender paper */
+  --recap-ink: #1c2c22;        /* Poster text and line work */
+  --recap-ink-soft: #344634;   /* Poster captions, 6.4:1 or better on every paper */
+
   /* Borders & Shadows (Dark) */
   --border-subtle: rgba(74, 159, 212, 0.12);
   --border-strong: rgba(74, 159, 212, 0.25);
@@ -200,6 +207,12 @@ To prevent visual clutter, Roastfolio establishes strict functional rules for ev
 ## 4. Comprehensive Component Catalog across 4 Modes
 
 ### 4.1 Headers (Primary & Secondary)
+- **UI 20 shell** (D-030): The header is one compact, left-aligned row at
+  every width (at most 52px): the current screen title first and the
+  live/last-updated status immediately beside it. On mobile the menu button
+  comes first. The wordmark and logo live only in the sidebar and the drawer,
+  never in the header. The market commentary sits directly under the row with
+  the same left padding. Long status messages may wrap rather than overflow.
 - **Primary App Header**: Contains App logo (`Roastfolio 📊`), portfolio selector dropdown, global net worth indicator, and settings/theme toggle.
 - **Secondary Screen Header**: Displays screen title (e.g., "Asset Analysis"), back button, quick action buttons, and last-updated timestamp.
 
@@ -424,6 +437,7 @@ To achieve a modern, expensive, and high-performance aesthetic (benchmarked agai
 1. **The 150ms–300ms Golden Window**:
    - All transition durations MUST fall within **150ms to 300ms** (Material Design 3 / Userpilot 2026 benchmark).
    - Transitions faster than `150ms` appear jarring or invisible; transitions slower than `300ms` feel laggy and introduce perceived latency.
+   - **One-shot data entrances** (D-034) are the only exception: when data first arrives, a graphic may settle into place for up to `1.2s` (the ATH lake filling, the ATH breakout line drawing, the gauge needle sweep). They run once, never block input, use only `transform` and `opacity` (or SVG stroke offsets) and are removed by `prefers-reduced-motion`. Later updates of the same graphic use the 150ms–300ms window.
 2. **Bezier Curve Registry**:
    - **Enter / Expand Curve**: `cubic-bezier(0.32, 0.72, 0, 1)` — Physics-based spring enter that decelerates smoothly into place.
    - **Micro-Hover Curve**: `cubic-bezier(0.2, 0, 0, 1)` — Rapid, tight response for cursor hover cards and button micro-scales (`scale(1.02)`).
@@ -563,7 +577,7 @@ To ensure Roastfolio feels like a $100M luxury financial tool (inspired by Linea
 
 Screen-level layouts and specific view compositions are delegated to the core product domain model. The Design System provides the foundational token layer, layout grids, responsive breakpoints, and component library (Sections 1 to 4, 7 and 8) that any screen specification model can compose dynamically.
 
-Each screen that has been through the mockup workflow (D-008) is registered in Appendix A with its data inventory, so the redesign can never silently drop information that the current app shows.
+Each screen that has been through the mockup workflow (D-008) is registered in its own screen registry (Appendix A for the Dashboard, Appendix B for Wallets) with its data inventory, so the redesign can never silently drop information that the current app shows.
 
 ---
 ## 6. Implementation Checklist for LLM AI Generators (Claude 3.5 / 3.7 Sonnet)
@@ -719,7 +733,7 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 | D-003 | active | Mobile primary navigation is a fixed bottom tab bar with 4 destinations plus a slide-over drawer for the rest. | `dom: nav.bottom-tabs a` |
 | D-004 | active | Monthly and Yearly Summary share one card with a segmented control. | `dom: .period-card [role="tablist"] [role="tab"]` |
 | D-005 | active | The engagement strip becomes compact chips inside the hero card. | `dom: .hero-card .eng-chips .eng-chip` |
-| D-006 | active | The gauge has two modes: daily vs benchmark, and distance to ATH. | `dom: .gauge-widget [role="tab"][data-mode="ath"]` |
+| D-006 | superseded | The gauge had two modes: daily vs benchmark, and distance to ATH. Replaced by D-022 (gauge shows only today vs benchmark) and D-027 (ATH distance is the lake). | none |
 | D-007 | active | Roast reaction buttons stay hidden until the roast card is tapped. | `dom: .roast-card .roast-reactions[hidden]` |
 | D-008 | active | Mockup first: every screen gets an HTML mockup in `design/mockups/` that the owner approves before anything is implemented in `src/`. | `dom: html[data-mockup="dashboard"]` |
 | D-009 | provisional | The light theme switches with `:root[data-theme="light"]` (as the app does) instead of `body.light-theme`. | `css: :root\[data-theme="light"\]` |
@@ -734,6 +748,34 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 | D-018 | provisional | Section 2 gains typography, spacing, layout and motion tokens (`--fs-*`, `--space-*`, `--dur-*`, `--ease-*`) so mockups never hardcode them. | `css: --dur-base:\s*200ms` |
 | D-019 | provisional | The active navigation item keeps `--text-primary` text and shows the accent only on its icon and left bar, because `--accent-primary` text on `--bg-surface-2` is 4.32:1 in dark mode (Section 10). | `css: \.nav-item\[aria-current="page"\] \.ico` |
 | D-020 | provisional | Accordion content (Control Room wallets, benchmark lists) appears with a short fade-and-rise and never animates `height`. | `dom: .wallet-card .wallet-more[hidden]` |
+| D-021 | active | The Dashboard hero follows direction C: the roast is the headline, with total value and today's change under it. | `@dashboard-d-player-v2 dom: .hero .hero-roast [data-field="roast-message"]` |
+| D-022 | active | The hero also shows today's portfolio return against the benchmark return (the comparison the roast talks about) as a gauge with both values and the difference in percentage points. | `@dashboard-d-player-v2 dom: .hero .gauge-widget [data-field="gauge-benchmark-pct"]` |
+| D-023 | active | Main column order: hero, benchmark chart, ATH with the last 6 months, and the Summary (month and year against benchmarks) at the very bottom. | `@dashboard-d-player-v2 dom: .col-main > .hero + .bench + .ath-six + .summary` |
+| D-024 | active | The right column holds Today's Movers, then Accounts. | `@dashboard-d-player-v2 dom: .col-rail > .movers + .accounts` |
+| D-025 | superseded | The benchmark chart showed only the benchmark with a "coming soon" slot for the portfolio line. Replaced by D-029. | none |
+| D-026 | active | Frameless layout (Section 1.1, principle 3): no cards, borders or shadows around areas. Space and hairlines separate sections. Rounded shapes remain only for chips, pills, buttons, avatars and floating islands (sidebar, drawer, bottom tabs, player). The browser test scans every screen that carries `data-frameless`. | `@dashboard-d-player-v2 dom: html[data-frameless]` |
+| D-027 | provisional | ATH distance is shown by the lake graphic with its numbers, not by a second gauge mode. | `@dashboard-d-player-v2 dom: .ath-six .ath-lake[data-field="gauge-ath"]` |
+| D-028 | provisional | On mobile the order is hero, benchmark chart, Today's Movers, Accounts, ATH, last 6 months, Summary. Daily information comes first, analysis last. | `@dashboard-d-player-v2 css: \[data-o="6"\]` |
+| D-029 | active | Under the benchmark chart, "Portfolio vs benchmark · since open" plots the portfolio return against the benchmark return at 1-minute resolution. The curve is synthesised in the browser from the minute bars and cash already loaded (no backend storage). Both lines start at 0% at the benchmark open and are delayed 15 minutes to match the Yahoo quotes. The benchmark line ends at its session close; a "Portfolio window" setting lets the portfolio line run for 24 hours. The opening-gap explanation sits behind an info button, not in the page. | `@dashboard-d-player-v2 dom: .bench .intraday-comparison [data-field="intraday-window"]` |
+| D-030 | active | The header is one compact left-aligned row at every width: title and live status, with the menu button first on mobile. The wordmark appears only in the sidebar and drawer (Section 4.1). | `@dashboard-d-player-v2 no-dom: .top-bar .brand` |
+| D-031 | active | On phones the hero keeps the roast and the gauge side by side (gauge column about 148px), with total value and today's change spanning underneath. | `@dashboard-d-player-v2 css: grid-template-areas:\s*"say gauge"` |
+| D-032 | active | The ATH lake uses a logarithmic distance scale so a 0.3% dip on a large portfolio is visible and a 50% drawdown still fits. States: `pending`, `below` (water with rising bubbles), `at` and `above` (a green tide rises over the dashed ATH line). Answers the former question about the ATH gauge scale. | `@dashboard-d-player-v2 dom: .ath-lake[data-state]` |
+| D-033 | active | A new all-time high shows a one-shot breakout banner: a sparkline draws through the dashed ATH ceiling, then the badge shimmers. It replays only when the recorded ATH changes. | `@dashboard-d-player-v2 dom: .ath-celebration .ath-ceiling` |
+| D-034 | provisional | One-shot data entrance animations may last up to 1.2s; interactive transitions stay within 150ms to 300ms (Section 4.14). | `@dashboard-d-player-v2 css: @keyframes ath-draw` |
+| D-035 | provisional | Wallets uses the dashboard's frameless language (D-026): one `h1` in the top bar, a glowing hero with the selected wallet's total, then hairline-separated sections in a main column and a 340px rail. Below 1100px the rail drops under the main column. | `@wallets count: h1 = 1` |
+| D-036 | provisional | Wallets are switched with a row of pill chips (name and total) acting as one tablist. "All wallets" is first; "New wallet" opens an inline form next to it instead of a separate panel. | `@wallets dom: .w-switcher [role="tab"][aria-selected="true"]` |
+| D-037 | provisional | Wallet allocation is a single stacked bar with a legend, and each holding row repeats its share as a thin bar. It replaces the donut, which was hard to read with more than five holdings. | `@wallets dom: .w-alloc .alloc-bar` |
+| D-038 | provisional | "All wallets" is read-only. One note above the holdings explains it, and trade buttons, Quick entry, rename and delete are hidden, instead of a "Read only" badge on every row. | `@wallets dom: .w-readonly-note` |
+| D-039 | provisional | Transactions are entered in a glass sheet (right side on desktop, bottom sheet on phones) with the type as a segmented tablist and a live review before saving. Wallet settings (benchmark, ATH, rename, delete) are inline in the rail, not in a modal. | `@wallets dom: .tx-sheet[role="dialog"][aria-modal="true"] [data-field="tx-type"]` |
+| D-040 | provisional | On phones "New transaction" is a glass pill above the bottom tabs, and the page reserves bottom padding so it never covers the last row. | `@wallets css: \.w-fab` |
+| D-041 | provisional | History splits into Overview (performance charts) and Summaries (monthly recap) with one page-level segmented tablist under the commentary. Both panels are frameless, like the dashboard (D-026). | `@history dom: .hx-sections[role="tablist"] [aria-selected="true"]` |
+| D-042 | provisional | One sticky filter bar (wallet chips and a single ALL/5Y/3Y/1Y/YTD/1M/1W range, default 1Y) drives every Overview chart. It replaces the separate range pickers of the value, return and benchmark charts. | `@history dom: .hx-filters [data-field="history-range"]` |
+| D-043 | provisional | The Overview opens with a value hero: total, gain in the range, invested capital, deposits and market gain, next to a value area chart with a dashed invested-capital line, deposit markers and a scrub readout. | `@history dom: .hx-hero [data-field="history-value-chart"]` |
+| D-044 | provisional | Cumulative return and Return vs Benchmark merge into one Return chart with a %/PLN toggle. Benchmark series chips appear only in % mode; PLN mode shows a note that benchmarks have no PLN value. | `@history dom: .hx-return [data-field="history-benchmark-series"]` |
+| D-045 | provisional | Monthly and Daily change sit side by side as a compact pair (one column on phones). Monthly is a bar chart. Daily is a scatter of one dot per session, with halos on the best and worst day and a dashed average line. Daily % and Daily PLN merge behind one toggle and show at most 90 sessions. | `@history dom: .hx-pair .hx-monthly + .hx-daily .hx-scatter-svg` |
+| D-046 | provisional | Summaries is an editorial recap: a poster cover (D-047), a strip of three big numbers, then numbered chapters 01–07 separated by hairlines in a two-column grid, with no cards. The journey chart fills the gap between the portfolio and the benchmark as "Your lead". | `@history dom: .rc-story .rc-numbers + .rc-grid` |
+| D-047 | provisional | The recap poster is the one printed object allowed on a frameless screen, together with its mini preview in the share invite. Its pastel paper follows the period mood (`--recap-up`, `--recap-down`, `--recap-flat`) in both themes, all text uses `--recap-ink` or `--recap-ink-soft`, and the Spotify-style type runs the TWR up to 7rem. A "Beat the WIG" sticker shows only when the benchmark was beaten. | `@history dom: .rc-poster[data-mood] [data-field="recap-twr"]` |
+| D-048 | provisional | Recap periods use a navigator, not a select: a Monthly / Yearly segmented control, a timeline strip that shows each period's return with year marks and a dot on the live period, and previous / next buttons. A share invite ends the recap with a poster preview and a switch for PLN amounts, which stay hidden by default. The headline is built from data, in priority order: (1) beat or trailed the benchmark, plus the carry holding's share of the gain or the anchor's cost; (2) a new all-time high; (3) the sign-based fallback. Stories that need new backend logic, such as positions sold just before a rally, are future work. | `@history dom: .rc-nav [data-field="recap-period-type"]` |
 
 ## 10. Consistency Contract
 
@@ -743,10 +785,12 @@ What is enforced:
 - **Document health**: section numbers are unique, every `Section N.M` reference resolves, no inline code was lost, Decision Log syntax is valid, and class names the document calls "existing" exist in `src/styles/main.css`.
 - **Token parity**: the CSS blocks in Section 2 are identical to `design/tokens-v9.css`. Regenerate the file with `.venv/bin/python design/design_system.py --write-tokens`.
 - **Mockup rules**: no hardcoded colours, only defined tokens, no forbidden animated properties, `transition` durations of 150ms to 300ms, hover effects only inside `@media (hover: hover)`, tabular numerals on financial figures, lowercase wordmark, no new spinners, `touch-action: manipulation` on controls.
-- **Decisions and data**: every `active` or `provisional` decision check in Section 9 passes, and every field in Appendix A exists in the mockup.
-- **Browser checks**: no horizontal overflow at 1440px and 390px, text contrast of at least 4.5:1 in both themes, touch targets of at least 44px on mobile, and working segmented controls and theme switch.
+- **Decisions and data**: every `active` or `provisional` decision check in Section 9 passes, and every field in the screen's registry exists in its mockup. Every screen mockup also carries the Shell and Market ticker fields of Appendix A.
+- **Browser checks**: no horizontal overflow at 1440px, 1024px, 768px and 390px, text contrast of at least 4.5:1 (3:1 for large text) in both themes, measured on the rendered pixels behind each text box (so gradients and glass count), touch targets of at least 44px on mobile, and working segmented controls and theme switch.
+- **Explorations**: files in `design/explorations/` are unapproved design directions. They must obey every rule above and keep every field of their screen's registry, but they are exempt from the Decision Log checks until one direction is chosen. Decisions about an exploration use the scope prefix, for example `@dashboard-d-player-v2 dom: ...`.
+- **Frameless**: on a screen marked `data-frameless` the browser test fails on any element of at least 160x72px with a corner radius of 12px or more that also has a background, border or shadow, unless it is a glass island, the empty state card or the loading overlay.
 
-Process: the owner comments on a mockup, the assistant changes the mockup and, when a decision changes, updates Section 9 and Appendix A in the same change. The test run proves the three still agree.
+Process: the owner comments on a mockup, the assistant changes the mockup and, when a decision changes, updates Section 9 and the screen's registry in the same change. The test run proves the three still agree.
 
 ### Contrast Contract
 
@@ -780,7 +824,6 @@ These pairs are below 4.5:1. They may carry text only when it is at least 24px, 
 | OQ-1 | Which wordmark variants should Wrapped and shareable cards use? The values were lost from the source file. |
 | OQ-2 | Please confirm the reconstructed wording of Section 4.12 and of the repaired inline code in Section 8. |
 | OQ-3 | v9 Section 4.13 shows a portfolio selector pill at the top of the sidebar. The app has wallets, not portfolios. Keep a wallet filter there or drop it? |
-| OQ-4 | What scale should the ATH-distance gauge use (for example 0% to -50%, with the needle pinned beyond that)? |
 | OQ-5 | Should the Fear and Greed gauge mode from v9.0 return later? It is parked for now. |
 
 ## Appendix A. Screen Registry: Dashboard
@@ -848,7 +891,7 @@ Every row is a piece of information that the current Dashboard shows (source: `s
 | `gauge-daily` | Daily change gauge |
 | `gauge-benchmark-name` | Selected benchmark name |
 | `gauge-benchmark-pct` | Selected benchmark daily change |
-| `gauge-ath` | ATH distance gauge mode |
+| `gauge-ath` | ATH distance lake (D-032) |
 | `roast-message` | Roast comment |
 | `roast-reactions` | Good, Repetitive, Wrong and Boring feedback buttons |
 
@@ -899,9 +942,145 @@ Every row is a piece of information that the current Dashboard shows (source: `s
 | `bench-ohlc` | OHLC legend |
 | `bench-range` | 1D, YTD and 1Y range buttons |
 | `bench-type` | Line and Candle switch |
+| `intraday-comparison` | Portfolio vs benchmark since the open, minute by minute (D-029) |
+| `intraday-window` | Portfolio window: benchmark session or 24 hours |
+| `intraday-status` | Latest values of both lines and the 15-minute delay note |
 
 ### States
 | Field | Shows |
 | :--- | :--- |
 | `state-loading` | Candle loader state |
 | `state-empty` | Empty portfolio state |
+
+## Appendix B. Screen Registry: Wallets
+
+Every row is a piece of information or a control that the current Wallets screen offers (source: `src/index.html` and `src/scripts/manage.js`). The mockup `design/mockups/wallets.html` must expose each one as `data-field="<field>"`, together with the Shell and Market ticker fields of Appendix A. Removing a row requires an explicit decision in Section 9.
+
+### Wallet switcher and hero
+| Field | Shows |
+| :--- | :--- |
+| `wallet-switcher` | All wallets first, then each wallet with its total |
+| `wallet-create` | New wallet name, create button and validation message |
+| `wallet-name` | Selected wallet name |
+| `wallet-total` | Selected wallet total value |
+| `wallet-daily` | Today's change in PLN and % |
+| `wallet-annual-return` | Annualised return |
+| `wallet-ath` | Distance from the all-time high, ATH value and date |
+| `wallet-counts` | Number of holdings, cash positions and transactions |
+| `wallet-value-history` | Value history chart with deposit markers |
+| `wallet-allocation` | Allocation by holding, cash included |
+| `wallet-history-link` | Link to the wallet's transaction history |
+| `tx-open` | Opens the transaction form |
+
+### Holdings
+| Field | Shows |
+| :--- | :--- |
+| `holdings-view` | Active holdings or The Cemetery |
+| `holding-company` | Logo, company name and ticker |
+| `holding-realized` | Past realized profit or loss (AVCO) on a position still held |
+| `holding-units` | Shares held |
+| `holding-value` | Current value |
+| `holding-today` | Today's change in PLN and % |
+| `holding-alloc` | Share of the wallet |
+| `holding-actions` | Buy more and Sell, or the Cash tag |
+
+### The Cemetery
+| Field | Shows |
+| :--- | :--- |
+| `cemetery-count` | Number of closed positions and net realized result |
+| `cemetery-filter` | Show all, still held or closed |
+| `cemetery-asset` | Asset name, ticker and status |
+| `cemetery-lifespan` | Opened and closed dates and duration (sortable) |
+| `cemetery-return` | Total realized return in PLN and % (sortable) |
+
+### Quick entry
+| Field | Shows |
+| :--- | :--- |
+| `quick-entry-input` | Plain-language transaction input |
+| `quick-entry-examples` | Example phrases that fill the input |
+| `quick-entry-actions` | Full form and Save entry |
+| `quick-entry-status` | Parse result or error |
+
+### Wallet settings
+| Field | Shows |
+| :--- | :--- |
+| `wallet-settings` | Settings for the selected wallet |
+| `wallet-benchmark` | Benchmark used for comparisons |
+| `wallet-ath-setting` | Automatic ATH or a manual ATH date and value |
+| `wallet-rename` | Rename the wallet |
+| `wallet-delete` | Delete the wallet |
+
+### Transaction form
+| Field | Shows |
+| :--- | :--- |
+| `tx-type` | Buy, Sell, Deposit, Withdrawal or Dividend |
+| `tx-date` | Transaction date |
+| `tx-asset-search` | Source (Yahoo Finance or Polish TFI) and asset search results |
+| `tx-quantity` | Quantity with Max for sells |
+| `tx-price` | Price per share and currency |
+| `tx-total` | Trade value |
+| `tx-advanced` | Commission and comment |
+| `tx-auto-cash` | Add missing cash automatically before a buy |
+| `tx-review` | Review of type, asset, quantity, value and cash effect |
+| `tx-submit` | Cancel and Save |
+
+### States
+| Field | Shows |
+| :--- | :--- |
+| `wallets-loading` | Candle loader state |
+| `wallets-empty` | No wallets yet |
+
+## Appendix C. Screen Registry: History
+
+Every row is a piece of information or a control that the current History screen offers (source: `src/index.html`, `src/scripts/chart.js` and `src/scripts/monthly-audit.js`). The mockup `design/mockups/history.html` must expose each one as `data-field="<field>"`, together with the Shell and Market ticker fields of Appendix A. Removing a row requires an explicit decision in Section 9.
+
+### Overview
+| Field | Shows |
+| :--- | :--- |
+| `history-sections` | Overview and Summaries tabs |
+| `history-wallet-filter` | All wallets or a single wallet |
+| `history-range` | Shared time range for every chart |
+| `history-value` | Total value, gain in the range, invested capital, deposits and market gain |
+| `history-value-chart` | Value over time with invested capital and deposit markers |
+| `history-return-mode` | Return in % or PLN |
+| `history-benchmark-series` | Benchmarks drawn next to the portfolio |
+| `history-return-chart` | Cumulative return of the portfolio and benchmarks |
+| `history-monthly-metric` | Monthly gain or deposits |
+| `history-monthly-chart` | Monthly bars with best, worst and positive months |
+| `history-daily-mode` | Daily change in % or PLN |
+| `history-daily-chart` | Daily dots with best, worst, up days and the average |
+
+### Summaries
+| Field | Shows |
+| :--- | :--- |
+| `recap-period-type` | Monthly or yearly recaps |
+| `recap-month-picker` | Month timeline with each month's return, previous and next |
+| `recap-year-picker` | Year timeline with each year's return |
+| `recap-share` | Share the recap |
+| `recap-title` | Month and year |
+| `recap-headline` | One-line verdict on the month |
+| `recap-twr` | Time-weighted return for the month |
+| `recap-nominal` | Nominal change, net of deposits |
+| `recap-benchmarks` | Benchmark returns and the gap to each |
+| `recap-commentary` | Roast commentary |
+| `recap-numbers` | Three headline numbers: green sessions, carry share, best day |
+| `recap-journey` | Day-by-day portfolio vs benchmark with a day slider |
+| `recap-ath-status` | All-time high status in the month |
+| `recap-best-worst` | Best and worst day |
+| `recap-calendar` | Daily heatmap calendar |
+| `recap-movers` | Holdings that moved the month most |
+| `recap-goal` | Retirement goal progress |
+| `recap-avco` | Realized and unrealized gains, dividends, Belka tax estimate |
+| `recap-markets` | Major markets in the month |
+| `recap-seasonality` | How the same month did in previous years |
+| `recap-flows` | Deposits and withdrawals |
+| `recap-efficiency` | Efficiency leader and profit engine |
+| `recap-wallets` | Per-wallet return, deposits and change |
+| `recap-trading` | Turnover, buys and sells, largest transactions |
+| `recap-share-invite` | Poster preview, amounts switch, share and download |
+
+### States
+| Field | Shows |
+| :--- | :--- |
+| `history-loading` | Candle loader state |
+| `history-empty` | No history yet |

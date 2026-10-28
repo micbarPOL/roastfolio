@@ -39,7 +39,7 @@ case "$COMMAND" in
         ;;
     design)
         echo "🎨 Checking design system consistency (document, mockups, decisions, browser)..."
-        exec $PYTEST tests/test_design_system_doc.py tests/test_design_mockups_contract.py tests/test_design_mockups_browser.py "${@:2}"
+        exec $PYTEST tests/test_design_system_doc.py tests/test_design_mockups_contract.py tests/test_design_mockups_browser.py tests/test_ui20_dashboard_browser.py "${@:2}"
         ;;
     all)
         echo "🚀 Running all tests..."

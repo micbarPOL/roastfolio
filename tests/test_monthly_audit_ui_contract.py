@@ -12,8 +12,8 @@ def test_history_contains_podsumowania_subtab_and_monthly_audit_mount():
     assert '>Summaries<' in html
     assert 'id="monthly-audit-root"' in html
     assert 'scripts/monthly-audit.js' in html
-    assert 'styles/monthly-audit.css?v=20260915-interactive3' in html
-    assert 'scripts/manage.js?v=20260915-recap2' in html
+    assert 'styles/monthly-audit.css?v=15.3.1' in html
+    assert 'scripts/manage.js?v=15.3.1' in html
     assert html.count('scripts/user-profile.js?v=20260915-recap2') == 2
     assert html.index('scripts/monthly-audit-share.js') < html.index('scripts/monthly-audit.js')
 
@@ -42,6 +42,9 @@ def test_monthly_audit_renders_bento_sections_and_real_api_path():
     assert "fetchJson('/monthly-wraps')" in script
     assert "fetchJson(`/monthly-wraps?period=" in script
     assert "window.MONTHLY_WRAP_DATA" in script
+    assert "rc-nav" in script
+    assert "rc-poster" in script
+    assert "rc-invite" in script
     assert "Nominal change" in script
     assert "overall_nominal_change_pln" in script
     for number in range(1, 7):

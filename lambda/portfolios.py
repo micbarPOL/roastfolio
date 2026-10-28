@@ -18,6 +18,7 @@ import re
 import uuid
 import math
 import boto3
+from observability import instrument_table
 from boto3.dynamodb.conditions import Key
 from boto3.dynamodb.types import TypeSerializer
 from datetime import datetime, timezone
@@ -57,14 +58,14 @@ _MARKET_CURRENCY_BY_TICKER = {
 def _table():
     global _data_table
     if _data_table is None:
-        _data_table = boto3.resource("dynamodb").Table(_DATA_TABLE_NAME)
+        _data_table = instrument_table(boto3.resource("dynamodb").Table(_DATA_TABLE_NAME))
     return _data_table
 
 
 def _transactions_table():
     global _transactions_table_ref
     if _transactions_table_ref is None:
-        _transactions_table_ref = boto3.resource("dynamodb").Table(_TRANSACTIONS_TABLE_NAME)
+        _transactions_table_ref = instrument_table(boto3.resource("dynamodb").Table(_TRANSACTIONS_TABLE_NAME))
     return _transactions_table_ref
 
 
@@ -1273,11 +1274,35 @@ def calculate_xirr(cashflows: list[tuple[str, float]]) -> float:
         if not math.isfinite(r_new):
             return 0.0
         if r_new <= -1.0:
-            return -0.9999
+            # Newton overshot past -100%; solve on the valid domain instead.
+            return _xirr_bisect(amounts, years)
         if abs(r_new - r) < 1e-6:
             return r_new
         r = r_new
     return r
+
+
+def _xirr_bisect(amounts: list[float], years: list[float]) -> float:
+    def npv(rate: float) -> float:
+        return sum(a / ((1.0 + rate) ** y) for a, y in zip(amounts, years))
+
+    lo, hi = -0.9999, 10.0
+    try:
+        f_lo, f_hi = npv(lo), npv(hi)
+    except (OverflowError, ZeroDivisionError, ValueError):
+        return 0.0
+    if not (math.isfinite(f_lo) and math.isfinite(f_hi)) or f_lo * f_hi > 0:
+        return -0.9999 if f_lo < 0 and f_hi < 0 else 0.0
+    for _ in range(200):
+        mid = (lo + hi) / 2.0
+        f_mid = npv(mid)
+        if abs(f_mid) < 1e-9 or (hi - lo) < 1e-9:
+            return mid
+        if f_lo * f_mid < 0:
+            hi = mid
+        else:
+            lo, f_lo = mid, f_mid
+    return (lo + hi) / 2.0
 
 def extract_cashflows_from_transactions(txs: list[dict], as_of_date: str | None = None) -> list[tuple[str, float]]:
     cashflows = []

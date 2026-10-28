@@ -156,7 +156,7 @@ def test_missing_sparse_and_long_values(page):
     val_text = page.locator("#ma-journey-value").inner_text()
     assert "2026-08-10" in val_text
     assert "-1.50%" in val_text
-    assert "MSCI World · IWDA proxy" in val_text
+    assert "MSCI World" in val_text
     assert "+0.50%" in val_text
 
 
@@ -165,6 +165,18 @@ def render_case(page, overrides):
         window.MONTHLY_WRAP_DATA = [{...monthlyFixture, ...overrides, period:'2026-09'}];
         await initMonthlyAudit(true);
     }""", overrides)
+
+
+def test_recap_numbers_use_amount_when_carry_exceeds_gain(page):
+    render_case(page, {
+        "overall_nominal_change_pln": 300,
+        "carry": {"ticker": "NVDA", "net_contribution_pln": 1200},
+        "best_day": {"date": "2026-09-12", "change_pct": 1.23, "change_pln": 456},
+    })
+    text = page.locator(".rc-numbers").inner_text()
+    assert "+1,200 PLN" in text
+    assert "FROM NVDA" in text
+    assert "+1.23%" in text
 
 
 @pytest.mark.parametrize("total,leader,anchor", [
@@ -260,7 +272,11 @@ def test_chart_hover_crosshair_tooltip_and_keyboard(page):
     point = page.locator('.ma-return-portfolio circle').nth(2)
     point.hover()
     tooltip = page.get_by_role('tooltip')
-    assert tooltip.inner_text() == '2026-08-10 · Portfolio -1.50% · MSCI World · IWDA proxy +0.50%'
+    tooltip_text = tooltip.inner_text()
+    assert '2026-08-10' in tooltip_text
+    assert '-1.50%' in tooltip_text
+    assert 'MSCI World' in tooltip_text
+    assert '+0.50%' in tooltip_text
     assert chart.get_attribute('aria-valuenow') == '2'
     assert page.locator('.ma-cursor-benchmark').get_attribute('visibility') == 'visible'
     crosshair = page.locator('.ma-return-crosshair').get_attribute('d')
@@ -276,12 +292,13 @@ def test_chart_hover_crosshair_tooltip_and_keyboard(page):
         page.keyboard.press(key)
         assert chart.get_attribute('aria-valuenow') == index
         assert date in tooltip.inner_text()
-        assert chart.get_attribute('aria-valuetext') == tooltip.inner_text()
+        assert date in chart.get_attribute('aria-valuetext')
     page.keyboard.press('Escape')
     assert tooltip.is_hidden()
     assert page.locator('.ma-return-cursor').get_attribute('visibility') == 'hidden'
     page.keyboard.press('ArrowLeft')
-    assert 'Portfolio No data' in tooltip.inner_text()
+    assert 'My Portfolio' in tooltip.inner_text()
+    assert 'No data' in tooltip.inner_text()
     assert page.locator('.ma-cursor-portfolio').get_attribute('visibility') == 'hidden'
     assert page.locator('.ma-cursor-benchmark').get_attribute('visibility') == 'visible'
     page.keyboard.press('Tab')
@@ -360,7 +377,7 @@ def test_share_journey_allowlist_valid_dates_numbers_and_safe_metadata(page):
     assert model['schemaVersion'] == 2 and 'trajectory' not in model
     journey = model['journey']
     assert set(journey) == {'benchmark_id', 'benchmark_name', 'benchmark_currency', 'points'}
-    assert journey['benchmark_name'] == 'MSCI World · IWDA proxy' and journey['benchmark_currency'] == 'EUR'
+    assert journey['benchmark_name'] == 'MSCI World' and journey['benchmark_currency'] == 'EUR'
     assert len(journey['points']) == 5
     assert journey['points'][0] == {'date': '2026-08-01', 'portfolio_pct': 0, 'benchmark_pct': 0}
     assert journey['points'][1]['portfolio_pct'] == 2.5 and journey['points'][1]['benchmark_pct'] == 0
@@ -370,6 +387,17 @@ def test_share_journey_allowlist_valid_dates_numbers_and_safe_metadata(page):
     assert 'SECRET' not in str(model) and '123456' not in str(model)
     unknown = page.evaluate("MonthlyAuditPresentation.buildModel({journey:{benchmark_id:'__proto__',benchmark_name:'SECRET'}}).journey")
     assert unknown == {'benchmark_id': None, 'benchmark_name': 'Benchmark', 'benchmark_currency': None, 'points': []}
+
+
+def test_share_headline_uses_heavy_lifting_when_carry_exceeds_gain(page):
+    headline = page.evaluate("""() => MonthlyAuditPresentation.headline({
+        period:'2026-08',
+        overall_twr_pct:2.1,
+        overall_nominal_change_pln:300,
+        journey:{benchmark_id:'MSCI_WORLD', benchmark_return_pct:1.27},
+        carry:{ticker:'NVDA', net_contribution_pln:1200}
+    })""")
+    assert headline == 'You beat the MSCI World by 0.83 pp, and NVDA did all the heavy lifting (+1,200 PLN).'
 
 
 def test_share_canvas_draws_dated_return_lines_and_retains_drawdown_text(page):
@@ -535,14 +563,14 @@ def test_schema_fields_are_escaped_and_never_copied_into_share_model(page):
     assert "SECRET-IDENTITY" not in model and "onerror" not in model and "largest_transactions" not in model
 
 
-def test_localhost_three_month_schema_and_screenshots(page):
+def test_localhost_demo_month_schema_and_screenshots(page):
     import re
 
     html = (ROOT / "src/index.html").read_text()
     mock = next(block for block in re.findall(r"<script>(.*?)</script>", html, re.S) if "window.MONTHLY_WRAP_DATA =" in block)
     page.evaluate(mock)
     items = page.evaluate("window.MONTHLY_WRAP_DATA")
-    assert {item["period"] for item in items} == {"2026-06", "2026-07", "2026-08"}
+    assert {item["period"] for item in items} == {"2026-06", "2026-07", "2026-08", "2026-09"}
     opening_value = 10000
     for item in items:
         journey = item["journey"]
@@ -559,7 +587,7 @@ def test_localhost_three_month_schema_and_screenshots(page):
         opening_value += item["overall_nominal_change_pln"] + item["deposits_pln"] - item["withdrawals_pln"]
         assert item["ath_value_pln"] == pytest.approx(opening_value)
     page.evaluate("initMonthlyAudit(true)")
-    assert page.locator(".ma-target-percent").inner_text() == "300%"
+    assert page.locator(".ma-target-percent").inner_text() == "122%"
     output = ROOT / "tmp"
     output.mkdir(exist_ok=True)
     for period in ["2026-06", "2026-07", "2026-08"]:

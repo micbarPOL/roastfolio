@@ -666,3 +666,312 @@
 @media (prefers-reduced-motion: reduce) {
     #monthly-audit-root *, .monthly-share-dialog * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* History UI 20 recap layer */
+#monthly-audit-root .rc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: var(--space-4) 0 var(--space-6);
+}
+#monthly-audit-root { overflow-x: clip; }
+#monthly-audit-root .rc-kind {
+    align-self: flex-start;
+}
+#monthly-audit-root .rc-soon {
+    margin-left: 6px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: var(--bg-surface-3);
+    color: var(--text-secondary);
+    font-size: 10px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+#monthly-audit-root .rc-strip-wrap {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
+}
+#monthly-audit-root .rc-strip {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding: 4px 28px;
+    scrollbar-width: none;
+    mask-image: linear-gradient(90deg, transparent, black 28px, black calc(100% - 28px), transparent);
+}
+#monthly-audit-root .rc-strip::-webkit-scrollbar { display: none; }
+#monthly-audit-root .rc-step,
+#monthly-audit-root .rc-period {
+    border: 1px solid var(--border-subtle);
+    background: transparent;
+    color: var(--text-primary);
+}
+#monthly-audit-root .rc-step {
+    width: 44px;
+    border-radius: 50%;
+    font-size: 24px !important;
+}
+#monthly-audit-root .rc-period {
+    position: relative;
+    flex: 0 0 auto;
+    display: grid;
+    gap: 2px;
+    min-width: 112px;
+    padding: 8px 14px;
+    border-radius: 18px;
+    text-align: left;
+}
+#monthly-audit-root .rc-period.is-active {
+    border-color: var(--accent-primary);
+    background: var(--accent-glow);
+}
+#monthly-audit-root .rc-period span {
+    color: var(--text-primary);
+    font-size: var(--fs-sm);
+    font-weight: 800;
+}
+#monthly-audit-root .rc-period strong {
+    font-size: var(--fs-xs);
+}
+#monthly-audit-root .rc-year-mark {
+    color: var(--text-secondary) !important;
+    font-size: 10px !important;
+    letter-spacing: .08em;
+}
+#monthly-audit-root .rc-live-dot {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-success);
+}
+#monthly-audit-root .rc-poster {
+    color: var(--recap-ink, #1c2c22) !important;
+    background: var(--recap-flat, #d4caf2) !important;
+}
+#monthly-audit-root .rc-poster[data-mood="up"] { background: var(--recap-up, #d0f5b0) !important; }
+#monthly-audit-root .rc-poster[data-mood="down"] { background: var(--recap-down, #f2c5b0) !important; }
+#monthly-audit-root .rc-poster .ma-cover-edition,
+#monthly-audit-root .rc-poster .ma-cover-story,
+#monthly-audit-root .rc-poster .monthly-audit-hero-result span,
+#monthly-audit-root .rc-poster .ma-hero-benchmarks-title,
+#monthly-audit-root .rc-poster .ma-hero-benchmark-label {
+    color: var(--recap-ink-soft, #344634) !important;
+}
+#monthly-audit-root .rc-poster h1,
+#monthly-audit-root .rc-poster .ma-wordmark,
+#monthly-audit-root .rc-poster .monthly-audit-hero-result strong,
+#monthly-audit-root .rc-poster .ma-hero-benchmark-val {
+    color: var(--recap-ink, #1c2c22) !important;
+}
+#monthly-audit-root .rc-spark {
+    width: min(260px, 100%);
+    flex: 0 0 240px;
+}
+#monthly-audit-root .rc-spark-zero {
+    stroke: color-mix(in srgb, var(--recap-ink, #1c2c22) 18%, transparent);
+    stroke-width: 1;
+}
+#monthly-audit-root .rc-spark-portfolio,
+#monthly-audit-root .rc-spark-benchmark {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+#monthly-audit-root .rc-spark-portfolio {
+    stroke: var(--recap-ink, #1c2c22);
+    stroke-width: 4;
+}
+#monthly-audit-root .rc-spark-benchmark {
+    stroke: var(--recap-ink-soft, #344634);
+    stroke-width: 2.5;
+    stroke-dasharray: 7 5;
+}
+#monthly-audit-root .rc-sticker {
+    position: absolute;
+    right: clamp(18px, 4vw, 56px);
+    top: clamp(130px, 22vw, 220px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 116px;
+    height: 116px;
+    border: 2px solid var(--recap-ink, #1c2c22);
+    border-radius: 50%;
+    color: var(--recap-ink, #1c2c22);
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1.05;
+    text-align: center;
+    transform: rotate(-9deg);
+}
+#monthly-audit-root .rc-sticker span {
+    max-width: 74px;
+    letter-spacing: .08em;
+}
+#monthly-audit-root .rc-sticker strong {
+    display: block;
+    margin-top: 5px;
+    font-size: 20px;
+    letter-spacing: -.04em;
+}
+#monthly-audit-root .monthly-audit-hero-commentary {
+    margin-top: 26px;
+    padding-left: 18px;
+    border-left: 2px solid color-mix(in srgb, var(--recap-ink, #1c2c22) 36%, transparent);
+    color: var(--recap-ink-soft, #344634);
+    font-style: italic;
+}
+#monthly-audit-root .rc-numbers {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+    border-block: 1px solid var(--border-subtle);
+    padding-block: var(--space-4);
+}
+#monthly-audit-root .rc-numbers div {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+}
+#monthly-audit-root .rc-numbers span,
+#monthly-audit-root .rc-numbers small {
+    flex-basis: 100%;
+    color: var(--text-secondary);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+#monthly-audit-root .rc-numbers strong {
+    color: var(--text-primary);
+    font-size: clamp(1.5rem, 3vw, 2.4rem);
+    letter-spacing: -.04em;
+}
+#monthly-audit-root .rc-grid {
+    counter-reset: rc-chapter;
+}
+#monthly-audit-root .rc-grid .monthly-audit-card {
+    counter-increment: rc-chapter;
+    padding-inline: 0;
+    background: transparent;
+    border-radius: 0;
+    border-inline: 0;
+    border-top: 0;
+    border-bottom: 1px solid var(--ma-border);
+    box-shadow: none;
+}
+#monthly-audit-root .rc-grid .monthly-audit-card header::before {
+    content: counter(rc-chapter, decimal-leading-zero);
+    color: var(--ma-muted);
+    font-weight: 900;
+    letter-spacing: .08em;
+}
+#monthly-audit-root .rc-invite {
+    display: grid;
+    grid-template-columns: minmax(160px, 240px) minmax(0, 1fr);
+    gap: clamp(24px, 5vw, 64px);
+    align-items: center;
+    margin-top: var(--space-6);
+    padding-block: var(--space-6);
+    border-top: 1px solid var(--border-subtle);
+}
+#monthly-audit-root .rc-mini-poster {
+    display: grid;
+    gap: var(--space-3);
+    aspect-ratio: 4 / 5;
+    padding: var(--space-5);
+    border-radius: 24px;
+    background: var(--recap-flat, #d4caf2);
+    color: var(--recap-ink, #1c2c22);
+    transform: rotate(-5deg);
+}
+#monthly-audit-root .rc-mini-poster[data-mood="up"] { background: var(--recap-up, #d0f5b0); }
+#monthly-audit-root .rc-mini-poster[data-mood="down"] { background: var(--recap-down, #f2c5b0); }
+#monthly-audit-root .rc-mini-poster span { font-weight: 700; }
+#monthly-audit-root .rc-mini-poster strong { align-self: end; font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -.07em; }
+#monthly-audit-root .rc-mini-poster small,
+#monthly-audit-root .rc-mini-poster em { color: var(--recap-ink-soft, #344634); font-style: normal; }
+#monthly-audit-root .rc-invite-copy {
+    display: grid;
+    gap: var(--space-3);
+}
+#monthly-audit-root .rc-invite-copy h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    letter-spacing: -.05em;
+}
+#monthly-audit-root .rc-invite-copy p {
+    margin: 0;
+    color: var(--text-secondary);
+}
+#monthly-audit-root .rc-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: max-content;
+    color: var(--text-primary);
+    font-weight: 700;
+}
+#monthly-audit-root .rc-switch input {
+    width: 44px;
+    height: 24px;
+    appearance: none;
+    border-radius: 999px;
+    background: var(--bg-surface-3);
+}
+#monthly-audit-root .rc-switch input::before {
+    content: "";
+    display: block;
+    width: 18px;
+    height: 18px;
+    margin: 3px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    transition: transform 180ms var(--ease-hover), background-color 180ms var(--ease-hover);
+}
+#monthly-audit-root .rc-switch input:checked {
+    background: var(--accent-glow);
+}
+#monthly-audit-root .rc-switch input:checked::before {
+    transform: translateX(20px);
+    background: var(--accent-primary);
+}
+#monthly-audit-root .rc-invite-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+#monthly-audit-root .rc-invite-actions .btn-primary {
+    border-color: transparent !important;
+    background: var(--accent-primary, #0099ff) !important;
+    color: #fff !important;
+}
+#monthly-audit-root .rc-invite-actions .btn-quiet {
+    border: 1px solid var(--border-subtle) !important;
+    background: var(--accent-glow, transparent) !important;
+    color: var(--text-primary) !important;
+}
+#monthly-audit-root .ma-market-verdict {
+    align-items: flex-start;
+}
+@media (max-width: 768px) {
+    #monthly-audit-root .rc-strip-wrap { grid-template-columns: 44px minmax(0, 1fr) 44px; }
+    #monthly-audit-root .rc-numbers,
+    #monthly-audit-root .rc-invite { grid-template-columns: 1fr; }
+    #monthly-audit-root .rc-poster { position: relative; padding-bottom: 88px !important; }
+    #monthly-audit-root .rc-poster h1 { max-width: calc(100% - 118px); }
+    #monthly-audit-root .rc-sticker { top: 76px; right: 18px; width: 94px; height: 94px; margin-top: 0; font-size: 8px; }
+    #monthly-audit-root .rc-sticker strong { font-size: 16px; }
+    #monthly-audit-root .ma-share-button { position: absolute; left: 24px; right: 24px; bottom: 22px; width: auto; justify-content: center; order: 3; }
+    #monthly-audit-root .ma-cover-top { flex-wrap: wrap; }
+    #monthly-audit-root .rc-invite-actions .btn { width: 100%; min-height: 44px; }
+    #monthly-audit-root .ma-market-verdict { display: grid; gap: 8px; }
+}

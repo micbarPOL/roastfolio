@@ -37,6 +37,9 @@ from decimal import Decimal
 import boto3
 import yfinance as yf
 from boto3.dynamodb.conditions import Key
+from observability import instrument_table, instrument_yahoo_module
+
+yf = instrument_yahoo_module(yf, "benchmark_history")
 
 SNAPSHOTS_TABLE = os.environ.get("SNAPSHOTS_TABLE", "")
 
@@ -49,7 +52,7 @@ _BENCHMARK_PK = "__benchmarks__"
 def _table():
     region = os.environ.get("AWS_REGION", "eu-central-1")
     ddb = boto3.resource("dynamodb", region_name=region)
-    return ddb.Table(SNAPSHOTS_TABLE)
+    return instrument_table(ddb.Table(SNAPSHOTS_TABLE))
 
 
 def _sk(benchmark_id: str, ym: str) -> str:

@@ -114,3 +114,7 @@ def test_deterministic_fallback_when_ai_disabled(mock_get_user, mock_latest, moc
             assert result["mainReason"] == "System error"
             assert result["telemetry"]["source"] == "deterministic_fallback"
             assert result["telemetry"]["fallbackReason"] == "all templates too similar"
+            assert result["selectionContext"]["scenario"]["scenarioKey"] == result["scenarioKey"]
+            assert result["selectionContext"]["scenarioInput"]["portfolio_return"] == 5.0
+            assert result["selectionContext"]["templateCriteria"]["intensity"] == "gentle"
+            assert result["selectionContext"]["templateSelection"]["fallbackReason"] == "all templates too similar"

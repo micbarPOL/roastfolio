@@ -1,0 +1,126 @@
+/* Direction D "Player v2": hero from C, frameless layout. No cards, no borders around areas, no shadows.
+   Space and hairlines separate sections. Rounded shapes remain only for chips, pills, buttons, avatars and floating islands. */
+
+/* Text sits directly on the canvas, so the fixed page glow would lower contrast under scrolled content. The hero carries its own glow. */
+body { background: var(--bg-canvas); }
+
+.d-main { padding-bottom: calc(112px + var(--space-5)); }
+.d-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; column-gap: 64px; align-items: start; }
+.col-main { display: flex; flex-direction: column; gap: 64px; min-width: 0; }
+.col-rail { display: flex; flex-direction: column; gap: 56px; min-width: 0; padding-top: var(--space-6); }
+[data-o] { animation: rise var(--dur-slow) var(--ease-enter) both; }
+
+.eyebrow { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
+.eyebrow .status-light { margin-right: 0; }
+.section-title { display: flex; align-items: center; margin: 0; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); }
+.section-title .status-light { margin-right: var(--space-2); }
+.section-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-4); }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; isolation: isolate; padding: var(--space-6) 0 0; }
+.hero::before { content: ""; position: absolute; z-index: -1; inset: -40px calc(-1 * var(--space-3)) 0 calc(-1 * var(--space-3)); pointer-events: none;
+  mask-image: radial-gradient(ellipse 62% 50% at 28% 50%, black 15%, transparent 100%);
+  background: radial-gradient(60% 85% at 15% 0%, color-mix(in srgb, var(--accent-primary) 26%, transparent), transparent 72%),
+              radial-gradient(40% 60% at 95% 10%, color-mix(in srgb, var(--color-purple) 16%, transparent), transparent 70%); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 48px; align-items: end; }
+.hero-copy { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.hero-roast { min-height: 0; padding: 0; border: 0; border-radius: 0; max-width: 26ch; font-size: clamp(1.6rem, 2.7vw, 2.4rem); font-weight: 800; line-height: 1.15; letter-spacing: -0.02em; color: var(--text-primary); }
+.hero-roast::after { content: none; }
+.hero-roast .roast-message { font-size: inherit; color: var(--text-primary); }
+.hero-tap { margin-top: var(--space-3); font-size: var(--fs-xs); font-weight: 600; color: var(--text-secondary); }
+.hero .roast-reactions { padding: 0; }
+.hero-figures { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-4); }
+.hero-total { margin: 0; font-size: clamp(2.25rem, 4.4vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+.hero-deltas { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.d-gauge { padding: 0; align-items: center; gap: var(--space-2); text-align: center; overflow: visible; }
+.d-gauge .eyebrow { align-self: flex-start; }
+.d-gauge .gauge-svg { width: 100%; max-width: 260px; }
+.gauge-lead { margin-top: var(--space-2); font-size: var(--fs-sm); font-weight: 600; }
+.hero .ath-celebration { margin-top: var(--space-5); }
+.hero-chips { margin-top: var(--space-6); flex-wrap: nowrap; }
+
+.ath-celebration { background: none; border: 0; border-radius: 0; border-left: 3px solid var(--color-success); padding: var(--space-2) var(--space-4); }
+.ath-breakout { display: block; width: 120px; height: 40px; }
+.ath-ceiling { stroke: var(--text-muted); stroke-dasharray: 3 3; }
+.ath-spark { fill: none; stroke: var(--color-success); stroke-width: 2; stroke-dasharray: 100; stroke-dashoffset: 100; animation: ath-draw 900ms var(--ease-enter) forwards; }
+@keyframes ath-draw { to { stroke-dashoffset: 0; } }
+.hero .card-cl-overlay, .bench-chart .card-cl-overlay { background: color-mix(in srgb, var(--bg-canvas) 88%, transparent); border-radius: 0; }
+
+/* ---------- Benchmark chart ---------- */
+.bench .section-head { align-items: flex-start; }
+.bench-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.bench .bench-chart { border-radius: 0; }
+.bench-foot { margin-top: var(--space-3); }
+
+/* ---------- ATH and last six months ---------- */
+.ath-six { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; }
+.ath-part .section-title, .six-part .section-title { margin-bottom: var(--space-4); }
+.ath-wrap { display: flex; flex-direction: column; gap: var(--space-4); }
+.ath-lake { width: 210px; height: 140px; border-radius: 0; overflow: hidden; }
+.lake-bed { fill: none; }
+.ath-lake svg { mask-image: linear-gradient(to right, transparent, black 18%, black 82%, transparent); }
+.six-part .bars6 { height: 150px; }
+
+/* ---------- Summary ---------- */
+.summary .period-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 40px; }
+.bm-list { padding: 0; border: 0; border-radius: 0; }
+
+/* ---------- Rail: movers and accounts ---------- */
+.m-list, .wallet-list { display: flex; flex-direction: column; }
+.m-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; grid-template-areas: "logo main nums" "logo chart nums"; align-items: start; gap: 6px var(--space-3); padding: 12px 0; border-top: 1px solid var(--border-subtle); color: inherit; text-decoration: none; }
+.m-row:first-child { border-top: 0; }
+.m-row > :first-child { grid-area: logo; }
+.m-row .mover-logo, .m-row .logo-fallback { width: 36px; height: 36px; border-radius: 50%; }
+.m-main { grid-area: main; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.m-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--space-2); font-size: var(--fs-xs); color: var(--text-secondary); }
+.m-sub small { font-size: var(--fs-xs); color: var(--text-secondary); }
+.m-row .mover-chart { grid-area: chart; }
+.m-row .mover-chart svg { width: 100%; max-width: 160px; height: 28px; }
+.m-nums { grid-area: nums; display: flex; flex-direction: column; align-items: flex-end; font-size: var(--fs-sm); font-weight: 700; }
+.m-pln { font-size: var(--fs-md); }
+
+.wallet-card { border: 0; border-radius: 0; border-top: 1px solid var(--border-subtle); transition: none; }
+.wallet-card:first-child { border-top: 0; }
+.wallet-toggle { padding: var(--space-3) 0; }
+.wallet-dial { width: 64px; }
+.wallet-more { padding: 0 0 var(--space-3); }
+
+/* ---------- Floating player (a pill, not a card) ---------- */
+.d-player { position: fixed; z-index: 35; left: calc(var(--sb) + var(--space-4)); right: var(--space-4); bottom: var(--space-4); max-width: 560px; margin-inline: auto; display: flex; align-items: center; gap: var(--space-4); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3); border-radius: 999px; }
+.d-player-text { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.25; }
+.d-player-total { font-size: var(--fs-md); font-weight: 800; }
+.d-player-say { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-xs); color: var(--text-secondary); }
+.d-player .pill-delta { flex: none; }
+.d-player-top { text-decoration: none; transition: transform var(--dur-fast) var(--ease-hover); }
+body[data-state="empty"] .d-player { display: none; }
+
+@media (max-width: 1099px) {
+  .d-page { grid-template-columns: minmax(0, 1fr); row-gap: 56px; }
+  .col-main, .col-rail { display: contents; }
+  [data-o="1"] { order: 1; } [data-o="2"] { order: 2; } [data-o="3"] { order: 3; } [data-o="4"] { order: 4; } [data-o="5"] { order: 5; } [data-o="6"] { order: 6; }
+}
+@media (max-width: 899px) {
+  .hero-grid { grid-template-columns: minmax(0, 1fr) 220px; gap: var(--space-4); }
+  .ath-six { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+}
+@media (max-width: 767px) {
+  .d-main { padding-bottom: calc(var(--bottom-tabs-h) + 112px); }
+  .d-page { row-gap: 44px; }
+  .hero { padding-top: var(--space-4); }
+  .hero-chips { margin-top: var(--space-5); }
+  .d-player { left: var(--space-3); right: var(--space-3); bottom: calc(var(--bottom-tabs-h) + var(--space-2)); gap: var(--space-3); }
+  /* Phone hero: the roast and the gauge sit side by side, the figures span underneath */
+  .hero-grid { grid-template-columns: minmax(0, 1fr) 148px; grid-template-areas: "say gauge" "roast gauge" "fig fig"; align-items: start; gap: var(--space-3); }
+  .hero-copy { display: contents; }
+  .hero-copy > .eyebrow { grid-area: say; }
+  .hero-copy > .hero-roast { grid-area: roast; }
+  .hero-copy > .roast-reactions { grid-column: 1 / -1; }
+  .hero-copy > .hero-figures { grid-area: fig; }
+  .d-gauge { grid-area: gauge; }
+}
+@media (hover: hover) {
+  .m-row:hover .mover-name { color: var(--accent-primary); }
+  .wallet-card:hover { transform: none; }
+  .d-player-top:hover { transform: translateY(-2px); }
+}

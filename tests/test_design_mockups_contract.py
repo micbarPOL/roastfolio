@@ -15,10 +15,11 @@ import design_system as ds  # noqa: E402
 
 pytestmark = pytest.mark.design
 
-MOCKUP_FILES = sorted(ds.MOCKUPS.glob("*.html"))
+MOCKUP_FILES = sorted(ds.MOCKUPS.glob("*.html")) + sorted(ds.EXPLORATIONS.glob("*.html"))
 FORBIDDEN_ANIMATED = {"width", "height", "margin", "padding", "top", "left", "right", "bottom",
                       "min-width", "min-height", "max-width", "max-height", "all"}
 TIME_MIN_MS, TIME_MAX_MS = 150, 300
+ENTRANCE_MAX_MS = 1200  # D-034: one-shot data entrances (finite, fill forwards/both)
 FINANCIAL = re.compile(r"[+\-−]?\d[\d\s\u00a0]*[.,]\d+|\d\s*%|\d[\d\s\u00a0]*\s?(?:PLN|USD|EUR)\b|\d{4}-\d{2}-\d{2}")
 COLOR_PROPS = {"color", "background", "background-color", "border-color", "border", "border-left", "border-right",
                "border-top", "border-bottom", "fill", "stroke", "outline", "outline-color", "box-shadow",
@@ -128,9 +129,9 @@ def test_no_hardcoded_colours(mock):
 
 @pytest.mark.parametrize("mock", mockups())
 def test_every_custom_property_is_a_token_or_declared_locally(mock):
-    used = set(re.findall(r"var\(\s*(--[\w-]+)", mock.own_css))
+    used = set(re.findall(r"var\(\s*(--[\w-]+)\s*\)", mock.own_css))
     for _, style in mock.inline_styles():
-        used |= set(re.findall(r"var\(\s*(--[\w-]+)", style))
+        used |= set(re.findall(r"var\(\s*(--[\w-]+)\s*\)", style))
     unknown = sorted(used - set(mock.tokens) - mock.declared_custom_props())
     assert not unknown, f"undefined custom properties: {unknown}"
 
@@ -179,21 +180,27 @@ def test_transition_and_finite_animation_durations_are_150_to_300ms(mock):
         for prop, value in rule.declarations:
             resolved = mock.resolve(value)
             durations = []
+            if resolved.strip() == "none":
+                continue
             if prop == "transition":
                 durations = [next((to_ms(w) for w in words(layer) if to_ms(w) is not None), None) for layer in split_top(resolved, ",")]
             elif prop == "transition-duration":
                 durations = [to_ms(p) for p in split_top(resolved, ",")]
             elif prop == "animation":
                 for layer in split_top(resolved, ","):
-                    if "infinite" not in words(layer):
-                        durations.append(next((to_ms(w) for w in words(layer) if to_ms(w) is not None), None))
+                    if "infinite" in words(layer):
+                        continue
+                    ms = next((to_ms(w) for w in words(layer) if to_ms(w) is not None), None)
+                    if ms is not None and {"forwards", "both"} & set(words(layer)) and TIME_MIN_MS <= ms <= ENTRANCE_MAX_MS:
+                        continue
+                    durations.append(ms)
             elif prop == "animation-duration" and "infinite" not in mock.resolve(
                     next((v for p, v in rule.declarations if p == "animation-iteration-count"), "")):
                 durations = [to_ms(p) for p in split_top(resolved, ",")]
             for ms in durations:
                 if ms is None or not TIME_MIN_MS <= ms <= TIME_MAX_MS:
                     problems.append(f"{rule.selector} {prop}: {value} resolves to {ms}ms")
-    assert not problems, f"durations must be {TIME_MIN_MS}-{TIME_MAX_MS}ms (Section 4.14.A):\n" + "\n".join(problems)
+    assert not problems, f"durations must be {TIME_MIN_MS}-{TIME_MAX_MS}ms, or up to {ENTRANCE_MAX_MS}ms for one-shot entrances (Section 4.14.A, D-034):\n" + "\n".join(problems)
 
 
 @pytest.mark.parametrize("mock", mockups())
@@ -270,8 +277,8 @@ def decision_params():
 
 
 def mockup_for(scope):
-    path = ds.MOCKUPS / f"{scope}.html"
-    assert path.exists(), f"decision targets the '{scope}' mockup, which does not exist yet"
+    path = next((d / f"{scope}.html" for d in (ds.MOCKUPS, ds.EXPLORATIONS) if (d / f"{scope}.html").exists()), None)
+    assert path is not None, f"decision targets the '{scope}' mockup, which does not exist yet"
     return Mockup(path)
 
 
@@ -292,14 +299,31 @@ def test_decision_check_passes(decision):
         assert re.search(arg, mock.all_css), f"CSS does not match /{arg}/. {where}"
 
 
-def test_dashboard_mockup_contains_every_registered_field():
-    mock = Mockup(ds.MOCKUPS / "dashboard.html")
-    missing = [f for f in ds.dashboard_fields() if not mock.soup.select(f'[data-field="{f}"]')]
-    assert not missing, f"information the current dashboard shows is missing from the mockup: {missing}"
+def screen_of(mock):
+    """'dashboard-c-player' -> 'dashboard'; 'wallets' -> 'wallets'."""
+    return mock.path.stem.split("-")[0]
 
 
-def test_dashboard_mockup_has_no_unregistered_fields():
-    mock = Mockup(ds.MOCKUPS / "dashboard.html")
+@pytest.mark.parametrize("mock", mockups())
+def test_mockup_contains_every_registered_field(mock):
+    missing = [f for f in ds.screen_fields(screen_of(mock)) if not mock.soup.select(f'[data-field="{f}"]')]
+    assert not missing, f"information the current {screen_of(mock)} screen shows is missing from the mockup: {missing}"
+
+
+@pytest.mark.parametrize("mock", mockups())
+def test_mockup_has_no_unregistered_fields(mock):
     present = {t["data-field"] for t in mock.soup.find_all(attrs={"data-field": True})}
-    extra = sorted(present - set(ds.dashboard_fields()))
-    assert not extra, f"fields in the mockup but not in Appendix A (register them or remove them): {extra}"
+    extra = sorted(present - set(ds.screen_fields(screen_of(mock))))
+    assert not extra, f"fields in the mockup but not in its screen registry (register them or remove them): {extra}"
+
+
+def test_there_are_three_dashboard_directions():
+    assert len(list(ds.EXPLORATIONS.glob("dashboard-*.html"))) >= 3
+
+
+@pytest.mark.parametrize("mock", [m for m in mockups() if "data-frameless" in m.values[0].html])
+def test_frameless_screens_do_not_use_card_classes(mock):
+    used = {c for tag in mock.soup.find_all(class_=True) for c in tag["class"]}
+    assert not used & {"x-card", "panel", "b-card", "glass-card"}, "frameless screens must not use card containers"
+    assert not [r.selector for r in mock.rules if r.selector.startswith((".d-", ".hero", ".m-", ".wallet-card")) and
+                any(p == "box-shadow" and v != "none" for p, v in r.declarations)], "frameless screens must not use shadows"

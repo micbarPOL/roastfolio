@@ -1,4 +1,5 @@
 import boto3
+from observability import instrument_table
 import os
 import uuid
 from datetime import datetime, timezone, timedelta
@@ -9,13 +10,14 @@ TABLE_NAME = os.environ.get('ROAST_EVENTS_TABLE', 'dev-roastfolio-roast-events')
 dynamodb = boto3.resource('dynamodb')
 
 def get_table():
-    return dynamodb.Table(TABLE_NAME)
+    return instrument_table(dynamodb.Table(TABLE_NAME))
 
 VALID_EVENTS = {
     "roast_displayed", 
     "roast_copied", 
     "roast_reacted_positive", 
     "roast_reacted_negative", 
+    "roast_fallback_displayed",
     "roast_hidden", 
     "roast_regenerated"
 }
@@ -57,6 +59,10 @@ def record_event(payload: dict) -> dict:
         "bestAsset": payload.get("bestAsset"),
         "worstAsset": payload.get("worstAsset")
     }
+
+    for key in ("scenarioGroup", "outcomeType", "severity", "commentaryMode", "fallbackReason", "selectionContext"):
+        if key in payload:
+            item[key] = payload[key]
     
     if payload.get("reaction"):
         item["reaction"] = payload.get("reaction")

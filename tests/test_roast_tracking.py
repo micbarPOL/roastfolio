@@ -36,6 +36,35 @@ def test_record_event_valid(monkeypatch):
     assert res["templateId"] == "T-100"
     assert mock_table.called
 
+
+def test_fallback_and_wrong_reaction_events_persist_selection_context(monkeypatch):
+    class CapturingTable(MockTable):
+        def __init__(self):
+            super().__init__()
+            self.items = []
+
+        def put_item(self, Item):
+            self.called = True
+            self.items.append(Item)
+
+    table = CapturingTable()
+    monkeypatch.setattr(roast_tracking, "get_table", lambda: table)
+    selection_context = {"scenario": {"scenarioKey": "BOTH_NEGATIVE_USER_WORSE"}, "templateCriteria": {"intensity": "sarcastic"}}
+
+    fallback = roast_tracking.record_event({
+        "userId": "user-1", "eventType": "roast_fallback_displayed", "source": "deterministic_fallback",
+        "scenarioKey": "BOTH_NEGATIVE_USER_WORSE", "selectionContext": selection_context,
+    })
+    wrong = roast_tracking.record_event({
+        "userId": "user-1", "eventType": "roast_reacted_negative", "reaction": "wrong",
+        "scenarioKey": "BOTH_NEGATIVE_USER_WORSE", "selectionContext": selection_context,
+    })
+
+    assert fallback["eventType"] == "roast_fallback_displayed"
+    assert wrong["reaction"] == "wrong"
+    assert table.items[0]["selectionContext"] == selection_context
+    assert table.items[1]["selectionContext"] == selection_context
+
 def test_record_event_invalid_type():
     payload = {
         "eventType": "invalid_event"

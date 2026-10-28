@@ -1,10 +1,18 @@
 const _historyCharts = {};
 let _historyLoadPromise = null;
 let _cachedHistoryData = null;
-let _historyRange = 'ALL';
+let _historyRange = '1Y';
 let _historyReturnMode = 'pct';
 let _historyMonthlyMetric = 'gain'; // 'gain' | 'deposit'
+let _historyDailyMode = 'pct';
 let _historyWalletKey = 'summary'; // 'summary' | wallet name
+const _historyBenchmarks = [
+    { id: 'WIG', label: 'WIG', color: '#f59e0b' },
+    { id: 'SP500', label: 'S&P 500', color: '#a855f7' },
+    { id: 'MSCI_WORLD', label: 'MSCI World', color: '#6a8ba8' },
+];
+const _historySelectedBenchmarks = new Set(['WIG']);
+const _historyBenchmarkCache = new Map();
 function _chartTextColor() {
     return (typeof window.isRoastfolioDark === 'function' && !window.isRoastfolioDark()) ? '#102033' : '#e2e8f0';
 }
@@ -17,6 +25,39 @@ function _chartGridColor(strong = false) {
 
 function _chartDotColor() {
     return (typeof window.isRoastfolioDark === 'function' && !window.isRoastfolioDark()) ? 'rgba(0, 126, 160, 0.82)' : 'rgba(168,216,234,0.82)';
+}
+
+function _cssVar(name, fallback) {
+    const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    return value || fallback;
+}
+
+function _isCompatibleLivePoint(rows, liveValue) {
+    const value = Number(liveValue);
+    if (!Number.isFinite(value) || value <= 0 || !rows || !rows.length) return false;
+    const latest = Number(rows[rows.length - 1].value || 0);
+    if (!Number.isFinite(latest) || latest <= 0) return true;
+    const ratio = value / latest;
+    return ratio >= 0.55 && ratio <= 1.45;
+}
+
+function _fmtHistoryMoney(value, showSign = false) {
+    if (value == null || value === '' || !Number.isFinite(Number(value))) return '—';
+    const amount = Number(value);
+    const sign = amount < 0 ? '-' : showSign && amount > 0 ? '+' : '';
+    return `${sign}${Math.abs(amount).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
+}
+
+function _fmtHistoryPct(value, showSign = false, digits = 2) {
+    if (value == null || value === '' || !Number.isFinite(Number(value))) return '—';
+    const amount = Number(value);
+    const sign = showSign && amount > 0 ? '+' : '';
+    return `${sign}${amount.toLocaleString('en-GB', { minimumFractionDigits: digits, maximumFractionDigits: digits })}%`;
+}
+
+function _historyTone(value) {
+    const n = Number(value);
+    return n > 0 ? 'up' : n < 0 ? 'down' : '';
 }
 
 function _destroyHistoryChart(canvasId) {
@@ -211,7 +252,7 @@ function _renderWalletBtns(walletNames) {
     strip.innerHTML = all.map(key => {
         const label = key === 'summary' ? 'Total' : key;
         const active = key === _historyWalletKey;
-        return `<button class="history-wallet-btn${active ? ' is-active' : ''}" data-wallet-key="${key}" onclick="setHistoryWallet('${key}')">${label}</button>`;
+        return `<button class="history-wallet-btn hx-chip${active ? ' is-active' : ''}" type="button" role="tab" aria-selected="${active ? 'true' : 'false'}" data-wallet-key="${key}" onclick="setHistoryWallet('${key.replace(/'/g, "\\'")}')">${label}</button>`;
     }).join('');
 }
 
@@ -232,7 +273,7 @@ async function _loadHistorySnapshots(force = false) {
 
         const [summaryResp, ...walletResps] = snapshotCalls;
         let summaryRows = _sortSnapshotsAscending(summaryResp?.snapshots || []);
-        if (typeof window !== 'undefined' && window.PORTFOLIO_TOTAL_VALUE) {
+        if (typeof window !== 'undefined' && window.PORTFOLIO_TOTAL_VALUE && _isCompatibleLivePoint(summaryRows, window.PORTFOLIO_TOTAL_VALUE)) {
             const now = new Date();
             const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
             const hasToday = summaryRows.some(d => d.date === todayStr);
@@ -278,7 +319,7 @@ async function _loadHistorySnapshots(force = false) {
             let walletRows = _sortSnapshotsAscending(walletResps[index]?.snapshots || []);
             const walletSummary = window.WALLET_SUMMARIES && window.WALLET_SUMMARIES[name];
             const liveWalletVal = walletSummary && walletSummary.total != null ? Number(walletSummary.total) : null;
-            if (typeof window !== 'undefined' && liveWalletVal != null) {
+            if (typeof window !== 'undefined' && liveWalletVal != null && _isCompatibleLivePoint(walletRows, liveWalletVal)) {
                 const now = new Date();
                 const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
                 const hasToday = walletRows.some(d => d.date === todayStr);
@@ -388,7 +429,13 @@ function _filterHistoryRowsWithAnchor(rows, range) {
 
 function _setHistoryButtonState(selector, attrName, value) {
     document.querySelectorAll(selector).forEach(button => {
-        button.classList.toggle('active', button.getAttribute(attrName) === value);
+        const active = button.getAttribute(attrName) === value;
+        button.classList.toggle('active', active);
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-selected', String(active));
+        if (button.getAttribute('role') === 'tab') {
+            button.tabIndex = active ? 0 : -1;
+        }
     });
 }
 
@@ -471,83 +518,29 @@ function _makeLineChart(canvasId, data, compact, athInfo = null, activeRows = nu
 
     const datasets = [
         {
-            label: 'Portfolio Value',
+            label: 'Value',
             data: data.map(d => d.value),
-            borderColor: '#7db7d9',
-            backgroundColor: 'rgba(125,183,217,0.08)',
-            borderWidth: compact ? 1.5 : 2,
+            borderColor: _cssVar('--accent-primary', '#2b88cf'),
+            backgroundColor: 'rgba(43, 136, 207, 0.14)',
+            borderWidth: compact ? 1.5 : 2.5,
             pointRadius: 0,
             pointHoverRadius: 4,
             tension: 0.15,
+            fill: true,
         },
         {
-            label: 'Investment',
+            label: 'Invested capital',
             data: data.map(d => d.investment),
-            borderColor: '#d8b4d8',
-            backgroundColor: 'rgba(216,180,216,0.08)',
-            borderWidth: compact ? 1.5 : 2,
+            borderColor: _cssVar('--text-muted', '#6a8ba8'),
+            backgroundColor: 'transparent',
+            borderWidth: compact ? 1.2 : 1.5,
+            borderDash: [6, 5],
             pointRadius: 0,
             pointHoverRadius: 4,
             tension: 0.15,
+            fill: false,
         },
     ];
-
-    // Add all historical ATH peaks as points
-    const athPeaksData = data.map(d => d.isAthPeak ? d.value : null);
-    const hasPeaks = athPeaksData.some(v => v !== null);
-
-    if (hasPeaks) {
-        datasets.push({
-            label: 'ATH Peaks',
-            data: athPeaksData,
-            backgroundColor: context => {
-                const index = context.dataIndex;
-                if (index === undefined || !data[index]) return 'rgba(255, 200, 50, 0.5)';
-                return data[index].date === starDate ? 'rgba(255, 200, 50, 0.95)' : 'rgba(255, 200, 50, 0.5)';
-            },
-            borderColor: context => {
-                const index = context.dataIndex;
-                if (index === undefined || !data[index]) return 'rgba(220, 140, 0, 0.7)';
-                return data[index].date === starDate ? 'rgba(220, 140, 0, 1)' : 'rgba(220, 140, 0, 0.7)';
-            },
-            borderWidth: compact ? 1.5 : 2,
-            pointRadius: context => {
-                const index = context.dataIndex;
-                if (index === undefined || !data[index] || !data[index].isAthPeak) return 0;
-                return data[index].date === starDate ? (compact ? 6 : 9) : (compact ? 3.5 : 5.5);
-            },
-            pointHoverRadius: context => {
-                const index = context.dataIndex;
-                if (index === undefined || !data[index] || !data[index].isAthPeak) return 0;
-                return data[index].date === starDate ? (compact ? 8 : 11) : (compact ? 5.5 : 7.5);
-            },
-            pointStyle: context => {
-                const index = context.dataIndex;
-                if (index === undefined || !data[index]) return 'circle';
-                return data[index].date === starDate ? 'star' : 'circle';
-            },
-            showLine: false,
-            spanGaps: false,
-            order: 9,
-        });
-    }
-
-    if (absoluteLastAthValue != null) {
-        // Horizontal dashed ATH reference line
-        datasets.push({
-            label: 'ATH',
-            data: data.map(() => absoluteLastAthValue),
-            borderColor: 'rgba(255, 200, 50, 0.7)',
-            backgroundColor: 'transparent',
-            borderWidth: compact ? 1 : 1.5,
-            borderDash: [5, 4],
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            tension: 0,
-            fill: false,
-            order: 10,
-        });
-    }
 
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'line',
@@ -560,19 +553,11 @@ function _makeLineChart(canvasId, data, compact, athInfo = null, activeRows = nu
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: {
-                    display: !compact,
-                    position: 'top',
-                    labels: { filter: item => item.text !== 'ATH Peaks', color: _chartTextColor() },
-                },
+                legend: { display: false },
                 tooltip: {
-                    filter: item => item.dataset.label !== 'ATH Peaks',
                     callbacks: {
                         title: ctx => 'Date: ' + ctx[0].label,
                         label: ctx => {
-                            if (ctx.dataset.label === 'ATH') {
-                                return 'Current ATH: ' + Number(ctx.parsed.y || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
-                            }
                             return ctx.dataset.label + ': ' + Number(ctx.parsed.y || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' PLN';
                         },
                         afterBody: items => {
@@ -621,8 +606,10 @@ function _makeMonthlyReturnsChart(canvasId, data, metric = 'gain') {
         const delta = metric === 'deposit' ? investmentDelta : netGain;
         labels.push(months[i]);
         values.push(delta);
-        colors.push(delta >= 0 ? 'rgba(190, 229, 207, 0.95)' : 'rgba(244, 199, 194, 0.95)');
+        colors.push(delta >= 0 ? _cssVar('--color-success', '#10b981') : _cssVar('--color-danger', '#ef4444'));
     }
+
+    _renderMonthlyStats(labels, values, metric);
 
     const metricLabel = metric === 'deposit' ? 'Monthly Net Deposits (PLN)' : 'Monthly Net Gain (PLN)';
     const valueLabel = metric === 'deposit' ? 'Net deposits' : 'Net gain';
@@ -635,8 +622,8 @@ function _makeMonthlyReturnsChart(canvasId, data, metric = 'gain') {
                 label: metricLabel,
                 data: values,
                 backgroundColor: colors,
-                borderColor: colors.map(c => c.includes('190, 229, 207') ? 'rgba(147, 196, 169, 1)' : 'rgba(225, 160, 152, 1)'),
-                borderWidth: 1,
+                borderColor: colors,
+                borderWidth: 0,
                 borderRadius: 3,
             }],
         },
@@ -645,7 +632,7 @@ function _makeMonthlyReturnsChart(canvasId, data, metric = 'gain') {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: false, labels: { color: _chartTextColor() } },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
                         title: ctx => {
@@ -676,6 +663,128 @@ function _makeMonthlyReturnsChart(canvasId, data, metric = 'gain') {
                 },
             },
         },
+    });
+}
+
+function _renderHistoryHero(rows, anchoredRows) {
+    const last = rows && rows.length ? rows[rows.length - 1] : null;
+    const first = anchoredRows && anchoredRows.length ? anchoredRows[0] : null;
+    const rangeFirst = rows && rows.length ? rows[0] : first;
+    const total = last ? Number(last.value || 0) : null;
+    const invested = last ? Number(last.investment || 0) : null;
+    const deposits = last && first ? Number((Number(last.investment || 0) - Number(first.investment || 0)).toFixed(2)) : null;
+    const gain = last && first ? Number(((Number(last.value || 0) - Number(first.value || 0)) - (Number(last.investment || 0) - Number(first.investment || 0))).toFixed(2)) : null;
+    let gainPct = null;
+    if (last && first) {
+        const lastTwr = _resolveTwrPct(last);
+        const firstTwr = _resolveTwrPct(first);
+        if (lastTwr != null && firstTwr != null) {
+            const base = 1 + firstTwr / 100;
+            if (base > 0) gainPct = ((1 + lastTwr / 100) / base - 1) * 100;
+        } else if (Number(rangeFirst?.value || 0) > 0) {
+            gainPct = gain / Number(rangeFirst.value) * 100;
+        }
+    }
+    const walletLabel = _historyWalletKey === 'summary' ? 'Total' : _historyWalletKey;
+    const rangeLabels = { ALL: 'all time', '5Y': 'in the last 5 years', '3Y': 'in the last 3 years', '1Y': 'in the last year', YTD: 'year to date', '1M': 'this month', '1W': 'this week' };
+    const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+    setText('history-hero-wallet', walletLabel);
+    setText('history-hero-total', _fmtHistoryMoney(total));
+    setText('history-hero-gain', _fmtHistoryMoney(gain, true));
+    setText('history-hero-gain-pct', _fmtHistoryPct(gainPct, true));
+    setText('history-hero-range', rangeLabels[_historyRange] || 'selected range');
+    setText('history-hero-invested', _fmtHistoryMoney(invested));
+    setText('history-hero-deposits', _fmtHistoryMoney(deposits, true));
+    setText('history-hero-market', _fmtHistoryMoney(gain, true));
+    ['history-hero-gain-pill', 'history-hero-gain-pct', 'history-hero-market'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.toggle('up', Number(gain) > 0);
+        el.classList.toggle('down', Number(gain) < 0);
+    });
+}
+
+function _renderMonthlyStats(labels, values, metric) {
+    const root = document.getElementById('history-monthly-stats');
+    if (!root) return;
+    const valid = values.map((value, index) => ({ value: Number(value), label: labels[index] })).filter(item => Number.isFinite(item.value));
+    if (!valid.length) { root.innerHTML = ''; return; }
+    const best = valid.reduce((a, b) => b.value > a.value ? b : a, valid[0]);
+    const worst = valid.reduce((a, b) => b.value < a.value ? b : a, valid[0]);
+    const positives = valid.filter(item => item.value > 0).length;
+    const monthLabel = label => {
+        const [year, month] = String(label).split('-').map(Number);
+        return Number.isFinite(year) && Number.isFinite(month) ? new Date(year, month - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : label;
+    };
+    root.innerHTML = [
+        ['Best', _fmtHistoryMoney(best.value, true), monthLabel(best.label), _historyTone(best.value)],
+        ['Worst', _fmtHistoryMoney(worst.value, true), monthLabel(worst.label), _historyTone(worst.value)],
+        [metric === 'deposit' ? 'Positive flows' : 'Positive months', `${positives}/${valid.length}`, '', positives ? 'up' : ''],
+    ].map(([label, value, detail, tone]) => `<span class="hx-stat ${tone || ''}"><small>${label}</small><strong>${value}</strong>${detail ? `<em>${detail}</em>` : ''}</span>`).join('');
+}
+
+function _renderDailyStats(changes, mode) {
+    const root = document.getElementById('history-daily-stats');
+    if (!root) return;
+    const values = changes.filter(item => Number.isFinite(Number(mode === 'pct' ? item.pct : item.pnl)));
+    if (!values.length) { root.innerHTML = ''; return; }
+    const valueFor = item => Number(mode === 'pct' ? item.pct : item.pnl);
+    const best = values.reduce((a, b) => valueFor(b) > valueFor(a) ? b : a, values[0]);
+    const worst = values.reduce((a, b) => valueFor(b) < valueFor(a) ? b : a, values[0]);
+    const upDays = values.filter(item => valueFor(item) > 0).length;
+    const avg = values.reduce((sum, item) => sum + valueFor(item), 0) / values.length;
+    const fmt = value => mode === 'pct' ? _fmtHistoryPct(value, true) : _fmtHistoryMoney(value, true);
+    root.innerHTML = [
+        ['Best', fmt(valueFor(best)), best.date, 'up'],
+        ['Worst', fmt(valueFor(worst)), worst.date, 'down'],
+        ['Up days', `${upDays}/${values.length}`, '', 'up'],
+        ['Average', fmt(avg), '', _historyTone(avg)],
+    ].map(([label, value, detail, tone]) => `<span class="hx-stat ${tone || ''}"><small>${label}</small><strong>${value}</strong>${detail ? `<em>${detail}</em>` : ''}</span>`).join('');
+}
+
+async function _loadHistoryBenchmark(id) {
+    if (_historyBenchmarkCache.has(id)) return _historyBenchmarkCache.get(id);
+    if (!window.PortfolioClient) return { daily: [], name: id };
+    try {
+        let payload = PortfolioClient.getBenchmarkDaily ? await PortfolioClient.getBenchmarkDaily(id, false) : null;
+        let daily = Array.isArray(payload?.daily) ? payload.daily : [];
+        if (!daily.length && PortfolioClient.getBenchmarkReturns) {
+            const monthly = await PortfolioClient.getBenchmarkReturns(id);
+            const rows = Array.isArray(monthly?.returns) ? [...monthly.returns].reverse() : [];
+            let close = null;
+            daily = rows.map(row => {
+                if (Number.isFinite(Number(row.closePrice))) close = Number(row.closePrice);
+                return { t: `${row.month}-01`, c: close };
+            }).filter(row => row.c != null);
+        }
+        const entry = { daily, name: payload?.name || _historyBenchmarks.find(item => item.id === id)?.label || id };
+        _historyBenchmarkCache.set(id, entry);
+        return entry;
+    } catch (error) {
+        console.warn('[history] Failed to load benchmark series', id, error);
+        const entry = { daily: [], name: id };
+        _historyBenchmarkCache.set(id, entry);
+        return entry;
+    }
+}
+
+function _alignBenchmarkSeries(points, labels) {
+    const sorted = (points || [])
+        .map(point => ({ date: String(point.t || point.date || '').slice(0, 10), price: Number(point.c ?? point.close ?? point.value) }))
+        .filter(point => /^\d{4}-\d{2}-\d{2}$/.test(point.date) && Number.isFinite(point.price) && point.price > 0)
+        .sort((a, b) => a.date.localeCompare(b.date));
+    if (!sorted.length) return labels.map(() => null);
+    let cursor = 0;
+    let lastPrice = null;
+    let firstPrice = null;
+    return labels.map(label => {
+        while (cursor < sorted.length && sorted[cursor].date <= label) {
+            lastPrice = sorted[cursor].price;
+            cursor += 1;
+        }
+        if (firstPrice == null && lastPrice != null) firstPrice = lastPrice;
+        if (firstPrice == null || lastPrice == null) return null;
+        return Number(((lastPrice / firstPrice - 1) * 100).toFixed(2));
     });
 }
 
@@ -722,52 +831,46 @@ function _makeDailyChangeChart(canvasId, data, mode) {
         changes.push({ date: curr.date, pnl: netPln, pct: netPct });
     }
 
-    const labels = changes.map(item => item.date);
-    const values = changes.map(item => mode === 'pct' ? item.pct : item.pnl);
-    const scatterData = values.map(value => {
-        if (value === null) return null;
-        const threshold = mode === 'pct' ? 0.1 : 200;
-        return Math.abs(value) < threshold ? null : value;
-    });
-    const scatterColors = values.map(value => {
-        if (value === null) return 'transparent';
-        const threshold = mode === 'pct' ? 0.1 : 200;
-        return Math.abs(value) < threshold ? 'transparent' : _chartDotColor();
-    });
-    const maWindow = 14;
-    const maData = values.map((_, index) => {
-        if (index < maWindow - 1) return null;
-        const slice = values.slice(index - maWindow + 1, index + 1).filter(v => v !== null);
-        if (slice.length === 0) return null;
-        const avg = slice.reduce((sum, value) => sum + value, 0) / slice.length;
-        return Number(avg.toFixed(mode === 'pct' ? 3 : 2));
-    });
+    const visibleChanges = changes.slice(-90);
+    _renderDailyStats(visibleChanges, mode);
+    const labels = visibleChanges.map(item => item.date);
+    const values = visibleChanges.map(item => mode === 'pct' ? item.pct : item.pnl);
+    const finiteValues = values.filter(value => Number.isFinite(Number(value))).map(Number);
+    const best = finiteValues.length ? Math.max(...finiteValues) : null;
+    const worst = finiteValues.length ? Math.min(...finiteValues) : null;
+    const avg = finiteValues.length ? finiteValues.reduce((sum, value) => sum + value, 0) / finiteValues.length : null;
+    const scatterData = values.map((value, index) => value === null ? null : { x: labels[index], y: Number(value) });
+    const scatterColors = values.map(value => Number(value) >= 0 ? 'rgba(16, 185, 129, 0.78)' : 'rgba(239, 68, 68, 0.78)');
+    const scatterRadius = values.map(value => value === best || value === worst ? 6 : 3.4);
+    const scatterBorder = values.map(value => value === best || value === worst ? 8 : 0);
+    const avgData = avg == null ? [] : labels.map(label => ({ x: label, y: Number(avg.toFixed(mode === 'pct' ? 3 : 2)) }));
 
     _historyCharts[canvasId] = new Chart(canvas, {
-        type: 'line',
+        type: 'scatter',
         data: {
-            labels,
             datasets: [
                 {
                     label: mode === 'pct' ? 'Daily % Change' : 'Daily PLN Change',
                     data: scatterData,
                     backgroundColor: scatterColors,
-                    borderColor: 'transparent',
-                    pointRadius: 3,
-                    pointHoverRadius: 5,
+                    borderColor: values.map(value => value === best ? 'rgba(16, 185, 129, 0.18)' : value === worst ? 'rgba(239, 68, 68, 0.18)' : 'transparent'),
+                    borderWidth: scatterBorder,
+                    pointRadius: scatterRadius,
+                    pointHoverRadius: values.map(value => value === best || value === worst ? 8 : 5),
                     showLine: false,
                     spanGaps: false,
                 },
                 {
-                    label: '14-day MA',
-                    data: maData,
+                    label: 'Average',
+                    type: 'line',
+                    data: avgData,
                     borderColor: 'rgba(119, 132, 148, 0.9)',
                     backgroundColor: 'transparent',
-                    borderWidth: mode === 'pct' ? 2 : 1,
+                    borderWidth: 1.5,
                     borderDash: [6, 3],
                     pointRadius: 0,
                     fill: false,
-                    tension: 0.3,
+                    tension: 0,
                     spanGaps: true,
                 },
             ],
@@ -777,10 +880,10 @@ function _makeDailyChangeChart(canvasId, data, mode) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: true, labels: { filter: item => item.text === '14-day MA', color: _chartTextColor() } },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        title: ctx => 'Date: ' + ctx[0].label,
+                        title: ctx => 'Date: ' + (ctx[0]?.raw?.x || ctx[0]?.label || ''),
                         label: ctx => {
                             const value = ctx.parsed.y;
                             if (value == null || Number.isNaN(value)) return null;
@@ -791,15 +894,19 @@ function _makeDailyChangeChart(canvasId, data, mode) {
                 },
             },
             scales: {
-                x: { type: 'category', ticks: { maxTicksLimit: 10, maxRotation: 45, color: _chartTextColor(), callback: _historyXAxisCallback }, grid: { color: _chartGridColor() } },
+                x: { type: 'category', labels, ticks: { maxTicksLimit: 8, maxRotation: 45, color: _chartTextColor(), callback: _historyXAxisCallback }, grid: { color: _chartGridColor() } },
                 y: mode === 'pct'
                     ? {
-                        title: { display: true, text: 'Daily % Change', color: _chartTextColor() },
+                        suggestedMin: finiteValues.length ? Math.min(...finiteValues) - Math.max(0.2, (Math.max(...finiteValues) - Math.min(...finiteValues)) * 0.12) : undefined,
+                        suggestedMax: finiteValues.length ? Math.max(...finiteValues) + Math.max(0.2, (Math.max(...finiteValues) - Math.min(...finiteValues)) * 0.12) : undefined,
+                        title: { display: false },
                         ticks: { callback: value => (value >= 0 ? '+' : '') + Number(value).toFixed(1) + '%', color: _chartTextColor() },
                         grid: { color: ctx => ctx.tick.value === 0 ? _chartGridColor(true) : _chartGridColor() },
                     }
                     : {
-                        title: { display: true, text: 'Daily PLN Change', color: _chartTextColor() },
+                        suggestedMin: finiteValues.length ? Math.min(...finiteValues) - Math.max(100, (Math.max(...finiteValues) - Math.min(...finiteValues)) * 0.12) : undefined,
+                        suggestedMax: finiteValues.length ? Math.max(...finiteValues) + Math.max(100, (Math.max(...finiteValues) - Math.min(...finiteValues)) * 0.12) : undefined,
+                        title: { display: false },
                         ticks: { callback: value => (value >= 0 ? '+' : '') + _fmtMoneyTick(value), color: _chartTextColor() },
                         grid: { color: ctx => ctx.tick.value === 0 ? _chartGridColor(true) : _chartGridColor() },
                     },
@@ -808,7 +915,7 @@ function _makeDailyChangeChart(canvasId, data, mode) {
     });
 }
 
-function _makeCumulativeReturnChart(canvasId, data, mode) {
+async function _makeCumulativeReturnChart(canvasId, data, mode) {
     if (!data || !data.length) {
         _setChartMessage(canvasId, 'No snapshot history yet.');
         return;
@@ -846,28 +953,57 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
         }
     }
 
+    const datasets = [{
+        label: mode === 'pln' ? 'Portfolio return (PLN)' : 'Portfolio return (%)',
+        data: returns,
+        borderColor: '#7db7d9',
+        backgroundColor: 'rgba(125,183,217,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        tension: 0.15,
+        fill: true,
+    }];
+
+    if (mode === 'pct') {
+        const selected = _historyBenchmarks.filter(item => _historySelectedBenchmarks.has(item.id));
+        for (const bm of selected) {
+            const entry = await _loadHistoryBenchmark(bm.id);
+            const series = _alignBenchmarkSeries(entry.daily, labels);
+            const chip = document.querySelector(`[data-history-benchmark="${bm.id}"]`);
+            const empty = !series.some(value => value != null);
+            if (chip) {
+                chip.toggleAttribute('data-empty', empty);
+                chip.title = empty ? `No ${bm.label} data for this range` : '';
+            }
+            if (empty) continue;
+            datasets.push({
+                label: entry.name || bm.label,
+                data: series,
+                borderColor: bm.color,
+                backgroundColor: 'transparent',
+                borderWidth: 1.8,
+                borderDash: [6, 4],
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                tension: 0.12,
+                fill: false,
+            });
+        }
+    }
+
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'line',
         data: {
             labels,
-            datasets: [{
-                label: mode === 'pln' ? 'Cumulative Return (PLN)' : 'Cumulative Return (%)',
-                data: returns,
-                borderColor: '#7db7d9',
-                backgroundColor: 'rgba(125,183,217,0.08)',
-                borderWidth: 2.5,
-                pointRadius: 0,
-                pointHoverRadius: 4,
-                tension: 0.15,
-                fill: true,
-            }],
+            datasets,
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             plugins: {
-                legend: { display: true, position: 'top', labels: { color: _chartTextColor() } },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
                         title: ctx => ctx[0].label,
@@ -881,12 +1017,12 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
                 x: { ticks: { maxTicksLimit: 10, maxRotation: 45, color: _chartTextColor(), callback: _historyXAxisCallback }, grid: { color: _chartGridColor() } },
                 y: mode === 'pln'
                     ? {
-                        title: { display: true, text: 'Return (PLN)', color: _chartTextColor() },
+                        title: { display: false },
                         ticks: { callback: value => (value >= 0 ? '+' : '') + _fmtMoneyTick(value), color: _chartTextColor() },
                         grid: { color: ctx => ctx.tick.value === 0 ? _chartGridColor(true) : _chartGridColor() },
                     }
                     : {
-                        title: { display: true, text: 'Return (%)', color: _chartTextColor() },
+                        title: { display: false },
                         ticks: { callback: value => (value >= 0 ? '+' : '') + Number(value).toFixed(0) + '%', color: _chartTextColor() },
                         grid: { color: ctx => ctx.tick.value === 0 ? _chartGridColor(true) : _chartGridColor() },
                     },
@@ -896,7 +1032,7 @@ function _makeCumulativeReturnChart(canvasId, data, mode) {
 }
 
 async function renderHistoryTab(force = false) {
-    const chartIds = ['investmentChart', 'monthlyReturnsChart', 'returnsChart', 'dailyChangeChart', 'dailyPLNChart'];
+    const chartIds = ['investmentChart', 'monthlyReturnsChart', 'returnsChart', 'dailyChangeChart'];
     const startedAt = performance.now();
     chartIds.forEach(_showHistoryChartLoader);
 
@@ -913,6 +1049,10 @@ async function renderHistoryTab(force = false) {
         _setHistoryButtonState('[data-history-range]', 'data-history-range', _historyRange);
         _setHistoryButtonState('[data-history-return-mode]', 'data-history-return-mode', _historyReturnMode);
         _setHistoryButtonState('[data-history-monthly-metric]', 'data-history-monthly-metric', _historyMonthlyMetric);
+        _setHistoryButtonState('[data-history-daily-mode]', 'data-history-daily-mode', _historyDailyMode);
+        document.getElementById('history-return-pln-note')?.toggleAttribute('hidden', _historyReturnMode !== 'pln');
+        const series = document.getElementById('history-benchmark-series');
+        if (series) series.hidden = _historyReturnMode === 'pln';
 
         // Pick data source based on selected wallet
         const isTotal = _historyWalletKey === 'summary';
@@ -925,11 +1065,11 @@ async function renderHistoryTab(force = false) {
         const strategy = _getResamplingStrategy(_historyRange, filteredMain.map(r => r.date));
         const resampledMain = _resampleHistoryRows(filteredMain, strategy);
 
+        _renderHistoryHero(filteredMain, anchoredMain);
         _makeLineChart('investmentChart', resampledMain, false, activeAth, activeRows);
         _makeMonthlyReturnsChart('monthlyReturnsChart', anchoredMain, _historyMonthlyMetric);
-        _makeCumulativeReturnChart('returnsChart', resampledMain, _historyReturnMode);
-        _makeDailyChangeChart('dailyChangeChart', anchoredMain, 'pct');
-        _makeDailyChangeChart('dailyPLNChart', anchoredMain, 'pln');
+        await _makeCumulativeReturnChart('returnsChart', resampledMain, _historyReturnMode);
+        _makeDailyChangeChart('dailyChangeChart', anchoredMain, _historyDailyMode);
     } catch (error) {
         console.warn('Failed to render history tab from live snapshots:', error);
         chartIds.forEach(id => _setChartMessage(id, error.message || 'Could not load snapshot history.'));
@@ -950,7 +1090,10 @@ window.setHistoryWallet = function setHistoryWallet(key) {
     _historyWalletKey = key || 'summary';
     // Update button active state immediately for snappy feel
     document.querySelectorAll('.history-wallet-btn').forEach(btn => {
-        btn.classList.toggle('is-active', btn.dataset.walletKey === _historyWalletKey);
+        const active = btn.dataset.walletKey === _historyWalletKey;
+        btn.classList.toggle('is-active', active);
+        btn.setAttribute('aria-selected', String(active));
+        btn.tabIndex = active ? 0 : -1;
     });
     renderHistoryTab().catch(error => console.warn('Failed to switch history wallet:', error));
 };
@@ -966,6 +1109,21 @@ window.setHistoryMonthlyMetric = function setHistoryMonthlyMetric(mode) {
     _historyMonthlyMetric = mode === 'deposit' ? 'deposit' : 'gain';
     renderHistoryTab().catch(error => console.warn('Failed to update monthly history metric:', error));
 };
+window.setHistoryDailyMode = function setHistoryDailyMode(mode) {
+    _historyDailyMode = mode === 'pln' ? 'pln' : 'pct';
+    renderHistoryTab().catch(error => console.warn('Failed to update daily history metric:', error));
+};
+
+document.addEventListener('click', function(event) {
+    const button = event.target && event.target.closest ? event.target.closest('[data-history-benchmark]') : null;
+    if (!button) return;
+    const id = button.getAttribute('data-history-benchmark');
+    if (!id) return;
+    if (_historySelectedBenchmarks.has(id)) _historySelectedBenchmarks.delete(id);
+    else _historySelectedBenchmarks.add(id);
+    button.setAttribute('aria-pressed', String(_historySelectedBenchmarks.has(id)));
+    renderHistoryTab().catch(error => console.warn('Failed to update benchmark series:', error));
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     renderHistoryTab().catch(error => console.warn('Failed to initialize history tab:', error));

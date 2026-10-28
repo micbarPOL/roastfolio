@@ -33,6 +33,13 @@
   --color-purple: #a855f7;     /* Gamification / Coping Diary / Hypotheses */
   --color-purple-bg: rgba(168, 85, 247, 0.12);
 
+  /* Recap poster (theme-independent, D-047): pastel mood paper with dark ink */
+  --recap-up: #d0f5b0;         /* Month up: lime paper */
+  --recap-down: #f2c5b0;       /* Month down: peach paper */
+  --recap-flat: #d4caf2;       /* Flat or no data: lavender paper */
+  --recap-ink: #1c2c22;        /* Poster text and line work */
+  --recap-ink-soft: #344634;   /* Poster captions, 6.4:1 or better on every paper */
+
   /* Borders & Shadows (Dark) */
   --border-subtle: rgba(74, 159, 212, 0.12);
   --border-strong: rgba(74, 159, 212, 0.25);

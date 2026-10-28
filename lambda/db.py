@@ -40,6 +40,7 @@ GSI1  email-index
 
 import os
 import boto3
+from observability import instrument_table
 from boto3.dynamodb.conditions import Key
 from datetime import datetime, timezone
 
@@ -50,7 +51,7 @@ _dynamodb    = None   # lazy singleton
 def _table():
     global _dynamodb
     if _dynamodb is None:
-        _dynamodb = boto3.resource("dynamodb").Table(_TABLE_NAME)
+        _dynamodb = instrument_table(boto3.resource("dynamodb").Table(_TABLE_NAME))
     return _dynamodb
 
 

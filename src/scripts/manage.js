@@ -35,6 +35,8 @@
   let _walletStickyCondensed = false;
   let _walletScreenInitPromise = null;
   let _walletSelectionPromise = null;
+  let _transactionPanelOpener = null;
+  let _transactionSheetBound = false;
   const _companyLogos = {
     'XTB': 'data/logos/xtb.png',
     'RAINBOW (RBW)': 'data/logos/RAINBOW.png',
@@ -137,7 +139,16 @@
 
   function _liveHoldingsFor(portfolio) {
     if (!portfolio) return [];
-    if (_isSummaryPortfolio(portfolio.portfolioId)) return (typeof window !== 'undefined' && window.PORTFOLIO_DATA) || [];
+    if (_isSummaryPortfolio(portfolio.portfolioId)) {
+      const summaryRows = (typeof window !== 'undefined' && window.WALLET_HOLDINGS && window.WALLET_HOLDINGS.Summary) || [];
+      if (summaryRows.length) return summaryRows;
+      const portfolioRows = (typeof window !== 'undefined' && window.PORTFOLIO_DATA) || [];
+      if (portfolioRows.length) return portfolioRows;
+      if (typeof window === 'undefined' || !window.WALLET_HOLDINGS) return [];
+      return Object.entries(window.WALLET_HOLDINGS)
+        .filter(([key]) => String(key).toLowerCase() !== 'summary')
+        .flatMap(([, rows]) => rows || []);
+    }
     if (typeof WALLET_HOLDINGS === 'undefined' || !WALLET_HOLDINGS) return [];
 
     const candidates = _walletLookupKeysFor(portfolio);
@@ -208,6 +219,15 @@
     const num = Number(value || 0);
     const sign = num > 0 ? '+' : '';
     return `${sign}${num.toFixed(2)}%`;
+  }
+
+  function _fmtAnnualReturn(value) {
+    const raw = Number(value);
+    if (!Number.isFinite(raw) || raw === 0) return '—';
+    // Backend XIRR is a fraction (0.1234 = 12.34%).
+    const pct = raw * 100;
+    const sign = pct > 0 ? '+' : '';
+    return `${sign}${pct.toFixed(2)}%`;
   }
 
   function _fmtSignedMoney(value) {
@@ -632,6 +652,7 @@
         const isActive = chip.dataset.id === activeId;
         chip.classList.toggle('is-active', isActive);
         chip.setAttribute('aria-selected', isActive);
+        chip.tabIndex = isActive ? 0 : -1;
       });
       const activeChip = chipsEl.querySelector('.wallet-chip.is-active');
       if (activeChip) activeChip.scrollIntoView({ block: 'nearest', inline: 'start', behavior: 'smooth' });
@@ -854,7 +875,10 @@
       wrap.setAttribute('aria-hidden', _createComposerOpen ? 'false' : 'true');
       wrap.classList.toggle('is-open', _createComposerOpen);
     }
-    if (btn) btn.textContent = _createComposerOpen ? 'Done' : '+ Wallet';
+    if (btn) {
+      btn.setAttribute('aria-expanded', _createComposerOpen ? 'true' : 'false');
+      btn.innerHTML = _createComposerOpen ? '<span>Done</span>' : '<span aria-hidden="true">+</span><span>New wallet</span>';
+    }
     if (_createComposerOpen) {
       setTimeout(() => {
         const input = document.getElementById('mgmt-new-port-name');
@@ -910,7 +934,7 @@
   }
 
   function _syncTransactionsPanel() {
-    const overlay = document.getElementById('mgmt-transaction-overlay');
+    const card = document.getElementById('wallet-transaction-card');
     const tradeView = document.getElementById('mgmt-overlay-trade');
     const overlayTitle = document.getElementById('mgmt-overlay-title');
     const openTradeBtn = document.getElementById('mgmt-qe-open-trade-btn');
@@ -926,29 +950,67 @@
       openTradeBtn.classList.toggle('is-disabled', isSummary);
       openTradeBtn.textContent = isSummary ? 'Summary is read only' : 'New transaction';
     }
-    if (overlay) overlay.dataset.mode = 'trade';
+    if (card) {
+      card.dataset.mode = _transactionsPanelMode;
+      card.setAttribute('aria-hidden', card.style.display === 'none' ? 'true' : 'false');
+    }
+  }
+
+  function _bindTransactionSheet() {
+    if (_transactionSheetBound) return;
+    _transactionSheetBound = true;
+    const backdrop = document.querySelector('#tab-wallets .sheet-backdrop');
+    if (backdrop) backdrop.addEventListener('click', closeTransactionsPanel);
+    window.addEventListener('keydown', (event) => {
+      if (!_isTransactionsPanelOpen()) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeTransactionsPanel();
+        return;
+      }
+      if (event.key === 'Tab') {
+        const card = document.getElementById('wallet-transaction-card');
+        const focusables = Array.from(card ? card.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') : [])
+          .filter((el) => !el.disabled && el.offsetParent !== null);
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    });
   }
 
   function openTransactionsPanel(mode = 'trade') {
     const card = document.getElementById('wallet-transaction-card');
     if (!card) return;
+    if (_isSummaryPortfolio(_activePortId) && mode !== 'history') return;
     
     _transactionsPanelMode = mode === 'history' ? 'history' : 'trade';
+    _transactionPanelOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     _syncTransactionsPanel();
     
-    // Show card inline
+    const backdrop = document.querySelector('#tab-wallets .sheet-backdrop, body > .sheet-backdrop');
+    if (card.parentElement !== document.body) document.body.appendChild(card);
+    if (backdrop && backdrop.parentElement !== document.body) document.body.appendChild(backdrop);
     card.style.display = 'flex';
-    
-    // Scroll to the card smoothly so user sees it
-    requestAnimationFrame(() => {
-        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    card.setAttribute('aria-hidden', 'false');
+    if (backdrop) backdrop.hidden = false;
+    document.body.style.overflow = 'hidden';
 
     if (_transactionsPanelMode === 'trade') {
       setTimeout(() => {
-        const target = document.getElementById(_selectedHolding ? 'mgmt-units-input' : 'mgmt-search-input');
+        const target = document.getElementById(_selectedHolding ? 'mgmt-units-input' : 'mgmt-search-input') || card.querySelector('button, input, textarea, select');
         if (target) target.focus();
       }, 180);
+    } else if (typeof showTab === 'function') {
+      showTab('transactions');
+      closeTransactionsPanel();
     }
   }
 
@@ -957,8 +1019,16 @@
     if (!card) return;
     
     card.style.display = 'none';
+    card.setAttribute('aria-hidden', 'true');
+    const backdrop = document.querySelector('#tab-wallets .sheet-backdrop, body > .sheet-backdrop');
+    if (backdrop) backdrop.hidden = true;
+    document.body.style.overflow = '';
     _syncTransactionsPanel();
     _setSubmitStatus('Ready to review');
+    if (_transactionPanelOpener && typeof _transactionPanelOpener.focus === 'function') {
+      _transactionPanelOpener.focus();
+    }
+    _transactionPanelOpener = null;
   }
 
   function setTransactionsPanelMode(_mode) {
@@ -1224,15 +1294,14 @@
 
   function _renderWalletSummaryVisuals() {
     const wrap = document.getElementById('wallet-summary-visuals');
+    _renderWalletAllocation();
     if (!wrap) return;
 
     const sparkline = _buildSummarySparkline(_currentSnapshots || [], _currentTransactions || []);
-    const pie = _buildHoldingPieChart(_currentHoldings || []);
 
     wrap.innerHTML = `
       <div class="wallet-summary-visual-grid">
         ${sparkline}
-        ${pie}
       </div>
     `;
 
@@ -1281,6 +1350,43 @@
     }
   }
 
+  function _renderWalletAllocation() {
+    const root = document.getElementById('wallet-allocation');
+    if (!root) return;
+    const bar = root.querySelector('.alloc-bar');
+    const legend = root.querySelector('.alloc-legend');
+    const rows = (_currentHoldings || [])
+      .map((holding) => {
+        const value = Number.isFinite(Number(holding.currentValue)) ? Number(holding.currentValue) : Number(holding.purchaseValue || 0);
+        return {
+          name: String(holding.name || holding.ticker || 'Unknown'),
+          ticker: String(holding.ticker || '').trim(),
+          value,
+          cash: _isCashHolding(holding),
+        };
+      })
+      .filter((item) => item.value > 0)
+      .sort((a, b) => b.value - a.value);
+    const total = rows.reduce((sum, item) => sum + item.value, 0);
+    if (!bar || !legend) return;
+    if (!rows.length || total <= 0) {
+      bar.innerHTML = '';
+      bar.classList.add('is-empty');
+      legend.innerHTML = '<span class="alloc-legend-item">No allocation yet</span>';
+      return;
+    }
+    bar.classList.remove('is-empty');
+    const colors = ['var(--accent-primary)', 'var(--color-success)', 'var(--color-warning)', 'var(--color-purple)', 'var(--color-danger)', 'var(--text-secondary)'];
+    bar.innerHTML = rows.map((item, index) => {
+      const share = Math.max(0.1, (item.value / total) * 100);
+      return `<span class="seg" style="--w:${share};background:${colors[index % colors.length]}" title="${_esc(item.ticker || item.name)} ${share.toFixed(1)}%"></span>`;
+    }).join('');
+    legend.innerHTML = rows.slice(0, 8).map((item, index) => {
+      const share = (item.value / total) * 100;
+      return `<span class="alloc-legend-item"><span class="alloc-dot" style="background:${colors[index % colors.length]}"></span><span>${_esc(item.cash ? 'Cash' : (item.ticker || item.name))}</span><strong class="num">${share.toFixed(1)}%</strong></span>`;
+    }).join('');
+  }
+
   function _renderSettings(portfolio, holdingsCount, txCount) {
     const titleEl = document.getElementById('mgmt-holdings-title');
     const summaryEl = document.getElementById('mgmt-settings-summary');
@@ -1291,16 +1397,33 @@
     const subtitleEl = document.getElementById('mgmt-holdings-subtitle');
     const tradeCard = document.querySelector('.wallet-card-trade');
     const benchmarkSettingEl = document.getElementById('mgmt-benchmark-setting');
+    const walletsTab = document.getElementById('tab-wallets');
+    const dayPlnEl = document.querySelector('#tab-wallets .wallet-day-pln');
+    const dayPctEl = document.querySelector('#tab-wallets .wallet-day-pct');
+    const countsEl = document.getElementById('wallet-hero-counts');
+    const athEl = document.getElementById('wallet-hero-ath');
+    const nameInput = document.getElementById('wallet-settings-name');
+    const deleteBtn = document.getElementById('wallet-settings-delete-btn');
     const summary = _effectiveWalletSummary(portfolio);
     const isSummary = !!(portfolio && _isSummaryPortfolio(portfolio.portfolioId));
+    const cashCount = (_currentHoldings || []).filter(_isCashHolding).length;
+    const liveHoldingCount = Math.max(0, Number(holdingsCount || 0) - cashCount);
 
     const totalText = `${Number(summary.total || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
     const dailyText = `${Number(summary.dailyPLN || 0) >= 0 ? '+' : ''}${Number(summary.dailyPLN || 0).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
     const dailyPctText = `${Number(summary.dailyPct || 0) >= 0 ? '+' : ''}${Number(summary.dailyPct || 0).toFixed(2)}%`;
-    const annualNumber = Number(summary.annualReturn || 0);
-    const annualReturnText = Number.isFinite(annualNumber) && annualNumber !== 0 ? `${annualNumber > 0 ? '+' : ''}${(annualNumber * 100).toFixed(2)}%` : '—';
+    const annualReturnText = _fmtAnnualReturn(summary.annualReturn);
 
-    if (titleEl) titleEl.textContent = portfolio ? portfolio.name : 'Select a portfolio';
+    if (titleEl) titleEl.textContent = portfolio ? (isSummary ? 'All wallets' : portfolio.name) : 'Select a portfolio';
+    if (walletsTab) {
+      walletsTab.dataset.readonly = isSummary ? 'true' : 'false';
+      walletsTab.querySelectorAll('[data-open-tx], #mgmt-wallet-fab, #mgmt-qe-open-trade-btn, #mgmt-qe-parse-btn').forEach((btn) => {
+        btn.disabled = isSummary;
+      });
+      walletsTab.querySelectorAll('.w-owned').forEach((node) => { node.hidden = isSummary; });
+      const note = walletsTab.querySelector('.w-readonly-note');
+      if (note) note.hidden = !isSummary;
+    }
     if (subtitleEl) subtitleEl.textContent = isSummary
       ? 'All wallets combined. Your aggregate balance and performance across every wallet.'
       : 'Live value, allocation, and quick trade actions.';
@@ -1311,24 +1434,43 @@
     }
     if (totalKpiEl) totalKpiEl.textContent = totalText;
     if (dayKpiEl) dayKpiEl.textContent = `${dailyText} / ${dailyPctText}`;
+    if (dayPlnEl) {
+      dayPlnEl.textContent = dailyText;
+      dayPlnEl.classList.toggle('up', Number(summary.dailyPLN || 0) >= 0);
+      dayPlnEl.classList.toggle('down', Number(summary.dailyPLN || 0) < 0);
+    }
+    if (dayPctEl) {
+      dayPctEl.textContent = dailyPctText;
+      dayPctEl.classList.toggle('up', Number(summary.dailyPct || 0) >= 0);
+      dayPctEl.classList.toggle('down', Number(summary.dailyPct || 0) < 0);
+    }
     if (returnKpiEl) returnKpiEl.textContent = annualReturnText;
+    if (countsEl) countsEl.textContent = `${liveHoldingCount} holdings · ${cashCount} cash · ${Number(txCount || 0)} transactions`;
+    if (athEl) {
+      const walletKey = portfolio ? (isSummary ? 'Summary' : portfolio.name) : null;
+      const ath = walletKey === 'Summary' ? (window.PORTFOLIO_ATH || {}) : ((window.WALLET_ATHS || {})[walletKey] || {});
+      const athValue = Number(ath && (ath.athValue || ath.value) || 0);
+      const dist = athValue > 0 ? ((Number(summary.total || 0) - athValue) / athValue) * 100 : null;
+      athEl.innerHTML = dist == null
+        ? `—<span class="w-fact-sub" id="wallet-hero-ath-meta">Waiting for ATH</span>`
+        : `<span class="${dist >= 0 ? 'up' : 'down'}">${dist >= 0 ? '+' : ''}${dist.toFixed(2)}%</span><span class="w-fact-sub" id="wallet-hero-ath-meta">${_fmtMoney(athValue)} · ${_esc(ath.athDate || ath.date || 'manual')}</span>`;
+    }
+    if (nameInput && portfolio) {
+      nameInput.value = isSummary ? 'All wallets' : (portfolio.name || '');
+      nameInput.disabled = isSummary;
+    }
+    if (deleteBtn) deleteBtn.disabled = isSummary;
     if (actionsEl) {
-        actionsEl.innerHTML = `
-        <button class="mgmt-icon-btn wallet-settings-btn" title="Wallet Settings"
-          onclick="window._mgmt.openWalletSettingsModal()">⚙️ Settings</button>
-      `;
+        actionsEl.innerHTML = isSummary ? '<span class="wallet-settings-pill wallet-settings-pill-muted">Read only</span>' : '';
     }
     if (tradeCard) tradeCard.style.display = isSummary && _transactionsPanelMode === 'trade' ? 'none' : '';
     _syncTransactionsPanel();
     _renderWalletSummaryVisuals();
-    // Render ATH section for the selected wallet
-    if (typeof window.renderWalletAthSection === 'function') {
-      const athKey = portfolio ? (isSummary ? 'Summary' : portfolio.name) : null;
-      window.renderWalletAthSection(athKey);
-    }
-
+    _syncWalletSettingsForm(portfolio, isSummary);
     if (benchmarkSettingEl) {
-        benchmarkSettingEl.style.display = isSummary ? '' : 'none';
+      benchmarkSettingEl.style.display = '';
+      const benchEl = document.getElementById('wallet-settings-benchmark-current');
+      if (benchEl) benchEl.textContent = window.BENCHMARK_NAME || window.BENCHMARK_ID || 'WIG';
     }
 
   }
@@ -1366,15 +1508,17 @@
       // Build chip buttons
       _chipsEl.innerHTML = _portfolios.map(p => {
         const isActive = _activePortId === p.portfolioId;
+        const label = _isSummaryPortfolio(p.portfolioId) ? 'All wallets' : p.name;
         return `<button type="button"
              class="wallet-chip${isActive ? ' is-active' : ''}"
              data-id="${_esc(p.portfolioId)}"
-             role="option"
+             role="tab"
              aria-selected="${isActive}"
+             tabindex="${isActive ? '0' : '-1'}"
              onclick="window._mgmt.selectPortfolio('${_esc(p.portfolioId)}')">`
           + `<span class="wallet-chip-top">`
-            + `<span class="wallet-chip-dot" style="background:${_esc(_portfolioColor(p.name))}"></span>`
-            + `<span class="wallet-chip-name">${_esc(p.name)}</span>`
+            + `<span class="wallet-chip-dot" style="background:${_esc(_portfolioColor(label))}"></span>`
+            + `<span class="wallet-chip-name">${_esc(label)}</span>`
           + `</span>`
           + `<span class="wallet-chip-value">${_fmtMoney(_walletSelectorMetrics(p).total)}</span>`
           + `</button>`;
@@ -1395,6 +1539,19 @@
       // Attach scroll → dot sync listener once
       if (!_chipsEl._carouselBound) {
         _chipsEl._carouselBound = true;
+        _chipsEl.addEventListener('keydown', (event) => {
+          if (!['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return;
+          const chips = Array.from(_chipsEl.querySelectorAll('.wallet-chip'));
+          if (!chips.length) return;
+          event.preventDefault();
+          const current = Math.max(0, chips.findIndex((chip) => chip === document.activeElement || chip.classList.contains('is-active')));
+          const nextIndex = event.key === 'Home' ? 0
+            : event.key === 'End' ? chips.length - 1
+            : (current + (event.key === 'ArrowRight' ? 1 : -1) + chips.length) % chips.length;
+          chips[nextIndex].focus();
+          const id = chips[nextIndex].dataset.id;
+          if (id) selectPortfolio(id);
+        });
         _chipsEl.addEventListener('scroll', () => {
           const chips = Array.from(_chipsEl.querySelectorAll('.wallet-chip'));
           if (!chips.length) return;
@@ -1573,6 +1730,7 @@
       tbody.innerHTML = `<tr class="wht-row"><td colspan="6" class="wht-td" style="text-align:center;color:#888;padding:36px 20px;">${_emptyMsg}</td></tr>`;
       if (cardsEl) cardsEl.innerHTML = `<div class="whc-empty">${_emptyMsg}</div>`;
       if (metaEl) _setPillState(metaEl, isSummary ? 'Summary waiting for wallets' : 'No holdings yet', '');
+      _renderWalletAllocation();
       _renderCemetery(holdings, performance, isSummary, portfolioId);
       return;
     }
@@ -1587,6 +1745,10 @@
     const _svgUp   = `<svg class="wht-btn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 13V3M3 8l5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
     const _svgDown = `<svg class="wht-btn-icon" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
+    const _valueOf = (h) => (Number.isFinite(Number(h.currentValue)) ? Number(h.currentValue) : Number(h.purchaseValue || 0));
+    const _allocTotal = activeHoldings.reduce((sum, h) => sum + Math.max(0, _valueOf(h)), 0);
+    const _allocPct = (h) => (_allocTotal > 0 ? Math.min(100, Math.max(0, _valueOf(h)) / _allocTotal * 100) : 0);
+
     // ── Desktop table rows ──────────────────────────────────────
     tbody.innerHTML = activeHoldings.map(h => {
       const _cv      = Number.isFinite(Number(h.currentValue)) ? Number(h.currentValue) : Number(h.purchaseValue || 0);
@@ -1594,7 +1756,7 @@
       const _isTfi   = !_isCash && String(h.ticker || '').startsWith('TFI:');
       const _dispTicker = _isCash ? 'CASH' : (_isTfi ? h.ticker.replace('TFI:', '') : (h.ticker || '—'));
       const _dailyPct   = Number(h.dailyChangePct || 0);
-      const _alloc      = Math.min(100, Number(h.pct || 0));
+      const _alloc      = _allocPct(h);
       const _dClass     = _dailyChangeClass(h.dailyChangePLN);
       const _performance = _holdingPerformanceFor(h, performance);
       const _realized = Number(_performance.realized || 0);
@@ -1658,7 +1820,7 @@
         const _isTfi  = !_isCash && String(h.ticker || '').startsWith('TFI:');
         const _dispTicker = _isCash ? 'Cash' : (_isTfi ? h.ticker.replace('TFI:', '') + ' · TFI' : (h.ticker || '—'));
         const _dailyPct   = Number(h.dailyChangePct || 0);
-        const _alloc      = Math.min(100, Number(h.pct || 0));
+        const _alloc      = _allocPct(h);
         const _dClass     = _dailyChangeClass(h.dailyChangePLN);
         const _performance = _holdingPerformanceFor(h, performance);
         const _realized = Number(_performance.realized || 0);
@@ -1702,6 +1864,7 @@
           </div>`;
       }).join('');
     }
+    _renderWalletAllocation();
     _renderCemetery(holdings, performance, isSummary, portfolioId);
   }
 
@@ -1915,111 +2078,100 @@
     }
   }
 
-  // ── Wallet Settings Modal ──────────────────────────────────────
-  function openWalletSettingsModal() {
-    const isSummary = _isSummaryPortfolio(_activePortId);
-    const portfolio = _portfolios.find(p => p.portfolioId === _activePortId);
-    const modal = document.getElementById('wallet-settings-modal');
-    if (!modal) return;
+  // ── Wallet settings rail ───────────────────────────────────────
+  function _walletAthFor(portfolio, isSummary) {
+    if (!portfolio) return {};
+    if (isSummary) return window.PORTFOLIO_ATH || {};
+    return (window.WALLET_ATHS || {})[portfolio.name] || {};
+  }
 
-    const nameInput = document.getElementById('wallet-settings-name');
-    const athDate = document.getElementById('wallet-settings-ath-date');
-    const athValue = document.getElementById('wallet-settings-ath-value');
-    const delBtn = document.getElementById('wallet-settings-delete-btn');
-    const athGroup = document.getElementById('wallet-settings-ath-group');
-    const resetAthBtn = document.getElementById('wallet-settings-reset-ath-btn');
-    const flash = document.getElementById('wallet-settings-flash');
-
-    if (flash) flash.style.display = 'none';
-
-    if (isSummary) {
-      if (nameInput) {
-        nameInput.value = 'Summary (All Wallets)';
-        nameInput.disabled = true;
+  function _syncWalletSettingsForm(portfolio, isSummary) {
+    const ath = _walletAthFor(portfolio, isSummary) || {};
+    const athValue = Number(ath.athValue || ath.value || 0);
+    const athDate = ath.athDate || ath.date || '';
+    const currentEl = document.getElementById('wallet-settings-ath-current');
+    if (currentEl) {
+      if (athValue > 0) {
+        const source = String(ath.athSource || '').toUpperCase() === 'MANUAL' ? 'Manual' : 'Automatic';
+        currentEl.innerHTML = `${source} · <span class="num">${_fmtMoney(athValue)}</span>${athDate ? ` · <span class="num">${_esc(athDate)}</span>` : ''}`;
+      } else {
+        currentEl.textContent = 'Not set yet';
       }
-      if (delBtn) delBtn.style.display = 'none';
-      
-      const ath = window.PORTFOLIO_ATH || {};
-      if (athDate) athDate.value = ath.athDate || '';
-      if (athValue) athValue.value = ath.athValue || '';
-    } else {
-      if (nameInput) {
-        nameInput.value = portfolio ? portfolio.name : '';
-        nameInput.disabled = false;
-      }
-      if (delBtn) delBtn.style.display = '';
-
-      const walletKey = portfolio ? portfolio.name : null;
-      const ath = (window.WALLET_ATHS || {})[walletKey] || {};
-      if (athDate) athDate.value = ath.athDate || '';
-      if (athValue) athValue.value = ath.athValue || '';
     }
-
-    modal.style.display = 'flex';
+    const dateInput = document.getElementById('wallet-settings-ath-date');
+    const valueInput = document.getElementById('wallet-settings-ath-value');
+    if (dateInput && document.activeElement !== dateInput) dateInput.value = athDate;
+    if (valueInput && document.activeElement !== valueInput) valueInput.value = athValue > 0 ? String(athValue) : '';
+    ['wallet-settings-flash', 'wallet-settings-ath-flash'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
   }
 
-  function closeWalletSettingsModal() {
-    const modal = document.getElementById('wallet-settings-modal');
-    if (modal) modal.style.display = 'none';
+  function _settingsFlash(id, msg, state = '') {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg;
+    el.className = `user-flash${state === 'error' ? ' mgmt-error' : state === 'ok' ? ' mgmt-success' : ''}`;
+    el.style.display = 'block';
   }
 
-  async function saveWalletSettings() {
-    const flash = document.getElementById('wallet-settings-flash');
-    const showFlash = (msg, isError=false) => {
-      if (!flash) return;
-      flash.textContent = msg;
-      flash.className = `user-flash ${isError ? 'mgmt-error' : 'mgmt-success'}`;
-      flash.style.display = 'block';
-    };
+  async function _afterWalletSettingsSaved() {
+    await _refreshWalletData();
+    await _loadPortfolios();
+    await selectPortfolio(_activePortId);
+    if (typeof renderDashboard === 'function') renderDashboard();
+  }
 
+  async function saveWalletName() {
+    const flashId = 'wallet-settings-flash';
+    const portfolio = _portfolios.find(p => p.portfolioId === _activePortId);
+    if (!portfolio || _isSummaryPortfolio(_activePortId)) return;
+    const input = document.getElementById('wallet-settings-name');
+    const btn = document.getElementById('wallet-settings-save-name-btn');
+    const newName = input ? input.value.trim() : '';
+    if (!newName) { _settingsFlash(flashId, 'Name cannot be empty.', 'error'); return; }
+    if (newName === portfolio.name) { _settingsFlash(flashId, 'Name unchanged.', 'ok'); return; }
+    if (btn) btn.disabled = true;
+    _settingsFlash(flashId, 'Saving name…');
+    try {
+      await PortfolioClient.putPortfolio({ portfolioId: _activePortId, name: newName, type: 'real', currency: 'PLN' });
+      await _afterWalletSettingsSaved();
+      _settingsFlash(flashId, 'Name saved.', 'ok');
+    } catch (e) {
+      _settingsFlash(flashId, e.message || 'Failed to save name.', 'error');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function saveWalletAth() {
+    const flashId = 'wallet-settings-ath-flash';
     const isSummary = _isSummaryPortfolio(_activePortId);
     const portfolio = _portfolios.find(p => p.portfolioId === _activePortId);
-    const nameInput = document.getElementById('wallet-settings-name');
-    const athDateInput = document.getElementById('wallet-settings-ath-date');
-    const athValueInput = document.getElementById('wallet-settings-ath-value');
-
-    const newName = nameInput ? nameInput.value.trim() : '';
-    const athDate = athDateInput ? athDateInput.value : '';
-    const athValue = athValueInput ? parseFloat(athValueInput.value) : NaN;
-
-    let wantsRename = !isSummary && portfolio && newName && newName !== portfolio.name;
-    let wantsAth = !!athDate || !Number.isNaN(athValue);
-
-    if (wantsAth && (!athDate || !Number.isFinite(athValue) || athValue <= 0)) {
-      showFlash('Please provide both ATH date and a valid ATH value.', true);
+    const athDate = (document.getElementById('wallet-settings-ath-date') || {}).value || '';
+    const athValue = parseFloat((document.getElementById('wallet-settings-ath-value') || {}).value);
+    if (!athDate || !Number.isFinite(athValue) || athValue <= 0) {
+      _settingsFlash(flashId, 'Provide both an ATH date and a positive ATH value.', 'error');
       return;
     }
-
-    showFlash('Saving settings...');
-
+    const btn = document.getElementById('wallet-settings-save-ath-btn');
+    if (btn) btn.disabled = true;
+    _settingsFlash(flashId, 'Saving ATH…');
     try {
-      if (wantsRename) {
-        await PortfolioClient.putPortfolio({ portfolioId: _activePortId, name: newName, type: 'real', currency: 'PLN' });
+      const athPid = isSummary ? 'summary' : _activePortId;
+      const response = await PortfolioClient.updateAth(athPid, { athDate, athValue, athSource: 'MANUAL' });
+      if (isSummary) window.PORTFOLIO_ATH = response.ath || null;
+      else if (portfolio) {
+        window.WALLET_ATHS = window.WALLET_ATHS || {};
+        window.WALLET_ATHS[portfolio.name] = response.ath || null;
       }
-
-      if (wantsAth) {
-        // Resolve portfolioId for ATH (if summary, resolveAthPortfolioId uses 'summary')
-        const athPid = isSummary ? 'summary' : _activePortId;
-        const athResponse = await PortfolioClient.updateAth(athPid, { athDate, athValue, athSource: 'MANUAL' });
-        
-        const walletKey = isSummary ? 'Summary' : (wantsRename ? newName : portfolio.name);
-        if (walletKey === 'Summary') window.PORTFOLIO_ATH = athResponse.ath || null;
-        else {
-            window.WALLET_ATHS = window.WALLET_ATHS || {};
-            window.WALLET_ATHS[walletKey] = athResponse.ath || null;
-        }
-      }
-
-      if (wantsRename || wantsAth) {
-        await _refreshWalletData();
-        await _loadPortfolios();
-        await selectPortfolio(_activePortId);
-        if (typeof renderDashboard === 'function') renderDashboard();
-      }
-      
-      closeWalletSettingsModal();
-    } catch(e) {
-      showFlash(e.message || 'Failed to save settings.', true);
+      await _afterWalletSettingsSaved();
+      _settingsFlash(flashId, 'ATH saved.', 'ok');
+    } catch (e) {
+      _settingsFlash(flashId, e.message || 'Failed to save ATH.', 'error');
+    } finally {
+      if (btn) btn.disabled = false;
     }
   }
 
@@ -2033,43 +2185,30 @@
       await _refreshWalletData();
       _activePortId = 'summary';
       await _loadPortfolios();
-      closeWalletSettingsModal();
     } catch(e) {
       alert(`Delete failed: ${e.message}`);
     }
   }
 
   async function resetSelectedWalletAth() {
-    const flash = document.getElementById('wallet-settings-flash');
-    if (flash) {
-      flash.textContent = 'Recalculating ATH from history...';
-      flash.className = 'user-flash';
-      flash.style.display = 'block';
-    }
-
+    const flashId = 'wallet-settings-ath-flash';
+    _settingsFlash(flashId, 'Recalculating ATH from history…');
     try {
       const isSummary = _isSummaryPortfolio(_activePortId);
       const athPid = isSummary ? 'summary' : _activePortId;
       const response = await PortfolioClient.updateAth(athPid, { athSource: 'AUTO' });
-      
       const portfolio = _portfolios.find(p => p.portfolioId === _activePortId);
-      const walletKey = isSummary ? 'Summary' : (portfolio ? portfolio.name : null);
-      
-      if (walletKey === 'Summary') window.PORTFOLIO_ATH = response.ath || null;
-      else if (walletKey) {
-          window.WALLET_ATHS = window.WALLET_ATHS || {};
-          window.WALLET_ATHS[walletKey] = response.ath || null;
+      if (isSummary) window.PORTFOLIO_ATH = response.ath || null;
+      else if (portfolio) {
+        window.WALLET_ATHS = window.WALLET_ATHS || {};
+        window.WALLET_ATHS[portfolio.name] = response.ath || null;
       }
-      
-      closeWalletSettingsModal();
       await _refreshWalletData();
       await selectPortfolio(_activePortId);
       if (typeof renderDashboard === 'function') renderDashboard();
-    } catch(e) {
-      if (flash) {
-        flash.textContent = e.message || 'Could not recalculate ATH.';
-        flash.className = 'user-flash mgmt-error';
-      }
+      _settingsFlash(flashId, 'ATH recalculated from history.', 'ok');
+    } catch (e) {
+      _settingsFlash(flashId, e.message || 'Could not recalculate ATH.', 'error');
     }
   }
 
@@ -2085,6 +2224,13 @@
     const value = allowed.includes(normalized) ? normalized : 'BUY';
     const el = document.getElementById('mgmt-transaction-type');
     if (el) el.value = value;
+    document.querySelectorAll('#tab-wallets .tflow-type-btn').forEach((btn) => {
+      const btnType = String((btn.id || '').replace('mgmt-type-', '')).toUpperCase();
+      const active = btnType === value;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-selected', active ? 'true' : 'false');
+      btn.setAttribute('role', 'tab');
+    });
     _updateTransactionFormState();
   }
 
@@ -3304,6 +3450,7 @@
       const dateEl = document.getElementById('mgmt-transaction-date');
       if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
       _bindWalletStickyBehavior();
+      _bindTransactionSheet();
       _setCreateComposerOpen(false);
       _setWalletStickyCondensed(false);
       _resetTransactionForm({ keepType: false });
@@ -3747,9 +3894,8 @@
     selectPortfolio,
     setHoldingsView,
     _carouselGoTo,
-    openWalletSettingsModal,
-    closeWalletSettingsModal,
-    saveWalletSettings,
+    saveWalletName,
+    saveWalletAth,
     deleteSelectedWallet,
     resetSelectedWalletAth,
     prefillBuy,

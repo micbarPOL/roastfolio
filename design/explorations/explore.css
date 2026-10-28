@@ -1,0 +1,42 @@
+/* Shared primitives for the dashboard exploration mockups (loaded after ../mockups/dashboard.css). */
+
+.x-content { min-width: 0; }
+:root[data-theme="light"] body { background: var(--bg-canvas); }
+.x-content .gauge-widget { grid-column: auto; align-items: stretch; }
+.x-content .gauge-svg { align-self: center; }
+.x-content .gauge-readouts { align-self: center; }
+body[data-state="empty"] .x-content > :not(.empty-state-card) { display: none; }
+body[data-state="empty"] .c-player { display: none; }
+
+.mover-chart .spark-line.up { stroke: var(--color-success); }
+.mover-chart .spark-line.down { stroke: var(--color-danger); }
+
+.bars6 { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-2); height: 120px; margin: 0; }
+.bars6 .bar { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; height: 100%; font-size: var(--fs-xs); color: var(--text-secondary); }
+.bars6 .bar-track { flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.bars6 .bar-fill { display: block; width: 100%; max-width: 28px; height: 100%; border-radius: var(--radius-sm); background: var(--color-success); transform-origin: bottom; transform: scaleY(0); transition: transform var(--dur-slow) var(--ease-enter); }
+.bars6 .bar.is-neg .bar-fill { background: var(--color-danger); }
+body.is-ready .bars6 .bar-fill { transform: scaleY(var(--p, 0)); }
+.bars6 .bar-val { font-size: 11px; font-weight: 700; }
+
+.cmp-line { fill: none; stroke: var(--text-muted); stroke-width: 2; stroke-dasharray: 5 4; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.legend { display: inline-flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--fs-xs); color: var(--text-secondary); }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.legend-swatch { width: 14px; height: 3px; border-radius: 2px; background: var(--accent-primary); }
+.legend-swatch.is-bench { background: var(--text-muted); }
+
+.x-card { position: relative; background: var(--bg-surface-1); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5); box-shadow: var(--shadow-sm); }
+.x-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
+.x-title { margin: 0; font-size: var(--fs-lg); font-weight: 700; }
+
+.round-ico { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--bg-surface-2); color: var(--text-primary); flex: none; }
+.pill-delta { display: inline-flex; align-items: center; gap: var(--space-2); padding: 6px 14px; border-radius: 999px; font-weight: 700; background: var(--bg-canvas); }
+.pill-delta.up { color: var(--color-success); }
+.pill-delta.down { color: var(--color-danger); }
+
+.chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 16px; border-radius: 999px; background: var(--bg-surface-2); border: 1px solid var(--border-subtle); color: var(--text-primary); font-size: var(--fs-sm); font-weight: 600; text-decoration: none; }
+.chip[aria-current="true"] { background: var(--text-primary); color: var(--bg-canvas); }
+
+@media (max-width: 767px) {
+  .chip { min-height: var(--touch-min); }
+}

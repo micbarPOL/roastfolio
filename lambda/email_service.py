@@ -18,6 +18,7 @@ from typing import Any
 
 import boto3
 from botocore.exceptions import ClientError
+from observability import instrument_table
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -547,7 +548,7 @@ def _resolve_daily_moves(wrap_document: dict) -> list[dict]:
             import boto3 as _boto3
             from boto3.dynamodb.conditions import Key
             tbl_name = os.environ.get("SNAPSHOTS_TABLE", "roastfolio-snapshots")
-            table = _boto3.resource("dynamodb").Table(tbl_name)
+            table = instrument_table(_boto3.resource("dynamodb").Table(tbl_name))
             resp = table.query(
                 KeyConditionExpression=Key("userId").eq(user_id)
                 & Key("sk").between(f"PORTFOLIO#summary#SNAPSHOT#{prev_day}", f"PORTFOLIO#summary#SNAPSHOT#{last_day}")

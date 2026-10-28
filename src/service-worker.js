@@ -8,7 +8,7 @@
  *    data always comes from the network and stale prices are never shown.
  */
 
-const CACHE_NAME = 'roastfolio-v71';
+const CACHE_NAME = 'roastfolio-v80';
 
 // Assets that live locally and rarely change — cache on install
 const PRECACHE = [
@@ -18,6 +18,8 @@ const PRECACHE = [
     '/releases.html',
     '/favicon.ico',
     '/styles/main.css',
+    '/styles/tokens-v9.css',
+    '/styles/ui20.css',
     '/scripts/auth-guard.js',
     '/scripts/auth.js',
     '/scripts/user-profile.js',
@@ -27,6 +29,9 @@ const PRECACHE = [
     '/scripts/dashboard.js',
     '/scripts/chart.js',
     '/scripts/benchmark-chart.js',
+    '/scripts/intraday-comparison.js',
+    '/scripts/dashboard-performance.js',
+    '/scripts/api-throttle.js',
     '/scripts/portfolio-chart.js',
 
     '/scripts/statistics.js',

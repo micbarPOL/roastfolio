@@ -149,7 +149,7 @@ a, button, [role="tab"] { touch-action: manipulation; }
 .live-status { margin-left: auto; display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fs-xs); color: var(--text-secondary); }
 .live-dot, .status-light { width: 8px; height: 8px; border-radius: 50%; background: var(--color-success); animation: status-pulse 2s ease-in-out infinite; }
 .status-light { display: inline-block; margin-right: var(--space-2); }
-.icon-btn { display: none; align-items: center; justify-content: center; width: var(--touch-min); height: var(--touch-min); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-primary); cursor: pointer; }
+.icon-btn { display: none; flex-shrink: 0; align-items: center; justify-content: center; width: var(--touch-min); height: var(--touch-min); border: 0; border-radius: var(--radius-md); background: transparent; color: var(--text-primary); cursor: pointer; }
 .brand-mobile { display: none; }
 .market-commentary { margin: 0; padding: 0 var(--space-5) var(--space-2); font-size: var(--fs-sm); color: var(--text-secondary); }
 
@@ -369,7 +369,7 @@ body[data-state="empty"] .dash-grid { display: none; }
   .app { grid-template-columns: minmax(0, 1fr); }
   .sidebar-nav { display: none; }
   .icon-btn, .brand-mobile { display: inline-flex; }
-  .page-title { display: none; }
+  .page-title { font-size: var(--fs-md); }
   .top-bar { padding: var(--space-2) var(--space-3); }
   .market-commentary, .ticker-tape-container { margin-left: var(--space-3); margin-right: var(--space-3); padding-left: 0; padding-right: 0; }
   .dash-main { padding: var(--space-2) var(--space-3) calc(var(--bottom-tabs-h) + var(--space-5)); }
@@ -405,6 +405,21 @@ body[data-state="empty"] .dash-grid { display: none; }
   .mover-chart svg { width: min(100%, 150px); height: 40px; }
   .bench-svg { height: 200px; }
 }
+
+/* ---------- Portfolio vs benchmark, minute by minute (D-029) ---------- */
+.intraday-comparison { margin-top: var(--space-6); }
+.intraday-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.intraday-window { display: inline-flex; align-items: center; gap: var(--space-2); font-size: var(--fs-sm); color: var(--text-secondary); }
+.intraday-window select { min-height: 36px; padding: 0 var(--space-2); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg-canvas); color: var(--text-primary); font: inherit; touch-action: manipulation; }
+.intraday-svg { display: block; width: 100%; height: 160px; margin-top: var(--space-3); }
+.intraday-zero { stroke: var(--border-subtle); stroke-dasharray: 4 4; }
+.intraday-bench, .intraday-port { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.intraday-bench { stroke: var(--text-muted); }
+.intraday-port { stroke: var(--accent-primary); }
+.intraday-status { margin-top: var(--space-2); font-size: var(--fs-xs); color: var(--text-secondary); }
+.intraday-key { font-weight: 600; color: var(--text-primary); }
+.intraday-key + .intraday-key { margin-left: var(--space-3); }
+@media (max-width: 767px) { .intraday-window select { min-height: var(--touch-min); } }
 
 /* ---------- Reduced motion (D-013) ---------- */
 @media (prefers-reduced-motion: reduce) {

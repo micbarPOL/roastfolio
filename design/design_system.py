@@ -11,7 +11,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs" / "DESIGN_SYSTEM_2026_V9.md"
 TOKENS_CSS = ROOT / "design" / "tokens-v9.css"
+APP_TOKENS_CSS = ROOT / "src" / "styles" / "tokens-v9.css"
 MOCKUPS = ROOT / "design" / "mockups"
+EXPLORATIONS = ROOT / "design" / "explorations"
 
 DARK_SELECTOR = ":root"
 LIGHT_SELECTOR = ':root[data-theme="light"]'
@@ -282,19 +284,45 @@ def open_question_ids():
     return [unwrap(r[0]) for r in table_rows(r"11\.\s", r"Appendix A")]
 
 
-def dashboard_fields():
-    """Field ids registered in Appendix A (every table row whose first cell is a backticked id)."""
+def _registry_fields(start_title, subsections=None):
+    """Backticked first-cell ids of a screen registry appendix, optionally limited to some ### subsections."""
     marks = headings()
-    start = next(n for _, t, n in marks if t.startswith("Appendix A"))
-    fields = []
+    start_index = next(i for i, (_, t, _n) in enumerate(marks) if t.startswith(start_title))
+    start = marks[start_index][2]
+    end = next((n for level, t, n in marks[start_index + 1:] if level == 2), float("inf"))
+    sub_starts = {t: n for level, t, n in marks if level == 3 and start < n < end}
+    fields, current = [], None
     for number, line, in_fence in doc_lines():
-        if number <= start or in_fence or not line.startswith("|"):
+        if number <= start or number >= end or in_fence:
+            continue
+        for title, n in sub_starts.items():
+            if n == number:
+                current = title
+        if not line.startswith("|") or (subsections and current not in subsections):
             continue
         first = line.strip().strip("|").split("|")[0].strip()
         match = re.fullmatch(r"`([A-Za-z0-9_-]+)`", first)
         if match:
             fields.append(match.group(1))
     return fields
+
+
+def dashboard_fields():
+    """Field ids registered in Appendix A (every table row whose first cell is a backticked id)."""
+    return _registry_fields("Appendix A")
+
+
+def shell_fields():
+    """Appendix A fields every screen mockup carries: the Shell and the Market ticker."""
+    return _registry_fields("Appendix A", {"Shell", "Market ticker"})
+
+
+def screen_fields(screen):
+    """Fields a screen mockup must expose. 'dashboard' -> Appendix A; other screens -> shell + their appendix."""
+    if screen == "dashboard":
+        return dashboard_fields()
+    title = next(t for _, t, _n in headings() if t.startswith("Appendix") and t.lower().endswith(f": {screen}"))
+    return shell_fields() + _registry_fields(title)
 
 
 # --------------------------------------------------------------------------- cli
@@ -306,8 +334,10 @@ def write_tokens():
         "/* GENERATED from docs/DESIGN_SYSTEM_2026_V9.md Section 2. Do not edit by hand.\n"
         "   Regenerate: .venv/bin/python design/design_system.py --write-tokens */\n\n"
     )
-    TOKENS_CSS.write_text(header + "\n\n".join(b.strip() for b in blocks) + "\n", encoding="utf-8")
-    print(f"wrote {TOKENS_CSS.relative_to(ROOT)}")
+    text = header + "\n\n".join(b.strip() for b in blocks) + "\n"
+    for target in (TOKENS_CSS, APP_TOKENS_CSS):
+        target.write_text(text, encoding="utf-8")
+        print(f"wrote {target.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

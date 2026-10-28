@@ -1,4 +1,5 @@
 import boto3
+from observability import instrument_table
 import os
 import uuid
 import time
@@ -10,7 +11,7 @@ TABLE_NAME = os.environ.get('ROAST_HISTORY_TABLE', 'dev-roastfolio-roast-history
 dynamodb = boto3.resource('dynamodb')
 
 def get_table():
-    return dynamodb.Table(TABLE_NAME)
+    return instrument_table(dynamodb.Table(TABLE_NAME))
 
 def save_roast(roast_record: dict):
     """

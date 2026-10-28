@@ -34,6 +34,17 @@ class XirrCalculationTests(unittest.TestCase):
 
         self.assertEqual(result, 0.0)
 
+    def test_calculate_xirr_recovers_when_newton_overshoots_below_minus_100(self):
+        result = portfolios.calculate_xirr([
+            ("2026-02-01", -5000.0),
+            ("2026-04-01", -2000.0),
+            ("2026-05-04", -1500.0),
+            ("2026-06-03", -1000.0),
+            ("2026-10-16", 5268.0),
+        ])
+
+        self.assertAlmostEqual(result, -0.6336, places=3)
+
     def test_extract_cashflows_ignores_future_transactions_without_requiring_sorted_input(self):
         cashflows = portfolios.extract_cashflows_from_transactions([
             {"transactionDate": "2026-03-01", "type": "DEPOSIT", "value": 3000},

@@ -18,6 +18,7 @@ window.submitRoastReaction = function(reaction, event) {
         reaction: reaction,
         templateId: rd.templateId,
         scenarioKey: rd.scenarioKey,
+        selectionContext: rd.selectionContext,
         portfolioChange: rd.portfolioChange,
         benchmarkChange: rd.benchmarkChange,
         bestAsset: rd.bestAsset,
@@ -28,7 +29,7 @@ window.submitRoastReaction = function(reaction, event) {
             const containers = document.querySelectorAll('.roast-reactions');
             containers.forEach(btnContainer => {
                 const prevHtml = btnContainer.innerHTML;
-                btnContainer.innerHTML = '<span style="font-size:12px; color:#27ae60; font-weight:600;">Feedback saved! Thanks.</span>';
+                btnContainer.innerHTML = '<span class="feedback-saved">Feedback saved! Thanks.</span>';
                 setTimeout(() => {
                     if (btnContainer) btnContainer.innerHTML = prevHtml;
                 }, 3000);
@@ -38,6 +39,44 @@ window.submitRoastReaction = function(reaction, event) {
         window._roastFeedbackSubmitting = false;
     });
 };
+
+// Disclosures rendered by this file: the roast (reactions stay hidden until tapped) and account rows.
+document.addEventListener('click', function (event) {
+    const toggle = event.target.closest('.roast-toggle, .acct-toggle');
+    if (!toggle) return;
+    const panel = document.getElementById(toggle.getAttribute('aria-controls'));
+    const open = toggle.getAttribute('aria-expanded') !== 'true';
+    toggle.setAttribute('aria-expanded', String(open));
+    if (panel) panel.hidden = !open;
+});
+
+// Summary Month/Year switch: one section, two panels (click and arrow keys).
+(function initSummaryPeriodTabs() {
+    function select(tab) {
+        const list = tab.closest('[role="tablist"]');
+        list.querySelectorAll('[role="tab"]').forEach(function (other) {
+            const on = other === tab;
+            other.setAttribute('aria-selected', String(on));
+            other.tabIndex = on ? 0 : -1;
+            const panel = document.getElementById(other.getAttribute('aria-controls'));
+            if (panel) panel.hidden = !on;
+        });
+    }
+    document.addEventListener('click', function (event) {
+        const tab = event.target.closest('[aria-label="Summary period"] [role="tab"]');
+        if (tab) select(tab);
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+        const current = event.target.closest && event.target.closest('[aria-label="Summary period"] [role="tab"]');
+        if (!current) return;
+        const tabs = Array.from(current.parentElement.querySelectorAll('[role="tab"]'));
+        const step = event.key === 'ArrowRight' ? 1 : -1;
+        const next = tabs[(tabs.indexOf(current) + step + tabs.length) % tabs.length];
+        next.focus();
+        select(next);
+    });
+})();
 
 // Local logo files (place PNG/SVG in src/data/logos/ with these exact names)
 const COMPANY_LOCAL_LOGOS = {
@@ -237,12 +276,44 @@ function athCelebrationMarkup(title, note, gain) {
     `;
 }
 
+// UI20 dashboard banner: the line draws in, breaks the dashed previous-peak ceiling, and the new high pulses.
+function athBreakoutMarkup(title, note, gain) {
+    const metaText = (gain && gain > 10)
+        ? `+${gain.toLocaleString('pl-PL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} PLN above the previous peak`
+        : 'Trading at the peak right now';
+    const path = 'M2 50 L14 44 L26 47 L38 37 L50 41 L62 30 L74 33 L86 26 L98 17 L110 9';
+    const sparks = [[-10, -14], [0, -18], [10, -15], [15, -5], [-15, -4], [6, -22]];
+    return `
+        <div class="ath20" role="status">
+            <svg class="ath20-chart" viewBox="0 0 120 60" aria-hidden="true">
+                <defs><linearGradient id="ath20-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="currentColor" stop-opacity="0.32"/>
+                    <stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+                </linearGradient></defs>
+                <line class="ath20-ceiling" x1="0" y1="22" x2="120" y2="22"/>
+                <path class="ath20-area" d="${path} L110 60 L2 60 Z" fill="url(#ath20-fill)"/>
+                <path class="ath20-line" d="${path}" pathLength="1"/>
+                <circle class="ath20-ripple" cx="110" cy="9" r="4"/>
+                ${sparks.map(([x, y], i) => `<circle class="ath20-spark" cx="110" cy="9" r="1.4" style="--dx:${x}px;--dy:${y}px;--i:${i}"/>`).join('')}
+                <circle class="ath20-dot" cx="110" cy="9" r="3.2"/>
+            </svg>
+            <div class="ath20-copy">
+                <span class="ath20-badge">New all-time high</span>
+                <strong class="ath20-title">${title}</strong>
+                <span class="ath20-note">${note}</span>
+                <span class="ath20-meta num">${metaText}</span>
+            </div>
+        </div>
+    `;
+}
+
 function renderAthCelebration(targetId) {
     const el = document.getElementById(targetId);
     if (!el) return;
     if (!isPortfolioAtNewAth()) {
         el.hidden = true;
         el.innerHTML = '';
+        delete el.dataset.athKey;
         return;
     }
 
@@ -254,9 +325,12 @@ function renderAthCelebration(targetId) {
         ATH_CELEBRATION_NOTES,
     );
     const gain = current - athValue;
-
+    // Live refreshes re-render the dashboard every few seconds; only rebuild (and replay) when the record changes.
+    const key = `${athValue.toFixed(2)}:${Math.round(gain)}:${note}`;
     el.hidden = false;
-    el.innerHTML = athCelebrationMarkup('Portfolio broke its own ceiling.', note, gain);
+    if (el.dataset.athKey === key && el.firstElementChild) return;
+    el.dataset.athKey = key;
+    el.innerHTML = athBreakoutMarkup('Portfolio broke its own ceiling.', note, gain);
 }
 
 // Parameterized ATH renderer for arbitrary wallet slides
@@ -385,16 +459,28 @@ function renderSummaryCards() {
     if (typeof PORTFOLIO_DAILY_CHANGE_PLN === 'undefined') return;
     const pln   = PORTFOLIO_DAILY_CHANGE_PLN;
     const pct   = Number(PORTFOLIO_DAILY_CHANGE_PCT || 0);
-    const color = pln >= 0 ? '#27ae60' : '#c0392b';
+    const tone  = pln >= 0 ? 'up' : 'down';
     const sign  = pln >= 0 ? '+' : '';
+    const arrow = pln >= 0 ? '▲' : '▼';
 
     if (totalEl && typeof PORTFOLIO_TOTAL_VALUE !== 'undefined') {
         totalEl.textContent = PORTFOLIO_TOTAL_VALUE.toLocaleString('pl-PL', { minimumFractionDigits: 2 }) + ' PLN';
     }
     if (dailyPlnEl) {
         dailyPlnEl.innerHTML =
-            `<span class="dash-daily-main" style="color:${color};">${sign}${pln.toLocaleString('pl-PL', { minimumFractionDigits: 2 })} PLN</span>` +
-            `<span class="dash-daily-pct" style="color:${color};">(${sign}${pct.toFixed(2)}%)</span>`;
+            `<span class="pill-delta dash-daily-main ${tone}"><span aria-hidden="true">${arrow}</span><span class="num">${sign}${pln.toLocaleString('pl-PL', { minimumFractionDigits: 2 })} PLN</span></span>` +
+            `<span class="pill-delta dash-daily-pct num ${tone}">${sign}${pct.toFixed(2)}%</span>`;
+    }
+
+    const playerTotal = document.getElementById('dash-player-total');
+    const playerDelta = document.getElementById('dash-player-delta');
+    if (playerTotal && typeof PORTFOLIO_TOTAL_VALUE !== 'undefined') {
+        playerTotal.textContent = PORTFOLIO_TOTAL_VALUE.toLocaleString('pl-PL', { minimumFractionDigits: 2 }) + ' PLN';
+    }
+    if (playerDelta) {
+        playerDelta.textContent = `${sign}${pct.toFixed(2)}%`;
+        playerDelta.classList.toggle('up', pln >= 0);
+        playerDelta.classList.toggle('down', pln < 0);
     }
 
     if (drawdownEl) {
@@ -402,7 +488,8 @@ function renderSummaryCards() {
         if (!athInfo || !athInfo.athValue) {
             drawdownEl.innerHTML =
                 `<div class="ath-title">From All-Time High</div>` +
-                `<span style="color:#64748b;font-size:0.95rem;font-family:monospace;">ATH pending nightly snapshot</span>`;
+                `<span class="ath-pending">ATH pending nightly snapshot</span>`;
+            renderAthLake(null);
         } else {
             const recordedAth = Number(athInfo.athValue || 0);
             const athDate = athInfo.athDate || '';
@@ -410,29 +497,27 @@ function renderSummaryCards() {
             const diffPLN = current - recordedAth;
             const diffPct = recordedAth ? ((diffPLN / recordedAth) * 100).toFixed(2) : '0.00';
             const athFormatted = recordedAth.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const dateStr = athDate ? ` (${athDate})` : '';
+            const dateStr = athDate ? ` <span class="num">(${athDate})</span>` : '';
+            const metaHtml = `<div class="ath-date">Last recorded ATH: <span class="num">${athFormatted} PLN</span>${dateStr}</div>`;
+            const plnFormatted = diffPLN.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
             if (diffPLN > 0.01) {
-                const gainSign = diffPLN > 0 ? '+' : '';
                 drawdownEl.innerHTML =
                     `<div class="ath-title">From All-Time High</div>` +
-                    `<span class="ath-pct" style="color:#27ae60;">+${diffPct}%</span>` +
-                    `<span class="ath-pln" style="color:#27ae60;">(${gainSign}${diffPLN.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN above ATH)</span>` +
-                    `<div class="ath-date">Last recorded ATH: ${athFormatted} PLN${dateStr}</div>`;
+                    `<div class="ath-line"><span class="ath-pct num up">+${diffPct}%</span> <span class="ath-pln num up">(+${plnFormatted} PLN above ATH)</span></div>` +
+                    metaHtml;
             } else if (diffPLN >= -0.01) {
                 drawdownEl.innerHTML =
                     `<div class="ath-title">From All-Time High</div>` +
-                    `<span class="ath-pct" style="color:#27ae60;">At All-Time High!</span>` +
-                    `<span class="ath-pln" style="color:#27ae60;">(0 PLN drawdown)</span>` +
-                    `<div class="ath-date">Last recorded ATH: ${athFormatted} PLN${dateStr}</div>`;
+                    `<div class="ath-line"><span class="ath-pct up">At All-Time High!</span> <span class="ath-pln num up">(0 PLN drawdown)</span></div>` +
+                    metaHtml;
             } else {
-                let color = '#c0392b';
                 drawdownEl.innerHTML =
                     `<div class="ath-title">From All-Time High</div>` +
-                    `<span class="ath-pct" style="color:${color};">${diffPct}%</span>` +
-                    `<span class="ath-pln" style="color:${color};">(${diffPLN.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN)</span>` +
-                    `<div class="ath-date">Last recorded ATH: ${athFormatted} PLN${dateStr}</div>`;
+                    `<div class="ath-line"><span class="ath-pct num down">${diffPct}%</span> <span class="ath-pln num down">(${plnFormatted} PLN)</span></div>` +
+                    metaHtml;
             }
+            renderAthLake(recordedAth ? (diffPLN / recordedAth) * 100 : 0);
         }
     }
 
@@ -441,12 +526,69 @@ function renderSummaryCards() {
     }
 }
 
+// Lake graphic. The dashed line is the ATH. Distance from it uses a log scale so a 0.3% dip on a
+// large portfolio is still visible while a 50% drawdown fits; above the ATH a green tide rises instead.
+const ATH_LAKE_BELOW_SURFACE = 24;   // % from the top where the ATH line sits while underwater
+const ATH_LAKE_MAX_DEPTH = 66;       // % of height used for a 50% drawdown
+const ATH_LAKE_ABOVE_SURFACE = 66;   // ATH line drops lower when the tide rises above it
+const ATH_LAKE_MAX_RISE = 48;        // % of height used for +20% above the ATH
+
+function athLakeLevels(drawdownPct) {
+    if (drawdownPct == null || !Number.isFinite(drawdownPct)) {
+        return { state: 'pending', athY: ATH_LAKE_BELOW_SURFACE, nowY: ATH_LAKE_BELOW_SURFACE };
+    }
+    if (drawdownPct < -0.005) {
+        const depth = Math.min(1, Math.max(0.08, Math.log10(1 + 10 * -drawdownPct) / Math.log10(501)));
+        return { state: 'below', athY: ATH_LAKE_BELOW_SURFACE, nowY: ATH_LAKE_BELOW_SURFACE + depth * ATH_LAKE_MAX_DEPTH, depth };
+    }
+    const rise = Math.min(1, Math.max(0.1, Math.log10(1 + 10 * drawdownPct) / Math.log10(201)));
+    return { state: drawdownPct > 0.005 ? 'above' : 'at', athY: ATH_LAKE_ABOVE_SURFACE, nowY: ATH_LAKE_ABOVE_SURFACE - rise * ATH_LAKE_MAX_RISE, depth: 0 };
+}
+
+function renderAthLake(drawdownPct) {
+    const lake = document.getElementById('dash-ath-lake');
+    if (!lake) return;
+    const levels = athLakeLevels(drawdownPct);
+    const pctText = levels.state === 'pending' ? '' : `${drawdownPct >= 0 ? '+' : '−'}${Math.abs(drawdownPct).toFixed(2)}%`;
+    const nowTag = lake.querySelector('.lake-tag-now');
+    if (nowTag) nowTag.textContent = levels.state === 'at' ? 'now · at ATH' : `now ${pctText}`;
+    const athTag = lake.querySelector('.lake-ath .lake-tag');
+    if (athTag) athTag.textContent = levels.state === 'pending' ? 'ATH pending' : 'ATH';
+    lake.setAttribute('aria-label', levels.state === 'pending' ? 'All-time high pending the nightly snapshot'
+        : levels.state === 'below' ? `Portfolio is ${Math.abs(drawdownPct).toFixed(2)}% below its all-time high`
+        : levels.state === 'at' ? 'Portfolio is at its all-time high'
+        : `Portfolio is ${drawdownPct.toFixed(2)}% above its all-time high`);
+    const setLevels = (athY, nowY) => {
+        lake.style.setProperty('--ath-y', `${athY}%`);
+        lake.style.setProperty('--now-y', `${nowY.toFixed(2)}%`);
+        lake.style.setProperty('--gap', Math.max(0, (nowY - athY) / 100).toFixed(4));
+        lake.style.setProperty('--rise', Math.max(0, (athY - nowY) / 100).toFixed(4));
+    };
+    const apply = () => {
+        lake.dataset.state = levels.state;
+        setLevels(levels.athY, levels.nowY);
+    };
+    lake.dataset.depth = (levels.depth || 0).toFixed(2);
+    lake.toggleAttribute('data-low', levels.state === 'below' && levels.nowY > 72);
+    // First real value: start level with the ATH line, then let the water/tide settle into place once.
+    if (lake.dataset.state === 'pending' && levels.state !== 'pending') {
+        setLevels(levels.athY, levels.athY);
+        lake.dataset.state = levels.state;
+        lake.classList.add('is-filling');
+        void lake.offsetHeight;
+        requestAnimationFrame(apply);
+        setTimeout(() => lake.classList.remove('is-filling'), 1300);
+    } else {
+        apply();
+    }
+}
+
 function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgress) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
     // Remove fetching state from the parent card to hide the loader and reveal the gauge wrapper
-    const cardEl = canvas.closest('.dash-gauge-card, .dash-gauge-carousel-card');
+    const cardEl = canvas.closest('.d-gauge, .dash-gauge-card, .dash-gauge-carousel-card');
     if (cardEl && cardEl.classList.contains('is-fetching-data')) {
         cardEl.classList.remove('is-fetching-data');
     }
@@ -471,7 +613,7 @@ function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgre
     // Use explicit dimensions or fallback to 400x220 to prevent small sizes
     // if the parent element is hidden during rendering.
     canvas.width  = width  || (canvas.parentElement.clientWidth > 0 ? canvas.parentElement.clientWidth : 400);
-    canvas.height = height || 220;
+    canvas.height = height || (canvas.parentElement.clientHeight > 0 ? canvas.parentElement.clientHeight : 220);
 
     const ctx = canvas.getContext('2d');
     const cx = canvas.width / 2;
@@ -589,6 +731,18 @@ function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgre
         const isAhead = diff >= 0;
         const diffArcColor = isAhead ? diffGreen : diffRed;
 
+        const leadEl = document.getElementById('gauge-lead');
+        if (leadEl && canvas.id === 'gaugeChart') {
+            const benchName = window.BENCHMARK_NAME || window.BENCHMARK_ID || 'the benchmark';
+            const flat = Math.abs(diff) < 0.005;
+            leadEl.className = 'gauge-lead' + (flat ? '' : (isAhead ? ' up' : ' down'));
+            leadEl.innerHTML = flat
+                ? `In line with ${benchName}`
+                : `${isAhead ? 'Ahead of' : 'Behind'} ${benchName} by <span class="num">${Math.abs(diff).toFixed(2)} pp</span>`;
+            const sayEl = document.getElementById('dash-player-say');
+            if (sayEl) sayEl.textContent = leadEl.textContent;
+        }
+
         if (Math.abs(diff) > 0.01) {
             const arcStart = Math.min(bmAngle, portfolioAngleForDiff);
             const arcEnd = Math.max(bmAngle, portfolioAngleForDiff);
@@ -648,12 +802,12 @@ function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgre
             } else {
                 stateClass = absDiff < 0.2 ? 'bm-neutral' : (isAhead ? 'bm-winning' : 'bm-losing');
             }
-            tooltip.innerHTML = `<span class="bm-msg">"${msg}"</span>
-<div class="roast-reactions" style="margin-top: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 50; pointer-events: auto;">
-    <button onclick="window.submitRoastReaction('good', event)" ontouchend="window.submitRoastReaction('good', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">👍 Good</button>
-    <button onclick="window.submitRoastReaction('repetitive', event)" ontouchend="window.submitRoastReaction('repetitive', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">🔁 Repetitive</button>
-    <button onclick="window.submitRoastReaction('wrong', event)" ontouchend="window.submitRoastReaction('wrong', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">❌ Wrong</button>
-    <button onclick="window.submitRoastReaction('boring', event)" ontouchend="window.submitRoastReaction('boring', event)" style="font-size:11px; padding:2px 6px; border-radius:12px; background:rgba(255,255,255,0.1); border:none; cursor:pointer; color:inherit; -webkit-appearance:none;">🥱 Boring</button>
+            tooltip.innerHTML = `<button type="button" class="roast-toggle" aria-expanded="false" aria-controls="roast-reactions"><span class="roast-msg">"${msg}"</span><span class="hero-tap">Tap to react</span></button>
+<div class="roast-reactions" id="roast-reactions" hidden>
+    <button type="button" class="chip-btn" onclick="window.submitRoastReaction('good', event)">Good</button>
+    <button type="button" class="chip-btn" onclick="window.submitRoastReaction('repetitive', event)">Repetitive</button>
+    <button type="button" class="chip-btn" onclick="window.submitRoastReaction('wrong', event)">Wrong</button>
+    <button type="button" class="chip-btn" onclick="window.submitRoastReaction('boring', event)">Boring</button>
 </div>`;
             tooltip.className   = stateClass + ' bm-modern-roast';
             tooltip.style.display = 'block';
@@ -876,97 +1030,6 @@ function drawdownHtml(athInfo, currentValue) {
     </div>`;
 }
 
-function renderControlDial(canvasId, value) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    
-    canvas.style.width = '100px';
-    canvas.style.height = '100px';
-    canvas.width = 100 * dpr;
-    canvas.height = 100 * dpr;
-    ctx.scale(dpr, dpr);
-
-    const cx = 50;
-    const cy = 52;
-    const r = 38;
-
-    ctx.clearRect(0, 0, 100, 100);
-
-    // Draw background outer rim
-    ctx.beginPath();
-    ctx.arc(cx, cy, r + 2, 0.75 * Math.PI, 2.25 * Math.PI);
-    const isDark = typeof window.isRoastfolioDark === 'function'
-        ? window.isRoastfolioDark()
-        : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    ctx.strokeStyle = isDark ? '#1a2f4a' : '#e2e8f0';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Draw sectors
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 3, 0.75 * Math.PI, 1.5 * Math.PI);
-    ctx.strokeStyle = isDark ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.1)';
-    ctx.lineWidth = 6;
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 3, 1.5 * Math.PI, 2.25 * Math.PI);
-    ctx.strokeStyle = isDark ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.1)';
-    ctx.lineWidth = 6;
-    ctx.stroke();
-
-    // Draw tick marks
-    const ticks = [-2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2];
-    ticks.forEach(t => {
-        const angle = 1.5 * Math.PI + (t / 2) * (0.75 * Math.PI);
-        const isMajor = t % 1 === 0;
-        const tickLength = isMajor ? 6 : 4;
-        
-        const startX = cx + Math.cos(angle) * (r - tickLength);
-        const startY = cy + Math.sin(angle) * (r - tickLength);
-        const endX = cx + Math.cos(angle) * r;
-        const endY = cy + Math.sin(angle) * r;
-        
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(endX, endY);
-        ctx.strokeStyle = isMajor 
-            ? (isDark ? '#7eb3d2' : '#475569') 
-            : (isDark ? '#475569' : '#cbd5e1');
-        ctx.lineWidth = isMajor ? 1.5 : 1;
-        ctx.stroke();
-    });
-
-    // Draw center pin
-    ctx.beginPath();
-    ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
-    ctx.fillStyle = isDark ? '#eef7ff' : '#0f172a';
-    ctx.fill();
-
-    // Draw needle
-    const clamped = Math.max(-2, Math.min(2, value));
-    const needleAngle = 1.5 * Math.PI + (clamped / 2) * (0.75 * Math.PI);
-    const needleLength = r - 5;
-    const needleEndX = cx + Math.cos(needleAngle) * needleLength;
-    const needleEndY = cy + Math.sin(needleAngle) * needleLength;
-
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(needleEndX, needleEndY);
-    ctx.strokeStyle = clamped >= 0 ? '#22c55e' : '#ef4444';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.stroke();
-
-    // Draw needle cap center dot
-    ctx.beginPath();
-    ctx.arc(cx, cy, 2, 0, 2 * Math.PI);
-    ctx.fillStyle = '#ff7a00';
-    ctx.fill();
-}
-
 function renderWalletCards() {
     const container = document.getElementById('dash-mini-wallets');
     if (!container || typeof WALLET_SUMMARIES === 'undefined') return;
@@ -978,46 +1041,43 @@ function renderWalletCards() {
         return;
     }
 
-    const metersHTML = wallets.map(name => {
+    const rowsHTML = wallets.map((name, idx) => {
         const w = WALLET_SUMMARIES[name];
         if (!w) return '';
-        const color = w.dailyPLN >= 0 ? '#27ae60' : '#c0392b';
+        const tone = w.dailyPLN >= 0 ? 'up' : 'down';
         const sign = w.dailyPLN >= 0 ? '+' : '';
+        // The dial maps a +/-5% day onto +/-90 degrees of needle travel
+        const angle = Math.max(-90, Math.min(90, (Number(w.dailyPct || 0) / 5) * 90));
         return `
-        <div class="control-panel-meter" onclick="showTab('history'); if(window.setHistoryWallet) window.setHistoryWallet('${name}');" style="cursor:pointer;" title="View history for ${name}">
-            <div class="control-panel-dial-wrap">
-                <canvas id="controlDial-${name}" style="width:100px; height:100px;"></canvas>
+        <article class="acct-row">
+            <button type="button" class="acct-toggle" aria-expanded="false" aria-controls="acct-more-${idx}" title="Details for ${name}">
+                <svg class="acct-dial" viewBox="0 0 100 60" style="--angle:${angle.toFixed(1)}deg" aria-hidden="true">
+                    <path class="gauge-track" d="M 10 54 A 40 40 0 0 1 90 54"/>
+                    <path class="gauge-arc" d="M 10 54 A 40 40 0 0 1 90 54"/>
+                    <g class="needle"><line x1="50" y1="54" x2="50" y2="20"/></g>
+                </svg>
+                <span class="acct-info">
+                    <span class="acct-name">${name}</span>
+                    <span class="acct-total num">${w.total.toLocaleString('pl-PL', {minimumFractionDigits: 0})} PLN</span>
+                    <span class="acct-daily ${tone}"><span class="num">${sign}${Number(w.dailyPct || 0).toFixed(2)}%</span> <span class="num">(${sign}${w.dailyPLN.toLocaleString('pl-PL', {minimumFractionDigits: 0})} PLN)</span></span>
+                    <span id="wallet-ath-${name}" class="acct-ath">ATH pending</span>
+                </span>
+                <svg class="ico chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="acct-more" id="acct-more-${idx}" hidden>
+                <button type="button" class="link-btn" onclick="showTab('history'); if(window.setHistoryWallet) window.setHistoryWallet('${name}');">Open history</button>
             </div>
-            <div class="control-panel-info">
-                <div class="control-panel-nameplate">${name}</div>
-                <div class="control-panel-val">${w.total.toLocaleString('pl-PL', {minimumFractionDigits: 0})} PLN</div>
-                <div class="control-panel-pct" style="color:${color};">
-                    ${sign}${Number(w.dailyPct || 0).toFixed(2)}% 
-                    <span style="font-size:11px; font-weight:normal; opacity:0.85; margin-left:4px;">(${sign}${w.dailyPLN.toLocaleString('pl-PL', {minimumFractionDigits: 0})} PLN)</span>
-                </div>
-                <div id="wallet-ath-${name}" class="control-panel-ath">ATH pending</div>
-            </div>
-        </div>`;
+        </article>`;
     }).join('');
 
-    container.innerHTML = `
-    <div class="dash-card dash-control-panel-card">
-        <div class="control-panel-header">
-            <div class="dash-label" style="margin:0;"><span class="control-panel-status-light"></span> Portfolios Control Room</div>
-            <div class="control-panel-title-sub">Instrument Panel</div>
-        </div>
-        <div class="control-panel-grid">
-            ${metersHTML}
-        </div>
-    </div>`;
+    container.innerHTML = rowsHTML;
 
-    // Render mini dial gauges after layout
+    // Render wallet ATH status after layout
     requestAnimationFrame(() => {
         wallets.forEach(name => {
             const w = WALLET_SUMMARIES[name];
             if (!w) return;
-            renderControlDial(`controlDial-${name}`, w.dailyPct);
-            
+
             // Render wallet ATH summary/drawdown
             try {
                 const baseAth = (window.WALLET_ATHS || {})[name];
@@ -1038,9 +1098,9 @@ function renderWalletCards() {
                         const diff = curr - effectiveAth;
                         const pct = effectiveAth ? ((diff / effectiveAth) * 100).toFixed(2) : '0.00';
                         if (diff >= -0.01) {
-                            athEl.innerHTML = `Status: <strong style="color:#22c55e;">At ATH (0.00%)</strong>`;
+                            athEl.innerHTML = `Status: <strong class="num up">At ATH (0.00%)</strong>`;
                         } else {
-                            athEl.innerHTML = `ATH Drawdown: <strong style="color:#ef4444;">${pct}%</strong>`;
+                            athEl.innerHTML = `ATH Drawdown: <strong class="num down">${pct}%</strong>`;
                         }
                     }
                 }
@@ -1056,23 +1116,19 @@ window._sparkMode = 'today'; // 'today' | 'year'
 function setSparkMode(mode) {
     window._sparkMode = mode;
     document.querySelectorAll('.spark-mode-btn').forEach(b => {
-        b.style.background = b.dataset.mode === mode ? '#35424a' : '#e8edf0';
-        b.style.color      = b.dataset.mode === mode ? '#fff'     : '#555';
+        b.setAttribute('aria-pressed', b.dataset.mode === mode ? 'true' : 'false');
     });
     if (typeof renderDailyBreakdown === 'function') renderDailyBreakdown();
 }
 
 function makeSparklinePlaceholder(width, height, isUp) {
-    const lineColor = isUp ? '#34d399' : '#f87171';
-    const fillColor = isUp ? 'rgba(52, 211, 153, 0.12)' : 'rgba(248, 113, 113, 0.12)';
-    const strokeColor = isUp ? 'rgba(52, 211, 153, 0.5)' : 'rgba(248, 113, 113, 0.5)';
+    const tone = isUp ? 'var(--color-success)' : 'var(--color-danger)';
 
     return `
         <svg class="sparkline-svg sparkline-placeholder" width="${width}" height="${height}"
             style="display:block;overflow:visible;flex-shrink:0;min-width:${width}px;">
-            <rect x="0" y="0" width="${width}" height="${height}" rx="8" fill="${fillColor}" stroke="${strokeColor}" stroke-width="1" stroke-dasharray="4 6"/>
-            <path d="M6 ${height * 0.6} Q ${width * 0.25} ${height * 0.25}, ${width * 0.5} ${height * 0.52} T ${width - 6} ${height * 0.45}"
-                fill="none" stroke="${lineColor}" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+            <path d="M2 ${height * 0.6} Q ${width * 0.25} ${height * 0.25}, ${width * 0.5} ${height * 0.52} T ${width - 2} ${height * 0.45}"
+                fill="none" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 5" opacity="0.7" style="stroke:${tone}"/>
         </svg>`;
 }
 
@@ -1086,7 +1142,7 @@ function makeSparkline(barPairs, isUp, width, height) {
     const w = width - pad * 2;
     const h = height - pad * 2;
 
-    const color = isUp ? '#34d399' : '#f87171'; // Neon green / Neon red
+    const color = isUp ? 'var(--color-success)' : 'var(--color-danger)';
     const fillId = `sf${Math.random().toString(36).slice(2,7)}`;
 
     const coords = barPairs.map((p, i) => ({
@@ -1124,7 +1180,7 @@ function makeSparkline(barPairs, isUp, width, height) {
 
     const dots = hits.map(c =>
         `<circle class="sp-dot" cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="2.5"
-            fill="${color}" opacity="0"/>`
+            style="fill:${color}" opacity="0"/>`
     ).join('');
 
     // Full-width transparent overlay — tracks mouse X to find nearest point
@@ -1134,8 +1190,8 @@ function makeSparkline(barPairs, isUp, width, height) {
             style="display:block;overflow:visible;flex-shrink:0;min-width:${width}px;" data-coords='${coordsJson}'>
         <defs>
             <linearGradient id="${fillId}" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="${color}" stop-opacity="0.02"/>
+                <stop offset="0%" stop-opacity="0.35" style="stop-color:${color}"/>
+                <stop offset="100%" stop-opacity="0.02" style="stop-color:${color}"/>
             </linearGradient>
             <filter id="glow-${fillId}" x="-20%" y="-20%" width="140%" height="140%">
                 <feGaussianBlur stdDeviation="2" result="blur"/>
@@ -1146,8 +1202,8 @@ function makeSparkline(barPairs, isUp, width, height) {
             </filter>
         </defs>
         <polygon points="${pts} ${last.x.toFixed(1)},${pad + h} ${pad},${pad + h}" fill="url(#${fillId})"/>
-        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" filter="url(#glow-${fillId})" stroke-linejoin="round" stroke-linecap="round"/>
-        <circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="2.5" fill="${color}" filter="url(#glow-${fillId})"/>
+        <polyline points="${pts}" fill="none" style="stroke:${color}" stroke-width="2" filter="url(#glow-${fillId})" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="2.5" style="fill:${color}" filter="url(#glow-${fillId})"/>
         ${dots}
         <rect x="0" y="0" width="${width}" height="${height}" fill="transparent" style="cursor:crosshair;" data-color="${color}"/>
     </svg>`;
@@ -1301,7 +1357,6 @@ function renderDailyBreakdown() {
     if (typeof PORTFOLIO_DATA === 'undefined' || !PORTFOLIO_DATA) return;
 
     const mode = window._sparkMode || 'today';
-    const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
 
     function isCashHoldingItem(item) {
         if (!item) return false;
@@ -1384,23 +1439,23 @@ function renderDailyBreakdown() {
     const entries = sorted.map(d => {
         // Always use daily change for text, regardless of sparkline mode
         const changePct  = d.dailyChangePctSafe;
-        const pctColor = changePct >= 0 ? '#27ae60' : '#c0392b';
+        const pctTone  = changePct >= 0 ? 'up' : 'down';
         const pctSign  = changePct > 0 ? '+' : (changePct < 0 ? '-' : '');
         const logoHtml = companyLogoHtml(d.name);
         const isUp = changePct >= 0;
 
-        // Daily PLN should always use its own color/sign regardless of sparkline mode
-        const dailyColor = d.dailyChangePLNSafe >= 0 ? '#27ae60' : '#c0392b';
+        // Daily PLN should always use its own tone/sign regardless of sparkline mode
+        const dailyTone = d.dailyChangePLNSafe >= 0 ? 'up' : 'down';
         const dailySign  = d.dailyChangePLNSafe < 0 ? '-' : '';
-        
+
         // Ensure no double signs by using Math.abs for PLN
         const plnFormatted = Math.abs(d.dailyChangePLNSafe).toLocaleString('pl-PL', { minimumFractionDigits: 2 });
         const pctFormatted = Math.abs(changePct).toFixed(2);
 
         const priceStr = d.pricePLNSafe > 0
-            ? d.pricePLNSafe.toLocaleString('pl-PL', { minimumFractionDigits: 2 }) + ' PLN'
-            + (d.priceOriginalCurrency !== 'PLN' ? ` <small style="color:#888">${d.priceOriginal} ${d.priceOriginalCurrency}</small>` : '')
-            : '—';
+            ? `<span class="num">${d.pricePLNSafe.toLocaleString('pl-PL', { minimumFractionDigits: 2 })} PLN</span>`
+            + (d.priceOriginalCurrency !== 'PLN' ? ` <small class="num">${d.priceOriginal} ${d.priceOriginalCurrency}</small>` : '')
+            : '<span class="num">—</span>';
 
         const isCash = isCashHoldingItem(d);
         const ticker = d.ticker || d.name;
@@ -1417,107 +1472,27 @@ function renderDailyBreakdown() {
             barPairs = rawBars.map((v, i) => [now - (rawBars.length - 1 - i) * 60000, v]);
         }
         const spark = (Array.isArray(barPairs) && barPairs.length >= 2)
-            ? makeSparkline(barPairs, isUp, isMobile ? 150 : 135, isMobile ? 40 : 36)
-            : makeSparklinePlaceholder(isMobile ? 150 : 135, isMobile ? 40 : 36, isUp);
+            ? makeSparkline(barPairs, isUp, 180, 30)
+            : makeSparklinePlaceholder(180, 30, isUp);
 
-        if (isMobile) {
-            const clickHandler = isCash ? '' : `onclick="window.openAnalysisForTicker('${ticker}')"`;
-            const clickableClass = isCash ? '' : ' dash-mover-clickable';
-            return `
-                <article class="dash-mover-card${clickableClass}" ${clickHandler}>
-                    <div class="dash-mover-head">
-                        <div class="dash-mover-company">
-                            ${logoHtml}
-                            <span class="dash-mover-name">${d.name}</span>
-                        </div>
-                        <div class="dash-mover-pln" style="color:${dailyColor};font-family:monospace;text-shadow:0 0 8px currentColor;">
-                            ${dailySign}${plnFormatted} PLN
-                        </div>
-                    </div>
-                    <div class="dash-mover-body">
-                        <div class="dash-mover-spark">${spark}</div>
-                        <div class="dash-mover-meta">
-                            <div class="dash-mover-price" style="color:#94a3b8;font-family:monospace;">${priceStr}</div>
-                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:2px;">
-                                <div class="dash-mover-pct" style="color:${pctColor};font-family:monospace;text-shadow:0 0 5px currentColor;">${pctSign}${pctFormatted}%</div>
-                                ${volBadge}
-                            </div>
-                        </div>
-                    </div>
-                </article>`;
-        }
-
-        const clickHandler = isCash ? '' : `onclick="window.openAnalysisForTicker('${ticker}')" style="cursor:pointer;"`;
-        const clickableClass = isCash ? '' : ' holding-row-clickable';
-        return `<tr class="${clickableClass}" ${clickHandler}>
-            <td class="dash-movers-td-company">
-                <div class="dash-movers-company-cell" style="display:flex;align-items:center;min-width:0;">
-                    ${logoHtml}
-                    <span class="dash-mover-name">${d.name}</span>
-                </div>
-            </td>
-            <td class="dash-movers-td-chart">
-                <div class="dash-mover-chart-wrap" style="display:flex;align-items:center;gap:8px;white-space:nowrap;min-width:0;">
-                    ${spark}
-                    <div class="dash-mover-metrics" style="min-width:0;flex-shrink:0;">
-                        <div class="dash-mover-price-label" style="font-size:12px;color:#94a3b8;font-family:monospace;">${priceStr}</div>
-                        <div class="dash-mover-pct-vol-row" style="display:flex;align-items:center;gap:6px;margin-top:2px;white-space:nowrap;">
-                            <span class="dash-mover-pct-badge" style="font-size:12px;font-weight:700;color:${pctColor};font-family:monospace;text-shadow:0 0 5px currentColor;white-space:nowrap;">${pctSign}${pctFormatted}%</span>
-                            ${volBadge}
-                        </div>
-                    </div>
-                </div>
-            </td>
-            <td class="dash-movers-td-pln" style="text-align:right;white-space:nowrap;">
-                <div class="dash-mover-pln-val" style="color:${dailyColor}; font-weight:bold; font-family:monospace; text-shadow:0 0 8px currentColor; text-align:right; white-space:nowrap;">${dailySign}${plnFormatted} PLN</div>
-            </td>
-        </tr>`;
+        const clickHandler = isCash ? '' : `onclick="window.openAnalysisForTicker('${ticker}')"`;
+        const clickableClass = isCash ? '' : ' m-row-clickable';
+        return `
+            <div class="m-row${clickableClass}" role="listitem" ${clickHandler}>
+                <span class="m-logo">${logoHtml}</span>
+                <span class="m-main">
+                    <span class="mover-name">${d.name}</span>
+                    <span class="m-sub">${priceStr}${volBadge}</span>
+                </span>
+                <span class="m-nums">
+                    <span class="num m-pln ${dailyTone}">${dailySign}${plnFormatted} PLN</span>
+                    <span class="num ${pctTone}">${pctSign}${pctFormatted}%</span>
+                </span>
+                <span class="m-chart">${spark}</span>
+            </div>`;
     }).join('');
 
-    if (isMobile) {
-        container.innerHTML = `
-            <div class="dash-movers-mobile-controls">
-                <span class="dash-movers-mobile-hint">Sorted by biggest daily impact</span>
-                <div class="dash-movers-toggle">
-                    <button class="spark-mode-btn" data-mode="today" onclick="setSparkMode('today')"
-                        style="border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;
-                        background:${mode==='today'?'#35424a':'#e8edf0'};color:${mode==='today'?'#fff':'#888'};">1D</button>
-                    <button class="spark-mode-btn" data-mode="year" onclick="setSparkMode('year')"
-                        style="border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;
-                        background:${mode==='year'?'#35424a':'#e8edf0'};color:${mode==='year'?'#fff':'#888'};">1Y</button>
-                </div>
-            </div>
-            <div class="dash-movers-mobile-list">${entries}</div>`;
-    } else {
-        container.innerHTML = `
-            <table class="holdings-table dash-movers-table" style="width:100%; font-size:13px; table-layout:fixed;">
-                <colgroup>
-                    <col class="dash-movers-col-company" style="width:28%;">
-                    <col class="dash-movers-col-chart" style="width:52%;">
-                    <col class="dash-movers-col-pln" style="width:20%;">
-                </colgroup>
-                <thead>
-                    <tr>
-                        <th class="dash-movers-th-company" style="width:28%; text-align:left;">Company</th>
-                        <th class="dash-movers-th-chart" style="width:52%; text-align:left;">
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <span>Chart</span>
-                                <div style="display:flex;gap:4px;background:rgba(255,255,255,0.15);border-radius:6px;padding:3px;">
-                                    <button class="spark-mode-btn" data-mode="today" onclick="setSparkMode('today')"
-                                        style="border:none;border-radius:4px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;
-                                        background:${mode==='today'?'#fff':'transparent'};color:${mode==='today'?'#35424a':'#fff'};">1D</button>
-                                    <button class="spark-mode-btn" data-mode="year" onclick="setSparkMode('year')"
-                                        style="border:none;border-radius:4px;padding:3px 8px;font-size:11px;font-weight:600;cursor:pointer;
-                                        background:${mode==='year'?'#fff':'transparent'};color:${mode==='year'?'#35424a':'#fff'};">1Y</button>
-                                </div>
-                            </div>
-                        </th>
-                        <th class="dash-movers-th-pln" style="width:20%; text-align:right;">Daily PLN</th>
-                    </tr>
-                </thead>
-                <tbody>${entries}</tbody>
-            </table>`;
-    }
+    container.innerHTML = entries;
 
     // Sparkline hover — use overlay rect + nearest-point by X position
     const tip = getSparkTooltip();
@@ -1841,13 +1816,10 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
         const dropdown = document.getElementById('monthly-benchmarks-dropdown');
         const btn = document.getElementById('monthly-benchmarks-btn');
         if (!dropdown) return;
-        if (dropdown.style.display === 'none') {
-            dropdown.style.display = 'block';
-            btn.classList.add('is-expanded');
-        } else {
-            dropdown.style.display = 'none';
-            btn.classList.remove('is-expanded');
-        }
+        const opening = dropdown.style.display === 'none';
+        dropdown.style.display = opening ? 'block' : 'none';
+        btn.classList.toggle('is-expanded', opening);
+        btn.setAttribute('aria-expanded', String(opening));
     };
 
     let _cachedMonthlyBenchmarks = null;
@@ -1965,15 +1937,15 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
             const returnPctEl = document.getElementById('monthly-return-pct');
             if (returnValEl) {
                 const sign = monthlyReturnVal >= 0 ? '+' : '';
-                const color = monthlyReturnVal >= 0 ? '#27ae60' : '#c0392b';
                 returnValEl.textContent = sign + monthlyReturnVal.toLocaleString('pl-PL', { minimumFractionDigits: 2 }) + ' PLN';
-                returnValEl.style.color = color;
+                returnValEl.classList.toggle('up', monthlyReturnVal >= 0);
+                returnValEl.classList.toggle('down', monthlyReturnVal < 0);
             }
             if (returnPctEl) {
                 const sign = monthlyReturnPct >= 0 ? '+' : '';
-                const color = monthlyReturnPct >= 0 ? '#27ae60' : '#c0392b';
                 returnPctEl.textContent = sign + monthlyReturnPct.toFixed(2) + '%';
-                returnPctEl.style.color = color;
+                returnPctEl.classList.toggle('up', monthlyReturnPct >= 0);
+                returnPctEl.classList.toggle('down', monthlyReturnPct < 0);
             }
 
             // 2. Fetch Retirement config
@@ -2018,11 +1990,7 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
 
             if (depositStatusEl) {
                 depositStatusEl.textContent = actualMonthlyDeposit.toLocaleString('pl-PL', { maximumFractionDigits: 0 }) + ' / ' + monthlyDepositGoal.toLocaleString('pl-PL', { maximumFractionDigits: 0 }) + ' PLN';
-                if (actualMonthlyDeposit < 0) {
-                    depositStatusEl.style.color = 'var(--red)';
-                } else {
-                    depositStatusEl.style.color = '';
-                }
+                depositStatusEl.classList.toggle('down', actualMonthlyDeposit < 0);
             }
             if (depositBarEl && depositPctEl) {
                 const depPct = monthlyDepositGoal > 0 ? (Math.max(0, actualMonthlyDeposit) / monthlyDepositGoal * 100) : 0;
@@ -2097,13 +2065,8 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
 
                 if (scoreEl) {
                     scoreEl.textContent = `Beat ${wins} / Lost ${losses}`;
-                    if (wins > losses) {
-                        scoreEl.style.color = '#27ae60';
-                    } else if (wins < losses) {
-                        scoreEl.style.color = '#c0392b';
-                    } else {
-                        scoreEl.style.color = '';
-                    }
+                    scoreEl.classList.toggle('up', wins > losses);
+                    scoreEl.classList.toggle('down', wins < losses);
                 }
                 if (dropdownEl) {
                     dropdownEl.innerHTML = listHTML || '<div class="stats-empty">No benchmark price data available.</div>';
@@ -2119,13 +2082,10 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
         const dropdown = document.getElementById('yearly-benchmarks-dropdown');
         const btn = document.getElementById('yearly-benchmarks-btn');
         if (!dropdown) return;
-        if (dropdown.style.display === 'none') {
-            dropdown.style.display = 'block';
-            btn.classList.add('is-expanded');
-        } else {
-            dropdown.style.display = 'none';
-            btn.classList.remove('is-expanded');
-        }
+        const opening = dropdown.style.display === 'none';
+        dropdown.style.display = opening ? 'block' : 'none';
+        btn.classList.toggle('is-expanded', opening);
+        btn.setAttribute('aria-expanded', String(opening));
     };
 
     function getPreviousYearEndString() {
@@ -2181,15 +2141,15 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
             const returnPctEl = document.getElementById('yearly-return-pct');
             if (returnValEl) {
                 const sign = yearlyReturnVal >= 0 ? '+' : '';
-                const color = yearlyReturnVal >= 0 ? '#27ae60' : '#c0392b';
                 returnValEl.textContent = sign + yearlyReturnVal.toLocaleString('pl-PL', { minimumFractionDigits: 2 }) + ' PLN';
-                returnValEl.style.color = color;
+                returnValEl.classList.toggle('up', yearlyReturnVal >= 0);
+                returnValEl.classList.toggle('down', yearlyReturnVal < 0);
             }
             if (returnPctEl) {
                 const sign = yearlyReturnPct >= 0 ? '+' : '';
-                const color = yearlyReturnPct >= 0 ? '#27ae60' : '#c0392b';
                 returnPctEl.textContent = sign + yearlyReturnPct.toFixed(2) + '%';
-                returnPctEl.style.color = color;
+                returnPctEl.classList.toggle('up', yearlyReturnPct >= 0);
+                returnPctEl.classList.toggle('down', yearlyReturnPct < 0);
             }
 
             // 2. Fetch Retirement config
@@ -2234,11 +2194,7 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
 
             if (depositStatusEl) {
                 depositStatusEl.textContent = actualYearlyDeposit.toLocaleString('pl-PL', { maximumFractionDigits: 0 }) + ' / ' + yearlyDepositGoal.toLocaleString('pl-PL', { maximumFractionDigits: 0 }) + ' PLN';
-                if (actualYearlyDeposit < 0) {
-                    depositStatusEl.style.color = 'var(--red)';
-                } else {
-                    depositStatusEl.style.color = '';
-                }
+                depositStatusEl.classList.toggle('down', actualYearlyDeposit < 0);
             }
             if (depositBarEl && depositPctEl) {
                 const depPct = yearlyDepositGoal > 0 ? (Math.max(0, actualYearlyDeposit) / yearlyDepositGoal * 100) : 0;
@@ -2329,13 +2285,8 @@ document.addEventListener('DOMContentLoaded', initializeDashboard);
 
                 if (scoreEl) {
                     scoreEl.textContent = `Beat ${wins} / Lost ${losses}`;
-                    if (wins > losses) {
-                        scoreEl.style.color = '#27ae60';
-                    } else if (wins < losses) {
-                        scoreEl.style.color = '#c0392b';
-                    } else {
-                        scoreEl.style.color = '';
-                    }
+                    scoreEl.classList.toggle('up', wins > losses);
+                    scoreEl.classList.toggle('down', wins < losses);
                 }
                 if (dropdownEl) {
                     dropdownEl.innerHTML = listHTML || '<div class="stats-empty">No benchmark price data available.</div>';
@@ -2378,6 +2329,11 @@ async function renderDashSparkline() {
 
     if (typeof Chart === 'undefined') return;
 
+    const token = (name, fallback) => (getComputedStyle(document.documentElement).getPropertyValue(name) || '').trim() || fallback;
+    const gainColor = token('--color-success', '#10b981');
+    const lossColor = token('--color-danger', '#ef4444');
+    const labelColor = token('--text-secondary', '#a8c0d8');
+
     try {
         if (typeof _loadHistorySnapshots !== 'function') return;
         
@@ -2413,7 +2369,7 @@ async function renderDashSparkline() {
             
             labels.push(monthName);
             values.push(netGain);
-            colors.push(netGain >= 0 ? 'rgba(46, 204, 113, 0.8)' : 'rgba(231, 76, 60, 0.8)');
+            colors.push(netGain >= 0 ? gainColor : lossColor);
         }
 
         if (window._dashSparkline) {
@@ -2455,7 +2411,7 @@ async function renderDashSparkline() {
                     x: {
                         display: true,
                         grid: { display: false, drawBorder: false },
-                        ticks: { color: '#94a3b8', font: { size: 10, family: 'monospace' } }
+                        ticks: { color: labelColor, font: { size: 10, family: 'monospace' } }
                     },
                     y: {
                         display: false,

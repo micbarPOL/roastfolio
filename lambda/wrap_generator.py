@@ -10,6 +10,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any
 
 import boto3
+from observability import instrument_table
 
 import db
 import diary_handler
@@ -684,7 +685,7 @@ def _diary_audit(user_id: str, start: date, next_month: date, month_end: date) -
 
 def _wrap_table():
     table_name = os.environ.get("WRAPS_TABLE", os.environ.get("DIARY_TABLE", "roastfolio-diary"))
-    return boto3.resource("dynamodb").Table(table_name)
+    return instrument_table(boto3.resource("dynamodb").Table(table_name))
 
 
 def _dynamodb_value(value: Any) -> Any:

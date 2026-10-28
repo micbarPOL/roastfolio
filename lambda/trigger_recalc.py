@@ -14,6 +14,7 @@ from decimal import Decimal
 import re
 
 import boto3
+from observability import instrument_table
 
 import db
 import diary_handler
@@ -309,7 +310,7 @@ def generate_previous_month_wraps(
 
     previous_month_last_day = run_at.date().replace(day=1) - timedelta(days=1)
     if user_ids is None:
-        table = boto3.resource("dynamodb").Table(os.environ["USERS_TABLE"])
+        table = instrument_table(boto3.resource("dynamodb").Table(os.environ["USERS_TABLE"]))
         response = table.scan(ProjectionExpression="userId")
         users = response.get("Items", [])
         while response.get("LastEvaluatedKey"):
@@ -404,7 +405,7 @@ def monthly_wrap_handler(event, _context):
 
 def run() -> list[dict]:
     results = []
-    table = boto3.resource("dynamodb").Table(os.environ["USERS_TABLE"])
+    table = instrument_table(boto3.resource("dynamodb").Table(os.environ["USERS_TABLE"]))
     response = table.scan()
     users = response.get("Items", [])
 

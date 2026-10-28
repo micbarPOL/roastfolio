@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import Any, Iterable, Mapping
 
 import boto3
+from observability import instrument_table
 
 
 ZERO = Decimal("0")
@@ -342,13 +343,13 @@ def persist_portfolio_avco(
         "updatedAt": datetime.utcnow().isoformat(timespec="seconds") + "Z",
     }
     table_name = os.environ.get("DATA_TABLE", "roastfolio-data")
-    boto3.resource("dynamodb").Table(table_name).put_item(Item=item)
+    instrument_table(boto3.resource("dynamodb").Table(table_name)).put_item(Item=item)
     return result
 
 
 def load_portfolio_avco(user_id: str, portfolio_id: str) -> dict[str, Any]:
     table_name = os.environ.get("DATA_TABLE", "roastfolio-data")
-    response = boto3.resource("dynamodb").Table(table_name).get_item(
+    response = instrument_table(boto3.resource("dynamodb").Table(table_name)).get_item(
         Key={"userId": user_id, "sk": f"AVCO#{portfolio_id}"}
     )
     item = response.get("Item") or {}
