@@ -138,10 +138,13 @@ def render_periodic_recap_email(payload: dict[str, Any]) -> str:
 
     wallet_html = _wallet_rows(payload.get("wallets") or [])
     benchmark_html = _benchmark_rows(payload.get("market") or [])
-    carry_name = _safe_text((payload.get("carry") or {}).get("name", "Best asset"))
-    carry_value = _format_signed_pct((payload.get("carry") or {}).get("value", 0))
-    anchor_name = _safe_text((payload.get("anchor") or {}).get("name", "Weakest asset"))
-    anchor_value = _format_signed_pct((payload.get("anchor") or {}).get("value", 0))
+    from email_service import _resolve_holding_display_name
+    carry_obj = payload.get("carry") or {}
+    carry_name = _safe_text(_resolve_holding_display_name(carry_obj.get("name"), carry_obj.get("ticker")) or "Best asset")
+    carry_value = _format_signed_pct(carry_obj.get("value", 0))
+    anchor_obj = payload.get("anchor") or {}
+    anchor_name = _safe_text(_resolve_holding_display_name(anchor_obj.get("name"), anchor_obj.get("ticker")) or "Weakest asset")
+    anchor_value = _format_signed_pct(anchor_obj.get("value", 0))
     diary_html = _diary_rows(payload.get("diary") or []) if period == "monthly" else ""
     cta_url = payload.get("cta_url") or "https://app.roastfolio.app/dashboard"
 

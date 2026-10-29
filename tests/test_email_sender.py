@@ -41,8 +41,8 @@ def test_render_weekly_email_contains_privacy_safe_sections():
     assert "IKE" in html
     assert "3.4%" in html
     assert "WIG20" in html
-    assert "XTB.WA" in html
-    assert "CDR.WA" in html
+    assert "XTB" in html
+    assert "CDR" in html
     assert "PLN" not in html
     assert "https://app.roastfolio.app/dashboard?source=email" in html
 

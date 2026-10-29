@@ -357,7 +357,7 @@ def test_render_monthly_recap_email_leader_and_anchor():
     assert "-1\u00a0890 PLN" in html_body
     assert "Sold 2,500 PLN" in html_body
     assert "Month Leader: CD Projekt (+3\u00a0240 PLN) - Pure price move" in text_body
-    assert "Month Anchor: Ten Square Games (-1\u00a0890 PLN) - Sold 2,500 PLN" in text_body
+    assert "Month Anchor: TSGAMES (-1\u00a0890 PLN) - Sold 2,500 PLN" in text_body
 
 
 def test_render_monthly_recap_email_market_context_and_seasonality():
@@ -425,7 +425,7 @@ def test_render_monthly_recap_email_trading_activity_and_privacy():
     assert "28\u00a0000 PLN" in html_body
     assert "17\u00a0000 PLN" in html_body
     assert "TOP TRANSACTIONS" in html_body
-    assert "CDR.WA" in html_body
+    assert "CDR" in html_body
     assert "12\u00a0500 PLN" in html_body
     assert "BUY" in html_body
     assert "SELL" in html_body
@@ -437,5 +437,28 @@ def test_render_monthly_recap_email_trading_activity_and_privacy():
     assert "30\u00a0000 PLN" not in html_body_priv
     assert "12\u00a0500 PLN" not in html_body_priv
     assert "---" in html_body_priv
+
+
+def test_resolve_holding_display_name_and_suffix_trimming():
+    cases = [
+        ("MOBRUK (MBR)", "MBR.WA", "Mobruk"),
+        ("XTB", "XTB.WA", "XTB"),
+        ("CDPROJEKT (CDR)", "CDR.WA", "Cdprojekt"),
+        ("Orlen S.A.", "PKN.WA", "Orlen"),
+        ("Meta Platforms, Inc.", "META", "Meta Platforms"),
+        ("iShares Core S&P 500 UCITS ETF", "CSPX.L", "CSPX"),
+        ("ABC Sp. z o.o.", "ABC.WA", "ABC"),
+        ("XYZ z o. o.", "XYZ.WA", "XYZ"),
+        ("Global Tech Ltd.", "GTECH", "Global Tech"),
+        ("Enterprise Corp.", "ECORP", "Enterprise"),
+        ("PKO BP", "PKO.WA", "PKO BP"),
+        ("MBR.WA", "MBR.WA", "MBR"),
+        ("", "MBR.WA", "MBR"),
+        (None, "XTB.WA", "XTB"),
+    ]
+    for raw_name, ticker, expected in cases:
+        actual = email_service._resolve_holding_display_name(raw_name, ticker)
+        assert actual == expected, f"Failed for name={raw_name!r}, ticker={ticker!r}: got {actual!r}, expected {expected!r}"
+
 
 

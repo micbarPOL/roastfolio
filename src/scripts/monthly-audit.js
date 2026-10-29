@@ -1027,10 +1027,13 @@
         const available = finite(asset?.net_contribution_pln);
         const value = number(asset?.net_contribution_pln);
         const endpoint = 50 + value / scale * 50;
+        const displayName = window.MonthlyAuditPresentation?.resolveHoldingDisplayName
+            ? window.MonthlyAuditPresentation.resolveHoldingDisplayName(asset?.name, asset?.ticker)
+            : (asset?.name || asset?.ticker || 'No data');
         return `
             <div class="monthly-audit-contribution ${kind}">
                 <span>${isCarry ? '▲ Leader' : '▼ Anchor'}</span>
-                <div><strong>${escapeHtml(asset?.ticker || asset?.name || 'No data')}</strong><b class="${tone(value)}">${escapeHtml(formatPLN(asset?.net_contribution_pln, true))}</b></div>
+                <div><strong>${escapeHtml(displayName)}</strong><b class="${tone(value)}">${escapeHtml(formatPLN(asset?.net_contribution_pln, true))}</b></div>
                 <div class="ma-contribution-track" role="img" aria-label="${escapeHtml(isCarry ? 'Leader' : 'Anchor')}: ${escapeHtml(formatPLN(asset?.net_contribution_pln, true))}. Shared axis minus ${scale} to plus ${scale} PLN; zero in the centre.">
                     ${available ? `<span class="ma-contribution-fill ${tone(value)}" style="left:${Math.min(50, endpoint)}%;width:${Math.abs(value) / scale * 50}%"></span>` : ''}<i class="ma-track-zero" style="left:50%"></i>
                     ${finite(monthTotal) ? `<i class="ma-month-marker" style="left:${50 + number(monthTotal) / scale * 50}%" title="Month total ${escapeHtml(formatPLN(monthTotal, true))}"></i>` : ''}</div>
@@ -1060,7 +1063,12 @@
             </div>
             ${!finite(activity.dividend_total_pln) ? '<p class="ma-muted">Dividend data unavailable.</p>' : ''}
             <h3 class="ma-section-title">Largest transactions</h3>
-            ${transactions.length ? `<ol class="ma-transactions">${transactions.map(transaction => `<li><time>${escapeHtml(storedDate(transaction.date))}</time><span class="ma-trade-type">${escapeHtml(['BUY', 'SELL'].includes(transaction.type) ? transaction.type : 'No data')}</span><strong>${escapeHtml(transaction.ticker || 'No data')}</strong><b>${escapeHtml(formatPLN(transaction.value_pln))}</b></li>`).join('')}</ol>` : `<p class="ma-muted">${finite(activity.transaction_count) && number(activity.transaction_count) === 0 ? 'No BUY or SELL transactions this month.' : 'Transaction details unavailable.'}</p>`}
+            ${transactions.length ? `<ol class="ma-transactions">${transactions.map(transaction => {
+                const txName = window.MonthlyAuditPresentation?.resolveHoldingDisplayName
+                    ? window.MonthlyAuditPresentation.resolveHoldingDisplayName(transaction.name, transaction.ticker)
+                    : (transaction.name || transaction.ticker || 'No data');
+                return `<li><time>${escapeHtml(storedDate(transaction.date))}</time><span class="ma-trade-type">${escapeHtml(['BUY', 'SELL'].includes(transaction.type) ? transaction.type : 'No data')}</span><strong>${escapeHtml(txName)}</strong><b>${escapeHtml(formatPLN(transaction.value_pln))}</b></li>`;
+            }).join('')}</ol>` : `<p class="ma-muted">${finite(activity.transaction_count) && number(activity.transaction_count) === 0 ? 'No BUY or SELL transactions this month.' : 'Transaction details unavailable.'}</p>`}
             <p class="ma-footnote">Settled transaction values in PLN. Turnover is trading volume, not investment return; dividends are separate.</p>`;
         return card('What changed hands.', 'Trading activity', body, 'ma-trading');
     }
@@ -1105,7 +1113,12 @@
             : null;
         const pieces = [];
         if (closed.length) pieces.push(`<div><strong>${upDays}/${closed.length}</strong><span>Sessions closed green</span></div>`);
-        if (carryValue) pieces.push(`<div><strong>${escapeHtml(carryValue)}</strong><span>${carryShareValue > 100 ? `from ${escapeHtml(item.carry?.ticker || item.carry?.name || 'leader')}` : `of gain from ${escapeHtml(item.carry?.ticker || item.carry?.name || 'leader')}`}</span></div>`);
+        if (carryValue) {
+            const carryName = window.MonthlyAuditPresentation?.resolveHoldingDisplayName
+                ? window.MonthlyAuditPresentation.resolveHoldingDisplayName(item.carry?.name, item.carry?.ticker)
+                : (item.carry?.name || item.carry?.ticker || 'leader');
+            pieces.push(`<div><strong>${escapeHtml(carryValue)}</strong><span>${carryShareValue > 100 ? `from ${escapeHtml(carryName)}` : `of gain from ${escapeHtml(carryName)}`}</span></div>`);
+        }
         if (item.best_day?.date) pieces.push(`<div><strong>${escapeHtml(finite(item.best_day.change_pct) ? formatPct(item.best_day.change_pct, true) : formatPLN(item.best_day.change_pln, true))}</strong><span>Best day</span><small>${escapeHtml(formatDate(item.best_day.date))}</small></div>`);
         return pieces.length ? `<section class="rc-numbers" aria-label="Three numbers">${pieces.join('')}</section>` : '';
     }
