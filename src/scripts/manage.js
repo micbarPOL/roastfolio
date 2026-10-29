@@ -1182,19 +1182,30 @@
         txMap.set(markerKey, prior);
       });
 
+    const displayValues = displaySeries.map(([_, value]) => value);
+    const displayMin = Math.min(...displayValues);
+    const displayMax = Math.max(...displayValues) || 1;
+    const displayRange = displayMax - displayMin || 1;
+    const windowStartTs = displaySeries[0][0];
+    // The last display point is the synthetic "live" point at the right edge; markers map to real snapshots only.
+    const lastRealIdx = displaySeries.length - (lastPoint && lastPoint[0] < rightEdge ? 2 : 1);
+
     const eventMarkers = Array.from(txMap.values())
       .sort((a, b) => a.dateKey.localeCompare(b.dateKey))
       .map((tx) => {
-        const idx = (snapshots || []).findIndex((snapshot) => String(snapshot && snapshot.snapshotDate || '').slice(0, 10) === tx.dateKey);
+        const txTs = new Date(`${tx.dateKey}T00:00:00Z`).getTime();
+        // Skip cash flows that fall outside the plotted window (e.g. older than the 3-year view).
+        if (!Number.isFinite(txTs) || txTs < windowStartTs || txTs > rightEdge) return null;
+
+        // Latest plotted snapshot on or before the cash-flow date, so the marker sits on the line.
+        let idx = -1;
+        for (let i = 0; i <= lastRealIdx; i += 1) {
+          if (displaySeries[i][0] <= txTs) idx = i; else break;
+        }
         if (idx < 0) return null;
 
-        const values = displaySeries.map(([_, value]) => value);
-        const min = Math.min(...values);
-        const max = Math.max(...values) || 1;
-        const range = max - min || 1;
-        const currentValue = Number((snapshots || [])[idx] && (snapshots || [])[idx].portfolioValue || 0);
-        const pct = (currentValue - min) / range;
-        const left = (((idx || 0) / Math.max(displaySeries.length - 1, 1)) * 100);
+        const pct = (displaySeries[idx][1] - displayMin) / displayRange;
+        const left = (idx / Math.max(displaySeries.length - 1, 1)) * 100;
         const top = 100 - (pct * 100);
         return {
           left: Math.min(96, Math.max(4, left)),
@@ -3891,6 +3902,7 @@
   window.closeManageModal = closeManageModal;
   window.initWalletScreen = initWalletScreen;
   window._mgmt = {
+    _buildSummarySparkline,
     selectPortfolio,
     setHoldingsView,
     _carouselGoTo,
