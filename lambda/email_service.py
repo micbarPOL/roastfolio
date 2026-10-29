@@ -164,13 +164,55 @@ def _generate_journey_narrative(
     return f"You matched {benchmark_id} exactly this month."
 
 
-def _clean_holding_name(name: str) -> str:
-    """Strip Polish 'S.A.' suffixes and clean up the holding name."""
-    if not name:
+_EXCHANGE_SUFFIX_RE = re.compile(r"\.[A-Za-z]+$")
+_PAREN_TICKER_RE = re.compile(r"\s*\([A-Za-z0-9_.-]+\)\s*$")
+_CORPORATE_SUFFIXES_RE = re.compile(
+    r"(?:[\s,]+|\s+)"
+    r"(?:spółka\s+z\s*o\.?\s*o\.?|sp\.\s*z\s*o\.?\s*o\.?|z\s*o\.?\s*o\.?|sp\.\s*k\.?|sp\.\s*j\.?|s\.?\s*k\.?\s*a\.?|s\.?\s*a\.?|ltd\.?|limited|inc\.?|incorporated|corp\.?|corporation|co\.?|company|llc|l\.l\.c\.|plc|p\.l\.c\.|ag|a\.g\.|gmbh|se|s\.e\.|n\.v\.|b\.v\.)"
+    r"[\s.]*$",
+    re.IGNORECASE,
+)
+
+
+def _clean_ticker(ticker: str | None) -> str:
+    if not ticker:
         return ""
-    import re
-    cleaned = re.sub(r'[, ]*S\.?\s*A\.?\s*$', '', name, flags=re.IGNORECASE).strip()
-    return cleaned if cleaned else name
+    t = str(ticker).strip()
+    return _EXCHANGE_SUFFIX_RE.sub("", t).strip().upper()
+
+
+def _resolve_holding_display_name(name: str | None, ticker: str | None = None, max_length: int = 15) -> str:
+    c_ticker = _clean_ticker(ticker or "")
+    raw = (name or "").strip()
+    if not raw:
+        return c_ticker
+
+    if not c_ticker and _EXCHANGE_SUFFIX_RE.search(raw):
+        c_ticker = _clean_ticker(raw)
+
+    if _clean_ticker(raw) == c_ticker:
+        return c_ticker
+
+    s = _PAREN_TICKER_RE.sub("", raw).strip()
+    s = _CORPORATE_SUFFIXES_RE.sub("", s).strip()
+    s = re.sub(r"[,.\s\-]+$", "", s).strip()
+    s = re.sub(r"\s+", " ", s).strip()
+
+    if not s or _clean_ticker(s) == c_ticker:
+        return c_ticker or s
+
+    if s.isupper():
+        words = s.split(" ")
+        s = " ".join(w.capitalize() if len(w) > 3 else w for w in words)
+
+    if len(s) <= max_length:
+        return s
+    return c_ticker or s
+
+
+def _clean_holding_name(name: str, ticker: str = "") -> str:
+    """Trim corporate suffixes, parenthesized tickers, and enforce length <= 15."""
+    return _resolve_holding_display_name(name, ticker)
 
 
 
@@ -213,8 +255,8 @@ def _generate_mover_narrative(carry: dict | None, anchor: dict | None, hide_cash
     """Return a one-sentence editorial about the carry and anchor assets."""
     if not carry and not anchor:
         return "Every holding played a role this month."
-    c_ticker = (carry.get("ticker") or carry.get("name") or "One position") if carry else None
-    a_ticker = (anchor.get("ticker") or anchor.get("name") or "Another position") if anchor else None
+    c_ticker = _resolve_holding_display_name(carry.get("name"), carry.get("ticker")) if carry else None
+    a_ticker = _resolve_holding_display_name(anchor.get("name"), anchor.get("ticker")) if anchor else None
     if c_ticker and a_ticker:
         if not hide_cash:
             c_pln = carry.get("net_contribution_pln")
@@ -778,7 +820,7 @@ def _render_leader_anchor(carry: dict | None, anchor: dict | None, hide_cash: bo
     if carry:
         raw_ticker = carry.get("ticker") or carry.get("name") or "\u2014"
         raw_name = carry.get("name") or raw_ticker
-        display_name = _clean_holding_name(raw_name)
+        display_name = _clean_holding_name(raw_name, raw_ticker)
         subtitle = raw_ticker if raw_ticker and raw_ticker != display_name else ""
         val_str = "---" if hide_cash else _fmt_money(carry.get("net_contribution_pln"), show_sign=True)
         note = carry.get("context_note") or ""
@@ -798,7 +840,7 @@ def _render_leader_anchor(carry: dict | None, anchor: dict | None, hide_cash: bo
     if anchor:
         raw_ticker = anchor.get("ticker") or anchor.get("name") or "\u2014"
         raw_name = anchor.get("name") or raw_ticker
-        display_name = _clean_holding_name(raw_name)
+        display_name = _clean_holding_name(raw_name, raw_ticker)
         subtitle = raw_ticker if raw_ticker and raw_ticker != display_name else ""
         val_str = "---" if hide_cash else _fmt_money(anchor.get("net_contribution_pln"), show_sign=True)
         note = anchor.get("context_note") or ""
@@ -1023,8 +1065,9 @@ def _render_trading_activity(trading_activity: dict | None, hide_cash: bool) -> 
     for tx in largest_txs[:5]:
         d = str(tx.get("date") or "")
         k = str(tx.get("type") or "").upper()
-        raw_name = tx.get("name") or tx.get("ticker") or "\u2014"
-        display_name = _clean_holding_name(raw_name)
+        raw_ticker = tx.get("ticker") or ""
+        raw_name = tx.get("name") or raw_ticker or "\u2014"
+        display_name = _clean_holding_name(raw_name, raw_ticker)
         v = tx.get("value_pln")
         v_str = "---" if hide_cash else _fmt_money(v, show_sign=False)
         badge_bg = "#132d1f" if k == "BUY" else "#2e1115"

@@ -49,6 +49,47 @@
             points,
         };
     }
+    const CORPORATE_SUFFIXES_RE = /(?:[\s,]+|\s+)(?:spółka\s+z\s*o\.?\s*o\.?|sp\.\s*z\s*o\.?\s*o\.?|z\s*o\.?\s*o\.?|sp\.\s*k\.?|sp\.\s*j\.?|s\.?\s*k\.?\s*a\.?|s\.?\s*a\.?|ltd\.?|limited|inc\.?|incorporated|corp\.?|corporation|co\.?|company|llc|l\.l\.c\.|plc|p\.l\.c\.|ag|a\.g\.|gmbh|se|s\.e\.|n\.v\.|b\.v\.)[\s.]*$/i;
+    const PAREN_TICKER_RE = /\s*\([A-Za-z0-9_.-]+\)\s*$/;
+    const EXCHANGE_SUFFIX_RE = /\.[A-Za-z]+$/;
+
+    function cleanTicker(ticker) {
+        if (!ticker) return '';
+        return String(ticker).trim().replace(EXCHANGE_SUFFIX_RE, '').toUpperCase();
+    }
+
+    function resolveHoldingDisplayName(name, ticker, maxLength = 15) {
+        let cTicker = cleanTicker(ticker || '');
+        const raw = String(name || '').trim();
+        if (!raw) return cTicker;
+
+        if (!cTicker && EXCHANGE_SUFFIX_RE.test(raw)) {
+            cTicker = cleanTicker(raw);
+        }
+
+        if (cleanTicker(raw) === cTicker) {
+            return cTicker;
+        }
+
+        let s = raw.replace(PAREN_TICKER_RE, '').trim();
+        s = s.replace(CORPORATE_SUFFIXES_RE, '').trim();
+        s = s.replace(/[,.\s\-]+$/, '').trim();
+        s = s.replace(/\s+/g, ' ').trim();
+
+        if (!s || cleanTicker(s) === cTicker) {
+            return cTicker || s;
+        }
+
+        if (s === s.toUpperCase() && s !== s.toLowerCase()) {
+            s = s.split(' ').map(w => w.length > 3 ? (w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()) : w).join(' ');
+        }
+
+        if (s.length <= maxLength) {
+            return s;
+        }
+        return cTicker || s;
+    }
+
     const percent = value => finite(value)
         ? `${Number(value) > 0 ? '+' : ''}${(Number(value) || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%` : 'No data';
     const money = value => finite(value)
@@ -71,14 +112,14 @@
             if (Number(item?.overall_twr_pct) >= 0 && finite(carry.net_contribution_pln) && nominal && nominal > 0) {
                 const contribution = Number(carry.net_contribution_pln);
                 const share = Math.round(Math.abs(contribution) / nominal * 100);
-                const name = carry.ticker || carry.name || 'your leader';
+                const name = resolveHoldingDisplayName(carry.name, carry.ticker) || 'your leader';
                 if (share > 100) {
                     return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}, and ${name} did all the heavy lifting (${money(contribution)}).`;
                 }
                 return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}, and ${name} carried ${share}% of the gain.`;
             }
             if (Number(item?.overall_twr_pct) < 0 && finite(anchor.net_contribution_pln)) {
-                const name = anchor.ticker || anchor.name || 'your anchor';
+                const name = resolveHoldingDisplayName(anchor.name, anchor.ticker) || 'your anchor';
                 const costAmount = `${Math.round(Math.abs(Number(anchor.net_contribution_pln))).toLocaleString('en-GB')} PLN`;
                 return `You ${gap >= 0 ? 'beat' : 'trailed'} the ${benchmarkName} by ${gapText}, while ${name} cost ${costAmount}.`;
             }
@@ -545,6 +586,9 @@
         prepare();
     }
 
-    window.MonthlyAuditPresentation = Object.freeze({ buildModel, buildJourney, drawPoster, headline, periodTitle, shortBenchmarkName });
+    window.MonthlyAuditPresentation = Object.freeze({
+        buildModel, buildJourney, drawPoster, headline, periodTitle, shortBenchmarkName,
+        cleanTicker, resolveHoldingDisplayName,
+    });
     window.MonthlyAuditShare = Object.freeze({ open });
 })();

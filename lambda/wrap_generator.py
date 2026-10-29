@@ -262,9 +262,12 @@ def _trading_activity(transactions: list[dict]) -> dict:
         value = _transaction_value(tx)
         totals[kind] += value
         if kind in {"BUY", "SELL"}:
-            trades.append({"date": str(tx.get("transactionDate") or "")[:10],
-                           "type": kind, "ticker": tx.get("ticker") or tx.get("holdingId"),
-                           "value_pln": _money(value)})
+            entry = {"date": str(tx.get("transactionDate") or "")[:10],
+                     "type": kind, "ticker": tx.get("ticker") or tx.get("holdingId"),
+                     "value_pln": _money(value)}
+            if tx.get("name"):
+                entry["name"] = tx.get("name")
+            trades.append(entry)
     return {
         "buy_total_pln": _money(totals["BUY"]), "sell_total_pln": _money(totals["SELL"]),
         "turnover_pln": _money(totals["BUY"] + totals["SELL"]),
