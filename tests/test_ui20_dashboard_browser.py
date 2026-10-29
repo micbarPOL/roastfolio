@@ -485,3 +485,18 @@ def test_new_ath_banner_breaks_out_once_per_record(open_page):
     page.evaluate("window.PORTFOLIO_ATH = {athValue: PORTFOLIO_TOTAL_VALUE * 2, athDate: '2026-10-01'}; renderAthCelebration('dash-ath-celebration')")
     assert banner.is_hidden()
     assert not errors, errors
+
+
+def test_clicking_roastfolio_logo_triggers_refresh_live_prices(open_page):
+    page, errors = open_page(1440, 900)
+    page.evaluate("""() => {
+        window.__refreshCallCount = 0;
+        const orig = window.refreshLivePrices;
+        window.refreshLivePrices = function() {
+            window.__refreshCallCount++;
+            return orig ? orig() : Promise.resolve();
+        };
+    }""")
+    page.locator(".sidenav-header .sidenav-brand").click()
+    assert page.evaluate("window.__refreshCallCount") == 1
+    assert not errors, errors

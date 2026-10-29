@@ -59,8 +59,13 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 .sidenav { background: var(--bg-glass); border-right: 1px solid var(--border-subtle); box-shadow: none; backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); }
 .sidenav::before { content: none; }
 .sidenav-header { border-bottom: 0; }
-.sidenav-logo { border: 0; border-radius: var(--radius-sm); }
-.sidenav-app-name { color: var(--text-primary); font-weight: 600; font-size: var(--fs-lg); letter-spacing: -0.03em; text-transform: none; }
+.sidenav-brand { display: flex; align-items: center; gap: var(--space-3); min-width: 0; flex: 1; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; touch-action: manipulation; }
+.sidenav-brand:hover .sidenav-app-name { color: var(--accent-primary); }
+.sidenav-brand:active .sidenav-logo { transform: scale(0.94); }
+.sidenav-brand:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+.sidenav-brand-text { min-width: 0; }
+.sidenav-logo { border: 0; border-radius: var(--radius-sm); transition: transform var(--dur-fast) var(--ease-hover); }
+.sidenav-app-name { color: var(--text-primary); font-weight: 600; font-size: var(--fs-lg); letter-spacing: -0.03em; text-transform: none; transition: color var(--dur-fast) var(--ease-hover); }
 .sidenav-app-sub { color: var(--text-secondary); opacity: 1; }
 .sidenav-close-btn { background: var(--bg-surface-2); border: 0; color: var(--text-secondary); min-width: var(--touch-min); min-height: var(--touch-min); }
 .sidenav-item { color: var(--text-secondary); border-radius: var(--radius-md); font-size: var(--fs-sm); min-height: 40px; padding: 8px 12px; }

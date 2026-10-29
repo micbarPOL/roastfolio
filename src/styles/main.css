@@ -188,6 +188,23 @@ header {
     border-bottom: 1px solid rgba(0, 242, 254, 0.1);
     flex-shrink: 0;
 }
+.sidenav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    flex: 1;
+    min-width: 0;
+}
+.sidenav-brand-text {
+    min-width: 0;
+}
 .sidenav-logo {
     width: 40px;
     height: 40px;
