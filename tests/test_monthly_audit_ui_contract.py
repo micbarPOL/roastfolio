@@ -12,8 +12,8 @@ def test_history_contains_podsumowania_subtab_and_monthly_audit_mount():
     assert '>Summaries<' in html
     assert 'id="monthly-audit-root"' in html
     assert 'scripts/monthly-audit.js' in html
-    assert 'styles/monthly-audit.css?v=15.4.0' in html
-    assert 'scripts/manage.js?v=15.4.0' in html
+    assert 'styles/monthly-audit.css?v=15.4.1' in html
+    assert 'scripts/manage.js?v=15.4.1' in html
     assert html.count('scripts/user-profile.js?v=20260915-recap2') == 2
     assert html.index('scripts/monthly-audit-share.js') < html.index('scripts/monthly-audit.js')
 
