@@ -51,3 +51,11 @@
     - **Shareable Poster**: Exportable yearly wrap poster sized for social stories / chats, with privacy toggle for PLN amounts.
   - **Backend / Data Synthesis**:
     - Extend wrap generation (`wrap_generator.py`) or API endpoints to aggregate 12-month snapshot returns, cash flows, and annual commentary.
+
+- [ ] **Learning Module: Simple Financial Analysis with Real-World Examples**:
+  - **Goal**: Build an accessible, beginner-friendly learning module in Roastfolio (e.g. dedicated guide section or interactive learning hub) explaining how to start analyzing financial statements and individual stocks.
+  - **Core Topics**:
+    - **How to Start**: Foundational steps for analyzing a company or ETF—understanding where numbers come from (Income Statement, Balance Sheet, Cash Flow) without getting bogged down in corporate jargon.
+    - **Essential Multiples & Metrics**: Clear explanations of core ratios: P/E, P/B, EV/EBITDA, ROE, Debt/Equity, Free Cash Flow (FCF) yield, and dividend safety.
+    - **Step-by-Step Practical Example**: Walk through a full, real-world case study (e.g. XTB, Dino Polska, or Apple) showing where to pull annual/quarterly reports, how to calculate key metrics, and how to interpret valuation vs peers.
+    - **Red Flags & Sanity Checks**: What warning signs to look out for (e.g. margin deterioration, declining cash flow while accounting profits rise, debt refinancing risks) before making an investment.
