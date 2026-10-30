@@ -52,10 +52,19 @@
   - **Backend / Data Synthesis**:
     - Extend wrap generation (`wrap_generator.py`) or API endpoints to aggregate 12-month snapshot returns, cash flows, and annual commentary.
 
-- [ ] **Learning Module: Simple Financial Analysis with Real-World Examples**:
-  - **Goal**: Build an accessible, beginner-friendly learning module in Roastfolio (e.g. dedicated guide section or interactive learning hub) explaining how to start analyzing financial statements and individual stocks.
-  - **Core Topics**:
-    - **How to Start**: Foundational steps for analyzing a company or ETF—understanding where numbers come from (Income Statement, Balance Sheet, Cash Flow) without getting bogged down in corporate jargon.
-    - **Essential Multiples & Metrics**: Clear explanations of core ratios: P/E, P/B, EV/EBITDA, ROE, Debt/Equity, Free Cash Flow (FCF) yield, and dividend safety.
-    - **Step-by-Step Practical Example**: Walk through a full, real-world case study (e.g. XTB, Dino Polska, or Apple) showing where to pull annual/quarterly reports, how to calculate key metrics, and how to interpret valuation vs peers.
-    - **Red Flags & Sanity Checks**: What warning signs to look out for (e.g. margin deterioration, declining cash flow while accounting profits rise, debt refinancing risks) before making an investment.
+- [ ] **Learning Module: Financial Analysis & Reading Financial Reports with Real-World Examples**:
+  - **Goal**: Build an accessible, beginner-friendly learning module in Roastfolio (e.g. dedicated guide section or interactive learning hub) explaining how to navigate corporate filings and analyze individual stocks from first principles.
+  - **Structured Modules**:
+    - **1. How to Read Financial Reports (Annual & Quarterly)**:
+      - Where to source reports: SEC EDGAR (10-K, 10-Q) for US stocks, GPW ESPI/EBI / company IR pages for Polish equities, and investor presentation decks.
+      - Key report sections: Management Discussion & Analysis (MD&A), auditor's opinion (clean vs qualified), and essential footnotes (accounting policy changes, contingent liabilities).
+    - **2. The Big Three Financial Statements Deep-Dive**:
+      - **Income Statement (Rachunek Zysków i Strat)**: Top-line revenue growth, Gross Margin, Operating Profit (EBIT / EBITDA), Net Income, and EPS. Differentiating organic recurring revenue from one-off non-operational gains.
+      - **Balance Sheet (Bilans)**: Assets vs Liabilities & Equity. Liquidity checks (Working Capital, Current / Quick Ratio), debt maturity structure (short-term vs long-term obligations), and intangible assets / goodwill.
+      - **Cash Flow Statement (Rachunek Przepływów Pieniężnych)**: Operating Cash Flow (OCF), CapEx, Free Cash Flow (FCF), and financing cash flows (dividends, share repurchases vs share dilution, debt issuance). Understanding why cash flow reflects business reality when net profit can be distorted.
+    - **3. Essential Multiples & Valuation Ratios**:
+      - Practical formula guide and benchmarks: P/E, P/B, EV/EBITDA, ROE, ROIC, Debt/Equity, Net Debt/EBITDA, and FCF Yield.
+    - **4. Step-by-Step Practical Example**:
+      - Live walkthrough using an actual company's annual/quarterly filing (e.g. XTB or Dino Polska on GPW / Apple or Microsoft globally): locating numbers in the raw PDF/Excel, computing the key ratios by hand, and interpreting competitive advantage / moat.
+    - **5. Financial Red Flags & Sanity Checks**:
+      - Warning signs: Divergence between Net Profit and Operating Cash Flow, aggressive capitalization of expenses, deteriorating operating margins, customer/supplier concentration, and imminent debt refinancing walls.
