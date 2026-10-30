@@ -152,7 +152,7 @@ def test_intraday_comparison_renders_real_chart_and_saved_window(open_page, widt
     assert any(sample["name"] == "intraday-render" and sample.get("status") == "ok"
                for sample in timings["samples"])
     assert any(sample["name"] == "api-parse" for sample in timings["samples"])
-    assert "Benchmark closed 17:00" in page.locator("#intraday-comparison-status").inner_text()
+    assert "Benchmark closed 17:00" in page.locator("#intraday-comparison-status").text_content()
     page.select_option("#intraday-comparison-window", "session")
     assert page.evaluate("Chart.getChart('intraday-comparison-chart').data.datasets[0].data.length") == 481
     assert page.evaluate("document.documentElement.scrollWidth - innerWidth") <= 0

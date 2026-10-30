@@ -244,7 +244,7 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 #tab-dashboard .intraday-info:focus-within .intraday-info-tip, #tab-dashboard .intraday-info.is-open .intraday-info-tip { opacity: 1; visibility: visible; }
 #tab-dashboard .intraday-info.is-dismissed .intraday-info-tip { opacity: 0; visibility: hidden; }
 @media (max-width: 600px) { #tab-dashboard .intraday-info-tip { left: auto; right: -8px; transform: none; } }
-#tab-dashboard #intraday-comparison-status { font-size: var(--fs-xs); color: var(--text-secondary); line-height: 1.6; overflow-wrap: anywhere; }
+#tab-dashboard #intraday-comparison-status { display: block; margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-secondary); line-height: 1.45; overflow-wrap: anywhere; }
 #tab-dashboard .legend-soon { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border: 1px dashed var(--border-strong); border-radius: 999px; font-size: var(--fs-sm); color: var(--text-secondary); }
 
 /* Loader and skeleton: the app's candle loader is reused, only the backdrop changes */
