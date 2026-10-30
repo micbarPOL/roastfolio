@@ -28,3 +28,11 @@
   - **Goal**: Let the user share the current day's portfolio return as an image poster, very similar to the existing History Summaries share poster (`src/scripts/monthly-audit-share.js`).
   - **Content**: Today's % return (and optionally PLN, hidden by default like the recap amounts switch), benchmark return for the day, intraday sparkline, date, and Roastfolio branding.
   - **Comment engine**: Add a simple comment engine that picks a short, witty one-liner based on the day's scenario (e.g. big up day, big down day, flat, beat/lost to benchmark). Reuse tone profiles from the monthly commentary where possible, but keep it lightweight.
+
+- [ ] **ATH Widget "Deep Ocean" Visual Redesign & Depth Thresholds**:
+  - **Concept / Ocean Depth Zones**: Redesign the ATH widget ("Under the surface" lake) to visualize drawdowns as descending into a deep ocean:
+    - **0% to -5% (Sunlit / Safe Shallows)**: Pleasant, friendly zone where we want to be; light water aesthetics with bubbles.
+    - **-5% to -10% (Twilight / Danger Zone)**: Deeper, darker, unknown, and dangerous waters.
+    - **Below -10% (Abyss / Deep & Scary)**: Deep, murky, and scary ocean depth (with markers for -10%, -15%, and beyond).
+  - **Threshold Markers**: Explicitly display threshold indicators for `-5%`, `-10%`, and `-15%`.
+  - **30-Day Deepest Level**: Visually show the deepest drawdown level reached in the last 30 days (e.g. max-depth indicator, anchor line, or ghost watermark).
