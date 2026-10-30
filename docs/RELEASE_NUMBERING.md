@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.4.1`
-*Target Release Numbering Standard — v15.4.1*
+**Current Release:** `15.4.2`
+*Target Release Numbering Standard — v15.4.2*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.4.1`
+* **Current Active Release:** `15.4.2`
+  * **Service 2:** Fixed "Show PLN amounts" switch toggle visibility in the History Summaries recap share section ("Share your month") by introducing a dedicated `.rc-switch-track` element and styling, preventing transparent background overrides from global input resets and ensuring cross-browser rendering in Safari/WebKit.
+* **Previous Active Release:** `15.4.1`
   * **Service 1:** Fixed Roastfolio logo click action in the UI 20 sidebar and header so clicking the brand logo or wordmark triggers a live price refresh from the Yahoo Finance price API.
 * **Previous Active Release:** `15.4.0`
   * **Minor 4:** Monthly recap summaries (History screen), share poster exports, and monthly email digests now resolve human-readable asset names (e.g. &ldquo;Mobruk&rdquo; instead of &ldquo;MBR.WA&rdquo;) with corporate legal suffixes trimmed (S.A., Ltd, Sp. z o.o., etc.), automatic fallback to clean tickers for names over 15 characters, and title casing.

@@ -12,8 +12,8 @@ def test_history_contains_podsumowania_subtab_and_monthly_audit_mount():
     assert '>Summaries<' in html
     assert 'id="monthly-audit-root"' in html
     assert 'scripts/monthly-audit.js' in html
-    assert 'styles/monthly-audit.css?v=15.4.1' in html
-    assert 'scripts/manage.js?v=15.4.1' in html
+    assert 'styles/monthly-audit.css?v=15.4.2' in html
+    assert 'scripts/manage.js?v=15.4.2' in html
     assert html.count('scripts/user-profile.js?v=20260915-recap2') == 2
     assert html.index('scripts/monthly-audit-share.js') < html.index('scripts/monthly-audit.js')
 
@@ -111,6 +111,8 @@ def test_monthly_share_is_local_preview_first_and_private_by_default():
     css = (ROOT / "src" / "styles" / "monthly-audit.css").read_text()
     assert ".ma-recipient-prompt" in css
     assert ".ma-recipient-choice" in css
+    assert ".rc-switch-track" in css
+    assert "rc-switch-track" in ma_script
 
 
 def test_milestones_calendar_widget_and_ath_celebration_contract():
