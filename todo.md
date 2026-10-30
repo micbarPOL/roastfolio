@@ -36,3 +36,18 @@
     - **Below -10% (Abyss / Deep & Scary)**: Deep, murky, and scary ocean depth (with markers for -10%, -15%, and beyond).
   - **Threshold Markers**: Explicitly display threshold indicators for `-5%`, `-10%`, and `-15%`.
   - **30-Day Deepest Level**: Visually show the deepest drawdown level reached in the last 30 days (e.g. max-depth indicator, anchor line, or ghost watermark).
+
+- [ ] **Yearly Wrapped (Annual Portfolio Recap)**:
+  - **Goal**: Implement the full "Yearly Wrapped" experience in History Summaries, activating the currently disabled `Yearly Soon` tab in the period navigator.
+  - **UI & Bento Cards (Annual Scope)**:
+    - Enable the `Monthly | Yearly` segmented switch in the period navigator, allowing users to browse completed calendar years (and current YTD).
+    - Adapt recap Bento cards for 12-month data:
+      - **Annual Return & Benchmarks**: Full-year TWR (%) vs WIG, S&P 500, MSCI World, DAX, etc., and total nominal return (PLN).
+      - **Capital Flow & Savings**: Total annual deposits, withdrawals, and net savings rate.
+      - **Extremes & Volatility**: Year's best day, worst day, and deepest underwater drawdown lake.
+      - **MVPs & Anchors**: Top performing assets carrying gains vs biggest portfolio drags over the year.
+      - **Trading Activity**: Total annual turnover, trade count, and dividend income collected.
+      - **Retirement Milestone**: Annual target completion vs long-term retirement trajectory.
+    - **Shareable Poster**: Exportable yearly wrap poster sized for social stories / chats, with privacy toggle for PLN amounts.
+  - **Backend / Data Synthesis**:
+    - Extend wrap generation (`wrap_generator.py`) or API endpoints to aggregate 12-month snapshot returns, cash flows, and annual commentary.
