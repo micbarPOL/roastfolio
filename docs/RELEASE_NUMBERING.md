@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.5.0`
-*Target Release Numbering Standard — v15.5.0*
+**Current Release:** `15.6.0`
+*Target Release Numbering Standard — v15.6.0*
 
 ---
 
@@ -52,7 +52,7 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.5.0`
+* **Current Active Release:** `15.6.0`
   * **Minor 5:** Redesigned Analysis with an on-demand asset picker, contextual help, full-width statements and a pinned metric column. Preserved quote and reporting currencies separately, added inline retry and stale-response protection, and improved intraday opening-data handling and methodology labels.
 * **Previous Active Release:** `15.4.3`
   * **Service 3:** Cleaned up dashboard intraday chart by integrating the verbose market timing and quote metadata status line into the info tooltip popup ("i" button) next to the chart title, keeping the main chart view uncluttered.

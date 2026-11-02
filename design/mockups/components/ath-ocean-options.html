@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>roastfolio · Ocean concepts</title>
+<link rel="stylesheet" href="../../tokens-v9.css">
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+  font: 15px/1.5 var(--font-sans);
+}
+main { max-width: 1440px; margin: auto; padding: 48px 24px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+h1 { margin: 8px 0; font-size: 32px; letter-spacing: 0; }
+h2 { margin: 4px 0; font-size: 22px; letter-spacing: 0; }
+p { margin: 8px 0; }
+.eyebrow { text-transform: uppercase; letter-spacing: .16em; font-size: 11px; }
+.muted, .eyebrow { color: var(--text-secondary); }
+button, summary { cursor: pointer; touch-action: manipulation; }
+button {
+  min-height: 44px; padding: 8px 16px; border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface-1); color: var(--text-primary);
+}
+:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 4px; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 36px; }
+.card {
+  min-width: 0; overflow: hidden;
+  border: 1px solid var(--border-strong); border-radius: 8px;
+  background: var(--bg-surface-1);
+}
+.card-head { padding: 24px 24px 0; }
+.value { font-size: 44px; line-height: 1.2; letter-spacing: 0; margin-top: 22px; }
+.num { font-variant-numeric: tabular-nums; }
+.value small { font-size: 13px; letter-spacing: 0; color: var(--text-secondary); }
+.caption { color: var(--text-secondary); font-size: 13px; }
+.scene { width: 100%; height: auto; display: block; overflow: hidden; }
+.scene text { font-family: var(--font-sans); font-size: 11px; fill: var(--text-secondary); }
+.scene .readout { fill: var(--text-primary); font-size: 13px; font-weight: 650; }
+.surface { stroke: var(--accent-primary); stroke-width: 1.5; fill: none; }
+.contour { fill: none; stroke: var(--accent-primary); stroke-width: .7; opacity: .16; }
+.gridline { stroke: var(--border-strong); stroke-dasharray: 2 5; }
+.depthline { stroke: var(--text-secondary); stroke-dasharray: 4 5; opacity: .6; }
+.fish { color: var(--text-secondary); opacity: .22; }
+.wave { animation: drift 7s ease-in-out infinite alternate; }
+.wave-back { animation: drift 10s ease-in-out infinite alternate-reverse; opacity: .35; }
+.bubbles { fill: none; stroke: var(--accent-primary); opacity: .25; }
+.sun { fill: var(--color-warning); }
+.island { fill: var(--bg-surface-3); stroke: var(--text-secondary); stroke-width: .8; }
+.palm { fill: none; stroke: var(--text-secondary); stroke-width: 1.5; stroke-linecap: round; }
+.marker { fill: var(--text-primary); }
+.halo { fill: var(--accent-primary); opacity: .13; }
+.footer { padding: 0 24px 24px; }
+.stats { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; padding: 16px 0; border-top: 1px solid var(--border-strong); }
+.stats span { color: var(--text-secondary); }
+.note { min-height: 44px; font-size: 13px; color: var(--text-secondary); }
+details { border-top: 1px solid var(--border-subtle); margin-top: 16px; font-size: 12px; color: var(--text-secondary); }
+summary { min-height: 44px; display: flex; align-items: center; gap: 8px; }
+summary::before { content: "?"; border: 1px solid var(--border-strong); border-radius: 50%; width: 20px; text-align: center; }
+.recommendation { margin-top: 28px; max-width: 780px; color: var(--text-secondary); }
+.defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+.expedition {
+  order: -1; grid-column: 1 / -1; display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
+  border: 0; border-radius: 0; background: transparent;
+}
+.expedition .card-head { padding: 32px 40px 0 0; align-self: end; }
+.expedition h2 { max-width: 340px; font-size: 30px; line-height: 1.2; }
+.expedition .footer { padding: 32px 40px 32px 0; }
+.expedition .scene { grid-column: 2; grid-row: 1 / 3; aspect-ratio: 360 / 560; }
+.expedition .scene text { fill: #e2efed; font-size: 10px; letter-spacing: 0; }
+.expedition .scene .zone-title { font-size: 11px; font-weight: 650; }
+.expedition .scene .sky-label { fill: #27594f; }
+.expedition .scene .shallow-label { fill: #113e3c; }
+.expedition .scene .danger-label { fill: #ffbf8f; }
+.expedition .scene .readout { fill: #fff5df; font-size: 14px; }
+.expedition .scene .scale-label { font-size: 11px; font-variant-numeric: tabular-nums; }
+.expedition .scene .abyss-label { fill: #ecaca6; }
+.expedition-grid { stroke: #c8e6df; stroke-opacity: .3; stroke-dasharray: 2 5; }
+.holiday-palm { transform-origin: 181px 150px; animation: palm-sway 8s ease-in-out infinite alternate; }
+.holiday-hammock { transform-origin: 204px 126px; animation: hammock-sway 6s ease-in-out infinite alternate; }
+.sunrays { opacity: .3; }
+.sun-rays { opacity: .45; transform-origin: 278px 53px; }
+.expedition[data-zone="relax"] .sun-rays { animation: sun-glow 7s ease-in-out infinite alternate; }
+.expedition[data-zone="explore"] .sunrays { animation: sunlight 8s ease-in-out infinite alternate; }
+.reef-swim { animation: reef-swim 12s ease-in-out infinite alternate; }
+.reef-swim-second { animation-duration: 15s; animation-delay: -5s; animation-direction: alternate-reverse; }
+.reef-swim-third { animation-duration: 17s; animation-delay: -8s; }
+.danger-pulse { opacity: .45; }
+.expedition[data-zone="danger"] .danger-pulse { animation: danger-pulse 3.6s ease-in-out infinite alternate; }
+.expedition .scene .danger-zone-label { fill: #ed998c; }
+@keyframes sun-glow { from { opacity: .4; transform: scale(.97); } to { opacity: .85; transform: scale(1.04); } }
+@keyframes reef-swim { from { transform: translate(-5px, 0); } to { transform: translate(7px, 2px); } }
+@keyframes danger-pulse { from { opacity: .55; } to { opacity: 1; } }
+.shark-patrol { animation: shark-patrol 18s ease-in-out infinite; }
+.shark-patrol-reverse { animation-duration: 23s; animation-delay: -9s; animation-direction: reverse; }
+.shark-patrol-deep { animation-duration: 27s; animation-delay: -17s; }
+@keyframes shark-patrol {
+  0%, 100% { transform: translate(-18px, 0) rotate(-2deg); }
+  50% { transform: translate(18px, 5px) rotate(2deg); }
+}
+.depth-control { display: grid; margin-top: 28px; max-width: 320px; gap: 4px; }
+.depth-control label { font-size: 12px; color: var(--text-secondary); }
+.depth-control input { width: 100%; min-width: 0; min-height: 44px; margin: 0; accent-color: var(--accent-primary); cursor: pointer; }
+.state-illustration { display: none; }
+.expedition[data-state="ashore"] .ashore-only,
+.expedition[data-state="snorkeling"] .snorkeling-only,
+.expedition[data-state="diving"] .diving-only { display: inline; }
+.expedition[data-state="ashore"] #drawdown-marker { display: none; }
+@keyframes palm-sway { from { transform: rotate(-1deg); } to { transform: rotate(1deg); } }
+@keyframes hammock-sway { from { transform: rotate(-1deg); } to { transform: rotate(2deg); } }
+@keyframes sunlight { from { opacity: .3; } to { opacity: .55; } }
+@keyframes drift { from { transform: translateX(-9px); } to { transform: translateX(9px); } }
+@media (prefers-reduced-motion: reduce) {
+  .wave, .wave-back, .holiday-palm, .holiday-hammock, .sunrays, .sun-rays, .reef-swim, .danger-pulse, .shark-patrol { animation: none !important; }
+}
+@media (max-width: 1050px) {
+  .options { grid-template-columns: 1fr; max-width: 500px; margin-inline: auto; }
+  .expedition { display: flex; flex-direction: column; }
+  .expedition .card-head { padding: 0 0 24px; align-self: auto; }
+  .expedition .footer { padding: 24px 0; }
+}
+@media (max-width: 480px) {
+  main { padding: 24px 16px; }
+  header { align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+<svg class="defs" aria-hidden="true">
+<defs>
+  <linearGradient id="ocean" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" style="stop-color:var(--accent-primary);stop-opacity:.24"/>
+    <stop offset=".42" style="stop-color:var(--accent-primary);stop-opacity:.09"/>
+    <stop offset="1" style="stop-color:var(--bg-canvas);stop-opacity:.95"/>
+  </linearGradient>
+  <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+    <stop style="stop-color:var(--accent-primary);stop-opacity:.2"/>
+    <stop offset="1" style="stop-color:var(--accent-primary);stop-opacity:0"/>
+  </linearGradient>
+  <symbol id="fish" viewBox="0 0 64 28">
+    <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+      <path d="M13 14H48L59 5V23L48 14M23 14L19 6M23 14L19 22M32 14L28 4M32 14L28 24M41 14L37 7M41 14L37 21"/>
+      <path d="M13 7Q2 7 3 14Q2 21 13 21Z"/>
+      <circle cx="8" cy="12" r="1"/>
+    </g>
+  </symbol>
+  <symbol id="island" viewBox="0 0 120 80">
+    <circle class="sun" cx="89" cy="23" r="11" opacity=".8"/>
+    <circle class="sun" cx="89" cy="23" r="20" opacity=".06"/>
+    <path class="island" d="M7 70Q30 51 52 61Q72 51 111 70Z"/>
+    <g class="palm">
+      <path d="M43 61Q49 40 44 23M44 23Q29 16 23 28M44 23Q31 25 28 37M44 23Q53 11 64 21M44 23Q61 24 65 36M44 23Q41 10 35 10"/>
+      <path d="M66 60Q62 47 67 37M67 37Q57 29 51 36M67 37Q78 28 85 37M67 37Q78 37 82 47"/>
+    </g>
+  </symbol>
+  <symbol id="sea" viewBox="0 0 360 340">
+    <path fill="url(#ocean)" d="M0 100H360V340H0Z"/>
+    <use href="#island" x="110" y="30" width="120" height="80"/>
+    <g class="wave-back">
+      <path class="surface" d="M-30 100Q0 95 30 100T90 100T150 100T210 100T270 100T330 100T390 100"/>
+    </g>
+    <g class="wave">
+      <path class="surface" d="M-30 100Q0 105 30 100T90 100T150 100T210 100T270 100T330 100T390 100"/>
+    </g>
+    <g class="bubbles">
+      <circle cx="45" cy="119" r="2"/><circle cx="52" cy="139" r="3"/>
+      <circle cx="278" cy="125" r="2"/>
+    </g>
+    <path class="contour" d="M0 310Q50 283 103 312T215 305T360 304"/>
+    <path class="contour" d="M0 321Q50 294 103 323T215 316T360 315"/>
+    <use href="#fish" class="fish" x="48" y="291" width="42" height="20"/>
+    <use href="#fish" class="fish" x="237" y="307" width="30" height="15"/>
+  </symbol>
+  <symbol id="scale" viewBox="0 0 360 340">
+    <text x="24" y="89">ATH · 0%</text>
+    <path class="gridline" d="M24 160H293M24 220H293M24 280H293"/>
+    <text x="302" y="164">−5%</text>
+    <text x="302" y="224">−10%</text>
+    <text x="302" y="284">−15%</text>
+  </symbol>
+</defs>
+</svg>
+
+<main>
+<header>
+  <div>
+    <div class="eyebrow">roastfolio / design explorations</div>
+    <h1>Under the surface.</h1>
+    <p class="muted">Concept study · Sample data</p>
+  </div>
+  <button type="button" id="theme" aria-label="Switch to light theme">Light theme</button>
+</header>
+
+<div class="options">
+  <article class="card">
+    <div class="card-head">
+      <div class="eyebrow">01 / Ocean Atlas</div>
+      <h2>Perspective.</h2>
+      <div class="value num">−7.2% <small>from ATH</small></div>
+    </div>
+    <svg class="scene" viewBox="0 0 360 340" role="img"
+      aria-label="Ocean Atlas. Drawdown 7.2 percent, deepest in 30 days 12.4 percent.">
+      <use href="#sea" width="360" height="340"/>
+      <use href="#scale" width="360" height="340"/>
+      <text x="24" y="132">SUNLIT</text>
+      <text x="24" y="207">TWILIGHT</text>
+      <text x="24" y="271">ABYSS</text>
+      <path d="M180 105V186.4" class="depthline"/>
+      <circle class="halo" cx="180" cy="186.4" r="18"/>
+      <circle class="marker" cx="180" cy="186.4" r="4"/>
+      <text class="readout num" x="205" y="191">−7.2%</text>
+      <path class="depthline" d="M24 248.8H292"/>
+      <text x="24" y="241">30D LOW · −12.4%</text>
+    </svg>
+    <div class="footer">
+      <div class="stats"><span>30-day low</span><strong class="num">−12.4%</strong></div>
+      <details><summary>About depth</summary>
+        <p>The surface is ATH. Equal distances represent equal percentage-point drawdowns. Zones are a visual metaphor, not a risk rating.</p>
+      </details>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="card-head">
+      <div class="eyebrow">02 / Island Horizon</div>
+      <h2>Land in sight.</h2>
+      <div class="value num">−7.2% <small>from ATH</small></div>
+    </div>
+    <svg class="scene" viewBox="0 0 360 340" role="img"
+      aria-label="Island Horizon. Drawdown 7.2 percent, deepest in 30 days 12.4 percent.">
+      <use href="#sea" width="360" height="340" opacity=".65"/>
+      <text x="24" y="89">ATH · 0%</text>
+      <path d="M270 105V285" fill="none" stroke="var(--border-strong)"/>
+      <path d="M264 160H278M264 220H278M264 280H278"
+        fill="none" stroke="var(--text-secondary)"/>
+      <text x="288" y="164">−5%</text>
+      <text x="288" y="224">−10%</text>
+      <text x="288" y="284">−15%</text>
+      <path d="M270 105V186.4" fill="none" stroke="var(--accent-primary)" stroke-width="3"/>
+      <circle class="halo" cx="270" cy="186.4" r="12"/>
+      <circle class="marker" cx="270" cy="186.4" r="4"/>
+      <text class="readout" x="24" y="186">You are here</text>
+      <path class="depthline" d="M126 186.4H252"/>
+      <path class="depthline" d="M24 248.8H276"/>
+      <text x="24" y="240">30D LOW · −12.4%</text>
+    </svg>
+    <div class="footer">
+      <div class="stats"><span>30-day low</span><strong class="num">−12.4%</strong></div>
+      <details><summary>About the low</summary>
+        <p>The deepest drawdown over the last 30 days, relative to the ATH at each point in time. Sample data.</p>
+      </details>
+    </div>
+  </article>
+
+  <article class="card expedition" id="deep-expedition" data-state="ashore" data-zone="relax">
+    <div class="card-head">
+      <div class="eyebrow">03 / Deep Expedition</div>
+      <h2 id="expedition-heading" aria-live="polite">Relax.</h2>
+      <div class="value num" aria-live="polite"><span id="expedition-value">0.0%</span> <small>from ATH</small></div>
+      <div class="depth-control">
+        <label for="expedition-depth">Drawdown</label>
+        <input id="expedition-depth" type="range" min="-15" max="0" step="0.1" value="0" aria-valuetext="0.0% from ATH">
+      </div>
+    </div>
+    <svg class="scene" viewBox="0 0 360 560" role="img" aria-labelledby="expedition-title expedition-description">
+      <title id="expedition-title">Deep Expedition</title>
+      <desc id="expedition-description">At ATH: a person in shorts relaxes on the beach. Three small sharks patrol the dark water at different depths, their pale eyes and teeth more visible than their bodies. A wreck and fish skeletons lie below. The 30-day low is minus 12.4 percent. Scenery is a metaphor, not a risk rating.</desc>
+      <defs>
+        <linearGradient id="expedition-sky" x2="0" y2="1">
+          <stop stop-color="#c8eee9"/><stop offset="1" stop-color="#f3f5d8"/>
+        </linearGradient>
+        <linearGradient id="expedition-water" x2="0" y2="1">
+          <stop stop-color="#72dfcc"/><stop offset=".22" stop-color="#238d87"/>
+          <stop offset=".32" stop-color="#205b67"/><stop offset=".48" stop-color="#14323f"/>
+          <stop offset=".71" stop-color="#101a27"/><stop offset="1" stop-color="#080c12"/>
+        </linearGradient>
+        <linearGradient id="expedition-light" x2="0" y2="1">
+          <stop stop-color="#fff7c9" stop-opacity=".7"/><stop offset="1" stop-color="#d7f6e5" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="diver-light" x2="0" y2="1">
+          <stop stop-color="#e9f6dc" stop-opacity=".32"/><stop offset="1" stop-color="#d5efe3" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="holiday-sand" x1="0" y1="0" x2=".3" y2="1">
+          <stop stop-color="#fbebba"/><stop offset=".6" stop-color="#eed598"/><stop offset="1" stop-color="#cfae75"/>
+        </linearGradient>
+        <linearGradient id="palm-leaf" x2=".8" y2="1">
+          <stop stop-color="#479973"/><stop offset="1" stop-color="#17614f"/>
+        </linearGradient>
+        <linearGradient id="diver-tank" x2="1" y2=".2">
+          <stop stop-color="#6b8180"/><stop offset=".4" stop-color="#d5dfcc"/>
+          <stop offset="1" stop-color="#657b7c"/>
+        </linearGradient>
+        <linearGradient id="diver-glass" x2="1" y2="1">
+          <stop stop-color="#b4e5db"/><stop offset=".35" stop-color="#488b92"/><stop offset="1" stop-color="#122b3b"/>
+        </linearGradient>
+        <linearGradient id="wreck-wood" x2=".3" y2="1">
+          <stop stop-color="#525c58"/><stop offset="1" stop-color="#202e31"/>
+        </linearGradient>
+        <g id="scuba-diver">
+          <path d="M10 14L18 13L76 112L28 123Z" fill="url(#diver-light)"/>
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M-24 -7L-40 -12L-49 -26M-24 -3L-39 4L-52 -5" stroke="#162e36" stroke-width="7"/>
+            <path d="M-25 -8L-40 -12L-49 -26M-39 3L-51 -5" stroke="#668182" stroke-width="1.1"/>
+          </g>
+          <path d="M-52 -25L-61 -34L-65 -29L-52 -20Z M-53 -7L-67 -13L-68 -7L-54 -1Z" fill="#c4ac70" stroke="#e0cb97" stroke-width=".7"/>
+          <path d="M-27 -11Q-14 -16 -5 -8L-4 2Q-15 9 -28 2Z" fill="#203c45" stroke="#809696" stroke-width=".8"/>
+          <path d="M-23 -9L-11 -5L-9 2" fill="none" stroke="#d1ba7d" stroke-width="2"/>
+          <rect x="-29" y="-18" width="22" height="8" rx="4" transform="rotate(12 -18 -14)" fill="url(#diver-tank)" stroke="#c1cec3" stroke-width=".6"/>
+          <path d="M-22 -18L-23 -11M-14 -16L-15 -9" stroke="#354f55" stroke-width="2"/>
+          <path d="M-7 -12Q5 -13 5 4" fill="none" stroke="#91a19a" stroke-width="1.3"/>
+          <path d="M-10 0L-4 11L10 14" fill="none" stroke="#223e47" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M-9 0L-4 10L8 13" fill="none" stroke="#809694" stroke-width=".8"/>
+          <circle cx="0" cy="-2" r="7" fill="#1a3039" stroke="#859b96" stroke-width=".7"/>
+          <path d="M1 -4L8 -2L7 3L1 2Z" fill="url(#diver-glass)" stroke="#d7d9b5" stroke-width="1"/>
+          <path d="M3 -2L6 -1" stroke="#e0f5e9" stroke-width=".8"/>
+          <circle cx="6" cy="5" r="2" fill="#839893"/>
+          <path d="M9 11L17 13L16 17L8 15Z" fill="#c5ac75"/>
+          <path d="M17 13L16 17" stroke="#fff0bb" stroke-width="2"/>
+          <g fill="none" stroke="#c9e5dc" stroke-width=".7" opacity=".55"><circle cx="11" cy="-10" r="2"/><circle cx="15" cy="-20" r="1.5"/><circle cx="12" cy="-29" r="1"/></g>
+        </g>
+        <g id="seabed-skeleton" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 1Q30 -4 57 2L67 -6L65 8L57 2" stroke-width="1.5"/>
+          <path d="M12 -4Q1 -9 -3 -1Q-4 6 9 6L14 2Z" fill="#89958b" stroke-width=".8"/>
+          <path d="M18 -1Q15 -5 17 -9M18 0Q15 7 19 9M26 -2Q23 -9 25 -12M26 -1Q23 7 28 12M35 -2Q32 -8 35 -11M35 0Q33 8 37 11M44 -1L42 -7M44 1Q43 6 47 8M52 1L50 -4M52 2L51 6" stroke-width="1.1"/>
+          <circle cx="3" cy="-1" r="1.8" fill="#121f25" stroke="none"/>
+          <path d="M0 5L3 7M6 5L8 7" stroke-width=".7"/>
+        </g>
+      </defs>
+      <path fill="url(#expedition-sky)" d="M0 0H360V185H0Z"/>
+      <g class="sun-rays" fill="none" stroke="#e5b450" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M278 19V24M278 82V87M244 53H249M307 53H312M254 29L258 33M298 73L302 77M254 77L258 73M298 33L302 29"/>
+      </g>
+      <circle cx="278" cy="53" r="23" fill="#ffd56c"/>
+      <path d="M25 57H91Q88 45 76 48Q65 28 50 43Q33 40 31 51H25Z M205 31H241Q235 22 226 25Q215 17 209 26Z" fill="#fffdf0" opacity=".8"/>
+      <text class="sky-label zone-title" x="22" y="27">Relax.</text>
+      <path d="M0 172Q100 160 182 174T360 168V190H0Z" fill="#8dded0"/>
+      <path d="M71 165Q96 149 136 146Q190 124 249 139Q284 144 307 166Q276 179 209 179Q125 182 71 165Z" fill="url(#holiday-sand)"/>
+      <path d="M122 148Q166 128 209 137Q242 133 265 145Q233 149 220 157Q169 155 122 148Z" fill="#8bae6c"/>
+      <path d="M131 146Q174 132 197 138M235 141L247 143" fill="none" stroke="#c3d48c" stroke-width="2"/>
+      <path d="M78 168Q169 190 302 168" fill="none" stroke="#fff5d6" stroke-width="2"/>
+      <path d="M88 173Q191 192 287 175" fill="none" stroke="#b9f0d9" stroke-width="1" opacity=".8"/>
+      <ellipse cx="201" cy="154" rx="26" ry="3" fill="#a39160" opacity=".25"/>
+      <g class="holiday-palm">
+        <path d="M172 153Q186 119 175 81M237 153Q225 118 241 98" fill="none" stroke="#8b7150" stroke-width="5"/>
+        <path d="M171 151Q183 115 174 84M236 150Q227 119 241 101" fill="none" stroke="#d1b382" stroke-width="1.4"/>
+        <path d="M175 141L180 142M179 127L184 128M179 111L184 110M231 137L235 136M232 123L236 125" stroke="#695d43" stroke-width="1"/>
+        <g fill="url(#palm-leaf)">
+          <path d="M175 83Q147 61 130 85Q151 74 175 83 M175 83Q145 82 143 107Q156 88 175 83 M175 83Q177 55 204 66Q185 69 175 83 M175 83Q204 71 217 96Q192 82 175 83 M175 83Q159 58 162 52Q181 60 175 83"/>
+          <path d="M241 99Q217 76 201 98Q222 90 241 99 M241 99Q250 73 271 87Q252 85 241 99 M241 99Q267 90 279 113Q258 101 241 99 M241 99Q219 94 215 118Q226 104 241 99"/>
+        </g>
+        <path d="M136 82Q153 73 175 83L208 90M175 83L163 59M208 96Q223 88 241 99L273 108M241 99L266 84" fill="none" stroke="#85b580" stroke-width=".7" opacity=".65"/>
+        <g fill="#6e6241"><circle cx="175" cy="86" r="3"/><circle cx="179" cy="88" r="2.5"/><circle cx="239" cy="101" r="2.5"/></g>
+      </g>
+      <g class="holiday-hammock">
+        <path d="M180 119Q203 146 232 119L228 131Q204 156 184 130Z" fill="#f6f0db" stroke="#d6bb8c"/>
+        <path d="M184 126Q205 145 228 126" fill="none" stroke="#e07963" stroke-width="3"/>
+        <path d="M189 132L191 138M195 136L197 141M203 138L204 143M211 137L212 142M219 133L220 138" stroke="#d4c3a1" stroke-width=".7"/>
+      </g>
+      <ellipse cx="268" cy="157" rx="14" ry="3" fill="#9c9366" opacity=".24"/>
+      <path d="M268 134V158" stroke="#927b51" stroke-width="1.6"/>
+      <path d="M250 137Q255 122 268 122Q281 123 286 137Q277 134 268 138Q260 134 250 137Z" fill="#e88870"/>
+      <path d="M258 136Q262 125 268 122Q274 126 278 136L268 138Z" fill="#fff0d3"/>
+      <path d="M250 137Q259 133 268 138Q278 134 286 137" fill="none" stroke="#b66e59" stroke-width=".7"/>
+      <path d="M255 153L261 157L273 153M260 157V160M272 153V158" fill="none" stroke="#f5edcd" stroke-width="1.5"/>
+      <g class="state-illustration ashore-only" id="beach-person" transform="translate(123 148)">
+        <ellipse cx="1" cy="16" rx="13" ry="2" fill="#927b4d" opacity=".25"/>
+        <path d="M-3 3L-4 14L-8 15M3 3L6 13L10 14" fill="none" stroke="#bf9573" stroke-width="3" stroke-linecap="round"/>
+        <path d="M-5 -2H5L6 6L1 7L0 3L-1 7L-6 6Z" fill="#527d80" stroke="#345f68" stroke-width=".6"/>
+        <path d="M-4 -13Q0 -16 4 -13L5 -2H-5Z" fill="#c69773"/>
+        <path d="M-4 -12L-9 -6L-6 0M4 -12L8 -5L5 -1" fill="none" stroke="#bf9573" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cy="-19" r="4" fill="#c69773"/>
+        <path d="M-4 -20Q-3 -26 3 -22L5 -19Z" fill="#ead7a4"/>
+        <path d="M-6 -20L6 -18" stroke="#a18a5b" stroke-width="1.3" stroke-linecap="round"/>
+      </g>
+      <path d="M0 180H360V560H0Z" fill="url(#expedition-water)"/>
+      <g class="sunrays" fill="url(#expedition-light)">
+        <path d="M120 181H137L103 300H51Z M170 181H177L191 282H164Z M237 181H245L296 295H258Z"/>
+      </g>
+      <path class="wave-back" d="M-20 179Q10 173 40 179T100 179T160 179T220 179T280 179T340 179T400 179" fill="none" stroke="#e4fff3" stroke-width="3"/>
+      <path class="wave" d="M-20 182Q10 176 40 182T100 182T160 182T220 182T280 182T340 182T400 182" fill="none" stroke="#b1f5dc" stroke-width="2"/>
+      <text class="sky-label scale-label" x="22" y="166">ATH · 0%</text>
+      <g fill="none" stroke="#c1f7e7" stroke-opacity=".6">
+        <circle cx="203" cy="234" r="3"/><circle cx="198" cy="216" r="2"/><circle cx="207" cy="202" r="1.5"/>
+      </g>
+      <g id="reef-fish" aria-hidden="true">
+        <defs>
+          <g id="reef-fish-shape">
+            <path d="M-6 0L-12 -4V4Z M-7 0Q0 -7 9 0Q0 7 -7 0Z" fill="currentColor" stroke="#285c61" stroke-width=".6"/>
+            <path d="M-1 -3V3M2 -3V3" stroke="#fff1c9" stroke-width="1" opacity=".8"/>
+            <circle cx="5" cy="-1" r=".8" fill="#173d46"/>
+          </g>
+        </defs>
+        <g transform="translate(92 241)" style="color:#e5ba54">
+          <use href="#reef-fish-shape" class="reef-swim"/>
+        </g>
+        <g transform="translate(125 250) scale(.8)" style="color:#e78e7a">
+          <use href="#reef-fish-shape" class="reef-swim reef-swim-second"/>
+        </g>
+        <g transform="translate(150 234) scale(-.7 .7)" style="color:#77bcd3">
+          <use href="#reef-fish-shape" class="reef-swim reef-swim-third"/>
+        </g>
+      </g>
+      <text class="shallow-label zone-title" x="22" y="217">Explore.</text>
+      <g class="state-illustration snorkeling-only" id="snorkeler" transform="translate(190 188)">
+        <path d="M-28 3L-43 0L-55 3M-28 7L-41 9L-51 7" fill="none" stroke="#bf9573" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M-55 0L-70 -1L-69 5L-55 5M-51 5L-65 8L-62 12L-50 9" fill="#416f73"/>
+        <path d="M-34 0L-24 0L-24 10L-34 9Z" fill="#527d80"/>
+        <path d="M-25 1Q-14 -4 -7 1L-7 6Q-16 10 -25 7Z" fill="#c69773"/>
+        <path d="M-12 5L-5 12L8 10" fill="none" stroke="#bf9573" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="-2" cy="3" r="5" fill="#c69773"/>
+        <path d="M0 3H5V6H0Z" fill="url(#diver-glass)" stroke="#d5dbc1" stroke-width=".8"/>
+        <path d="M4 7L9 5L10 -13" fill="none" stroke="#e9c781" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M10 -13V-16" stroke="#e17d64" stroke-width="2.5"/>
+      </g>
+      <defs>
+          <linearGradient id="shark-body" gradientUnits="userSpaceOnUse" x1="170" y1="357" x2="170" y2="407">
+            <stop stop-color="#46616a"/><stop offset=".4" stop-color="#2b4652"/>
+            <stop offset=".72" stop-color="#213842"/><stop offset="1" stop-color="#687c7b"/>
+          </linearGradient>
+          <linearGradient id="shark-fin" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#405a61"/><stop offset="1" stop-color="#152c37"/>
+          </linearGradient>
+        <g id="shark-profile" transform="translate(0 -322)">
+        <g opacity=".38">
+        <path id="shark-tail" d="M63 380Q38 368 12 337Q15 364 34 385Q23 402 18 423Q44 408 64 392Z" fill="url(#shark-fin)"/>
+        <path d="M18 348Q28 371 43 383M28 414L47 394" fill="none" stroke="#78918c" stroke-width=".8" opacity=".3"/>
+        <path id="shark-dorsal" d="M134 367Q149 348 157 322Q176 337 179 363Z" fill="url(#shark-fin)"/>
+        <path d="M139 363Q150 346 157 325" fill="none" stroke="#79918e" stroke-width=".8" opacity=".45"/>
+        <path d="M92 376L101 360L111 371M110 395L88 412L129 401M210 392L250 420L236 391" fill="#213a44"/>
+        <path id="shark-body-shape" d="M49 381C88 379 113 364 162 361C215 356 264 362 303 380Q309 384 301 388L288 392Q266 406 218 407C157 410 111 398 79 391L50 390Z" fill="url(#shark-body)"/>
+        <path d="M63 384Q117 366 163 365Q235 358 290 378" fill="none" stroke="#8aa19b" stroke-width=".9" opacity=".35"/>
+        <path d="M109 391Q161 398 204 395Q247 393 265 384Q278 392 300 385L288 392Q258 409 207 404Q151 404 109 391Z" fill="#8b9a8b" opacity=".2"/>
+        <path id="shark-pectoral" d="M201 392Q185 408 175 437Q203 427 225 400Z" fill="url(#shark-fin)" stroke="#516a6b" stroke-width=".6"/>
+        <path d="M204 396L181 430" stroke="#718a83" stroke-width=".7" opacity=".4"/>
+        <g fill="none" stroke="#101f29" stroke-width="1.5" stroke-linecap="round">
+          <path d="M239 377Q234 386 237 393M233 376Q228 386 231 394M227 375Q222 385 225 394M221 375Q216 384 219 393"/>
+        </g>
+        </g>
+        <path d="M302 385Q286 388 267 391Q278 403 292 393Z" fill="#07141d"/>
+        <g id="shark-teeth" fill="#ced5bd" opacity=".8">
+          <path d="M294 387L291 393L288 389Z M286 389L282 396L279 390Z M277 391L274 396L270 391Z"/>
+          <path d="M290 395L287 391L284 398Z M280 399L277 395L275 398Z" opacity=".65"/>
+        </g>
+        <g id="shark-eye">
+          <ellipse cx="275" cy="377" rx="7" ry="5" fill="#d9e8a2" opacity=".09"/>
+          <ellipse cx="275" cy="377" rx="4.7" ry="3.4" fill="#d9e8a2" opacity=".16"/>
+          <ellipse cx="275" cy="377" rx="3" ry="2.1" fill="#dce5af"/>
+          <path d="M275 375L274.5 379" stroke="#15262b" stroke-width="1.2"/>
+        </g>
+        <path d="M270 374Q275 372 280 375" fill="none" stroke="#20353f" stroke-width="1.4"/>
+        </g>
+      </defs>
+      <g id="abyss-sharks" aria-hidden="true">
+        <g transform="translate(28 327) scale(.4)" opacity=".85">
+          <use href="#shark-profile" class="shark-patrol"/>
+        </g>
+        <g transform="translate(302 371) scale(-.34 .34)" opacity=".7">
+          <use href="#shark-profile" class="shark-patrol shark-patrol-reverse"/>
+        </g>
+        <g transform="translate(63 444) scale(.29)" opacity=".55">
+          <use href="#shark-profile" class="shark-patrol shark-patrol-deep"/>
+        </g>
+      </g>
+      <path class="expedition-grid" d="M22 270H303M22 360H303M22 450H303"/>
+      <text class="scale-label" x="313" y="274">−5%</text>
+      <text class="scale-label" x="307" y="364">−10%</text>
+      <text class="scale-label" x="307" y="454">−15%</text>
+      <path d="M0 286Q31 299 43 328L24 321L34 352L0 337Z M360 276L330 303L320 334L342 323L333 360L360 342Z" fill="#15313b" opacity=".6"/>
+      <g class="state-illustration diving-only" id="expedition-diver" transform="translate(180 309.6)">
+        <use href="#scuba-diver"/>
+      </g>
+      <g id="drawdown-marker" transform="translate(0 309.6)">
+        <path d="M22 0H294" fill="none" stroke="#dfede0" stroke-opacity=".45" stroke-dasharray="2 5"/>
+        <path d="M296 0L300 -4L304 0L300 4Z" fill="#fff5df" stroke="#244d52" stroke-width=".7"/>
+        <text class="readout num" id="depth-readout" x="293" y="-9" text-anchor="end">−7.2%</text>
+      </g>
+      <path d="M0 350L19 365L12 390L35 415L21 451L0 473Z M360 333L343 359L351 383L328 425L339 450L360 472Z" fill="#090f19" opacity=".75"/>
+      <path d="M0 396L29 423L21 450L49 482L32 518H0Z M360 393L329 419L339 443L315 480L335 524H360Z" fill="#0b131b"/>
+      <path d="M5 398L29 423L21 450M352 399L329 419L339 443" fill="none" stroke="#3d5558" stroke-width=".7" opacity=".5"/>
+      <path d="M22 403.2H302" fill="none" stroke="#becbc8" stroke-dasharray="4 5" stroke-opacity=".65"/>
+      <circle cx="180" cy="403.2" r="5" fill="none" stroke="#e0e7d5" stroke-dasharray="2 3"/>
+      <text x="22" y="422">30D LOW · −12.4%</text>
+      <g id="danger-zone" transform="translate(230 456)">
+        <g class="danger-pulse" aria-hidden="true">
+          <path d="M8 1L16 15H0Z" fill="#562e31" stroke="#ef877a" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M8 6V10M8 12V12.3" fill="none" stroke="#ffe0d2" stroke-width="1.7" stroke-linecap="round"/>
+        </g>
+        <text class="zone-title danger-zone-label" x="25" y="13">Danger.</text>
+      </g>
+      <path d="M0 524Q37 506 74 519T145 520T218 526T287 515T360 520V560H0Z" fill="#17242a"/>
+      <path d="M0 544Q59 529 102 540T208 539T303 533T360 541V560H0Z" fill="#1d2c30"/>
+      <path d="M9 532Q46 521 82 532M223 544Q264 531 306 539M120 551L147 553" fill="none" stroke="#54615c" stroke-width=".6" opacity=".45"/>
+      <g fill="none" stroke="#79877c" stroke-linecap="round" opacity=".6">
+        <path d="M42 520Q46 500 38 480M43 508L31 498L27 484M41 496L51 487L52 474M32 499L22 498M49 489L59 483M38 481L41 473" stroke-width="1.5"/>
+        <path d="M307 526Q298 507 306 487M301 512L289 503L288 493M302 504L315 498L321 486M308 498L309 484" stroke-width="1.1"/>
+      </g>
+      <g id="expedition-wreck" transform="translate(204 514) rotate(-11)">
+        <path d="M-60 -10L-39 16Q-4 26 45 13L61 -9L29 -3L18 -7L11 0L3 -6L-8 -2L-15 -9L-28 -5Z" fill="url(#wreck-wood)" stroke="#68756b" stroke-width=".9"/>
+        <path d="M-49 -2L-33 15M-36 -4L-24 18M-22 -4L-15 20M-7 1L-5 21M9 2L9 21M24 -2L21 20M39 -3L33 17M52 -5L43 13" stroke="#849084" stroke-width="1.1" opacity=".55"/>
+        <path d="M-42 5Q-3 18 49 3M-35 12Q5 23 42 10" fill="none" stroke="#1b2a2f" stroke-width="1.7"/>
+        <path d="M-17 -7L-12 -68L-9 -70L-10 -8" fill="#58675e"/>
+        <path d="M-11 -65L20 -28L9 -31L4 -24L-2 -28L-9 -24Z" fill="#768176" opacity=".5"/>
+        <path d="M-11 -58L-31 -26L-22 -30L-15 -25Z" fill="#475952"/>
+        <path d="M-36 -34L19 -37M-11 -63L-48 -7M-11 -63L40 -4" fill="none" stroke="#819085" stroke-width=".65" opacity=".65"/>
+        <path d="M26 -4L34 -25L38 -29M32 -18L51 -15" fill="none" stroke="#627568" stroke-width="1.7"/>
+        <path d="M-23 17L-18 6L-10 11L-6 21M13 21L17 10L23 13L27 19" fill="#101c23"/>
+      </g>
+      <path d="M139 537Q170 525 193 540T249 536L263 549H131Z" fill="#1d2c30"/>
+      <g style="color:#b4b9a5">
+        <use href="#seabed-skeleton" transform="translate(67 533) rotate(9) scale(.85)" opacity=".8"/>
+        <use href="#seabed-skeleton" transform="translate(258 549) rotate(-16) scale(.48)" opacity=".6"/>
+      </g>
+      <g fill="#7a897b" opacity=".45"><ellipse cx="128" cy="548" rx="2" ry="1"/><ellipse cx="51" cy="541" rx="2" ry=".8"/><ellipse cx="295" cy="532" rx="3" ry="1"/><ellipse cx="151" cy="554" rx="1.5" ry=".7"/></g>
+    </svg>
+    <div class="footer">
+      <div class="stats"><span>30-day low</span><strong class="num">−12.4%</strong></div>
+      <details><summary>About depth</summary>
+        <p>The diamond marks drawdown on a linear scale. At ATH: beach. Below 0% through −2%: snorkeling at the surface. Below −2%: scuba diving.</p>
+        <p>Relax at ATH. Explore down to −5%. Danger below −5%. Equipment and zone highlights change independently.</p>
+        <p>Sample data. Scenery is a metaphor, not a risk rating or trading advice. Losses can exceed the displayed scale.</p>
+      </details>
+    </div>
+  </article>
+</div>
+
+</main>
+<script>
+document.getElementById('theme').addEventListener('click', function () {
+  const light = document.documentElement.dataset.theme !== 'light';
+  document.documentElement.dataset.theme = light ? 'light' : 'dark';
+  this.textContent = light ? 'Dark theme' : 'Light theme';
+  this.setAttribute('aria-label', light ? 'Switch to dark theme' : 'Switch to light theme');
+});
+const depthControl = document.getElementById('expedition-depth');
+function renderExpedition() {
+  const drawdown = Number(depthControl.value);
+  const state = drawdown === 0 ? 'ashore' : drawdown >= -2 ? 'snorkeling' : 'diving';
+  const zone = drawdown === 0 ? 'relax' : drawdown >= -5 ? 'explore' : 'danger';
+  const depth = 180 - drawdown * 18;
+  const formatted = drawdown === 0 ? '0.0%' : `−${Math.abs(drawdown).toFixed(1)}%`;
+  const headings = { relax: 'Relax.', explore: 'Explore.', danger: 'Danger.' };
+  const descriptions = {
+    ashore: 'At ATH: a person in shorts relaxes on the beach.',
+    snorkeling: 'A snorkeler swims just below the surface, with the snorkel above water.',
+    diving: 'A scuba diver with a tank and torch explores below the surface.'
+  };
+  document.getElementById('deep-expedition').dataset.state = state;
+  document.getElementById('deep-expedition').dataset.zone = zone;
+  document.getElementById('expedition-heading').textContent = headings[zone];
+  document.getElementById('expedition-value').textContent = formatted;
+  document.getElementById('depth-readout').textContent = formatted;
+  document.getElementById('drawdown-marker').setAttribute('transform', `translate(0 ${depth})`);
+  document.getElementById('expedition-diver').setAttribute('transform', `translate(180 ${depth})`);
+  depthControl.setAttribute('aria-valuetext', `${formatted} from ATH`);
+  document.getElementById('expedition-description').textContent = `${descriptions[state]} Drawdown: ${formatted}. Active zone: ${zone}. The diamond marks the exact depth independently of the illustration. Small colorful fish swim in the sunlit shallows. Three small sharks slowly patrol the dark water at different depths, their pale eyes and teeth more visible than their bodies. A warning triangle marks Danger above the wreck and fish skeletons. The 30-day low is minus 12.4 percent. Scenery is a metaphor, not a risk rating.`;
+}
+depthControl.addEventListener('input', renderExpedition);
+renderExpedition();
+</script>
+</body>
+</html>

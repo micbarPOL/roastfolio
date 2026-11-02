@@ -39,7 +39,7 @@ class DashboardUiContractTests(unittest.TestCase):
 
     def test_gauge_sarcastic_comment_uses_readable_typography(self):
         self.assertIn("styles/main.css?v=20260915b", self.index_html)
-        self.assertIn("const CACHE_NAME = 'roastfolio-v80';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v81';", self.service_worker_js)
         self.assertIn("font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', sans-serif !important;", self.main_css)
         self.assertIn("font-style: normal;", self.main_css)
         self.assertIn("line-height: 1.55 !important;", self.main_css)
@@ -163,7 +163,9 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("el.dataset.athKey === key", self.dashboard_js)
 
     def test_service_worker_prefers_fresh_shell_assets(self):
-        self.assertIn("const CACHE_NAME = 'roastfolio-v80';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v81';", self.service_worker_js)
+        self.assertIn("'/styles/ath-ocean.css'", self.service_worker_js)
+        self.assertIn("'/scripts/ath-ocean.js'", self.service_worker_js)
         self.assertIn("/scripts/ledger-transactions.js", self.service_worker_js)
         self.assertIn("function isShellAsset(url, request)", self.service_worker_js)
         self.assertIn("request.mode === 'navigate'", self.service_worker_js)
@@ -201,7 +203,8 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("splash-to-gauge", self.index_html)
         self.assertIn("body.splash-to-gauge", self.main_css)
         self.assertIn("styles/main.css?v=20260915b", self.index_html)
-        self.assertIn("scripts/dashboard.js?v=ui20b", self.index_html)
+        self.assertRegex(self.index_html, r'scripts/dashboard\.js\?v=\d+\.\d+\.\d+')
+        self.assertLess(self.index_html.index('scripts/ath-ocean.js?v='), self.index_html.index('scripts/dashboard.js?v='))
         self.assertIn("candleTransmitOut", self.main_css)
         self.assertIn("gaugeCardHandoff", self.main_css)
         self.assertIn("roastTransmissionSweep", self.main_css)

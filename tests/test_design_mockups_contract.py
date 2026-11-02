@@ -277,7 +277,7 @@ def decision_params():
 
 
 def mockup_for(scope):
-    path = next((d / f"{scope}.html" for d in (ds.MOCKUPS, ds.EXPLORATIONS) if (d / f"{scope}.html").exists()), None)
+    path = next((d / f"{scope}.html" for d in (ds.MOCKUPS, ds.EXPLORATIONS, ds.MOCKUPS / "components") if (d / f"{scope}.html").exists()), None)
     assert path is not None, f"decision targets the '{scope}' mockup, which does not exist yet"
     return Mockup(path)
 
