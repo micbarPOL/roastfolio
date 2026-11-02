@@ -2,7 +2,7 @@
     let searchTimeout = null;
     let currentChart = null;
     let currentTicker = null;
-    let currentPeriod = '5y';
+    let currentPeriod = '1y';
     let currentFinancialData = { cashflow: {}, financials: {}, earnings: [] };
     let currentStatementType = 'income'; // 'income' or 'cashflow'
     let currentFinPeriod = 'annual'; // 'annual' or 'quarterly'
@@ -12,6 +12,8 @@
     let showMA = { ma10: false, ma20: false, ma50: false }; // Moving averages
     let showMACD = false; // MACD indicator
     let currentPortfolioFilter = 'all'; // 'all' or specific portfolioId
+    let assetRequestId = 0;
+    let latestAssetData = null;
 
     // ── Indicator helpers ──────────────────────────────────────────────────
 
@@ -67,6 +69,51 @@
     const inputEl = document.getElementById('analysis-search-input');
     const dropdownEl = document.getElementById('analysis-ticker-dropdown');
     const contentArea = document.getElementById('analysis-content-area');
+    const assetDialog = document.getElementById('analysis-asset-dialog');
+
+    function openAssetPicker() {
+        if (!assetDialog || assetDialog.open) return;
+        assetDialog.showModal();
+        inputEl.disabled = false;
+        inputEl.value = '';
+        inputEl.focus();
+        renderFavoritesList();
+    }
+
+    function closeAssetPicker() {
+        assetDialog?.close();
+        clearTimeout(searchTimeout);
+        dropdownEl.style.display = 'none';
+    }
+
+    document.getElementById('analysis-asset-open')?.addEventListener('click', openAssetPicker);
+    document.getElementById('analysis-empty-select')?.addEventListener('click', openAssetPicker);
+    document.getElementById('analysis-asset-close')?.addEventListener('click', closeAssetPicker);
+    document.getElementById('analysis-retry')?.addEventListener('click', () => {
+        if (currentTicker) loadAssetData(currentTicker, currentPeriod);
+    });
+    assetDialog?.addEventListener('click', event => {
+        if (event.target !== assetDialog) return;
+        const bounds = assetDialog.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right ||
+            event.clientY < bounds.top || event.clientY > bounds.bottom) closeAssetPicker();
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        if (assetDialog?.open) {
+            event.preventDefault();
+            closeAssetPicker();
+        }
+        document.querySelectorAll('#tab-analysis details[open]').forEach(details => {
+            details.open = false;
+            details.querySelector('summary')?.focus();
+        });
+    });
+    document.addEventListener('click', event => {
+        document.querySelectorAll('#tab-analysis .analysis-help[open]').forEach(details => {
+            if (!details.contains(event.target)) details.open = false;
+        });
+    });
     
     // Sparkline cache management
     function getSparklineCache() {
@@ -191,7 +238,7 @@
     // Formatting utilities
     function formatCurrency(val) {
         if (val === null || val === undefined) return '—';
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+        return new Intl.NumberFormat('en-GB', { maximumFractionDigits: 4 }).format(val);
     }
     
     function formatLargeNumber(num) {
@@ -209,6 +256,10 @@
 
     function renderChart(historyData, transactions = []) {
         const container = document.getElementById('analysisChartContainer');
+        if (currentChart) {
+            currentChart.remove();
+            currentChart = null;
+        }
         container.innerHTML = ''; // clear existing
         
         if (!historyData || historyData.length === 0) {
@@ -529,31 +580,63 @@
 
         currentChart.timeScale().fitContent();
 
-        // Handle resize
-        window.addEventListener('resize', () => {
-            if (currentChart && container) {
-                currentChart.applyOptions({ width: container.clientWidth });
+    }
+
+    const chartContainer = document.getElementById('analysisChartContainer');
+    if (chartContainer && typeof ResizeObserver === 'function') {
+        new ResizeObserver(() => {
+            if (currentChart && chartContainer.clientWidth > 0) {
+                currentChart.applyOptions({ width: chartContainer.clientWidth });
             }
-        });
+        }).observe(chartContainer);
+    }
+
+    function renderCurrentChart() {
+        if (!latestAssetData) return;
+        renderChart(latestAssetData.history || [], currentPortfolioFilter === 'none'
+            ? [] : latestAssetData.transactions || []);
+    }
+
+    function syncIndicatorButtons() {
+        for (const [key, active] of Object.entries({ volume: showVolume, ...showMA, macd: showMACD })) {
+            const button = document.getElementById(`analysis-${key}-toggle`);
+            if (!button) continue;
+            button.classList.toggle('active', active);
+            button.setAttribute('aria-pressed', String(active));
+        }
     }
 
     async function loadAssetData(ticker, period = '1y') {
+        closeAssetPicker();
+        const requestId = ++assetRequestId;
+        latestAssetData = null;
         currentTicker = ticker;
         currentPeriod = period;
         inputEl.value = ticker;
         dropdownEl.style.display = 'none';
         document.querySelectorAll('.analysis-range-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.range === period);
+            btn.setAttribute('aria-pressed', String(btn.dataset.range === period));
         });
         
-        const originalPlaceholder = inputEl.placeholder;
         inputEl.placeholder = 'Loading data...';
-        inputEl.disabled = true;
+        inputEl.disabled = false;
 
         // Hide favorites section and show content area first (so loader is visible)
-        const favSection = document.getElementById('analysis-favorites-section');
-        if (favSection) favSection.style.display = 'none';
+        const emptyState = document.getElementById('analysis-empty-state');
+        if (emptyState) emptyState.hidden = true;
         if (contentArea) contentArea.style.display = 'block';
+        contentArea?.setAttribute('aria-busy', 'true');
+        document.getElementById('analysis-error').hidden = true;
+        document.getElementById('analysis-chart-title').textContent = ticker;
+        document.getElementById('analysis-quote-price').textContent = '—';
+        document.getElementById('analysis-quote-currency').textContent = '';
+        document.getElementById('analysis-quote-asof').textContent = '';
+        document.getElementById('analysis-range-return').textContent = '—';
+        document.querySelector('.analysis-fundamentals-card').hidden = true;
+        document.getElementById('analysis-financials-section').style.display = 'none';
+        document.getElementById('analysis-favorite-btn').style.display = 'none';
+        syncIndicatorButtons();
 
         // Show loader
         const loader = document.getElementById('analysis-loader');
@@ -562,7 +645,7 @@
 
         try {
             const params = new URLSearchParams({ ticker, period });
-            if (currentPortfolioFilter && currentPortfolioFilter !== 'all') {
+            if (currentPortfolioFilter && !['all', 'none'].includes(currentPortfolioFilter)) {
                 params.set('portfolioId', currentPortfolioFilter);
             }
             const res = await fetch(`${_apiBase()}/asset-analysis?${params.toString()}`, {
@@ -571,6 +654,8 @@
             
             if (!res.ok) throw new Error('Failed to fetch data');
             const data = await res.json();
+            if (requestId !== assetRequestId) return;
+            latestAssetData = data;
             
             // Populate Fundamentals
             const f = data.fundamentals || {};
@@ -584,13 +669,28 @@
             document.getElementById('analysis-fund-low').textContent = formatCurrency(f.fiftyTwoWeekLow);
 
             // Set Title
-            const periodLabel = period.toUpperCase();
-            document.getElementById('analysis-chart-title').textContent = `${f.longName || ticker} - Price History (${periodLabel})`;
+            document.getElementById('analysis-chart-title').textContent = f.longName || ticker;
+            const history = (data.history || []).filter(bar => Number.isFinite(bar.c) && bar.c > 0);
+            const last = history.at(-1);
+            document.getElementById('analysis-quote-price').textContent = last ? formatCurrency(last.c) : '—';
+            document.getElementById('analysis-quote-currency').textContent = data.currency || '';
+            const quoteDate = last && new Date(typeof last.t === 'number'
+                ? last.t * (last.t < 1e12 ? 1000 : 1) : last.t);
+            document.getElementById('analysis-quote-asof').textContent = quoteDate && Number.isFinite(quoteDate.getTime())
+                ? `${ticker} · ${quoteDate.toLocaleDateString('en-GB', { timeZone: 'UTC' })} · Last bar close` : ticker;
+            document.getElementById('analysis-statement-currency').textContent = data.financialCurrency
+                ? `${data.financialCurrency} · source reporting currency` : 'Reporting currency unavailable';
+            const rangeReturn = history.length > 1 ? (last.c / history[0].c - 1) * 100 : null;
+            const returnEl = document.getElementById('analysis-range-return');
+            returnEl.textContent = rangeReturn === null ? 'Return unavailable'
+                : `${rangeReturn >= 0 ? '+' : ''}${rangeReturn.toFixed(2)}% · ${period.toUpperCase()}`;
+            returnEl.dataset.direction = rangeReturn === null ? '' : rangeReturn >= 0 ? 'up' : 'down';
+            document.querySelector('.analysis-fundamentals-card').hidden = false;
 
             // Show and update favorite button
             updateFavoriteButton();
             
-            renderChart(data.history || [], data.transactions || []);
+            renderCurrentChart();
             
             // Store and render financial data
             currentFinancialData = {
@@ -606,16 +706,23 @@
             if (loader) loader.style.display = 'none';
             
         } catch (e) {
+            if (requestId !== assetRequestId) return;
             console.error('Asset analysis error:', e);
             setFinancialsTableLoading(false);
             
             // Hide loader on error
             if (loader) loader.style.display = 'none';
             
-            alert('Failed to load asset data. Please try again.');
+            latestAssetData = null;
+            if (contentArea) contentArea.style.display = 'none';
+            document.getElementById('analysis-error-message').textContent = `Could not load ${ticker}. Please try again.`;
+            document.getElementById('analysis-error').hidden = false;
         } finally {
-            inputEl.placeholder = originalPlaceholder;
-            inputEl.disabled = false;
+            if (requestId === assetRequestId) {
+                inputEl.placeholder = 'Search by company name or ticker';
+                inputEl.disabled = false;
+                contentArea?.setAttribute('aria-busy', 'false');
+            }
         }
     }
 
@@ -911,6 +1018,10 @@
         const hintEl = document.getElementById('analysis-portfolio-hint');
         const selectEl = document.getElementById('analysis-portfolio-filter');
         if (!hintEl || !selectEl) return;
+        if (currentPortfolioFilter === 'none') {
+            hintEl.textContent = 'Transaction markers are hidden.';
+            return;
+        }
         if (currentPortfolioFilter === 'all') {
             hintEl.textContent = 'Markers show transactions from all wallets.';
             return;
@@ -924,7 +1035,7 @@
         const selectEl = document.getElementById('analysis-portfolio-filter');
         if (!selectEl || selectEl.dataset.loaded === '1') return;
 
-        selectEl.innerHTML = '<option value="all">All wallets</option>';
+        selectEl.innerHTML = '<option value="all">All wallets</option><option value="none">Hide trades</option>';
         try {
             if (window.PortfolioClient && typeof window.PortfolioClient.listPortfolios === 'function') {
                 const data = await window.PortfolioClient.listPortfolios();
@@ -1102,6 +1213,8 @@
         btn.style.display = 'flex';
         btn.classList.toggle('is-favorite', isFav);
         btn.title = isFav ? 'Remove from favorites' : 'Add to favorites';
+        btn.setAttribute('aria-label', btn.title);
+        btn.setAttribute('aria-pressed', String(isFav));
     }
 
     // Toggle favorite
@@ -1289,29 +1402,27 @@
     // Initialize favorites list on load
     function toggleVolume() {
         showVolume = !showVolume;
-        const btn = document.getElementById('analysis-volume-toggle');
-        if (btn) btn.classList.toggle('active', showVolume);
-        if (currentTicker) loadAssetData(currentTicker, currentPeriod);
+        syncIndicatorButtons();
+        renderCurrentChart();
     }
 
     function toggleMA(key) {
         showMA[key] = !showMA[key];
-        const btn = document.getElementById(`analysis-${key}-toggle`);
-        if (btn) btn.classList.toggle('active', showMA[key]);
-        if (currentTicker) loadAssetData(currentTicker, currentPeriod);
+        syncIndicatorButtons();
+        renderCurrentChart();
     }
 
     function toggleMACD() {
         showMACD = !showMACD;
-        const btn = document.getElementById('analysis-macd-toggle');
-        if (btn) btn.classList.toggle('active', showMACD);
-        if (currentTicker) loadAssetData(currentTicker, currentPeriod);
+        syncIndicatorButtons();
+        renderCurrentChart();
     }
 
     window.addEventListener('roastfolio:themechange', () => {
-        if (currentTicker) loadAssetData(currentTicker, currentPeriod);
+        renderCurrentChart();
     });
 
+    syncIndicatorButtons();
     renderFavoritesList();
 
     window._analysis = {
@@ -1325,14 +1436,7 @@
         toggleMA,
         toggleMACD,
         removeFromFavorites,
-        showFavorites: () => {
-            const favSection = document.getElementById('analysis-favorites-section');
-            if (favSection) favSection.style.display = 'block';
-            if (contentArea) contentArea.style.display = 'none';
-            const btn = document.getElementById('analysis-favorite-btn');
-            if (btn) btn.style.display = 'none';
-            renderFavoritesList();
-        }
+        showFavorites: openAssetPicker
     };
 
     // Global helper to switch to analysis tab and load a ticker
@@ -1349,7 +1453,7 @@
                 if (window._analysis.setPortfolioFilter) {
                     await window._analysis.setPortfolioFilter(portfolioId, { reload: false });
                 }
-                window._analysis.loadAssetData(ticker, '5y');
+                window._analysis.loadAssetData(ticker, '1y');
             }
         }, 100);
     };
