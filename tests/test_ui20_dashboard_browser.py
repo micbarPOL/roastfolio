@@ -435,39 +435,113 @@ def _set_ath(page, ath_value):
     page.wait_for_timeout(1400)
 
 
-def _lake(page):
-    return page.evaluate("""() => { const box = s => document.querySelector('#dash-ath-lake ' + s).getBoundingClientRect().toJSON();
-        const lake = document.getElementById('dash-ath-lake');
-        return { state: lake.dataset.state, label: lake.getAttribute('aria-label'), lake: lake.getBoundingClientRect().toJSON(),
-                 ath: box('.lake-ath'), now: box('.lake-now'), athTag: box('.lake-ath .lake-tag'), nowTag: box('.lake-tag-now'),
-                 nowText: document.querySelector('#dash-ath-lake .lake-tag-now').textContent }; }""")
-
-
-def _overlap(a, b):
-    return a["x"] < b["x"] + b["width"] and b["x"] < a["x"] + a["width"] and a["y"] < b["y"] + b["height"] and b["y"] < a["y"] + a["height"]
-
-
 @pytest.mark.parametrize("width,height", [(1440, 900), (390, 844)])
-def test_lake_shows_small_drawdowns_and_rises_above_the_ath(open_page, width, height):
+def test_ocean_uses_live_dashboard_values_and_keeps_new_ath_ashore(open_page, width, height):
     page, errors = open_page(width, height)
     total = page.evaluate("PORTFOLIO_TOTAL_VALUE")
-    _set_ath(page, round(total / (1 - 0.003), 2))  # 0.3% under the high: invisible on the old linear scale
-    lake = _lake(page)
-    assert lake["state"] == "below" and lake["lake"]["width"] >= 300
-    assert lake["now"]["y"] - lake["ath"]["y"] >= 15
-    assert lake["nowText"] == "now −0.30%"
-    assert not _overlap(lake["athTag"], lake["nowTag"])
-    assert "0.30% below" in lake["label"]
-
-    deep = _lake(page) if not _set_ath(page, total * 2) else None
-    assert lake["now"]["y"] < deep["now"]["y"] <= deep["lake"]["y"] + deep["lake"]["height"]
-
+    _set_ath(page, round(total / (1 - 0.003), 2))
+    assert page.locator('#dash-ath-lake').get_attribute('data-state') == 'snorkeling'
+    assert page.locator('#ath-ocean-depth-readout').text_content() == '−0.30%'
+    assert page.locator('.ath-ocean-scene').is_visible()
+    _set_ath(page, total * 2)
+    assert page.locator('#dash-ath-lake').get_attribute('data-zone') == 'danger'
+    assert page.locator('#ath-ocean-depth-readout').text_content() == '−50.00%'
+    assert page.locator('.ath-ocean-scene .scale-label').last.text_content() == '−60%'
     _set_ath(page, round(total / 1.012, 2))
-    above = _lake(page)
-    assert above["state"] == "above" and above["now"]["y"] < above["ath"]["y"] - 15
-    assert not _overlap(above["athTag"], above["nowTag"])
-    assert page.locator("#dash-ath-lake .lake-peak").evaluate("el => getComputedStyle(el).opacity") == "1"
+    assert page.locator('#dash-ath-lake').get_attribute('data-state') == 'ashore'
+    assert page.locator('#ath-ocean-beach-person').is_visible()
+    assert page.locator('#ath-ocean-drawdown-marker').is_hidden()
     assert not errors, errors
+
+
+@pytest.fixture
+def ocean_page(browser):
+    page = browser.new_page(reduced_motion='reduce')
+    page.evaluate("""html => {
+        const dashboard = document.createElement('section'); dashboard.id = 'tab-dashboard';
+        dashboard.appendChild(new DOMParser().parseFromString(html, 'text/html').querySelector('.ath-part'));
+        document.body.appendChild(dashboard);
+    }""", (ROOT / 'src/index.html').read_text())
+    for stylesheet in ('tokens-v9.css', 'ath-ocean.css'):
+        page.add_style_tag(path=str(ROOT / 'src/styles' / stylesheet))
+    page.add_style_tag(content='body { margin: 0; } #tab-dashboard { padding: 16px; }')
+    page.add_script_tag(path=str(ROOT / 'src/scripts/ath-ocean.js'))
+    yield page
+    page.close()
+
+
+@pytest.mark.parametrize('drawdown,state,zone', [
+    (3, 'ashore', 'relax'), (0, 'ashore', 'relax'), (-2, 'snorkeling', 'explore'),
+    (-2.1, 'diving', 'explore'), (-5, 'diving', 'explore'), (-5.1, 'diving', 'danger'),
+])
+def test_ocean_equipment_and_zone_thresholds(ocean_page, drawdown, state, zone):
+    page = ocean_page
+    page.evaluate('value => AthOcean.render(value)', drawdown)
+    assert page.locator('#dash-ath-lake').get_attribute('data-state') == state
+    assert page.locator('#dash-ath-lake').get_attribute('data-zone') == zone
+    assert page.locator('[data-ocean-zone]').text_content() == zone.capitalize() + '.'
+    assert page.locator('.ath-ocean-scene .scale-label').all_text_contents() == ['ATH · 0%', '−5%', '−10%', '−15%']
+    for selector, expected in [('#ath-ocean-beach-person', 'ashore'), ('#ath-ocean-snorkeler', 'snorkeling'), ('#ath-ocean-expedition-diver', 'diving')]:
+        assert page.locator(selector).is_visible() == (state == expected)
+
+
+def test_ocean_recent_low_tracks_historical_peaks_and_missing_data(ocean_page):
+    result = ocean_page.evaluate("""() => {
+        const now = new Date('2026-11-02T12:00:00Z');
+        const rows = [{date:'2026-10-20',value:200}, {date:'2026-09-01',value:100},
+            {date:'2026-10-10',value:80}, {date:'2026-11-01',value:190}];
+        return { low: AthOcean.recentLow(rows,-3,now), live: AthOcean.recentLow(rows,-40,now),
+            missing: AthOcean.recentLow([],0,now), old: AthOcean.recentLow([{date:'2026-09-01',value:100}],0,now),
+            zero: AthOcean.recentLow([{date:'2026-10-10',value:100},{date:'2026-11-01',value:0}],0,now),
+            inputOrder: rows[0].date, large: AthOcean.levels(-50,-55), invalid: AthOcean.levels(NaN) };
+    }""")
+    assert result['low'] == pytest.approx(-20)
+    assert result['live'] == -40
+    assert result['missing'] is None and result['old'] is None
+    assert result['zero'] == -100
+    assert result['inputOrder'] == '2026-10-20'
+    assert result['large']['nowY'] == pytest.approx(405)
+    assert result['large']['lowY'] == pytest.approx(427.5)
+    assert [tick['value'] for tick in result['large']['ticks']] == [-20, -40, -60]
+    assert result['invalid']['state'] == 'pending'
+
+
+def test_ocean_pending_and_history_refresh(ocean_page):
+    page = ocean_page
+    page.evaluate('AthOcean.render(null)')
+    assert page.locator('.ath-ocean-scene').is_hidden()
+    assert page.locator('.ath-ocean-pending').is_visible()
+    page.evaluate('AthOcean.render(-7.2)')
+    assert page.locator('.ath-ocean-scene').is_visible()
+    assert page.locator('#ath-ocean-low-marker').is_hidden()
+    assert page.locator('[data-ocean-low]').text_content() == '—'
+    page.evaluate("AthOcean.setHistory([{date:new Date().toISOString().slice(0,10),value:100}])")
+    assert page.locator('[data-ocean-low]').text_content() == '−7.20%'
+    assert page.locator('#ath-ocean-low-marker').is_visible()
+    page.evaluate('AthOcean.render(-25)')
+    assert page.locator('[data-ocean-low]').text_content() == '−25.00%'
+    page.evaluate('AthOcean.setHistory([])')
+    assert page.locator('#ath-ocean-low-marker').is_hidden()
+
+
+@pytest.mark.parametrize('theme', THEMES)
+@pytest.mark.parametrize('width', [1440, 390])
+def test_ocean_responsive_assets_and_reduced_motion(ocean_page, theme, width):
+    page = ocean_page
+    page.set_viewport_size({'width': width, 'height': 1000})
+    page.evaluate('theme => document.documentElement.dataset.theme = theme', theme)
+    page.evaluate('AthOcean.render(-7.2)')
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    assert page.locator('.shark-patrol').count() == 3
+    assert page.locator('.reef-swim').count() == 3
+    assert page.evaluate("""() => [...document.querySelectorAll('use')].every(node => document.querySelector(node.getAttribute('href')))""")
+    assert page.locator('.ath-ocean *').evaluate_all("nodes => nodes.every(node => getComputedStyle(node).animationName === 'none')")
+    page.locator('.ath-ocean-help summary').click()
+    assert page.locator('.ath-ocean-help').get_attribute('open') is not None
+    page.emulate_media(reduced_motion='no-preference')
+    for value, selector, name in [(0, '.sun-rays', 'ocean-sun'), (-3, '.sunrays', 'ocean-light'), (-6, '.danger-pulse', 'ocean-danger')]:
+        page.evaluate('value => AthOcean.render(value)', value)
+        assert page.locator(selector).evaluate('node => getComputedStyle(node).animationName') == name
 
 
 def test_new_ath_banner_breaks_out_once_per_record(open_page):

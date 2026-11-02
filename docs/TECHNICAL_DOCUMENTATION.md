@@ -263,11 +263,28 @@ graph TD
 - Phones (≤767px): the roast and the gauge sit side by side, the total value
   spans underneath. The gauge canvas takes its height from its wrapper
   (220px desktop, 170px tablet, 112px phone) so it is never stretched.
-- "Under the surface" (`renderAthLake`): the dashed line is the ATH. Distance
-  uses a log scale (`log10(1 + 10·|d|)`, 50% drawdown or +20% gain at full
-  height) so small drawdowns stay visible. Below the ATH the gap fills red and
-  bubbles rise; above it a green tide rises with sparks. Labels sit on opposite
-  sides of their lines so they never overlap.
+- "Under the surface" (`renderAthLake` delegates to `AthOcean`): the approved
+  Deep Ocean SVG is embedded in `src/index.html`; IDs and styles are scoped to
+  avoid collisions. No additional graphics or history requests are made.
+  At/above recorded ATH the scene shows the beach (0% drawdown); below ATH it
+  shows snorkeling through -2%, then scuba diving. Zone accents are independent:
+  Relax at ATH, Explore through -5%, Danger below -5%. Reduced motion disables
+  animation without hiding the active zone or financial readouts.
+- The default linear axis is 0/-5/-10/-15%. Its maximum expands in 15-point
+  increments to fit both current drawdown and the 30-day low, with three evenly
+  spaced labeled ticks. The diamond is the measurement; surface snorkeling is
+  decorative. Above-ATH gains remain visible in the existing financial text.
+- `loadSnapshotAth` passes summary snapshots already fetched by the dashboard
+  to `AthOcean.setHistory`. The low uses the last 30 UTC calendar dates including
+  today and a running peak across all available snapshots, not today's ATH
+  retroactively applied to historical values. A deeper live drawdown is included
+  only when recent snapshot history exists. Missing ATH displays a pending state;
+  missing recent history displays an em dash and no low marker. No cash-flow
+  normalization or backend ATH calculations are changed.
+- The approved component comparison is retained at
+  `design/mockups/components/ath-ocean-options.html`. Unlike full-screen mockups,
+  it has no screen-field registry; production coverage lives in the ocean tests
+  in `tests/test_ui20_dashboard_browser.py`.
 - New-ATH banner (`athBreakoutMarkup`): a sparkline breaks through the dashed
   previous-peak ceiling, the new high pulses and throws sparks. It is rebuilt
   only when the record changes, so live refreshes do not replay it. Wallet

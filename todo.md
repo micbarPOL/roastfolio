@@ -31,7 +31,8 @@
   - **Content**: Today's % return (and optionally PLN, hidden by default like the recap amounts switch), benchmark return for the day, intraday sparkline, date, and Roastfolio branding.
   - **Comment engine**: Add a simple comment engine that picks a short, witty one-liner based on the day's scenario (e.g. big up day, big down day, flat, beat/lost to benchmark). Reuse tone profiles from the monthly commentary where possible, but keep it lightweight.
 
-- [ ] **ATH Widget "Deep Ocean" Visual Redesign & Depth Thresholds**:
+- [x] **ATH Widget "Deep Ocean" Visual Redesign & Depth Thresholds** (15.6.0):
+  - Approved Deep Expedition implemented with separate equipment/zone thresholds, contextual help and reduced-motion support. Component study: `design/mockups/components/ath-ocean-options.html`.
   - **Concept / Ocean Depth Zones**: Redesign the ATH widget ("Under the surface" lake) to visualize drawdowns as descending into a deep ocean:
     - **0% to -5% (Sunlit / Safe Shallows)**: Pleasant, friendly zone where we want to be; light water aesthetics with bubbles.
     - **-5% to -10% (Twilight / Danger Zone)**: Deeper, darker, unknown, and dangerous waters.
