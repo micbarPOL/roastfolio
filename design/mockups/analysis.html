@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="analysis" data-frameless>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>roastfolio · Analysis mockup</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="analysis.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+  <script src="analysis.js" defer></script>
+</head>
+<body>
+<div class="app" data-sidebar="expanded">
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <div class="sidebar-head"><a class="brand" href="dashboard.html"><i data-lucide="chart-candlestick" aria-hidden="true"></i><span class="brand-wordmark nav-label" data-field="brand-wordmark">roastfolio</span></a></div>
+    <div class="nav-scroll">
+      <a class="nav-item" href="dashboard.html" data-field="nav-dashboard" data-label="Dashboard"><i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="wallets.html" data-field="nav-wallets" data-label="Wallets"><i data-lucide="wallet"></i><span class="nav-label">Wallets</span></a>
+      <span class="nav-item" data-field="nav-portfolio" data-label="Portfolio"><i data-lucide="chart-pie"></i><span class="nav-label">Portfolio</span></span>
+      <div class="nav-section nav-label">Analytics</div>
+      <a class="nav-item" href="history.html" data-field="nav-history" data-label="History"><i data-lucide="chart-no-axes-combined"></i><span class="nav-label">History</span></a>
+      <a class="nav-item" href="../../src/index.html#statistics" data-field="nav-statistics" data-label="Statistics"><i data-lucide="chart-column"></i><span class="nav-label">Statistics</span></a>
+      <a class="nav-item" href="../../src/index.html#retirement" data-field="nav-retirement" data-label="Retirement"><i data-lucide="calendar"></i><span class="nav-label">Retirement</span></a>
+      <a class="nav-item" href="../../src/index.html#transactions" data-field="nav-transactions" data-label="Transactions"><i data-lucide="list"></i><span class="nav-label">Transactions</span></a>
+      <a class="nav-item" href="analysis.html" aria-current="page" data-field="nav-analysis" data-label="Analysis"><i data-lucide="search"></i><span class="nav-label">Analysis</span></a>
+      <a class="nav-item" href="../../src/index.html#diary" data-field="nav-diary" data-label="Coping Diary"><i data-lucide="notebook-pen"></i><span class="nav-label">Coping Diary</span></a>
+      <div class="nav-section nav-label">Account</div>
+      <a class="nav-item" href="../../src/guide.html" data-field="nav-guide" data-label="User Guide"><i data-lucide="circle-help"></i><span class="nav-label">User Guide</span></a>
+    </div>
+    <div class="sidebar-foot">
+      <div class="theme-switch nav-label" role="group" aria-label="Color mode" data-field="theme-switch"><button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button><button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button></div>
+      <div class="user-card" data-field="user-card"><span class="avatar">M</span><span class="user-meta nav-label"><span class="user-name">Michal B.</span><span class="user-role">Premium</span></span></div>
+      <div class="brand-footer nav-label" data-field="brand-footer">Powered by <strong>TOMINEX</strong> <span class="num">v15.4.3</span></div>
+      <button type="button" class="sidebar-collapse" aria-label="Collapse sidebar" aria-pressed="false" title="Collapse sidebar"><i data-lucide="panel-left-close"></i></button>
+    </div>
+  </nav>
+  <div class="app-main">
+    <header class="top-bar"><h1 class="page-title">Analysis</h1><span class="live-status" data-field="live-data-status">Sample data · <span class="num">30 Oct 2026</span></span><button type="button" class="icon-btn a-mobile-theme" aria-label="Switch color mode" title="Switch color mode"><i data-lucide="sun-moon"></i></button></header>
+    <section class="a-ticker" aria-label="Major indices">
+      <span data-field="index-WIG">WIG <b class="num up">+0.62%</b></span><span data-field="index-WIG20">WIG20 <b class="num up">+0.48%</b></span><span data-field="index-SP500">S&amp;P 500 <b class="num down">-0.18%</b></span><span data-field="index-NASDAQ">NASDAQ <b class="num down">-0.31%</b></span><span data-field="index-DAX">DAX <b class="num up">+0.24%</b></span><span data-field="index-MSCI_WORLD">MSCI World <b class="num up">+0.12%</b></span>
+    </section>
+    <main class="a-workspace">
+      <dialog class="a-company-picker" id="company-picker" aria-labelledby="companies-title">
+      <aside class="a-master" aria-label="Asset selection">
+        <div class="a-section-heading"><h2 id="companies-title">Companies</h2><button type="button" class="icon-btn" id="close-companies" aria-label="Close company search" title="Close company search"><i data-lucide="x"></i></button></div>
+        <p class="a-caption" id="asset-count" aria-live="polite"></p>
+        <label class="a-search" data-field="analysis-search"><i data-lucide="search" aria-hidden="true"></i><input id="asset-search" type="search" placeholder="Company or ticker" aria-label="Search companies" autocomplete="off"></label>
+        <div class="a-segment" role="group" aria-label="Company list"><button type="button" data-list="favorites" aria-pressed="true">Favorites</button><button type="button" data-list="all" aria-pressed="false">All companies</button></div>
+        <div id="asset-list" data-field="analysis-favorites"></div>
+        <div class="a-empty empty-state-card" id="asset-empty" data-field="analysis-empty" hidden><i class="empty-state-icon" data-lucide="search-x" aria-hidden="true"></i><h3 class="empty-state-title">No companies found</h3><p class="empty-state-desc">No matches in this list.</p><button type="button" class="empty-state-btn" id="reset-search">Show all companies</button></div>
+        <p class="a-market-note" data-field="market-commentary">European markets edge higher. US technology takes a breather.</p>
+      </aside>
+      </dialog>
+      <div class="a-detail">
+        <button type="button" class="a-company-trigger" id="show-companies" aria-haspopup="dialog" aria-controls="company-picker"><i data-lucide="search"></i>Choose company</button>
+        <section class="a-quote" aria-labelledby="asset-name" data-field="analysis-quote">
+          <div class="a-company"><span class="a-monogram" id="asset-monogram" aria-hidden="true">X</span><div><p class="a-caption" id="asset-meta">XTB.WA · GPW · PLN</p><h2 id="asset-name" tabindex="-1">XTB</h2></div><button type="button" class="icon-btn" id="favorite-toggle" data-field="analysis-favorite-toggle" aria-label="Remove from favorites" title="Remove from favorites" aria-pressed="true"><i data-lucide="star"></i></button></div>
+          <div class="a-quote-value"><div><strong class="num" id="asset-price">72.48</strong> <span id="asset-currency">PLN</span></div><span class="num" id="asset-day"></span><span class="a-caption">Previous close · sample quote</span></div>
+        </section>
+        <section class="a-price-section" aria-label="Price history" data-field="analysis-chart">
+          <div class="a-chart-heading"><div class="a-heading-label"><h3>Price history</h3><button type="button" class="icon-btn a-help-button" data-help="price" popovertarget="analysis-help" aria-label="About price history and indicators" title="About price history and indicators"><i data-lucide="circle-help"></i></button></div><span class="num" id="range-return" data-field="analysis-range-return"></span></div>
+          <div class="a-chart-toolbar">
+            <div class="a-segment a-ranges" role="group" aria-label="Price range" data-field="analysis-range"><button type="button" data-range="1d" aria-pressed="false">1D</button><button type="button" data-range="1w" aria-pressed="false">1W</button><button type="button" data-range="1m" aria-pressed="false">1M</button><button type="button" data-range="ytd" aria-pressed="false">YTD</button><button type="button" data-range="1y" aria-pressed="true">1Y</button><button type="button" data-range="5y" aria-pressed="false">5Y</button><button type="button" data-range="all" aria-pressed="false">ALL</button></div>
+            <label class="a-scope" data-field="analysis-scope">Transactions<select id="wallet-scope"><option value="all">All wallets</option><option value="xtb">XTB</option><option value="ike">IKE</option><option value="none">Hide markers</option></select></label>
+          </div>
+          <div class="a-chart-wrap"><canvas id="price-chart" role="img" aria-label="Sample price history with transaction markers"></canvas><div class="card-cl-overlay" id="chart-loader" data-field="analysis-loading"><div class="cl-loader" role="status" aria-label="Loading chart"><div class="cl-candle"></div><div class="cl-candle"></div><div class="cl-candle"></div></div></div><p id="chart-error" role="status" hidden>Chart unavailable. <button type="button" id="retry-chart">Retry</button></p></div>
+          <div class="a-chart-foot"><div class="a-indicators" data-field="analysis-indicators"><label><input type="checkbox" data-indicator="volume" checked>Volume</label><label><input type="checkbox" data-indicator="ma10">MA10</label><label><input type="checkbox" data-indicator="ma20">MA20</label><label><input type="checkbox" data-indicator="ma50">MA50</label><label><input type="checkbox" data-indicator="macd">MACD</label></div><span class="a-caption">MA: weeks · MACD: 12/26/9</span></div>
+          <div class="a-macd" id="macd-wrap" hidden><canvas id="macd-chart" role="img" aria-label="Sample MACD and signal"></canvas></div>
+          <div class="a-transactions" data-field="analysis-transactions" id="transaction-summary" aria-live="polite"></div>
+        </section>
+        <section class="a-fundamentals" data-field="analysis-fundamentals" aria-labelledby="fundamentals-title"><div class="a-section-heading"><div class="a-heading-label"><h3 id="fundamentals-title">Fundamentals</h3><button type="button" class="icon-btn a-help-button" data-help="fundamentals" popovertarget="analysis-help" aria-label="About fundamental metrics" title="About fundamental metrics"><i data-lucide="circle-help"></i></button></div><span class="a-caption">Sample · latest available</span></div><dl id="fundamental-grid"></dl></section>
+        <section class="a-financials" aria-labelledby="financials-title" data-field="analysis-financials"><div class="a-section-heading"><div class="a-heading-label"><h3 id="financials-title">Financial statements</h3><button type="button" class="icon-btn a-help-button" data-help="statements" popovertarget="analysis-help" aria-label="About financial statements" title="About financial statements"><i data-lucide="circle-help"></i></button></div><span class="a-caption" id="statement-unit"></span></div><div class="a-financial-controls"><div class="a-segment" role="group" aria-label="Statement" data-field="analysis-statement-type"><button type="button" data-statement="income" aria-pressed="true">Income</button><button type="button" data-statement="cashflow" aria-pressed="false">Cash flow</button></div><div class="a-segment" role="group" aria-label="Reporting period" data-field="analysis-statement-period"><button type="button" data-period="annual" aria-pressed="true">Annual</button><button type="button" data-period="quarterly" aria-pressed="false">Quarterly</button></div></div><div class="a-table-scroll" tabindex="0" role="region" aria-label="Financial statement table"><table class="num" id="statement-table"></table></div></section>
+      </div>
+    </main>
+  </div>
+</div>
+<div id="analysis-help" class="a-context-help" popover data-field="analysis-context-help" role="region" aria-labelledby="help-title"><div class="a-section-heading"><h2 id="help-title"></h2><button type="button" class="icon-btn" popovertarget="analysis-help" popovertargetaction="hide" aria-label="Close help" title="Close help"><i data-lucide="x"></i></button></div><dl id="help-content"></dl></div>
+<nav class="a-bottom-nav" aria-label="Mobile navigation"><a href="dashboard.html"><i data-lucide="layout-dashboard"></i>Dashboard</a><a href="wallets.html"><i data-lucide="wallet"></i>Wallets</a><a href="history.html"><i data-lucide="chart-no-axes-combined"></i>History</a><a href="analysis.html" aria-current="page"><i data-lucide="search"></i>Analysis</a></nav>
+</body>
+</html>

@@ -96,6 +96,7 @@
                     timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
                 }).format(start + quoteDelay)}.`);
         }
+        if (benchmarkStart > until) throw new Error('Waiting for the benchmark opening candle.');
         if (!Array.isArray(holdings) || !holdings.length) throw new Error('Portfolio holdings are unavailable.');
         let cash = 0;
         const stocks = [];
@@ -116,19 +117,40 @@
                 .sort((a, b) => a.timestamp - b.timestamp);
             const baseline = holding.intradayBaseline;
             let price = null;
+            let priceTime = null;
             for (const bar of prices) {
-                if (bar.timestamp <= start) price = bar.price;
+                if (bar.timestamp <= start) {
+                    price = bar.price;
+                    priceTime = bar.timestamp;
+                }
                 else break;
             }
-            if (baseline?.openTime === start && validPrice(baseline.openPrice)) {
-                price = baseline.openPrice;
-            } else if (!validPrice(price) && baseline?.sessionStart > start && baseline.sessionStart < dayEnd &&
-                baseline.openTime >= baseline.sessionStart && baseline.openTime < dayEnd &&
-                validPrice(baseline.previousClose)) {
-                price = baseline.previousClose;
+            const opensWithBenchmark = baseline?.sessionStart === start || baseline?.openTime === start ||
+                (baseline?.sessionStart == null && baseline?.openTime > start &&
+                    baseline.openTime <= start + MAX_OPEN_DELAY);
+            const opensLater = baseline?.sessionStart > start && baseline.sessionStart < dayEnd;
+            if (opensWithBenchmark) {
+                const first = prices.find(bar => bar.timestamp > start);
+                const hasOpeningPrice = baseline.openTime >= start &&
+                    baseline.openTime <= Math.min(start + MAX_OPEN_DELAY, until) &&
+                    first?.timestamp === baseline.openTime + MINUTE && validPrice(baseline.openPrice);
+                // Never let yesterday's candle silently replace a missing opening price.
+                price = hasOpeningPrice ? baseline.openPrice : null;
+                if (hasOpeningPrice && baseline.openTime > start) {
+                    warnings.push(`${name}: first print ${new Intl.DateTimeFormat('en-GB', {
+                        timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+                    }).format(baseline.openTime)} is used as its opening value; prices held flat until then.`);
+                }
+            } else if (opensLater) {
+                if (!validPrice(price) && baseline.openTime >= baseline.sessionStart && baseline.openTime < dayEnd &&
+                    validPrice(baseline.previousClose)) {
+                    price = baseline.previousClose;
+                }
+            } else if (priceTime === null || priceTime < dayStart) {
+                price = null;
             }
             if (!prices.length || !validPrice(price)) {
-                throw new Error(`Session-start price unavailable: ${name}. No holdings were excluded.`);
+                throw new Error(`Session-start price unavailable: ${name}. Refresh prices after opening candles arrive. No holdings were excluded.`);
             }
             const last = prices.at(-1).timestamp;
             if (last < until - 5 * MINUTE) {
@@ -189,6 +211,7 @@
     function render() {
         const canvas = document.getElementById('intraday-comparison-chart');
         const status = document.getElementById('intraday-comparison-status');
+        const notice = document.getElementById('intraday-comparison-notice');
         if (!canvas || !status) return;
         const renderStarted = performance.now();
         try {
@@ -273,12 +296,14 @@
                 `Benchmark bars through ${time(data.benchmarkAsOf)} · ` +
                 `Portfolio bars through ${time(data.portfolioAsOf)} · ` +
                 `Both lines delayed ${Math.round(data.quoteDelay / MINUTE)} min. ${data.warnings.join(' ')}`;
+            if (notice) { notice.hidden = true; notice.textContent = ''; }
             root.DashboardPerformance?.record('intraday-render', performance.now() - renderStarted, { status: 'ok' });
             requestAnimationFrame(() => requestAnimationFrame(() => root.DashboardPerformance?.mark('intraday-ready')));
         } catch (error) {
             root.DashboardPerformance?.record('intraday-render', performance.now() - renderStarted, { status: 'unavailable' });
             if (chart) { chart.destroy(); chart = null; }
             status.textContent = error.message;
+            if (notice) { notice.textContent = error.message; notice.hidden = false; }
         }
     }
     function init() {

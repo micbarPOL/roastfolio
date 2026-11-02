@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import pytest
 
@@ -8,12 +9,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_history_contains_podsumowania_subtab_and_monthly_audit_mount():
     html = (ROOT / "src" / "index.html").read_text()
+    version = json.loads((ROOT / "package.json").read_text())["version"]
     assert 'data-history-section="recaps"' in html
     assert '>Summaries<' in html
     assert 'id="monthly-audit-root"' in html
     assert 'scripts/monthly-audit.js' in html
-    assert 'styles/monthly-audit.css?v=15.4.3' in html
-    assert 'scripts/manage.js?v=15.4.3' in html
+    assert f'styles/monthly-audit.css?v={version}' in html
+    assert f'scripts/manage.js?v={version}' in html
     assert html.count('scripts/user-profile.js?v=20260915-recap2') == 2
     assert html.index('scripts/monthly-audit-share.js') < html.index('scripts/monthly-audit.js')
 

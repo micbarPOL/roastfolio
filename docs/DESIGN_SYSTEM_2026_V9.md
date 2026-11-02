@@ -777,6 +777,9 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 | D-047 | provisional | The recap poster is the one printed object allowed on a frameless screen, together with its mini preview in the share invite. Its pastel paper follows the period mood (`--recap-up`, `--recap-down`, `--recap-flat`) in both themes, all text uses `--recap-ink` or `--recap-ink-soft`, and the Spotify-style type runs the TWR up to 7rem. A "Beat the WIG" sticker shows only when the benchmark was beaten. | `@history dom: .rc-poster[data-mood] [data-field="recap-twr"]` |
 | D-048 | provisional | Recap periods use a navigator, not a select: a Monthly / Yearly segmented control, a timeline strip that shows each period's return with year marks and a dot on the live period, and previous / next buttons. A share invite ends the recap with a poster preview and a switch for PLN amounts, which stay hidden by default. The headline is built from data, in priority order: (1) beat or trailed the benchmark, plus the carry holding's share of the gain or the anchor's cost; (2) a new all-time high; (3) the sign-based fallback. Stories that need new backend logic, such as positions sold just before a rally, are future work. | `@history dom: .rc-nav [data-field="recap-period-type"]` |
 
+| D-049 | superseded | Analysis initially used a persistent company list beside details. Replaced by D-050 after review identified lost table width and missing contextual help. | none |
+| D-050 | active | Approved 2026-11-02: Analysis gives the chart and financial statements the full content width. Company search and favorites open in an on-demand dialog, a bottom sheet on mobile. Help popovers explain price returns, indicators, fundamentals and statement units. The metric column stays pinned during horizontal table scrolling. | `@analysis dom: dialog.a-company-picker + .a-detail [data-help="statements"]` |
+
 ## 10. Consistency Contract
 
 The tests in `tests/test_design_system_doc.py`, `tests/test_design_mockups_contract.py` and `tests/test_design_mockups_browser.py` enforce this document. Run them with `./test.sh design`, after every mockup change and periodically.
@@ -1084,3 +1087,54 @@ Every row is a piece of information or a control that the current History screen
 | :--- | :--- |
 | `history-loading` | Candle loader state |
 | `history-empty` | No history yet |
+
+## Appendix D. Screen Registry: Portfolio
+
+Proposed mockup: `design/mockups/portfolio.html`, pending owner approval before implementation in `src/` (D-008). Uses sample data only. Retains the current Portfolio screen's total and per-wallet composition, wallet filter and holdings information. The shared Shell and Market ticker fields from Appendix A also apply.
+
+Desktop shows a dense holdings table; mobile shows compact rows with a bottom-sheet detail view. Purchase value, price, daily return, YTD, total return, profit/loss and portfolio weight remain available in position details. Summary returns describe open-position valuation, not historical TWR or XIRR. Wallet management remains on the Wallets screen.
+
+| Field | Shows |
+| :--- | :--- |
+| `portfolio-scope` | Total portfolio or selected wallet |
+| `portfolio-value` | Current value in PLN |
+| `portfolio-today` | Daily change since previous close, in PLN and percent |
+| `portfolio-return` | Unrealized gain and return versus purchase value |
+| `portfolio-cost` | Purchase value of open positions |
+| `portfolio-wallet-filter` | Total and per-wallet values, returns and selection |
+| `portfolio-allocation-group` | Asset-class or quote-currency grouping |
+| `portfolio-composition` | Allocation of the selected portfolio or wallet |
+| `portfolio-search` | Search by asset name, ticker or wallet |
+| `portfolio-sort` | Sort by value, return, daily return or name |
+| `portfolio-holdings` | Asset, wallet, PLN price, today, YTD, value, gain, return and weight |
+| `portfolio-details` | All position metrics including purchase value and quantity |
+| `portfolio-loading` | Shared candle loader |
+| `portfolio-empty` | Search empty state with recovery action |
+
+## Appendix E. Screen Registry: Analysis
+
+Approved mockup: `design/mockups/analysis.html` (2026-11-02, D-008, D-050). Implemented in the Analysis section of `src/index.html`, `src/styles/analysis.css` and `src/scripts/analysis.js`. The mockup retains deterministic samples; the application uses its existing API, favorites and Lightweight Charts engine. Quote and reporting currencies are returned separately by `/asset-analysis`. The shared Shell and Market ticker fields from Appendix A also apply. Portfolio remains a non-linked label in the mockup; its existing mockup is retained.
+
+The data inventory follows `src/index.html` and `src/scripts/analysis.js`. Company selection and favorites open on demand, leaving the full width for charts and statements. On mobile the picker is a bottom sheet; the table scrolls within its own region with metric names pinned. Help buttons open dismissible context popovers accessible by pointer or keyboard. Favorites persist only in mockup-local storage. Weekly averages use 50/100/250 trading-day samples and are unavailable in the intraday view. The chart is a price line for this first design proposal; it is not a replacement for the production chart engine.
+
+Production retains the existing MA10/20/50 calculations over bars (not fixed weeks), all dynamic statement metrics and the Trend column. Help labels document these semantics. The quote header shows the last available bar close with its date, not a separately fetched live quote. Changing indicators or theme redraws cached history; changing ticker, period or wallet fetches data. Out-of-order responses are ignored, and failures show an inline retry action. Offline regressions live in `tests/test_analysis_browser.py`.
+
+| Field | Shows |
+| :--- | :--- |
+| `analysis-search` | Company name or ticker search |
+| `analysis-favorites` | Favorite companies, quotes, daily returns and selection |
+| `analysis-empty` | Empty company list with recovery action |
+| `analysis-quote` | Selected company, ticker, exchange, currency, price and daily change |
+| `analysis-favorite-toggle` | Add or remove selected company from favorites |
+| `analysis-chart` | Price history with wallet-scoped buy and sell markers |
+| `analysis-range` | 1D, 1W, 1M, YTD, 1Y, 5Y and ALL ranges |
+| `analysis-range-return` | Price return for the selected range, not portfolio return |
+| `analysis-scope` | All wallets, one wallet or hidden transaction markers |
+| `analysis-indicators` | Volume, 10/20/50-week moving averages and MACD |
+| `analysis-transactions` | Buy/sell date, quantity and wallet for the visible range |
+| `analysis-loading` | Shared candle loader and chart failure recovery |
+| `analysis-fundamentals` | Sector, industry, market cap, trailing/forward P/E, dividend yield and 52-week high/low |
+| `analysis-financials` | Financial statement values and currency |
+| `analysis-statement-type` | Income statement or cash flow statement |
+| `analysis-statement-period` | Annual or quarterly reporting periods |
+| `analysis-context-help` | Definitions for price returns, transaction markers, indicators, fundamental metrics and financial statement units |

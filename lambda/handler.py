@@ -1665,6 +1665,8 @@ def asset_analysis_handler(event: dict) -> dict:
 
         return _resp(200, {
             "ticker": ticker_symbol,
+            "currency": info.get("currency"),
+            "financialCurrency": info.get("financialCurrency"),
             "fundamentals": fundamentals,
             "history": history_data,
             "transactions": user_txs,

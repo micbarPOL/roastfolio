@@ -33,6 +33,21 @@ class PortfolioHandlerTests(unittest.TestCase):
             "queryStringParameters": query,
         }
 
+    def test_asset_analysis_preserves_quote_and_reporting_currencies(self):
+        ticker = MagicMock()
+        ticker.info = {"currency": "GBp", "financialCurrency": "USD"}
+        ticker.history.return_value.iterrows.return_value = []
+        with patch.object(handler.yf, "Ticker", return_value=ticker), patch.object(
+            handler.portfolios, "list_portfolios", return_value=[]
+        ):
+            response = handler.asset_analysis_handler(self._event(
+                "GET", "/asset-analysis", query={"ticker": "TEST.L"}
+            ))
+        self.assertEqual(response["statusCode"], 200)
+        payload = json.loads(response["body"])
+        self.assertEqual(payload["currency"], "GBp")
+        self.assertEqual(payload["financialCurrency"], "USD")
+
     def test_get_transactions_route(self):
         with patch.object(handler.portfolios, "list_transactions", return_value=[{"transactionId": "1"}]) as mock_list:
             resp = handler.portfolios_handler(self._event(
