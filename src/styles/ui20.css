@@ -251,7 +251,10 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 #tab-dashboard .card-cl-overlay { background: color-mix(in srgb, var(--bg-canvas) 88%, transparent); border-radius: 0; }
 
 /* ATH lake and last six months */
-#tab-dashboard .ath-six { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; }
+#tab-dashboard .ath-six { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); grid-template-rows: auto 1fr; gap: 32px; align-items: start; }
+#tab-dashboard .ath-six > .ath-part { grid-column: 1; grid-row: 1 / 3; min-width: 0; }
+#tab-dashboard .ath-six > .six-part { grid-column: 2; grid-row: 1; min-width: 0; }
+#tab-dashboard .ath-six > .summary { grid-column: 2; grid-row: 2; min-width: 0; }
 #tab-dashboard .ath-part .section-title, #tab-dashboard .six-part .section-title { margin-bottom: var(--space-4); }
 #tab-dashboard .ath-wrap { display: flex; flex-direction: column; gap: var(--space-4); }
 /* Lake: the dashed line is the ATH surface; "now" sits below it (underwater, log depth scale) or above it (green tide).
@@ -386,7 +389,10 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 @media (max-width: 899px) {
   #tab-dashboard .hero-grid { grid-template-columns: minmax(0, 1fr) 220px; gap: var(--space-5); }
   #tab-dashboard .d-gauge .gauge-wrapper { height: 170px; }
-  #tab-dashboard .ath-six { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  #tab-dashboard .ath-six { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; gap: 40px; }
+  #tab-dashboard .ath-six > .ath-part,
+  #tab-dashboard .ath-six > .six-part,
+  #tab-dashboard .ath-six > .summary { grid-column: auto; grid-row: auto; }
 }
 @media (max-width: 767px) {
   body { padding-bottom: calc(var(--bottom-tabs-h) + env(safe-area-inset-bottom)); }

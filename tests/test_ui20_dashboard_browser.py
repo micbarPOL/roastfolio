@@ -429,6 +429,27 @@ def test_phone_hero_puts_roast_and_gauge_side_by_side(open_page):
     assert abs(canvas[0] / canvas[1] - canvas[2] / canvas[3]) < 0.05  # drawn at its displayed size, not stretched
 
 
+@pytest.mark.parametrize("width,height", [(1440, 900), (1024, 768), (768, 1024), (390, 844)])
+def test_ath_summary_layout_preserves_the_separate_rail(open_page, width, height):
+    page, errors = open_page(width, height)
+    layout = page.evaluate("""() => {
+        const box = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
+        return { ath: box('.ath-part'), six: box('.six-part'), summary: box('.summary'),
+            railSeparate: document.querySelector('.col-rail').parentElement === document.querySelector('.d-page')
+                && !document.querySelector('.ath-six .col-rail') };
+    }""")
+    assert layout['railSeparate']
+    if width >= 900:
+        assert layout['six']['width'] / layout['ath']['width'] == pytest.approx(2, abs=0.02)
+        assert layout['summary']['x'] == pytest.approx(layout['six']['x'], abs=1)
+        assert layout['summary']['width'] == pytest.approx(layout['six']['width'], abs=1)
+        assert layout['summary']['y'] - layout['six']['bottom'] == pytest.approx(32, abs=1)
+    else:
+        assert layout['six']['y'] >= layout['ath']['bottom']
+        assert layout['summary']['y'] >= layout['six']['bottom']
+    assert not errors, errors
+
+
 def _set_ath(page, ath_value):
     page.evaluate("""ath => { window._SNAPSHOT_ATH = null; window.PORTFOLIO_ATH = {athValue: ath, athDate: '2026-10-01'};
         renderSummaryCards(); renderAthCelebration('dash-ath-celebration'); }""", ath_value)
