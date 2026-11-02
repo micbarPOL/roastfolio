@@ -779,6 +779,7 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 
 | D-049 | superseded | Analysis initially used a persistent company list beside details. Replaced by D-050 after review identified lost table width and missing contextual help. | none |
 | D-050 | active | Approved 2026-11-02: Analysis gives the chart and financial statements the full content width. Company search and favorites open in an on-demand dialog, a bottom sheet on mobile. Help popovers explain price returns, indicators, fundamentals and statement units. The metric column stays pinned during horizontal table scrolling. | `@analysis dom: dialog.a-company-picker + .a-detail [data-help="statements"]` |
+| D-051 | active | Approved 2026-11-02: Deep Ocean replaces the ATH lake. The component study is retained in `design/mockups/components/ath-ocean-options.html`, outside the full-screen registry. Beach at ATH, snorkeling through -2%, scuba below; Relax/Explore/Danger accents are separate, with Danger below -5%. Default linear ticks are 0/-5/-10/-15%, expanding for larger drawdowns. The 30-day low uses historical running peaks; missing data is not zero. Illustrative colors stay local to the SVG; surrounding UI uses tokens. Production behavior is covered by the ocean cases in `tests/test_ui20_dashboard_browser.py`. | `@ath-ocean-options count: #abyss-sharks .shark-patrol = 3` |
 
 ## 10. Consistency Contract
 
