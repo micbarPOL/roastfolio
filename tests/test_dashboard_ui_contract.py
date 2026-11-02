@@ -112,6 +112,8 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn('id="intraday-comparison-basis"', self.index_html)
         self.assertIn("overnight price gaps are excluded", self.index_html)
         self.assertIn("measures from yesterday's close", self.index_html)
+        self.assertIn("includes FX changes and uses separately fetched quotes", self.index_html)
+        self.assertIn('id="intraday-comparison-notice" role="status" hidden', self.index_html)
         self.assertIn('class="intraday-info-btn" aria-label="How this chart is measured" aria-describedby="intraday-comparison-basis"', self.index_html)
         self.assertIn('id="intraday-comparison-basis" class="intraday-info-tip" role="tooltip"', self.index_html)
         self.assertIn('aria-describedby="intraday-comparison-status"', self.index_html)

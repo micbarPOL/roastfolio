@@ -5,11 +5,13 @@
 - [ ] **Dashboard Portfolio vs. Benchmark Chart Opening Dip**:
   - **Symptom**: Every day just after market opening hours, the portfolio return drops significantly and then goes back up. The benchmark return does not exhibit this drop.
   - **Investigation**: Investigate the intraday portfolio synthesis and quote timing right after exchange open (e.g. baseline quote mismatches, delayed quote arrivals, or cash/asset valuation discrepancies during opening minutes).
+  - **Finding / Next diagnostic step**: No concrete cause has been established. Possible contributors include asynchronous market openings, delayed quotes, missing bars, or cache effects. If the drop recurs, capture the live `/prices` payload, bar timestamps, intraday baselines, FX rate, and relevant cache entries.
 
 - [ ] **Synchronize Gauge and Portfolio vs. Benchmark Chart Return Values**:
   - **Symptom**: Return values on the dashboard gauge and the portfolio vs. benchmark chart disagree.
     - Example: Chart shows portfolio change `-0.12%` and benchmark `+0.13%`, whereas the gauge shows portfolio `+0.91%` and benchmark `+0.24%`.
-  - **Action**: Align the calculation baseline, window reference (calendar-day vs. benchmark session / previous close), and data sources so that the gauge and the chart show identical portfolio and benchmark returns.
+  - **Finding**: The chart measures from the benchmark market open (using a fixed FX rate), while the gauge measures from the previous close and includes FX movement. The values are therefore not expected to match unless their methodology is aligned; confirm the intended comparison before changing calculations.
+  - **Action**: Decide whether the gauge and chart should represent the same return window. If so, align their baseline, reference window (calendar-day vs. benchmark session / previous close), and data sources; otherwise, label their distinct periods and methodologies clearly.
 
 - [ ] **Fix mWIG40 Table Disappearing Data**:
   - **Symptom**: The monthly returns table data for `mWIG40` is intermittently disappearing and showing again. It should remain static and stable.

@@ -142,16 +142,27 @@ database tables, scheduled jobs, or additional holdings-price requests are used.
   in epoch milliseconds, `openPrice`, `previousClose`) and an unrounded
   `intradayFxRate`. Before another market opens, its previous close is carried
   forward only when its later exchange opening is verified. A known price at/before
-  the shared baseline is otherwise required. Missing holdings are never excluded
-  and the remaining holdings are never renormalized.
+  the shared baseline on the benchmark-local date is otherwise required.
+  For holdings opening with the benchmark, the first candle's open within 15 minutes
+  of session start is used, just as for late benchmark prints. The matching candle
+  must be present and its start must not exceed the delayed chart cutoff.
+  Late first prints are disclosed; their opening price is held flat until their
+  first candle closes. Missing, invalid or later opening data must not fall back
+  to yesterday's close, even when two-day history contains that close. This avoids
+  counting overnight gaps as since-open losses. Missing holdings are never excluded
+  and the remaining holdings are never renormalized. Unavailable states appear
+  beside the chart, not only inside the info tooltip, and clear on a valid payload.
 - Holdings fetch two days of minute candles in the same history request and send
   them as `comparisonBars`, so an instrument-local midnight does not discard the
   shared session baseline. `todayBars` still contains only the latest instrument
   date for Today's Movers. This adds payload history, not another API call.
 - The chart baseline is the benchmark session open, while the dashboard gauge
-  measures from the previous close (including FX moves). Overnight gaps therefore
-  appear in the gauge but not the chart; an info button (ⓘ) next to the chart title
-  explains this in a tooltip (hover, focus or tap; Escape or an outside tap closes it).
+  measures from the previous close (including FX moves), using separately fetched
+  quotes rather than the chart's minute-bar cutoff. Their numbers need not match.
+  Overnight gaps for markets opening together appear in the gauge but not the
+  chart; gaps in markets opening later than the benchmark are included in the chart.
+  An info button (ⓘ) next to the chart title explains these differences in a tooltip
+  (hover, focus or tap; Escape or an outside tap closes it).
 - Yahoo exchange quotes (benchmark and holdings) are 15 minutes late, so both
   lines stop at now − 15 minutes (`QUOTE_DELAY`); otherwise the portfolio line
   would run flat through the last 15 minutes. Until 15 minutes after the open
@@ -169,7 +180,10 @@ database tables, scheduled jobs, or additional holdings-price requests are used.
   Holidays/weekends show the latest supplied benchmark session with its date,
   rather than fabricating a new session. Minute resolution is not a guarantee of
   minute freshness: holdings bars may be cached for up to three minutes and the
-  view refreshes when the existing full price payload arrives.
+  view refreshes when the existing full price payload arrives. Cache expiry is
+  checked on requests (page load or Refresh prices), not by a scheduled session-hours
+  job. Flushing the cache cannot fix an incorrect baseline or force Yahoo to publish
+  a missing opening candle; the opening-data checks apply to cached and fresh data.
 
 Validation: `tests/test_intraday_comparison_browser.py` exercises the calculation,
 session boundaries, DST, missing-data handling, saved window setting and tooltips.
