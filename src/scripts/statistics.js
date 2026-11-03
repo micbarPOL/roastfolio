@@ -21,13 +21,65 @@ function fmtMonth(m) {
 function statCard(label, value, sub) {
     return `<div class="stat-card">
         <div class="stat-label">${label}</div>
-        <div class="stat-value">${value}</div>
+        <div class="stat-value num">${value}</div>
         ${sub ? `<div class="stat-sub">${sub}</div>` : ''}
     </div>`;
 }
 
 let _statisticsHistoryCache = {};
 let _statisticsHistoryPromise = {};
+
+function _renderStatisticsWalletSelect(strip, keys, labels, selected, onChange) {
+    strip.removeAttribute('role');
+    const label = document.createElement('label');
+    label.className = 'statistics-wallet-control';
+    label.append('Wallet');
+    const select = document.createElement('select');
+    select.setAttribute('aria-label', `${strip.id.startsWith('underwater') ? 'Underwater lakes' : strip.id.startsWith('heatmap') ? 'Monthly performance' : 'Snapshot summary'} wallet`);
+    keys.forEach((key, index) => select.add(new Option(labels[index], key)));
+    select.value = selected;
+    select.addEventListener('change', () => onChange(select.value));
+    label.append(select);
+    strip.replaceChildren(label);
+}
+
+function _paginateStatisticsTable(wrap) {
+    const rows = [...wrap.querySelectorAll('tbody tr')];
+    const mobileRows = [...wrap.querySelectorAll('.bm-mobile-row')];
+    const pageSize = 12;
+    if (rows.length <= pageSize) return;
+    let currentPage = 0;
+    const pages = Math.ceil(rows.length / pageSize);
+    const controls = document.createElement('nav');
+    controls.className = 'statistics-pagination';
+    controls.setAttribute('aria-label', wrap.id === 'bm-cmp-wrap' ? 'Benchmark pages' : 'Snapshot pages');
+    const previous = document.createElement('button');
+    const next = document.createElement('button');
+    const status = document.createElement('span');
+    previous.type = next.type = 'button';
+    previous.textContent = '\u2039';
+    next.textContent = '\u203a';
+    previous.setAttribute('aria-label', 'Previous page');
+    next.setAttribute('aria-label', 'Next page');
+    previous.title = 'Previous page';
+    next.title = 'Next page';
+    status.setAttribute('aria-live', 'polite');
+    const update = () => {
+        const start = currentPage * pageSize;
+        [...rows, ...mobileRows].forEach((row, index) => {
+            const position = index < rows.length ? index : index - rows.length;
+            row.hidden = position < start || position >= start + pageSize;
+        });
+        previous.disabled = currentPage === 0;
+        next.disabled = currentPage === pages - 1;
+        status.textContent = `${currentPage + 1} / ${pages}`;
+    };
+    previous.addEventListener('click', () => { currentPage = Math.max(0, currentPage - 1); update(); });
+    next.addEventListener('click', () => { currentPage = Math.min(pages - 1, currentPage + 1); update(); });
+    controls.append(previous, status, next);
+    wrap.append(controls);
+    update();
+}
 
 function _sortSnapshotRows(rows) {
     return [...(rows || [])]
@@ -315,9 +367,10 @@ function renderMonthlySnapshotTable(data, granularity = 'monthly') {
                 <tbody>${rowsHTML}</tbody>
             </table>
         </div>`;
-}
+        _paginateStatisticsTable(wrap);
+    }
 
-// ── Section 2: Benchmark Comparison ──────────────────────────────────────
+    // ── Section 2: Benchmark Comparison ──────────────────────────────────────
 function renderBenchmarkComparisonTable(snapshotData, benchmarkData) {
     const wrap = document.getElementById('bm-cmp-wrap');
     if (!wrap) return;
@@ -493,6 +546,7 @@ function renderBenchmarkComparisonTable(snapshotData, benchmarkData) {
         <div class="bm-mobile-only">
             <div class="bm-mobile-list">${mobileRowsHTML}</div>
         </div>`;
+    _paginateStatisticsTable(wrap);
 }
 
 function _injectLiveSummaryValue(data) {
@@ -733,11 +787,7 @@ async function _initSnapshotControls() {
         const allKeys = ['summary', ...realPortfolios.map(p => p.portfolioId)];
         const allLabels = ['Total', ...realPortfolios.map(p => p.name || p.portfolioId)];
         
-        strip.innerHTML = allKeys.map((key, i) => {
-            const label = allLabels[i];
-            const active = key === _snapshotPortfolio;
-            return `<button class="history-wallet-btn${active ? ' is-active' : ''}" data-wallet-key="${key}" onclick="setSnapshotPortfolio('${key}')">${label}</button>`;
-        }).join('');
+        _renderStatisticsWalletSelect(strip, allKeys, allLabels, _snapshotPortfolio, window.setSnapshotPortfolio);
     } catch (e) {
         console.warn('Failed to load portfolios for snapshot table', e);
     }
@@ -798,11 +848,7 @@ async function _initHeatmapControls() {
         const allKeys = ['summary', ...realPortfolios.map(p => p.portfolioId)];
         const allLabels = ['Total', ...realPortfolios.map(p => p.name || p.portfolioId)];
         
-        strip.innerHTML = allKeys.map((key, i) => {
-            const label = allLabels[i];
-            const active = key === _heatmapPortfolio;
-            return `<button class="history-wallet-btn${active ? ' is-active' : ''}" data-wallet-key="${key}" onclick="setHeatmapPortfolio('${key}')">${label}</button>`;
-        }).join('');
+        _renderStatisticsWalletSelect(strip, allKeys, allLabels, _heatmapPortfolio, window.setHeatmapPortfolio);
     } catch (e) {
         console.warn('Failed to load portfolios for heatmap table', e);
     }
@@ -947,6 +993,7 @@ let _underwaterShouldScrollDetails = false;
 let _underwaterFocusResetTimer = null;
 let _underwaterPathChart = null;
 let _underwaterLakesChart = null;
+let _statisticsChartObserver = null;
 
 function _fmtUwlPct(value) {
     const n = Number(value || 0);
@@ -1387,14 +1434,15 @@ function _ensureUnderwaterPlugin() {
 }
 
 function _underwaterChartTheme() {
-    const isDark = typeof window.isRoastfolioDark === 'function' ? window.isRoastfolioDark() : true;
+    const style = getComputedStyle(document.documentElement);
+    const token = name => style.getPropertyValue(name).trim();
     return {
-        grid: isDark ? 'rgba(148, 163, 184, 0.14)' : 'rgba(71, 85, 105, 0.16)',
-        text: isDark ? '#cfe5fa' : '#334155',
-        valueLine: isDark ? '#67e8f9' : '#0e7490',
-        hwmLine: isDark ? '#f8fafc' : '#1e293b',
-        drawdownLine: isDark ? '#38bdf8' : '#0284c7',
-        fill: 'rgba(56, 189, 248, 0.15)',
+        grid: token('--border-strong'),
+        text: token('--text-secondary'),
+        valueLine: token('--accent-primary'),
+        hwmLine: token('--text-secondary'),
+        drawdownLine: token('--color-danger'),
+        fill: token('--color-danger-bg'),
     };
 }
 
@@ -1500,13 +1548,22 @@ function _setSelectedLake(lakeId) {
     refreshUnderwaterLakes();
 }
 
+window.setUnderwaterLakeSelection = function (lakeId) {
+    if (lakeId === '') {
+        _underwaterSelectedLakeId = null;
+        refreshUnderwaterLakes();
+    } else {
+        _setSelectedLake(lakeId);
+    }
+};
+
 function _scrollUnderwaterLakeDetails() {
     if (!_underwaterShouldScrollDetails) return;
     const panel = document.getElementById('uwl-selected-lake-panel');
     if (!panel) return;
     _underwaterShouldScrollDetails = false;
     window.requestAnimationFrame(() => {
-        panel.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+        panel.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center', inline: 'nearest' });
         panel.classList.add('uwl-panel-focus');
         if (_underwaterFocusResetTimer) window.clearTimeout(_underwaterFocusResetTimer);
         _underwaterFocusResetTimer = window.setTimeout(() => {
@@ -1531,6 +1588,16 @@ function _renderUnderwaterCharts(metrics, extremes) {
     const hwmReturnsPct = hwm.map(v => ((v / 100) - 1) * 100);
     const lakeCatalog = _underwaterLakeCatalog;
     const selectedLake = _selectedUnderwaterLake(lakeCatalog);
+    const lakeSelect = document.getElementById('statistics-lake-select');
+    if (lakeSelect) {
+        lakeSelect.replaceChildren(new Option('All lakes in range', ''));
+        lakeCatalog.forEach(lake => lakeSelect.add(new Option(
+            `Lake ${lake.lakeId} · ${lake.startDate} → ${lake.endDate} · ${lake.isOpen ? 'Open' : 'Recovered'}`,
+            String(lake.lakeId)
+        )));
+        lakeSelect.disabled = lakeCatalog.length === 0;
+        lakeSelect.value = selectedLake ? String(selectedLake.lakeId) : '';
+    }
     const spans = _lakeIndexSpans(metrics, extremes);
     const deepestLabel = extremes?.deepest
         ? `Deepest ${_fmtUwlPct(extremes.deepest.drawdown)} · ${fmtDate(extremes.deepest.date)}`
@@ -1728,6 +1795,21 @@ function _renderUnderwaterCharts(metrics, extremes) {
         });
     }
 
+    if (!_statisticsChartObserver && typeof ResizeObserver !== 'undefined') {
+        _statisticsChartObserver = new ResizeObserver(entries => {
+            entries.forEach(entry => {
+                const chart = entry.target.contains(pathCanvas) ? _underwaterPathChart : _underwaterLakesChart;
+                const width = entry.target.clientWidth;
+                const height = entry.target.clientHeight;
+                if (chart && width > 0 && height > 0 && (chart.width !== width || chart.height !== height)) {
+                    chart.resize(width, height);
+                    chart.update('none');
+                }
+            });
+        });
+        _statisticsChartObserver.observe(pathCanvas.parentElement);
+        _statisticsChartObserver.observe(lakesCanvas.parentElement);
+    }
     _scrollUnderwaterLakeDetails();
 }
 
@@ -1810,11 +1892,7 @@ async function _initUnderwaterLakeControls() {
         const allKeys = ['summary', ...realPortfolios.map(p => p.portfolioId)];
         const allLabels = ['Total', ...realPortfolios.map(p => p.name || p.portfolioId)];
 
-        strip.innerHTML = allKeys.map((key, i) => {
-            const label = allLabels[i];
-            const active = key === _underwaterPortfolio;
-            return `<button class="history-wallet-btn${active ? ' is-active' : ''}" data-wallet-key="${key}" onclick="setUnderwaterLakesPortfolio('${key}')">${label}</button>`;
-        }).join('');
+        _renderStatisticsWalletSelect(strip, allKeys, allLabels, _underwaterPortfolio, window.setUnderwaterLakesPortfolio);
     } catch (e) {
         console.warn('Failed to load portfolios for underwater lakes', e);
     }
@@ -1840,6 +1918,37 @@ window.initUnderwaterLakesVisualizer = async function() {
 };
 
 document.addEventListener('DOMContentLoaded', function () {
+    const screen = document.getElementById('tab-statistics');
+    if (screen) {
+        const syncControls = () => {
+            screen.querySelectorAll('.stats-acc-btn').forEach(button => {
+                const body = button.nextElementSibling;
+                button.setAttribute('aria-expanded', String(body.classList.contains('stats-acc-body--open')));
+                button.setAttribute('aria-controls', body.id);
+            });
+            screen.querySelectorAll('.history-wallet-btns[role="tablist"]').forEach(group => group.setAttribute('role', 'group'));
+            screen.querySelectorAll('.history-wallet-btn').forEach(button => button.setAttribute('aria-pressed', String(button.classList.contains('is-active'))));
+            screen.querySelectorAll('.bm-mobile-row').forEach(row => {
+                row.tabIndex = 0;
+                row.setAttribute('role', 'button');
+                row.setAttribute('aria-expanded', String(row.classList.contains('bm-mobile-row--expanded')));
+            });
+        };
+        syncControls();
+        const observer = new MutationObserver(syncControls);
+        observer.observe(screen, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+        screen.addEventListener('keydown', event => {
+            if (event.key === 'Escape') screen.querySelectorAll('.statistics-help[open]').forEach(help => help.removeAttribute('open'));
+            const row = event.target.closest('.bm-mobile-row');
+            if (row && (event.key === 'Enter' || event.key === ' ')) {
+                event.preventDefault();
+                toggleMobileBmRow(row);
+            }
+        });
+        document.addEventListener('pointerdown', event => {
+            screen.querySelectorAll('.statistics-help[open]').forEach(help => { if (!help.contains(event.target)) help.removeAttribute('open'); });
+        });
+    }
     let _statsRendered = false;
 
     _initSnapshotControls();

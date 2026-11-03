@@ -8,7 +8,7 @@
     <title>roastfolio</title>
 
     <!-- PWA manifest -->
-    <link rel="manifest" href="manifest.json?v=15.7.1">
+    <link rel="manifest" href="manifest.json?v=15.8.0">
 
     <!-- Theme & status-bar colour (light + dark) -->
     <meta name="theme-color" content="#cde8f7" media="(prefers-color-scheme: light)">
@@ -37,10 +37,12 @@
 
     <link rel="stylesheet" href="styles/main.css?v=20260915b">
     <link rel="stylesheet" href="styles/tokens-v9.css?v=ui20a">
-    <link rel="stylesheet" href="styles/monthly-audit.css?v=15.7.1">
-    <link rel="stylesheet" href="styles/ui20.css?v=15.7.1">
-    <link rel="stylesheet" href="styles/analysis.css?v=15.7.1">
-    <link rel="stylesheet" href="styles/ath-ocean.css?v=15.7.1">
+    <link rel="stylesheet" href="styles/monthly-audit.css?v=15.8.0">
+    <link rel="stylesheet" href="styles/ui20.css?v=15.8.0">
+    <link rel="stylesheet" href="styles/analysis.css?v=15.8.0">
+    <link rel="stylesheet" href="styles/ath-ocean.css?v=15.8.0">
+    <link rel="stylesheet" href="styles/statistics.css?v=statistics-redesign">
+    <link rel="stylesheet" href="styles/transactions.css?v=15.8.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         (function() {
@@ -243,7 +245,7 @@
         </div>
         <div class="sidenav-bottom-brand">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="sidenav-version-tag">v15.7.1</span>
+            <span class="sidenav-version-tag">v15.8.0</span>
         </div>
         <button type="button" class="sidenav-collapse" id="sidenav-collapse" aria-label="Collapse sidebar" aria-pressed="false" title="Collapse sidebar (Ctrl+B)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
@@ -1274,17 +1276,25 @@
 
     <!-- Tab: Statistics -->
     <main id="tab-statistics" class="tab-content">
+        <header class="statistics-heading">
+            <div><span class="statistics-eyebrow">Performance &amp; risk</span><h1>Statistics</h1></div>
+        </header>
+        <section class="statistics-records" aria-labelledby="statistics-records-title">
+        <div class="statistics-section-heading"><h2 id="statistics-records-title">Records</h2>
+            <details class="statistics-help"><summary aria-label="About records">?</summary><p>Records cover all wallets. Portfolio ATH uses recorded value, including deposits. Underwater charts use cash-flow-adjusted unit-price HWM instead. Monthly and daily results retain their existing calculation methods.</p></details>
+        </div>
         <section class="stats-section">
-            <h2 class="tx-section-title" style="margin-top:0;">All-Time Values</h2>
+            <h3 class="tx-section-title" style="margin-top:0;">All time</h3>
             <div class="stats-grid" id="stats-alltime"></div>
         </section>
         <section class="stats-section">
-            <h2 class="tx-section-title" style="margin-top:0;">Monthly Statistics</h2>
+            <h3 class="tx-section-title" style="margin-top:0;">Monthly</h3>
             <div class="stats-grid" id="stats-monthly"></div>
         </section>
         <section class="stats-section">
-            <h2 class="tx-section-title" style="margin-top:0;">Daily Statistics</h2>
+            <h3 class="tx-section-title" style="margin-top:0;">Daily</h3>
             <div class="stats-grid" id="stats-daily"></div>
+        </section>
         </section>
         <section class="stats-section stats-acc-section">
             <button class="stats-acc-btn" onclick="toggleStatsAccordion('bm-cmp')">
@@ -1295,6 +1305,7 @@
                 <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
             <div id="acc-bm-cmp" class="stats-acc-body">
+                <details class="statistics-help"><summary aria-label="About benchmark comparison">?</summary><p>Monthly portfolio returns are compared with each benchmark over the matching period. Unavailable returns remain blank. Win counts exclude periods without a comparable result.</p></details>
                 <div id="bm-cmp-wrap"><div class="stats-loading">Loading benchmark data…</div></div>
             </div>
         </section>
@@ -1318,6 +1329,7 @@
                         <button class="history-wallet-btn" data-range="YTD" onclick="setUnderwaterLakesRange('YTD')">YTD</button>
                     </div>
                 </div>
+                <details class="statistics-help"><summary aria-label="About underwater lakes">?</summary><p>Unit price removes the effect of deposits. HWM is the highest unit price reached so far. A lake starts below HWM and ends on recovery. The valuation path uses the chosen range; the selected lake has its own dates and X axis.</p></details>
 
                 <div class="uwl-stat-grid" id="underwater-lakes-stat-grid">
                     <article class="uwl-stat-card uwl-stat-card-depth">
@@ -1332,13 +1344,16 @@
                     </article>
                 </div>
 
+                <label class="statistics-lake-control" for="statistics-lake-select">Explore a lake
+                    <select id="statistics-lake-select" onchange="setUnderwaterLakeSelection(this.value)" disabled><option value="">Waiting for data</option></select>
+                </label>
                 <div class="uwl-chart-grid">
                     <section class="uwl-chart-panel">
                         <header class="uwl-chart-head">
                             <h3 class="uwl-chart-title">Valuation Path vs High-Water Mark</h3>
                         </header>
                         <div class="uwl-chart-wrap">
-                            <canvas id="underwater-path-chart"></canvas>
+                            <canvas id="underwater-path-chart" role="img" aria-label="Valuation Path vs High-Water Mark for the selected portfolio and range"></canvas>
                         </div>
                     </section>
 
@@ -1348,7 +1363,7 @@
                             <span id="uwl-selected-lake-pill" class="uwl-lake-pill">Click a lake on the left chart</span>
                         </header>
                         <div class="uwl-chart-wrap">
-                            <canvas id="underwater-lakes-chart"></canvas>
+                            <canvas id="underwater-lakes-chart" role="img" aria-label="The Lakes (Underwater Drawdown %) for the selected lake dates"></canvas>
                         </div>
                     </section>
                 </div>
@@ -1363,6 +1378,7 @@
                 <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(0deg);"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
             <div id="acc-heatmap" class="stats-acc-body stats-acc-body--open">
+                <details class="statistics-help"><summary aria-label="About monthly performance">?</summary><p>Switch between percentage return and PLN net gain for the selected portfolio. Missing months are not zero. The heatmap retains the existing return methodology.</p></details>
                 <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
                     <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                         <div class="history-wallet-btns" id="heatmap-metric-btns" role="tablist">
@@ -1383,6 +1399,7 @@
                 <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
             <div id="acc-monthly-snap" class="stats-acc-body">
+                <details class="statistics-help"><summary aria-label="About snapshot summary">?</summary><p>Monthly or daily snapshots show portfolio value, invested capital, net gain, return and annualized XIRR. XIRR is money-weighted and is not directly comparable with a single-period return.</p></details>
                 <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
                     <div class="history-wallet-btns" id="stats-snap-granularity-btns" role="tablist">
                         <button class="history-wallet-btn is-active" data-val="monthly" onclick="setSnapshotGranularity('monthly')">Monthly</button>
@@ -1667,116 +1684,77 @@
 
     <!-- Tab: Transactions -->
     <main id="tab-transactions" class="tab-content">
+        <div class="tx-screen">
+            <header class="tx-page-heading">
+                <div><span class="tx-eyebrow">Investment activity</span><h1>Transactions</h1></div>
+                <p class="tx-method-note">Values retain their ledger signs. Turnover includes Buy and Sell only.</p>
+            </header>
 
-        <!-- Summary cards -->
-        <section class="tx-summary-bar">
-            <div class="stat-card tx-stat-card" id="tx-month-card">
-                <div class="stat-label">This Month's Turnover</div>
-                <div class="stat-value" id="tx-month-value">—</div>
-                <div class="stat-sub" id="tx-month-sub"></div>
-            </div>
-            <div class="stat-card tx-stat-card" id="tx-ytd-card">
-                <div class="stat-label">YTD Turnover</div>
-                <div class="stat-value" id="tx-ytd-value">—</div>
-                <div class="stat-sub" id="tx-ytd-sub"></div>
-            </div>
-            <div class="stat-card tx-stat-card" id="tx-total-card">
-                <div class="stat-label">All-Time Turnover</div>
-                <div class="stat-value" id="tx-total-value">—</div>
-                <div class="stat-sub" id="tx-total-sub"></div>
-            </div>
-        </section>
+            <section class="tx-summary-bar" aria-label="Turnover summary">
+                <div class="stat-card tx-stat-card" id="tx-month-card"><div class="stat-label">This Month's Turnover</div><div class="stat-value num" id="tx-month-value">—</div><div class="stat-sub" id="tx-month-sub"></div></div>
+                <div class="stat-card tx-stat-card" id="tx-ytd-card"><div class="stat-label">YTD Turnover</div><div class="stat-value num" id="tx-ytd-value">—</div><div class="stat-sub" id="tx-ytd-sub"></div></div>
+                <div class="stat-card tx-stat-card" id="tx-total-card"><div class="stat-label">All-Time Turnover</div><div class="stat-value num" id="tx-total-value">—</div><div class="stat-sub" id="tx-total-sub"></div></div>
+            </section>
 
-        <!-- Activity Calendar -->
-        <section class="tx-activity-card">
-            <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;flex-wrap:wrap;">
-                <h2 class="tx-section-title">Transaction Activity</h2>
-                <div id="cal-year-tabs" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
-                <div id="cal-legend" style="display:flex;align-items:center;gap:6px;margin-left:auto;font-size:11px;color:#888;flex-wrap:wrap;">
-                    <span>Less</span>
-                    <span class="cal-legend-swatch cal-i1"></span>
-                    <span class="cal-legend-swatch cal-i2"></span>
-                    <span class="cal-legend-swatch cal-i3"></span>
-                    <span class="cal-legend-swatch cal-i4"></span>
-                    <span class="cal-legend-swatch cal-i5"></span>
-                    <span>More turnover</span>
-                    <span style="margin-left:10px;display:inline-flex;align-items:center;gap:4px;">
-                        <span class="cal-legend-swatch" style="box-shadow:inset 0 0 0 2px #27ae60;"></span> Deposit
-                    </span>
-                    <span style="display:inline-flex;align-items:center;gap:4px;">
-                        <span class="cal-legend-swatch" style="box-shadow:inset 0 0 0 2px #c0392b;"></span> Withdrawal
-                    </span>
+            <section class="tx-activity-card" aria-labelledby="tx-activity-title">
+                <div class="tx-section-head">
+                    <h2 id="tx-activity-title">Transaction Activity</h2>
+                    <div id="cal-year-tabs" class="tx-calendar-years" aria-label="Calendar year"></div>
+                    <div id="cal-legend" class="tx-calendar-legend" aria-label="Turnover and cash-flow markers">
+                        <span>Less</span><span class="cal-legend-swatch cal-i1"></span><span class="cal-legend-swatch cal-i2"></span><span class="cal-legend-swatch cal-i3"></span><span class="cal-legend-swatch cal-i4"></span><span class="cal-legend-swatch cal-i5"></span><span>More turnover</span>
+                        <span class="tx-flow-key tx-deposit-key">Deposit</span><span class="tx-flow-key tx-withdrawal-key">Withdrawal</span>
+                    </div>
                 </div>
-            </div>
-            <div id="tx-calendar"></div>
-        </section>
+                <div id="tx-calendar" class="tx-calendar-scroll"></div>
+            </section>
 
-        <!-- Monthly turnover chart -->
-        <section class="chart-container tx-chart-section">
-            <h2 class="tx-section-title">Monthly Turnover</h2>
-            <div class="chart-wrapper" style="height:260px;">
-                <canvas id="txTurnoverChart"></canvas>
-            </div>
-        </section>
+            <section class="chart-container tx-chart-section" aria-labelledby="tx-turnover-title">
+                <div class="tx-section-head"><h2 id="tx-turnover-title">Monthly Turnover</h2><span class="tx-caption">Buy + Sell · PLN</span></div>
+                <div class="chart-wrapper tx-chart-wrapper"><canvas id="txTurnoverChart" role="img" aria-label="Monthly transaction turnover chart"></canvas></div>
+            </section>
 
-        <section class="tx-history-card">
-            <h2 class="tx-section-title">Transaction History</h2>
-            <div id="tx-summary" style="margin-bottom:14px;font-size:13px;color:#666;"></div>
-            <table id="tx-table" class="holdings-table" style="width:100%;font-size:13px;">
-                <thead>
-                    <tr>
-                        <th class="tx-th hide-on-mobile">
-                            <div>Date</div>
-                            <button class="filter-btn" id="btn-date">📅 Any date</button>
-                            <div class="filter-popup" id="pop-date">
-                                <div style="display:flex;gap:5px;margin-bottom:8px;">
-                                    <button class="filter-clear" id="date-quick-today" style="flex:1;background:rgba(255,255,255,0.05)">Today</button>
-                                    <button class="filter-clear" id="date-quick-week" style="flex:1;background:rgba(255,255,255,0.05)">This week</button>
-                                </div>
-                                <label>From <input type="date" id="f-date-from"></label>
-                                <label>To <input type="date" id="f-date-to"></label>
-                                <button class="filter-clear" id="clear-date">Clear</button>
-                            </div>
-                        </th>
-                        <th class="tx-th">
-                            <div>Operation</div>
-                            <button class="filter-btn" id="btn-op">≡ All</button>
-                            <div class="filter-popup" id="pop-op">
-                                <div id="op-checkboxes"></div>
-                                <button class="filter-clear" id="clear-op">Clear</button>
-                            </div>
-                        </th>
-                        <th class="tx-th">
-                            Asset
-                            <input class="col-filter" id="f-asset" placeholder="filter…">
-                        </th>
-                        <th class="tx-th hide-on-mobile">
-                            Wallet
-                            <input class="col-filter" id="f-wallet" placeholder="filter…">
-                        </th>
-                        <th class="hide-on-mobile">Units</th>
-                        <th class="hide-on-mobile">Price (PLN)</th>
-                        <th class="hide-on-mobile">Commission</th>
-                        <th class="tx-th">
-                            <div>Value (PLN)</div>
-                            <button class="filter-btn" id="btn-value">↔ Any value</button>
-                            <div class="filter-popup" id="pop-value">
-                                <div id="value-range-labels" style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:6px;"></div>
-                                <div id="value-slider" class="range-slider">
-                                    <div class="range-track"></div>
-                                    <div class="range-fill" id="range-fill"></div>
-                                    <div class="range-thumb" id="thumb-min" data-thumb="min"></div>
-                                    <div class="range-thumb" id="thumb-max" data-thumb="max"></div>
-                                </div>
-                                <button class="filter-clear" id="clear-value">Clear</button>
-                            </div>
-                        </th>
-                        <th>Save</th>
-                    </tr>
-                </thead>
-                <tbody id="tx-body"></tbody>
-            </table>
-        </section>
+            <section class="tx-history-card" aria-labelledby="tx-history-title">
+                <div class="tx-history-heading"><div><h2 id="tx-history-title">Transaction History</h2><div id="tx-summary" class="tx-result-summary" aria-live="polite"></div></div><button type="button" class="tx-help" aria-label="About transaction values" aria-describedby="tx-help-values" aria-expanded="false" title="About transaction values"><i data-lucide="circle-help" aria-hidden="true"></i><span role="tooltip" id="tx-help-values">Values retain their ledger signs. Price and commission are in PLN. Automatic cash rows follow their source transaction and cannot be edited independently.</span></button></div>
+                <div class="tx-filter-toolbar" aria-label="Transaction filters">
+                    <label class="tx-filter-search">Asset<input class="col-filter" id="f-asset" type="search" placeholder="Name or ticker" autocomplete="off"></label>
+                    <label class="tx-filter-wallet">Wallet<input class="col-filter" id="f-wallet" type="search" placeholder="All wallets" autocomplete="off"></label>
+                    <div class="tx-filter-control tx-date-control">
+                        <span>Date</span><button type="button" class="filter-btn" id="btn-date">Any date</button>
+                        <div class="filter-popup" id="pop-date">
+                            <div class="tx-quick-dates"><button type="button" class="filter-clear" id="date-quick-today">Today</button><button type="button" class="filter-clear" id="date-quick-week">This week</button><button type="button" class="filter-clear" id="date-quick-month">This month</button></div>
+                            <label>From <input type="date" id="f-date-from"></label><label>To <input type="date" id="f-date-to"></label>
+                            <button type="button" class="filter-clear" id="clear-date">Clear dates</button>
+                        </div>
+                    </div>
+                    <div class="tx-filter-control tx-operation-control">
+                        <span>Operation</span><button type="button" class="filter-btn" id="btn-op">All operations</button>
+                        <div class="filter-popup" id="pop-op"><div id="op-checkboxes"></div><button type="button" class="filter-clear" id="clear-op">Clear operations</button></div>
+                    </div>
+                    <div class="tx-filter-control tx-value-control">
+                        <span>Value · PLN</span><button type="button" class="filter-btn" id="btn-value">Any value</button>
+                        <div class="filter-popup" id="pop-value">
+                            <div id="value-range-labels" class="tx-value-range-labels"></div>
+                            <div id="value-slider" class="range-slider"><div class="range-track"></div><div class="range-fill" id="range-fill"></div><div class="range-thumb" id="thumb-min" data-thumb="min" tabindex="0" role="slider" aria-label="Minimum transaction value"></div><div class="range-thumb" id="thumb-max" data-thumb="max" tabindex="0" role="slider" aria-label="Maximum transaction value"></div></div>
+                            <button type="button" class="filter-clear" id="clear-value">Clear value</button>
+                        </div>
+                    </div>
+                    <button type="button" class="tx-filter-clear" id="tx-clear-filters"><i data-lucide="filter-x" aria-hidden="true"></i><span>Clear filters</span></button>
+                </div>
+                <p id="tx-filter-error" class="tx-filter-error" role="alert" hidden></p>
+                <div class="tx-table-scroll">
+                    <table id="tx-table" class="holdings-table tx-ledger" aria-label="Transaction ledger">
+                        <thead><tr><th class="tx-th hide-on-mobile">Date</th><th class="tx-th">Operation</th><th class="tx-th">Asset</th><th class="tx-th hide-on-mobile">Wallet</th><th class="hide-on-mobile">Units</th><th class="hide-on-mobile">Price · PLN</th><th class="hide-on-mobile">Commission</th><th class="tx-th">Value · PLN</th><th><span class="tx-sr-only">Actions</span></th></tr></thead>
+                        <tbody id="tx-body"></tbody>
+                    </table>
+                </div>
+                <nav class="tx-pagination" id="tx-pagination" aria-label="Transaction pages">
+                    <button type="button" class="tx-page-btn" id="tx-page-prev" aria-label="Previous page" title="Previous page"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+                    <span class="tx-page-status num" id="tx-page-status" aria-live="polite"></span>
+                    <button type="button" class="tx-page-btn" id="tx-page-next" aria-label="Next page" title="Next page"><i data-lucide="chevron-right" aria-hidden="true"></i></button>
+                </nav>
+                <div class="tx-filter-empty" id="tx-filter-empty" hidden><span class="empty-state-icon" aria-hidden="true"><i data-lucide="list-filter"></i></span><h3 class="empty-state-title">No matching transactions</h3><p class="empty-state-desc">Try a different wallet, date or operation.</p><button type="button" class="empty-state-btn" id="tx-empty-clear">Clear filters</button></div>
+            </section>
+        </div>
     </main>
 
     <!-- Tab: Analysis -->
@@ -2049,7 +2027,7 @@
                     <span class="app-footer-version-pill" title="Current Release Version">
                         <span class="app-footer-status-indicator" aria-hidden="true"></span>
                         <span class="app-footer-version-prefix">Version</span>
-                        <strong id="app-version-display" class="app-footer-version-code">15.7.1</strong>
+                        <strong id="app-version-display" class="app-footer-version-code">15.8.0</strong>
                     </span>
                     <a href="releases.html" class="app-footer-release-link" id="app-footer-release-link" title="View interactive release summary & changelog">
                         <span>Release Summary &amp; Notes</span>
@@ -2085,12 +2063,12 @@
     <script src="scripts/roast-engine.js"></script>
     <script src="scripts/xp-engine.js"></script>
     <script src="scripts/engagement-strip.js"></script>
-    <script src="scripts/ath-ocean.js?v=15.7.1"></script>
-    <script src="scripts/dashboard.js?v=15.7.1"></script>
+    <script src="scripts/ath-ocean.js?v=15.8.0"></script>
+    <script src="scripts/dashboard.js?v=15.8.0"></script>
     <script src="scripts/wig-chart.js?v=20260625a"></script>
-    <script src="scripts/statistics.js?v=20260702b"></script>
+    <script src="scripts/statistics.js?v=20261103a"></script>
     <script src="scripts/transactions.js?v=20260702a"></script>
-    <script src="scripts/chart.js?v=15.7.1"></script>
+    <script src="scripts/chart.js?v=15.8.0"></script>
     <script>
         (function() {
             const isLocalHost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
@@ -2166,9 +2144,9 @@
             });
         })();
     </script>
-    <script src="scripts/monthly-audit-share.js?v=15.7.1"></script>
-    <script src="scripts/monthly-audit.js?v=15.7.1"></script>
-    <script src="scripts/benchmark-chart.js?v=15.7.1"></script>
+    <script src="scripts/monthly-audit-share.js?v=15.8.0"></script>
+    <script src="scripts/monthly-audit.js?v=15.8.0"></script>
+    <script src="scripts/benchmark-chart.js?v=15.8.0"></script>
     <script src="scripts/intraday-comparison.js?v=20261102a"></script>
     <script src="scripts/analysis.js?v=20261102a"></script>
 
@@ -3301,7 +3279,7 @@
     <script>
         if ('serviceWorker' in navigator && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js?v=20260702b')
+                navigator.serviceWorker.register('service-worker.js?v=20261103a')
                     .then(reg => {
                         reg.update().catch(() => {});
                         reg.addEventListener('updatefound', () => {
@@ -3330,7 +3308,7 @@
     <!-- Swipe-to-refresh (mobile pull-down gesture) -->
     <script src="scripts/swipe-refresh.js" defer></script>
     <!-- Portfolio management -->
-    <script src="scripts/manage.js?v=15.7.1"></script>
+    <script src="scripts/manage.js?v=15.8.0"></script>
 
     <!-- ── User Settings Modal ──────────────────────────────── -->
     <div id="user-modal" class="user-modal-overlay" style="display:none" onclick="if(event.target===this)closeUserModal()">
@@ -3447,11 +3425,11 @@
         <div class="user-modal-footer" style="flex-wrap: wrap; gap: 12px; justify-content: space-between;">
           <div class="user-modal-branding">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="user-modal-version">v15.7.1</span>
+            <span class="user-modal-version">v15.8.0</span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <a href="releases.html" class="user-guide-link">
-              <span aria-hidden="true">🏷️</span> Release Summary v15.7.1
+              <span aria-hidden="true">🏷️</span> Release Summary v15.8.0
             </a>
             <a href="guide.html" class="user-guide-link">
               <span aria-hidden="true">📖</span> User Guide

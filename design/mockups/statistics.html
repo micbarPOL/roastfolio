@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="statistics" data-frameless>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>roastfolio · Statistics mockup</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="statistics.css">
+  <script src="statistics-icons.js" defer></script>
+  <script src="statistics.js" defer></script>
+</head>
+<body>
+<a class="s-skip" href="#statistics">Skip to statistics</a>
+<div class="app" data-sidebar="expanded">
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <div class="sidebar-head"><a class="brand" href="dashboard.html"><i data-lucide="chart-candlestick" aria-hidden="true"></i><span class="brand-wordmark nav-label" data-field="brand-wordmark">roastfolio</span></a></div>
+    <div class="nav-scroll">
+      <a class="nav-item" href="dashboard.html" data-field="nav-dashboard" data-label="Dashboard"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="wallets.html" data-field="nav-wallets" data-label="Wallets"><i data-lucide="wallet" aria-hidden="true"></i><span class="nav-label">Wallets</span></a>
+      <span class="nav-item" data-field="nav-portfolio" data-label="Portfolio"><i data-lucide="chart-pie" aria-hidden="true"></i><span class="nav-label">Portfolio</span></span>
+      <div class="nav-section nav-label">Analytics</div>
+      <a class="nav-item" href="history.html" data-field="nav-history" data-label="History"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i><span class="nav-label">History</span></a>
+      <a class="nav-item" href="statistics.html" aria-current="page" data-field="nav-statistics" data-label="Statistics"><i data-lucide="chart-column" aria-hidden="true"></i><span class="nav-label">Statistics</span></a>
+      <a class="nav-item" href="../../src/index.html#retirement" data-field="nav-retirement" data-label="Retirement"><i data-lucide="calendar" aria-hidden="true"></i><span class="nav-label">Retirement</span></a>
+      <a class="nav-item" href="../../src/index.html#transactions" data-field="nav-transactions" data-label="Transactions"><i data-lucide="list" aria-hidden="true"></i><span class="nav-label">Transactions</span></a>
+      <a class="nav-item" href="analysis.html" data-field="nav-analysis" data-label="Analysis"><i data-lucide="search" aria-hidden="true"></i><span class="nav-label">Analysis</span></a>
+      <a class="nav-item" href="../../src/index.html#diary" data-field="nav-diary" data-label="Coping Diary"><i data-lucide="notebook-pen" aria-hidden="true"></i><span class="nav-label">Coping Diary</span></a>
+      <div class="nav-section nav-label">Account</div>
+      <a class="nav-item" href="../../src/guide.html" data-field="nav-guide" data-label="User Guide"><i data-lucide="circle-help" aria-hidden="true"></i><span class="nav-label">User Guide</span></a>
+    </div>
+    <div class="sidebar-foot">
+      <div class="theme-switch nav-label" role="group" aria-label="Color mode" data-field="theme-switch"><button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button><button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button></div>
+      <div class="user-card" data-field="user-card"><span class="avatar">M</span><span class="user-meta nav-label"><span class="user-name">Michal B.</span><span class="user-role">Premium</span></span></div>
+      <div class="brand-footer nav-label" data-field="brand-footer">Powered by <strong>TOMINEX</strong> <span class="num">v15.8.0</span></div>
+      <button type="button" class="sidebar-collapse" aria-label="Collapse sidebar" aria-pressed="false" title="Collapse sidebar"><i data-lucide="panel-left-close" aria-hidden="true"></i></button>
+    </div>
+  </nav>
+  <div class="app-main">
+    <header class="top-bar"><button type="button" class="icon-btn drawer-open" aria-label="Open menu" aria-expanded="false" aria-controls="statistics-menu"><i data-lucide="menu" aria-hidden="true"></i></button><span class="page-title">Statistics</span><span class="live-status" data-field="live-data-status">Sample data · <span class="num">30 Oct 2026</span></span><button type="button" class="icon-btn s-mobile-theme" aria-label="Switch color mode" title="Switch color mode"><i data-lucide="sun-moon" aria-hidden="true"></i></button></header>
+    <div class="s-market ticker-tape-container" aria-label="Sample market indices">
+      <span data-field="index-WIG">WIG <b class="num">+0.62%</b></span><span data-field="index-WIG20">WIG20 <b class="num">+0.48%</b></span><span data-field="index-SP500">S&amp;P 500 <b class="num">-0.18%</b></span><span data-field="index-NASDAQ">NASDAQ <b class="num">-0.31%</b></span><span data-field="index-DAX">DAX <b class="num">+0.22%</b></span><span data-field="index-MSCI_WORLD">MSCI World <b class="num">+0.09%</b></span>
+    </div>
+    <p class="s-commentary" data-field="market-commentary">Illustrative market snapshot · not live prices</p>
+    <main id="statistics" class="s-main" data-field="statistics-screen" tabindex="-1">
+      <div class="s-heading"><div><p class="s-eyebrow">Portfolio analytics</p><h1>Statistics</h1></div><span class="s-approval">Mockup · pending owner approval</span></div>
+      <section class="s-record-section" aria-labelledby="records-title" data-field="statistics-records">
+        <div class="s-section-head"><div><p class="s-eyebrow">01 / Track record</p><h2 id="records-title">The highs. The lows. The progress.</h2></div></div>
+        <div class="s-record-group"><h3>All time <button class="s-help" type="button" aria-label="About all-time records" aria-describedby="help-records"><i data-lucide="circle-help" aria-hidden="true"></i><span role="tooltip" id="help-records">Records cover all wallets in the summary. ATH uses nightly portfolio value, including deposits. Underwater charts instead use unit-price HWM. Transaction activity compares two consecutive six-month windows.</span></button></h3><dl id="alltime-records" class="s-record-grid"><div data-field="record-ath"><dt>All-time high</dt><dd class="num">N/A</dd></div><div data-field="record-ath-age"><dt>Days since ATH</dt><dd class="num">N/A</dd></div><div data-field="record-ath-drawdown"><dt>Drawdown from ATH</dt><dd class="num">N/A</dd></div><div data-field="record-profit"><dt>Highest profit</dt><dd class="num">N/A</dd></div><div data-field="record-transactions"><dt>Transactions / month</dt><dd class="num">N/A</dd></div></dl></div>
+        <div class="s-record-group"><h3>Monthly</h3><dl id="monthly-records" class="s-record-grid s-three"><div data-field="record-best-month"><dt>Best month</dt><dd class="num">N/A</dd></div><div data-field="record-worst-month"><dt>Worst month</dt><dd class="num">N/A</dd></div><div data-field="record-month-turnover"><dt>Highest monthly turnover</dt><dd class="num">N/A</dd></div></dl></div>
+        <div class="s-record-group"><h3>Daily</h3><dl id="daily-records" class="s-record-grid"><div data-field="record-best-day-pct"><dt>Best daily return</dt><dd class="num">N/A</dd></div><div data-field="record-worst-day-pct"><dt>Worst daily return</dt><dd class="num">N/A</dd></div><div data-field="record-best-day-pln"><dt>Best daily net gain</dt><dd class="num">N/A</dd></div><div data-field="record-worst-day-pln"><dt>Worst daily net gain</dt><dd class="num">N/A</dd></div><div data-field="record-day-turnover"><dt>Highest daily turnover</dt><dd class="num">N/A</dd></div></dl></div>
+      </section>
+      <details class="s-section" data-field="statistics-benchmarks" open>
+        <summary><span><span class="s-eyebrow">02 / Relative performance</span><span class="s-section-title">Against the market</span></span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+        <div class="s-section-body">
+          <div class="s-toolbar"><p class="s-caption" id="benchmark-period"></p><button class="s-help" type="button" aria-label="About benchmark comparisons" aria-describedby="help-benchmarks"><i data-lucide="circle-help" aria-hidden="true"></i><span role="tooltip" id="help-benchmarks">Comparisons cover all wallets in the summary. pp is portfolio return minus benchmark return in percentage points. A win is a strictly positive difference. Missing observations are excluded from the denominator. Monthly returns use Modified Dietz with midpoint cash flows.</span></button></div>
+          <div id="benchmark-wins" class="s-wins" data-field="statistics-benchmark-wins"></div>
+          <div class="s-table-scroll s-benchmark-desktop" role="region" aria-label="Monthly benchmark comparison" tabindex="0"><table id="benchmark-table" data-field="statistics-benchmark-rows"></table></div>
+          <div id="benchmark-mobile" class="s-benchmark-mobile" aria-label="Monthly benchmark comparisons"></div>
+          <div class="s-pagination" id="benchmark-pagination"></div>
+        </div>
+      </details>
+      <details class="s-section" data-field="statistics-underwater" open>
+        <summary><span><span class="s-eyebrow">03 / Risk &amp; recovery</span><span class="s-section-title">Underwater lakes</span></span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+        <div class="s-section-body">
+          <div class="s-toolbar"><label class="s-control">Wallet<select id="underwater-wallet" data-field="statistics-underwater-wallet" aria-label="Underwater wallet"></select></label><div class="s-segments" role="group" aria-label="Underwater date range" data-field="statistics-underwater-range"><button type="button" data-range="ALL" aria-pressed="true">ALL</button><button type="button" data-range="3Y" aria-pressed="false">3Y</button><button type="button" data-range="1Y" aria-pressed="false">1Y</button><button type="button" data-range="YTD" aria-pressed="false">YTD</button></div></div>
+          <div class="s-extremes"><div data-field="statistics-deepest" id="deepest-lake"></div><div data-field="statistics-longest" id="longest-lake"></div></div>
+          <div class="s-lake-bar"><label class="s-control s-lake-control">Explore a lake<select id="lake-select" data-field="statistics-lake-selector" aria-label="Selected underwater lake"></select></label><button class="s-help" type="button" aria-label="About underwater lakes" aria-describedby="help-lakes"><i data-lucide="circle-help" aria-hidden="true"></i><span role="tooltip" id="help-lakes">Unit price removes deposits. HWM is the highest unit price reached so far. A lake starts below HWM and ends on recovery; ongoing lakes end at the sample date. All-time extremes remain unchanged by chart range.</span></button></div>
+          <p id="lake-detail" class="s-caption num" data-field="statistics-lake-detail" aria-live="polite"></p>
+          <div class="s-chart-pair"><div>
+          <div class="s-chart-heading"><h3>Valuation Path vs High-Water Mark</h3><span class="s-legend"><span class="s-key s-price">Unit price</span><span class="s-key s-hwm">HWM</span></span></div>
+          <div class="s-chart" id="unit-chart" data-field="statistics-unit-chart"></div>
+          <div class="s-inspector"><label for="chart-inspect">Observation</label><input id="chart-inspect" type="range" min="0" max="1" value="0" aria-describedby="chart-reading"><output class="num" id="chart-reading" aria-live="polite"></output></div>
+          </div><div>
+          <div class="s-chart-heading"><h3>The Lakes (Underwater Drawdown %)</h3><span class="s-caption">Distance below HWM · selected lake, all dates</span></div>
+          <div class="s-chart s-drawdown" id="drawdown-chart" data-field="statistics-drawdown-chart"></div>
+          <div class="s-inspector"><label for="lake-inspect">Lake observation</label><input id="lake-inspect" type="range" min="0" max="1" value="0" aria-describedby="lake-reading"><output class="num" id="lake-reading" aria-live="polite"></output></div>
+          </div></div>
+        </div>
+      </details>
+      <details class="s-section" data-field="statistics-heatmap" open>
+        <summary><span><span class="s-eyebrow">04 / Seasonality</span><span class="s-section-title">A month-by-month perspective</span></span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+        <div class="s-section-body">
+          <div class="s-toolbar"><label class="s-control">Wallet<select id="heatmap-wallet" data-field="statistics-heatmap-wallet" aria-label="Heatmap wallet"></select></label><div class="s-segments" role="group" aria-label="Heatmap unit" data-field="statistics-heatmap-unit"><button type="button" data-unit="pct" aria-pressed="true">%</button><button type="button" data-unit="pln" aria-pressed="false">PLN</button></div><button class="s-help" type="button" aria-label="About monthly averages" aria-describedby="help-heatmap"><i data-lucide="circle-help" aria-hidden="true"></i><span role="tooltip" id="help-heatmap">Percent cells use monthly Modified Dietz returns; PLN cells use net gains after cash flows. The average is arithmetic across available observations for each calendar month, not a compounded annual return.</span></button></div>
+          <div class="s-table-scroll" role="region" aria-label="Monthly return heatmap" tabindex="0"><table id="heatmap-table" data-field="statistics-heatmap-values"><tfoot data-field="statistics-monthly-averages"><tr><th scope="row">Average</th><td class="num">N/A</td></tr></tfoot></table></div>
+          <p class="s-caption">Positive <span class="s-swatch s-positive"></span> Negative <span class="s-swatch s-negative"></span> Unavailable <span class="num">N/A</span></p>
+        </div>
+      </details>
+      <details class="s-section" data-field="statistics-snapshots">
+        <summary><span><span class="s-eyebrow">05 / Source of truth</span><span class="s-section-title">Portfolio snapshots</span></span><i data-lucide="chevron-down" aria-hidden="true"></i></summary>
+        <div class="s-section-body">
+          <div class="s-toolbar"><label class="s-control">Wallet<select id="snapshot-wallet" data-field="statistics-snapshot-wallet" aria-label="Snapshots wallet"></select></label><div class="s-segments" role="group" aria-label="Snapshot frequency" data-field="statistics-snapshot-frequency"><button type="button" data-frequency="monthly" aria-pressed="true">Monthly</button><button type="button" data-frequency="daily" aria-pressed="false">Daily</button></div><button class="s-help" type="button" aria-label="About snapshot returns and XIRR" aria-describedby="help-snapshots"><i data-lucide="circle-help" aria-hidden="true"></i><span role="tooltip" id="help-snapshots">Value and invested capital are ending balances. Gain and return cover the selected period, net of deposits. XIRR is annualized money-weighted return from dated investor flows to that snapshot. N/A means unavailable, not zero.</span></button></div>
+          <div class="s-table-scroll" role="region" aria-label="Portfolio snapshot history" tabindex="0"><table id="snapshot-table" data-field="statistics-snapshot-values"></table></div>
+          <div class="s-pagination" id="snapshot-pagination"></div>
+        </div>
+      </details>
+      <section class="empty-state-card s-empty" data-field="statistics-empty" hidden><i class="empty-state-icon" data-lucide="chart-no-axes-combined" aria-hidden="true"></i><h2 class="empty-state-title">No snapshots yet</h2><p class="empty-state-desc">This wallet has no recorded history.</p><button class="empty-state-btn" id="restore-samples" type="button">Show sample history</button></section>
+      <div class="card-cl-overlay" data-field="statistics-loading" hidden><div class="cl-loader" role="status" aria-label="Loading statistics"><div class="cl-candles"><div class="cl-candle cl-bear"><div class="cl-body"></div></div><div class="cl-candle cl-bull"><div class="cl-body"></div></div><div class="cl-candle cl-bull"><div class="cl-body"></div></div></div><span class="s-caption">Loading statistics</span></div></div>
+      <div data-field="statistics-context-help" class="s-endnote">Illustrative dataset · <span class="num">2022–2026</span> · PLN</div>
+      <p id="filter-status" class="s-sr-only" role="status"></p>
+    </main>
+  </div>
+</div>
+<div class="drawer-backdrop" hidden></div>
+<aside id="statistics-menu" class="mobile-side-drawer glass-island" role="dialog" aria-modal="true" aria-label="More navigation" tabindex="-1" hidden><div class="drawer-head"><span class="brand-wordmark">roastfolio</span><button type="button" class="icon-btn drawer-close" aria-label="Close menu"><i data-lucide="x" aria-hidden="true"></i></button></div><div class="s-drawer-links"></div><div class="theme-switch" role="group" aria-label="Menu color mode"><button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button><button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button></div></aside>
+<nav class="bottom-tabs s-bottom-nav" aria-label="Mobile navigation"><a href="dashboard.html" aria-label="Dashboard" title="Dashboard"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span>Dashboard</span></a><a href="wallets.html" aria-label="Wallets" title="Wallets"><i data-lucide="wallet" aria-hidden="true"></i><span>Wallets</span></a><a href="../../src/index.html#diary" aria-label="Diary" title="Diary"><i data-lucide="notebook-pen" aria-hidden="true"></i><span>Diary</span></a><a href="analysis.html" aria-label="Analysis" title="Analysis"><i data-lucide="search" aria-hidden="true"></i><span>Analysis</span></a></nav>
+</body>
+</html>

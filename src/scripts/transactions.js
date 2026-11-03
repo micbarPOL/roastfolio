@@ -1,11 +1,11 @@
 const OP_COLORS = {
-    'Buy': '#0ea5e9',
-    'Sell': '#34d399',
-    'Dividend': '#fbbf24',
-    'Deposit': '#a855f7',
-    'Withdrawal': '#f87171',
-    'Extra Cost': '#94a3b8',
-    'Spin-off': '#2dd4bf',
+    'Buy': 'var(--accent-primary)',
+    'Sell': 'var(--color-success)',
+    'Dividend': 'var(--color-warning)',
+    'Deposit': 'var(--color-success)',
+    'Withdrawal': 'var(--color-danger)',
+    'Extra Cost': 'var(--text-secondary)',
+    'Spin-off': 'var(--text-secondary)',
 };
 
 let _fDateFrom = '';
@@ -16,6 +16,9 @@ let _fWallet = '';
 let _fValueMin = null;
 let _fValueMax = null;
 let _allRows = [];
+let _txCurrentPage = 0;
+let _txPageFilterKey = '';
+const _txPageSize = 12;
 
 let _sliderMin = 0;
 let _sliderMax = 1;
@@ -145,7 +148,7 @@ function editableField(row, field, value, attrs = '') {
 }
 
 function renderAssetText(row) {
-    return `<span class="tx-asset-text" title="${escapeHtml(row.asset)}">${escapeHtml(row.asset)}</span>`;
+    return `<span class="tx-asset-text" title="${escapeHtml(row.asset)}">${escapeHtml(row.asset)}</span><span class="tx-asset-mobile-meta">${escapeHtml(row.date)} · ${escapeHtml(row.wallet || '—')}</span>`;
 }
 
 function renderMobileEditPanel(row, actionHtml) {
@@ -174,16 +177,22 @@ function setSummaryMessage(message, isError = false) {
     const summary = document.getElementById('tx-summary');
     if (!summary) return;
     summary.textContent = message;
-    summary.style.color = isError ? '#f87171' : '#94a3b8';
-    summary.style.fontWeight = isError ? '600' : 'normal';
+    summary.classList.toggle('tx-summary-error', isError);
 }
 
 function applyFilters() {
+    const filterError = document.getElementById('tx-filter-error');
+    const invalidDates = Boolean(_fDateFrom && _fDateTo && _fDateFrom > _fDateTo);
+    if (filterError) {
+        filterError.hidden = !invalidDates;
+        filterError.textContent = invalidDates ? 'The start date must be on or before the end date.' : '';
+    }
+    if (invalidDates) return [];
     return _allRows.filter(r => {
         if (_fDateFrom && r.date < _fDateFrom) return false;
         if (_fDateTo && r.date > _fDateTo) return false;
         if (_fOps.size > 0 && !_fOps.has(r.operation)) return false;
-        if (_fAsset && !r.asset.toLowerCase().includes(_fAsset)) return false;
+        if (_fAsset && !`${r.asset || ''} ${r.ticker || ''} ${r.symbol || ''}`.toLowerCase().includes(_fAsset)) return false;
         if (_fWallet && !(r.wallet || '').toLowerCase().includes(_fWallet)) return false;
         if (_fValueMin !== null && r.value < _fValueMin) return false;
         if (_fValueMax !== null && r.value > _fValueMax) return false;
@@ -195,11 +204,35 @@ function renderTable() {
     const tbody = document.getElementById('tx-body');
     if (!tbody) return;
     const filtered = applyFilters();
+    const filterKey = filtered.map(row => `${row.transactionId || ''}:${row.portfolioId || ''}:${row.date}`).join('|');
+    if (filterKey !== _txPageFilterKey) {
+        _txPageFilterKey = filterKey;
+        _txCurrentPage = 0;
+    }
+    const pageCount = Math.max(1, Math.ceil(filtered.length / _txPageSize));
+    _txCurrentPage = Math.min(_txCurrentPage, pageCount - 1);
+    const pageRows = filtered.slice(_txCurrentPage * _txPageSize, (_txCurrentPage + 1) * _txPageSize);
+    const emptyState = document.getElementById('tx-filter-empty');
+    const tableScroll = document.querySelector('#tab-transactions .tx-table-scroll');
+    const pagination = document.getElementById('tx-pagination');
+    if (emptyState) emptyState.hidden = filtered.length !== 0;
+    if (tableScroll) tableScroll.hidden = filtered.length === 0;
+    if (pagination) pagination.hidden = filtered.length === 0 || pageCount <= 1;
+    const pageStatus = document.getElementById('tx-page-status');
+    if (pageStatus) {
+        const first = filtered.length ? _txCurrentPage * _txPageSize + 1 : 0;
+        const last = Math.min((_txCurrentPage + 1) * _txPageSize, filtered.length);
+        pageStatus.textContent = `${first}\u2013${last} of ${filtered.length} · page ${_txCurrentPage + 1} of ${pageCount}`;
+    }
+    const prevPage = document.getElementById('tx-page-prev');
+    const nextPage = document.getElementById('tx-page-next');
+    if (prevPage) prevPage.disabled = _txCurrentPage === 0;
+    if (nextPage) nextPage.disabled = _txCurrentPage >= pageCount - 1;
     if (!filtered.length) {
         tbody.innerHTML = `<tr><td colspan="9" style="padding:18px;text-align:center;color:#94a3b8">No transactions match the current filters.</td></tr>`;
     } else {
-        tbody.innerHTML = filtered.map((r, i) => {
-            const valueColor = r.value >= 0 ? '#34d399' : '#f87171';
+        tbody.innerHTML = pageRows.map((r, i) => {
+            const valueTone = r.value >= 0 ? 'tx-value-positive' : 'tx-value-negative';
             const editable = Boolean(r.transactionId && r.portfolioId && !r.automatic);
             const isEditing = editable && r.transactionId === _editingTxId;
             
@@ -221,7 +254,7 @@ function renderTable() {
                     `;
                 }
             } else if (r.automatic) {
-                actionHtml = `<span title="Automatic cash rows follow their source transaction." style="color:#94a3b8;font-size:11px;">Auto</span>`;
+                actionHtml = `<span class="tx-auto" title="Automatic cash rows follow their source transaction.">Auto</span>`;
             }
 
             const renderCell = (field, textValue, inputHtml) => isEditing ? inputHtml : escapeHtml(textValue);
@@ -229,15 +262,15 @@ function renderTable() {
                 ? `<span class="tx-mobile-static-asset">${renderAssetText(r)}</span><span class="tx-desktop-edit-field">${editableField(r, 'asset', r.asset, stockDisabled)}</span>`
                 : renderAssetText(r);
 
-            const rowHtml = `<tr data-tx-id="${escapeHtml(r.transactionId || '')}" data-portfolio-id="${escapeHtml(r.portfolioId || '')}" style="${i % 2 === 0 ? '' : 'background:rgba(255,255,255,0.02)'}">
+            const rowHtml = `<tr data-tx-id="${escapeHtml(r.transactionId || '')}" data-portfolio-id="${escapeHtml(r.portfolioId || '')}" class="${i % 2 === 0 ? '' : 'tx-row-alt'}">
                 <td class="hide-on-mobile">${isEditing ? editableField(r, 'date', r.date, `type="date" max="${new Date().toISOString().slice(0, 10)}"`) : escapeHtml(r.date)}</td>
                 <td>${opBadge(r.operation)}</td>
                 <td>${assetHtml}</td>
                 <td class="hide-on-mobile">${escapeHtml(r.wallet || '—')}</td>
                 <td class="hide-on-mobile" style="text-align:right">${renderCell('quantity', r.units !== 0 ? fmtNum(Math.abs(r.units), r.units % 1 === 0 ? 0 : 4) : '—', editableField(r, 'quantity', formatInputNumber(Math.abs(r.units)), `type="number" step="any" inputmode="decimal" ${quantityDisabled}`))}</td>
                 <td class="hide-on-mobile" style="text-align:right">${renderCell('price', r.price ? fmtNum(r.price) : '—', editableField(r, 'price', formatInputNumber(r.price), `type="number" step="any" inputmode="decimal" ${numericDisabled}`))}</td>
-                <td class="hide-on-mobile" style="text-align:right;color:#94a3b8">${renderCell('commission', r.commission ? fmtNum(r.commission) : '—', editableField(r, 'commission', formatInputNumber(r.commission), 'type="number" step="any" inputmode="decimal"'))}</td>
-                <td class="tx-value-cell" style="text-align:right;font-weight:600;color:${valueColor}">${fmtNum(r.value)}</td>
+                <td class="hide-on-mobile tx-commission-cell" style="text-align:right">${renderCell('commission', r.commission ? fmtNum(r.commission) : '—', editableField(r, 'commission', formatInputNumber(r.commission), 'type="number" step="any" inputmode="decimal"'))}</td>
+                <td class="tx-value-cell ${valueTone}" style="text-align:right;font-weight:600">${fmtNum(r.value)}</td>
                 <td class="tx-save-cell">
                     ${actionHtml}
                 </td>
@@ -460,7 +493,19 @@ function updateSliderUI(minPct, maxPct) {
     tMax.style.left = (maxPct * 100) + '%';
     const vMin = valueFromPct(minPct);
     const vMax = valueFromPct(maxPct);
+    tMin.setAttribute('aria-valuemin', _sliderMin);
+    tMin.setAttribute('aria-valuemax', vMax);
+    tMin.setAttribute('aria-valuenow', vMin);
+    tMin.setAttribute('aria-valuetext', `${fmtK(vMin)} PLN minimum`);
+    tMax.setAttribute('aria-valuemin', vMin);
+    tMax.setAttribute('aria-valuemax', _sliderMax);
+    tMax.setAttribute('aria-valuenow', vMax);
+    tMax.setAttribute('aria-valuetext', `${fmtK(vMax)} PLN maximum`);
     labels.innerHTML = `<span>${fmtK(vMin)} PLN</span><span>${fmtK(vMax)} PLN</span>`;
+    tMin.setAttribute('role', 'slider');
+    tMin.setAttribute('aria-label', 'Minimum transaction value');
+    tMax.setAttribute('role', 'slider');
+    tMax.setAttribute('aria-label', 'Maximum transaction value');
     _fValueMin = minPct === 0 ? null : vMin;
     _fValueMax = maxPct === 1 ? null : vMax;
     const btn = document.getElementById('btn-value');
@@ -484,6 +529,19 @@ function bindSliderEvents() {
     ['thumb-min', 'thumb-max'].forEach(id => {
         const el = document.getElementById(id);
         if (!el) return;
+        el.addEventListener('keydown', event => {
+            if (!['ArrowLeft', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            const step = event.shiftKey ? 0.1 : 0.01;
+            const direction = event.key === 'ArrowRight' || event.key === 'ArrowUp' ? 1 : -1;
+            if (id === 'thumb-min') {
+                _sliderMinPct = event.key === 'Home' ? 0 : event.key === 'End' ? Math.max(0, _sliderMaxPct - 0.01) : Math.max(0, Math.min(_sliderMaxPct - 0.01, _sliderMinPct + direction * step));
+            } else {
+                _sliderMaxPct = event.key === 'End' ? 1 : event.key === 'Home' ? Math.min(1, _sliderMinPct + 0.01) : Math.max(_sliderMinPct + 0.01, Math.min(1, _sliderMaxPct + direction * step));
+            }
+            updateSliderUI(_sliderMinPct, _sliderMaxPct);
+            renderTable();
+        });
         el.addEventListener('mousedown', e => {
             _sliderDrag = el.dataset.thumb;
             e.preventDefault();
@@ -535,7 +593,30 @@ function updateDateBtn() {
 
 function bindFilterEvents() {
     document.addEventListener('click', e => {
-        if (!e.target.closest('.tx-th')) closeAllPopups(null);
+        if (!e.target.closest('.filter-popup, #btn-date, #btn-op, #btn-value')) closeAllPopups(null);
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Escape') return;
+        closeAllPopups(null);
+        document.querySelectorAll('#tab-transactions .tx-help[aria-expanded="true"]').forEach(button => {
+            button.setAttribute('aria-expanded', 'false');
+            button.dataset.open = 'false';
+        });
+    });
+    document.querySelectorAll('#tab-transactions .tx-help').forEach(button => {
+        button.addEventListener('click', () => {
+            const expanded = button.getAttribute('aria-expanded') === 'true';
+            button.setAttribute('aria-expanded', String(!expanded));
+            button.dataset.open = String(!expanded);
+        });
+    });
+    document.addEventListener('pointerdown', event => {
+        document.querySelectorAll('#tab-transactions .tx-help[aria-expanded="true"]').forEach(button => {
+            if (!button.contains(event.target)) {
+                button.setAttribute('aria-expanded', 'false');
+                button.dataset.open = 'false';
+            }
+        });
     });
     document.getElementById('btn-date')?.addEventListener('click', e => {
         togglePopup('pop-date');
@@ -585,6 +666,21 @@ function bindFilterEvents() {
         updateDateBtn();
         renderTable();
     });
+    document.getElementById('date-quick-month')?.addEventListener('click', () => {
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const toLocalDate = date => {
+            const offset = date.getTimezoneOffset() * 60000;
+            return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+        };
+        _fDateFrom = toLocalDate(firstDay);
+        _fDateTo = toLocalDate(now);
+        document.getElementById('f-date-from').value = _fDateFrom;
+        document.getElementById('f-date-to').value = _fDateTo;
+        updateDateBtn();
+        renderTable();
+        closeAllPopups(null);
+    });
     document.getElementById('clear-date')?.addEventListener('click', () => {
         _fDateFrom = '';
         _fDateTo = '';
@@ -615,6 +711,41 @@ function bindFilterEvents() {
         e.stopPropagation();
     });
     bindSliderEvents();
+    document.getElementById('tx-clear-filters')?.addEventListener('click', () => {
+        _fDateFrom = '';
+        _fDateTo = '';
+        _fOps = new Set();
+        _fAsset = '';
+        _fWallet = '';
+        _sliderMinPct = 0;
+        _sliderMaxPct = 1;
+        const from = document.getElementById('f-date-from');
+        const to = document.getElementById('f-date-to');
+        const asset = document.getElementById('f-asset');
+        const wallet = document.getElementById('f-wallet');
+        if (from) from.value = '';
+        if (to) to.value = '';
+        if (asset) asset.value = '';
+        if (wallet) wallet.value = '';
+        updateDateBtn();
+        const allOps = [...new Set(_allRows.map(row => row.operation))].sort();
+        updateOpBtn(allOps, allOps);
+        buildOpToggles(allOps);
+        updateSliderUI(0, 1);
+        closeAllPopups(null);
+        renderTable();
+    });
+    document.getElementById('tx-empty-clear')?.addEventListener('click', () => {
+        document.getElementById('tx-clear-filters')?.click();
+    });
+    document.getElementById('tx-page-prev')?.addEventListener('click', () => {
+        _txCurrentPage = Math.max(0, _txCurrentPage - 1);
+        renderTable();
+    });
+    document.getElementById('tx-page-next')?.addEventListener('click', () => {
+        _txCurrentPage += 1;
+        renderTable();
+    });
 }
 
 function initDayModalHandlers() {
@@ -696,7 +827,8 @@ function ensureTransactionsUi() {
             const valCell = tr.querySelector('.tx-value-cell');
             if (valCell) {
                 valCell.textContent = fmtNum(rawValue);
-                valCell.style.color = rawValue >= 0 ? '#34d399' : '#f87171';
+                valCell.classList.toggle('tx-value-positive', rawValue >= 0);
+                valCell.classList.toggle('tx-value-negative', rawValue < 0);
             }
         }
     });
@@ -893,13 +1025,15 @@ function renderCalendar(container, year, activeDates, turnoverByDate, depositDat
                 : withdrawalDates.has(dateStr)
                     ? ' cal-frame-withdrawal'
                     : '';
-            html += `<span class="cal-day${active ? ` cal-active cal-i${level}` : ''}${frameClass}" title="${title}"${active ? ` data-date="${dateStr}"` : ''}>${day}</span>`;
+            html += active
+                ? `<button type="button" class="cal-day cal-active cal-i${level}${frameClass}" title="${escapeHtml(title.replace('\n', ' · '))}" aria-label="${escapeHtml(title.replace('\n', ', '))}" data-date="${dateStr}">${day}</button>`
+                : `<span class="cal-day" aria-hidden="true">${day}</span>`;
         }
         html += '</div></div>';
     }
     html += '</div>';
     container.innerHTML = html;
-    container.querySelectorAll('.cal-day.cal-active').forEach(el => {
+    container.querySelectorAll('button.cal-day.cal-active').forEach(el => {
         el.addEventListener('click', () => openDayModal(el.dataset.date, _allRows));
     });
 }
