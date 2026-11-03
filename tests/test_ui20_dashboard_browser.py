@@ -101,6 +101,15 @@ def open_page(browser, base_url):
         context.close()
 
 
+@pytest.mark.parametrize("width,height", [(1440, 900), (390, 844)])
+def test_portfolio_is_not_an_active_navigation_entry(open_page, width, height):
+    page, errors = open_page(width, height)
+    assert page.locator('[data-tab="portfolio"]').count() == 0
+    assert page.locator('.sidenav-nav [data-tab="dashboard"]').count() == 1
+    assert page.locator('.sidenav-nav [data-tab="wallets"]').count() == 1
+    assert not errors, errors
+
+
 @pytest.mark.parametrize("theme", THEMES)
 @pytest.mark.parametrize("width,height", VIEWPORTS)
 def test_dashboard_never_scrolls_sideways_and_has_no_script_errors(open_page, width, height, theme):
