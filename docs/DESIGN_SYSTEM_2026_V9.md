@@ -782,7 +782,7 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 | D-051 | active | Approved 2026-11-02: Deep Ocean replaces the ATH lake. The component study is retained in `design/mockups/components/ath-ocean-options.html`, outside the full-screen registry. Beach at ATH, snorkeling through -2%, scuba below; Relax/Explore/Danger accents are separate, with Danger below -5%. Default linear ticks are 0/-5/-10/-15%, expanding for larger drawdowns. The 30-day low uses historical running peaks; missing data is not zero. Illustrative colors stay local to the SVG; surrounding UI uses tokens. Production behavior is covered by the ocean cases in `tests/test_ui20_dashboard_browser.py`. | `@ath-ocean-options count: #abyss-sharks .shark-patrol = 3` |
 
 | D-052 | active | Approved 2026-11-03 under D-008: Statistics uses five frameless analytical sections with independent wallet controls, accessible disclosures and responsive benchmark rows. The valuation-path and lake-drawdown charts keep their original UI titles and independent X ranges, side by side on desktop and stacked below 900px. Production retains the existing API, calculations and Chart.js engine; the mockup remains deterministic. | `@statistics dom: main[data-field="statistics-screen"] details[data-field="statistics-snapshots"]` |
-| D-053 | provisional | Transactions mockup only, pending owner approval under D-008. Frameless turnover KPIs, activity calendar and monthly turnover lead into a ledger with a separate filter bar and 12-row pagination. Mobile keeps operation, asset and signed value; date and wallet remain in the asset summary and the editor shows every field. Edits are local samples; automatic cash rows are read-only. No production implementation is authorized. | `@transactions dom: main[data-field="transactions-screen"] table[data-field="transactions-ledger"]` |
+| D-053 | active | Approved 2026-11-03 under D-008: Transactions uses frameless turnover KPIs, an activity calendar and monthly turnover above a ledger with a separate filter toolbar and 12-row pagination. Combined filters retain independent KPI, calendar and chart totals. Mobile keeps operation, asset and signed value; date and wallet stay in asset metadata, while existing edit actions expose all fields. Automatic cash rows remain read-only. Production reuses the ledger API and mutation validation; no sample data is used. | `@transactions dom: main[data-field="transactions-screen"] table[data-field="transactions-ledger"]` |
 
 ## 10. Consistency Contract
 
@@ -1195,18 +1195,23 @@ All values are derived from a fixed daily sample history ending 30 October 2026 
 
 ## Appendix G. Screen Registry: Transactions
 
-Mockup: `design/mockups/transactions.html`. Pending owner approval under D-008
-and provisional D-053. This section authorizes only a mockup, not changes to
-`src/`. Existing Statistics work remains independent. The mockup uses 80
-deterministic local sample rows ending 3 November 2026; it does not call APIs,
-persist financial edits or trigger imports, recalculations or emails. Turnover
-retains the existing Buy/Sell absolute-value convention. KPI counts include all
-rows. Ledger filters do not change global KPI, calendar or chart totals.
+Approved mockup: `design/mockups/transactions.html` (2026-11-03, D-008, D-053).
+Implemented in `src/index.html`, `src/styles/transactions.css` and the existing
+`src/scripts/transactions.js`. Production still reads through
+`LedgerTransactions`, applies its existing validation and save handlers, and
+never uses the mockup's sample values. The mockup's local editor is illustrative
+only. The implementation does not add import, recalculation or email flows.
+Turnover retains the existing Buy/Sell absolute-value convention. KPI counts
+include all rows. Ledger filters do not change global KPI, calendar or chart
+totals.
 
 The calendar retains deposit/withdrawal markers and keyboard-accessible active
 days. Day details can set the ledger's date range. All table columns remain
 available on desktop; compact mobile rows keep date and wallet in the asset
-summary, with full fields in the editor. Automatic cash rows cannot be edited.
+summary, with existing inline edit behavior and validation. Automatic cash rows
+cannot be edited. The value range is keyboard accessible and the filter bar
+validates reversed date ranges. Tables paginate the existing filtered list; no
+rows are discarded.
 Price, commission and signed transaction values remain explicit PLN amounts.
 Local Lucide icons reuse `statistics-icons.js`; the illustrative chart is SVG.
 
