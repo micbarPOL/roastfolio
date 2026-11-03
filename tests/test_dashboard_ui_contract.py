@@ -17,12 +17,13 @@ class DashboardUiContractTests(unittest.TestCase):
         self.live_data_js = (ROOT / "src" / "scripts" / "live-data.js").read_text()
         self.monthly_audit_js = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
 
-    def test_basic_user_only_has_dashboard_portfolio_user_and_wallet_access(self):
+    def test_basic_user_has_dashboard_user_and_wallet_navigation_without_portfolio(self):
         self.assertNotIn("id=\"manage-btn\"", self.index_html)
         self.assertIn("openUserModal()", self.index_html)
         self.assertIn("showTab('dashboard')", self.index_html)
         self.assertIn("showTab('wallets')", self.index_html)
-        self.assertIn("showTab('portfolio')", self.index_html)
+        self.assertNotIn("showTab('portfolio')", self.index_html)
+        self.assertNotIn('data-tab="portfolio"', self.index_html)
         self.assertNotIn("scripts/data.js", self.index_html)
         self.assertNotIn("scripts/data-returns.js", self.index_html)
 
@@ -39,7 +40,7 @@ class DashboardUiContractTests(unittest.TestCase):
 
     def test_gauge_sarcastic_comment_uses_readable_typography(self):
         self.assertIn("styles/main.css?v=20260915b", self.index_html)
-        self.assertIn("const CACHE_NAME = 'roastfolio-v81';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v82';", self.service_worker_js)
         self.assertIn("font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', sans-serif !important;", self.main_css)
         self.assertIn("font-style: normal;", self.main_css)
         self.assertIn("line-height: 1.55 !important;", self.main_css)
@@ -163,7 +164,7 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("el.dataset.athKey === key", self.dashboard_js)
 
     def test_service_worker_prefers_fresh_shell_assets(self):
-        self.assertIn("const CACHE_NAME = 'roastfolio-v81';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v82';", self.service_worker_js)
         self.assertIn("'/styles/ath-ocean.css'", self.service_worker_js)
         self.assertIn("'/scripts/ath-ocean.js'", self.service_worker_js)
         self.assertIn("/scripts/ledger-transactions.js", self.service_worker_js)
