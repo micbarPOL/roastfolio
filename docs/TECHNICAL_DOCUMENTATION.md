@@ -306,6 +306,25 @@ Help closes with Escape/outside click; disclosure buttons and range controls
 expose their state to assistive technology. Reduced motion disables presentation
 transitions and smooth scrolling to a selected lake.
 
+### Transactions presentation (D-053)
+
+The Transactions redesign keeps `LedgerTransactions.loadRows`, `renderSummary`,
+`renderTurnoverChart`, `initCalendar`, `openDayModal` and the existing edit/save
+pipeline. The filter toolbar reuses the existing date, operation, asset, wallet
+and value-range state. The asset search matches the displayed asset text plus
+ledger ticker/symbol when available. It does not change the turnover rule:
+absolute Buy and Sell values only. KPI, calendar and monthly chart summaries
+continue to use the full ledger, independently of table filters.
+
+The table renders 12 filtered rows at a time and resets pagination when the
+filtered ledger changes. Mobile retains operation, asset, signed value and
+actions; the asset cell also exposes the row date and wallet. Calendar activity
+days are keyboard-operable buttons and keep the existing date-detail overlay.
+The value range supports pointer, touch and arrow/Home/End keyboard adjustment.
+Automatic cash rows remain read-only, and editable rows still pass through the
+original transaction validation and persistence handler. No mockup samples are
+used in the application.
+
 ## 2. Database Schema & Data Models
 
 Roastfolio uses Amazon DynamoDB (Pay-Per-Request / On-Demand) organized with single-table design patterns for core entity groups alongside dedicated tables for high-throughput ledgers and temporal snapshot series.

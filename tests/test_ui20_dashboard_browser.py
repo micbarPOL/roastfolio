@@ -528,6 +528,89 @@ def test_statistics_snapshot_pagination_and_empty_state(open_page):
     assert not errors, errors
 
 
+@pytest.mark.parametrize("theme", THEMES)
+@pytest.mark.parametrize("width,height", VIEWPORTS)
+def test_transactions_redesign_retains_filters_pagination_and_mobile_context(open_page, width, height, theme):
+    page, errors = open_page(width, height, theme)
+    page.evaluate("showTab('transactions')")
+    page.wait_for_function("document.querySelectorAll('#tx-body tr[data-tx-id]').length > 0")
+    assert page.locator('#tab-transactions').evaluate("node => getComputedStyle(node).opacity") == '1'
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    assert page.locator('#tx-body tr[data-tx-id]').count() <= 12
+    assert page.locator('#tx-pagination').is_visible()
+    assert page.locator('#tx-calendar .cal-day.cal-active').evaluate_all('nodes => nodes.every(node => node.tagName === "BUTTON" && node.getAttribute("aria-label"))')
+    assert page.locator('#tx-month-value').inner_text() != '—'
+    if width <= 767:
+        assert page.locator('#tx-body tr:first-child .tx-asset-mobile-meta').inner_text()
+        assert page.locator('#tx-body tr:first-child td:first-child').is_hidden()
+        assert page.locator('#tx-calendar .cal-day.cal-active').evaluate_all('nodes => nodes.every(node => node.getBoundingClientRect().width >= 43.5 && node.getBoundingClientRect().height >= 43.5)')
+
+    asset = page.locator('#tx-body tr:first-child .tx-asset-text').inner_text()
+    page.locator('#f-asset').fill(asset.split('(')[0].strip())
+    assert page.locator('#tx-body tr[data-tx-id]').count() > 0
+    assert page.locator('#tx-page-status').inner_text().endswith('1 of 1')
+    page.locator('#tx-clear-filters').click()
+    assert page.locator('#f-asset').input_value() == ''
+    assert page.locator('#tx-body tr[data-tx-id]').count() <= 12
+
+    page.locator('#tx-page-next').click()
+    assert 'page 2 of' in page.locator('#tx-page-status').inner_text()
+    page.locator('#tx-page-prev').click()
+    assert 'page 1 of' in page.locator('#tx-page-status').inner_text()
+
+    page.locator('#btn-op').click()
+    operation = page.locator('#op-checkboxes .op-pill').first
+    operation.click()
+    assert page.locator('#tx-page-status').inner_text()
+    page.locator('#tx-clear-filters').click()
+    page.locator('#btn-value').click()
+    thumb = page.locator('#thumb-min')
+    thumb.focus()
+    before = float(thumb.get_attribute('aria-valuenow'))
+    page.keyboard.press('ArrowRight')
+    assert float(thumb.get_attribute('aria-valuenow')) > before
+
+    page.locator('#btn-date').click()
+    assert page.locator('#pop-date').is_visible()
+    page.locator('#date-quick-month').click()
+    assert page.locator('#tx-page-status').inner_text()
+    page.keyboard.press('Escape')
+    assert page.locator('.filter-popup.open').count() == 0
+    assert not errors, errors
+
+
+def test_transactions_calendar_day_detail_and_filter_recovery(open_page):
+    page, errors = open_page(1440, 900)
+    page.evaluate("showTab('transactions')")
+    page.wait_for_function("document.querySelectorAll('#tx-body tr[data-tx-id]').length > 0")
+    active_day = page.locator('#tx-calendar .cal-day.cal-active').first
+    assert active_day.get_attribute('aria-label')
+    active_day.click()
+    assert page.locator('#cal-modal-overlay').is_visible()
+    page.locator('#cal-modal-close').click()
+
+    page.locator('#f-asset').fill('definitely-not-an-asset')
+    assert page.locator('#tx-filter-empty').is_visible()
+    page.locator('#tx-empty-clear').click()
+    assert page.locator('#tx-body tr[data-tx-id]').count() > 0
+    assert not errors, errors
+
+
+def test_transactions_value_slider_supports_keyboard(open_page):
+    page, errors = open_page(1440, 900)
+    page.evaluate("showTab('transactions')")
+    page.wait_for_function("document.querySelectorAll('#tx-body tr[data-tx-id]').length > 0")
+    page.locator('#btn-value').click()
+    thumb = page.locator('#thumb-min')
+    thumb.focus()
+    before = float(thumb.get_attribute('aria-valuenow'))
+    page.keyboard.press('ArrowRight')
+    assert float(thumb.get_attribute('aria-valuenow')) > before
+    page.keyboard.press('Home')
+    assert float(thumb.get_attribute('aria-valuenow')) == pytest.approx(float(thumb.get_attribute('aria-valuemin')))
+    assert not errors, errors
+
+
 def _set_ath(page, ath_value):
     page.evaluate("""ath => { window._SNAPSHOT_ATH = null; window.PORTFOLIO_ATH = {athValue: ath, athDate: '2026-10-01'};
         renderSummaryCards(); renderAthCelebration('dash-ath-celebration'); }""", ath_value)
