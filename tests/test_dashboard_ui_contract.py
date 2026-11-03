@@ -40,7 +40,7 @@ class DashboardUiContractTests(unittest.TestCase):
 
     def test_gauge_sarcastic_comment_uses_readable_typography(self):
         self.assertIn("styles/main.css?v=20260915b", self.index_html)
-        self.assertIn("const CACHE_NAME = 'roastfolio-v82';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v84';", self.service_worker_js)
         self.assertIn("font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', sans-serif !important;", self.main_css)
         self.assertIn("font-style: normal;", self.main_css)
         self.assertIn("line-height: 1.55 !important;", self.main_css)
@@ -164,7 +164,8 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("el.dataset.athKey === key", self.dashboard_js)
 
     def test_service_worker_prefers_fresh_shell_assets(self):
-        self.assertIn("const CACHE_NAME = 'roastfolio-v82';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v84';", self.service_worker_js)
+        self.assertIn("'/styles/transactions.css'", self.service_worker_js)
         self.assertIn("'/styles/ath-ocean.css'", self.service_worker_js)
         self.assertIn("'/scripts/ath-ocean.js'", self.service_worker_js)
         self.assertIn("/scripts/ledger-transactions.js", self.service_worker_js)
@@ -173,7 +174,7 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("self.addEventListener('message'", self.service_worker_js)
         self.assertIn("event.data.type === 'SKIP_WAITING'", self.service_worker_js)
         self.assertIn("reg.update().catch(() => {});", self.index_html)
-        self.assertIn("service-worker.js?v=20260702b", self.index_html)
+        self.assertIn("service-worker.js?v=20261103a", self.index_html)
 
     def test_gauge_animation_uses_modern_neon_transition_hooks(self):
         self.assertIn("const _pulseP = (_animProgress && _animProgress.pulse != null)", self.dashboard_js)
