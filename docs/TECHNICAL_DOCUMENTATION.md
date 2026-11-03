@@ -290,6 +290,22 @@ graph TD
   only when the record changes, so live refreshes do not replay it. Wallet
   carousel slides keep the older `athCelebrationMarkup`.
 
+### Statistics presentation (D-052)
+
+The Statistics redesign keeps the existing `statistics.js` calculations and API
+sources. Scoped `statistics.css` replaces legacy card surfaces with frameless
+records, token-colored charts and horizontally scrollable tables. Snapshot and
+benchmark tables paginate 12 rows at a time without discarding observations.
+Each section keeps its own wallet selection. The accessible lake selector calls
+the same selection handler as clicking the valuation chart.
+
+Valuation Path vs High-Water Mark and The Lakes (Underwater Drawdown %) retain
+independent dates and X axes. They sit side by side from 900px and stack below it.
+No sample history, fixed financial values or mockup SVG charts enter production.
+Help closes with Escape/outside click; disclosure buttons and range controls
+expose their state to assistive technology. Reduced motion disables presentation
+transitions and smooth scrolling to a selected lake.
+
 ## 2. Database Schema & Data Models
 
 Roastfolio uses Amazon DynamoDB (Pay-Per-Request / On-Demand) organized with single-table design patterns for core entity groups alongside dedicated tables for high-throughput ledgers and temporal snapshot series.

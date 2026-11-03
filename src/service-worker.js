@@ -21,6 +21,7 @@ const PRECACHE = [
     '/styles/tokens-v9.css',
     '/styles/ui20.css',
     '/styles/ath-ocean.css',
+    '/styles/statistics.css',
     '/scripts/auth-guard.js',
     '/scripts/auth.js',
     '/scripts/user-profile.js',

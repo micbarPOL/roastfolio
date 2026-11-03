@@ -781,6 +781,9 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 | D-050 | active | Approved 2026-11-02: Analysis gives the chart and financial statements the full content width. Company search and favorites open in an on-demand dialog, a bottom sheet on mobile. Help popovers explain price returns, indicators, fundamentals and statement units. The metric column stays pinned during horizontal table scrolling. | `@analysis dom: dialog.a-company-picker + .a-detail [data-help="statements"]` |
 | D-051 | active | Approved 2026-11-02: Deep Ocean replaces the ATH lake. The component study is retained in `design/mockups/components/ath-ocean-options.html`, outside the full-screen registry. Beach at ATH, snorkeling through -2%, scuba below; Relax/Explore/Danger accents are separate, with Danger below -5%. Default linear ticks are 0/-5/-10/-15%, expanding for larger drawdowns. The 30-day low uses historical running peaks; missing data is not zero. Illustrative colors stay local to the SVG; surrounding UI uses tokens. Production behavior is covered by the ocean cases in `tests/test_ui20_dashboard_browser.py`. | `@ath-ocean-options count: #abyss-sharks .shark-patrol = 3` |
 
+| D-052 | active | Approved 2026-11-03 under D-008: Statistics uses five frameless analytical sections with independent wallet controls, accessible disclosures and responsive benchmark rows. The valuation-path and lake-drawdown charts keep their original UI titles and independent X ranges, side by side on desktop and stacked below 900px. Production retains the existing API, calculations and Chart.js engine; the mockup remains deterministic. | `@statistics dom: main[data-field="statistics-screen"] details[data-field="statistics-snapshots"]` |
+| D-053 | provisional | Transactions mockup only, pending owner approval under D-008. Frameless turnover KPIs, activity calendar and monthly turnover lead into a ledger with a separate filter bar and 12-row pagination. Mobile keeps operation, asset and signed value; date and wallet remain in the asset summary and the editor shows every field. Edits are local samples; automatic cash rows are read-only. No production implementation is authorized. | `@transactions dom: main[data-field="transactions-screen"] table[data-field="transactions-ledger"]` |
+
 ## 10. Consistency Contract
 
 The tests in `tests/test_design_system_doc.py`, `tests/test_design_mockups_contract.py` and `tests/test_design_mockups_browser.py` enforce this document. Run them with `./test.sh design`, after every mockup change and periodically.
@@ -1139,3 +1142,99 @@ Production retains the existing MA10/20/50 calculations over bars (not fixed wee
 | `analysis-statement-type` | Income statement or cash flow statement |
 | `analysis-statement-period` | Annual or quarterly reporting periods |
 | `analysis-context-help` | Definitions for price returns, transaction markers, indicators, fundamental metrics and financial statement units |
+
+## Appendix F. Screen Registry: Statistics
+
+Approved mockup: `design/mockups/statistics.html` (2026-11-03, D-008, active D-052). Implemented in `src/index.html`, `src/styles/statistics.css` and the existing `src/scripts/statistics.js`. Production uses the real portfolio, snapshot, benchmark and underwater APIs; no mockup data or local sample charts are copied into the application. Shared shell and market ticker fields are inherited from Appendix A through `screen_fields("statistics")`; Statistics alone is the current navigation destination, never Portfolio. The retained mockup labels samples as illustrative, non-live data.
+
+The approved chart titles remain **Valuation Path vs High-Water Mark** and **The Lakes (Underwater Drawdown %)**. They are side by side from 900px and stacked below it. Each retains its own data dates and X axis; no shared scrubber or synchronized date assumption is introduced. Production adds keyboard-accessible lake selection, tokenized chart colors, contextual help, independent wallet selectors and 12-row pagination for benchmark and snapshot tables.
+
+All values are derived from a fixed daily sample history ending 30 October 2026 and its transaction ledger. Monthly gain and return use the existing Modified Dietz midpoint-flow convention. Daily records divide net gain by the previous snapshot value; daily snapshot table returns use Modified Dietz, preserving the current distinction. Unit-price returns and HWM exclude deposits. XIRR uses dated investor cash flows and terminal value, not a proxy for period return. Records use snapshot value ATH, while underwater charts use unit-price HWM. Records and benchmarks use only the deterministic all-wallet summary dataset, without a wallet selector. Underwater lakes, heatmap and snapshots retain independent wallet selections; date controls clip only underwater charts, not all-time lake records. Missing benchmark observations remain unavailable, never zero; win denominators count only comparable months. Sample filters recalculate outputs and do not claim to refresh live data. Local Lucide 0.468.0 is vendored in `design/mockups/statistics-icons.js`; charts and icons require no network access.
+
+| Field | Shows / existing source mapping |
+| :--- | :--- |
+| `statistics-screen` | Statistics heading, sample date and approval status; `tab-statistics` |
+| `statistics-records` | All-time, monthly and daily record groups; `stats-alltime`, `stats-monthly`, `stats-daily` |
+| `record-ath` | Snapshot all-time high value, date and snapshot source; `athValue`, `athDate` |
+| `record-ath-age` | Days since snapshot ATH with its date; `daysFromATH` |
+| `record-ath-drawdown` | Current value distance from snapshot ATH in percent and PLN; `drawdownPct`, `drawdownDiff` |
+| `record-profit` | Highest value minus invested with date; `maxSpread`, `maxSpreadDate` |
+| `record-transactions` | Six-month moving average transactions per month, absolute change and previous six-month average; `avg6`, `changeSub` |
+| `record-best-month` | Best monthly net gain with month; `bestMonthGain`, `bestMonth` |
+| `record-worst-month` | Worst monthly net gain with month; `worstMonthGain`, `worstMonth` |
+| `record-month-turnover` | Highest monthly gross transaction turnover with month; `bestTurnoverVal`, `bestTurnoverMonth` |
+| `record-best-day-pct` | Best daily return with date; `bestDayPct`, `bestDayPctDate` |
+| `record-worst-day-pct` | Worst daily return with date; `worstDayPct`, `worstDayPctDate` |
+| `record-best-day-pln` | Best daily net gain with date; `bestDayPLN`, `bestDayPLNDate` |
+| `record-worst-day-pln` | Worst daily net gain with date; `worstDayPLN`, `worstDayPLNDate` |
+| `record-day-turnover` | Highest daily gross transaction turnover with date; `bestDayVal`, `bestDay` |
+| `statistics-benchmarks` | Monthly portfolio returns and eight comparisons; `BENCHMARK_COLS`, `_buildPortfolioMonthlyPeriods` |
+| `statistics-benchmark-wins` | Wins and comparable-month counts for each benchmark; unavailable observations excluded |
+| `statistics-benchmark-rows` | WIG, WIG20, mWIG40, sWIG80, S&P 500, NASDAQ, DAX, MSCI World returns, signed percentage-point differences and unavailable data; mobile disclosure per month |
+| `statistics-underwater` | Underwater lake exploration; existing underwater accordion |
+| `statistics-underwater-wallet` | Independent lake wallet selection; `underwater-lakes-portfolio-btns` |
+| `statistics-lake-selector` | Select individual historical underwater periods by dropdown or clicking the valuation chart, with peak, trough, recovery or ongoing state |
+| `statistics-lake-detail` | Selected lake peak/trough/recovery dates, depth and duration |
+| `statistics-unit-chart` | Local SVG unit-price and high-water-mark time series, date/value inspection; `underwater-path-chart` |
+| `statistics-drawdown-chart` | Local SVG selected-lake drawdown percent series with two observations of context on each side and independent keyboard date/value inspection; `underwater-lakes-chart`, `_selectedLakeDetailMetrics` |
+| `statistics-deepest` | Deepest all-time lake depth, peak/trough/recovery dates and duration; `uwl-deepest-value`, `uwl-deepest-meta` |
+| `statistics-longest` | Longest all-time lake duration, depth, peak/trough/recovery dates; `uwl-widest-value`, `uwl-widest-meta` |
+| `statistics-underwater-range` | ALL / 3Y / 1Y / YTD valuation-path range; independent of all-time lake metrics and explicitly labelled selected-lake detail dates; `underwater-lakes-range-btns` |
+| `statistics-heatmap` | Monthly return matrix and monthly averages; existing heatmap accordion |
+| `statistics-heatmap-wallet` | Independent heatmap wallet selection; `heatmap-portfolio-btns` |
+| `statistics-heatmap-unit` | Percent Modified Dietz return or PLN net gain; independent toggle; `heatmap-metric-btns` |
+| `statistics-heatmap-values` | Year/month cells, signed returns or net gains and unavailable months |
+| `statistics-monthly-averages` | Arithmetic calendar-month average in the selected unit, available observations only |
+| `statistics-snapshots` | Monthly/daily snapshot disclosure; `refreshSnapshotTable` |
+| `statistics-snapshot-wallet` | Independent snapshot wallet selection; `stats-snap-portfolio-btns` |
+| `statistics-snapshot-frequency` | Monthly or daily periods; `stats-snap-granularity-btns`, `_buildPortfolioMonthlyPeriods`, `_buildPortfolioDailyPeriods` |
+| `statistics-snapshot-values` | Date/month, ending portfolio value, invested capital, period net gain, period return and ending XIRR; missing XIRR is unavailable |
+| `statistics-context-help` | Keyboard/pointer-accessible definitions for ATH versus HWM, Dietz, benchmark pp/wins, heatmap averages and XIRR |
+| `statistics-empty` | Standard four-part empty history state with sample recovery action |
+| `statistics-loading` | Shared candle loader; no alternate spinner |
+
+## Appendix G. Screen Registry: Transactions
+
+Mockup: `design/mockups/transactions.html`. Pending owner approval under D-008
+and provisional D-053. This section authorizes only a mockup, not changes to
+`src/`. Existing Statistics work remains independent. The mockup uses 80
+deterministic local sample rows ending 3 November 2026; it does not call APIs,
+persist financial edits or trigger imports, recalculations or emails. Turnover
+retains the existing Buy/Sell absolute-value convention. KPI counts include all
+rows. Ledger filters do not change global KPI, calendar or chart totals.
+
+The calendar retains deposit/withdrawal markers and keyboard-accessible active
+days. Day details can set the ledger's date range. All table columns remain
+available on desktop; compact mobile rows keep date and wallet in the asset
+summary, with full fields in the editor. Automatic cash rows cannot be edited.
+Price, commission and signed transaction values remain explicit PLN amounts.
+Local Lucide icons reuse `statistics-icons.js`; the illustrative chart is SVG.
+
+| Field | Shows / existing source mapping |
+| :--- | :--- |
+| `transactions-screen` | Transactions title and explicit sample/approval state; `tab-transactions` |
+| `transactions-summary` | Turnover summary independent of ledger filters; `renderSummary` |
+| `transactions-month-turnover` | Current sample month Buy/Sell turnover and transaction count; `tx-month-value`, `tx-month-sub` |
+| `transactions-ytd-turnover` | Sample-year turnover and count; `tx-ytd-value`, `tx-ytd-sub` |
+| `transactions-total-turnover` | All-time turnover and total count; `tx-total-value`, `tx-total-sub` |
+| `transactions-activity` | Activity section; `tx-activity-card` |
+| `transactions-activity-year` | Calendar year selector; `cal-year-tabs` |
+| `transactions-calendar` | Day activity, relative turnover intensity and day selection; `tx-calendar` |
+| `transactions-calendar-legend` | Less/more turnover plus deposit/withdrawal markers; `cal-legend` |
+| `transactions-turnover-chart` | Monthly Buy/Sell turnover in PLN; `txTurnoverChart` |
+| `transactions-history` | Ledger section; `tx-history-card` |
+| `transactions-filtered-summary` | Filtered row count and signed net value; `tx-summary` |
+| `transactions-filters` | Combined, independent ledger filters; `applyFilters` |
+| `transactions-filter-asset` | Asset name/ticker search; `f-asset` |
+| `transactions-filter-wallet` | Wallet filter; `f-wallet` |
+| `transactions-filter-date-from` | Inclusive start date; `f-date-from` |
+| `transactions-filter-date-to` | Inclusive end date; `f-date-to` |
+| `transactions-filter-operation` | Buy/Sell/Dividend/Deposit/Withdrawal/Extra Cost/Spin-off checkboxes; `op-checkboxes` |
+| `transactions-filter-value` | Signed PLN minimum/maximum; `value-slider` |
+| `transactions-date-shortcuts` | Today, this week and this month, relative to the sample date |
+| `transactions-ledger` | Date, operation, asset, wallet, units, price, commission, signed value and edit/automatic status; `tx-table`, `tx-body` |
+| `transactions-pagination` | 12-row pages without discarding filtered observations |
+| `transactions-empty` | Four-part no-results state with clear-filters action |
+| `transactions-loading` | Shared candle loader; no alternative spinner |
+| `transactions-edit` | Local sample date/asset/units/price/commission/value edit, cash restrictions and numeric validation; `handleTransactionSave` |
+| `transactions-day-detail` | Day transactions, turnover total, full values and show-in-ledger action; `openDayModal` |

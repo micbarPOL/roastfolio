@@ -41,6 +41,7 @@
     <link rel="stylesheet" href="styles/ui20.css?v=15.7.1">
     <link rel="stylesheet" href="styles/analysis.css?v=15.7.1">
     <link rel="stylesheet" href="styles/ath-ocean.css?v=15.7.1">
+    <link rel="stylesheet" href="styles/statistics.css?v=statistics-redesign">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         (function() {
@@ -1274,17 +1275,25 @@
 
     <!-- Tab: Statistics -->
     <main id="tab-statistics" class="tab-content">
+        <header class="statistics-heading">
+            <div><span class="statistics-eyebrow">Performance &amp; risk</span><h1>Statistics</h1></div>
+        </header>
+        <section class="statistics-records" aria-labelledby="statistics-records-title">
+        <div class="statistics-section-heading"><h2 id="statistics-records-title">Records</h2>
+            <details class="statistics-help"><summary aria-label="About records">?</summary><p>Records cover all wallets. Portfolio ATH uses recorded value, including deposits. Underwater charts use cash-flow-adjusted unit-price HWM instead. Monthly and daily results retain their existing calculation methods.</p></details>
+        </div>
         <section class="stats-section">
-            <h2 class="tx-section-title" style="margin-top:0;">All-Time Values</h2>
+            <h3 class="tx-section-title" style="margin-top:0;">All time</h3>
             <div class="stats-grid" id="stats-alltime"></div>
         </section>
         <section class="stats-section">
-            <h2 class="tx-section-title" style="margin-top:0;">Monthly Statistics</h2>
+            <h3 class="tx-section-title" style="margin-top:0;">Monthly</h3>
             <div class="stats-grid" id="stats-monthly"></div>
         </section>
         <section class="stats-section">
-            <h2 class="tx-section-title" style="margin-top:0;">Daily Statistics</h2>
+            <h3 class="tx-section-title" style="margin-top:0;">Daily</h3>
             <div class="stats-grid" id="stats-daily"></div>
+        </section>
         </section>
         <section class="stats-section stats-acc-section">
             <button class="stats-acc-btn" onclick="toggleStatsAccordion('bm-cmp')">
@@ -1295,6 +1304,7 @@
                 <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
             <div id="acc-bm-cmp" class="stats-acc-body">
+                <details class="statistics-help"><summary aria-label="About benchmark comparison">?</summary><p>Monthly portfolio returns are compared with each benchmark over the matching period. Unavailable returns remain blank. Win counts exclude periods without a comparable result.</p></details>
                 <div id="bm-cmp-wrap"><div class="stats-loading">Loading benchmark data…</div></div>
             </div>
         </section>
@@ -1318,6 +1328,7 @@
                         <button class="history-wallet-btn" data-range="YTD" onclick="setUnderwaterLakesRange('YTD')">YTD</button>
                     </div>
                 </div>
+                <details class="statistics-help"><summary aria-label="About underwater lakes">?</summary><p>Unit price removes the effect of deposits. HWM is the highest unit price reached so far. A lake starts below HWM and ends on recovery. The valuation path uses the chosen range; the selected lake has its own dates and X axis.</p></details>
 
                 <div class="uwl-stat-grid" id="underwater-lakes-stat-grid">
                     <article class="uwl-stat-card uwl-stat-card-depth">
@@ -1332,13 +1343,16 @@
                     </article>
                 </div>
 
+                <label class="statistics-lake-control" for="statistics-lake-select">Explore a lake
+                    <select id="statistics-lake-select" onchange="setUnderwaterLakeSelection(this.value)" disabled><option value="">Waiting for data</option></select>
+                </label>
                 <div class="uwl-chart-grid">
                     <section class="uwl-chart-panel">
                         <header class="uwl-chart-head">
                             <h3 class="uwl-chart-title">Valuation Path vs High-Water Mark</h3>
                         </header>
                         <div class="uwl-chart-wrap">
-                            <canvas id="underwater-path-chart"></canvas>
+                            <canvas id="underwater-path-chart" role="img" aria-label="Valuation Path vs High-Water Mark for the selected portfolio and range"></canvas>
                         </div>
                     </section>
 
@@ -1348,7 +1362,7 @@
                             <span id="uwl-selected-lake-pill" class="uwl-lake-pill">Click a lake on the left chart</span>
                         </header>
                         <div class="uwl-chart-wrap">
-                            <canvas id="underwater-lakes-chart"></canvas>
+                            <canvas id="underwater-lakes-chart" role="img" aria-label="The Lakes (Underwater Drawdown %) for the selected lake dates"></canvas>
                         </div>
                     </section>
                 </div>
@@ -1363,6 +1377,7 @@
                 <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(0deg);"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
             <div id="acc-heatmap" class="stats-acc-body stats-acc-body--open">
+                <details class="statistics-help"><summary aria-label="About monthly performance">?</summary><p>Switch between percentage return and PLN net gain for the selected portfolio. Missing months are not zero. The heatmap retains the existing return methodology.</p></details>
                 <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
                     <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
                         <div class="history-wallet-btns" id="heatmap-metric-btns" role="tablist">
@@ -1383,6 +1398,7 @@
                 <svg class="stats-acc-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
             </button>
             <div id="acc-monthly-snap" class="stats-acc-body">
+                <details class="statistics-help"><summary aria-label="About snapshot summary">?</summary><p>Monthly or daily snapshots show portfolio value, invested capital, net gain, return and annualized XIRR. XIRR is money-weighted and is not directly comparable with a single-period return.</p></details>
                 <div class="stats-snap-controls" style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 20px; padding-top: 10px;">
                     <div class="history-wallet-btns" id="stats-snap-granularity-btns" role="tablist">
                         <button class="history-wallet-btn is-active" data-val="monthly" onclick="setSnapshotGranularity('monthly')">Monthly</button>

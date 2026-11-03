@@ -22,6 +22,7 @@ SCREENS = {
     **{p.stem: p.as_uri() for p in sorted(ds.EXPLORATIONS.glob("dashboard-*.html"))},
     "wallets": (ds.MOCKUPS / "wallets.html").as_uri(),
     "history": (ds.MOCKUPS / "history.html").as_uri(),
+    "statistics": (ds.MOCKUPS / "statistics.html").as_uri(),
 }
 ROAST_SCREENS = [s for s in SCREENS if s.startswith("dashboard")]
 SETTLE_MS = 1500
@@ -423,6 +424,9 @@ def test_frameless_screens_stay_frameless_with_everything_open(open_page, screen
     elif screen == "history":
         page.click('[data-field="history-return-mode"] [data-mode="pln"]')
         page.click("#tab-summaries")
+    elif screen == "statistics":
+        for disclosure in page.locator(".s-section:not([open]) > summary").all():
+            disclosure.click()
     else:
         for selector in (".roast-toggle", ".disclosure", ".wallet-toggle"):
             page.locator(selector).first.click()

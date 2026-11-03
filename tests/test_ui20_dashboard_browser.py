@@ -459,6 +459,75 @@ def test_ath_summary_layout_preserves_the_separate_rail(open_page, width, height
     assert not errors, errors
 
 
+@pytest.mark.parametrize('theme', THEMES)
+@pytest.mark.parametrize('width,height', VIEWPORTS)
+def test_statistics_redesign_preserves_independent_charts_and_tokens(open_page, theme, width, height):
+    page, errors = open_page(width, height, theme)
+    page.evaluate("showTab('statistics')")
+    page.wait_for_selector('#underwater-lakes-portfolio-btns select')
+    page.wait_for_function('typeof _underwaterPathChart !== "undefined" && _underwaterPathChart !== null')
+    page.wait_for_function('_underwaterLakesChart !== null && _underwaterLakesChart.width > 0')
+    assert page.locator('#tab-statistics').evaluate('node => getComputedStyle(node).opacity') == '1'
+    page.wait_for_function("""() => [_underwaterPathChart, _underwaterLakesChart].every(chart =>
+        chart.width > 0 && chart.height > 0 && chart.ctx.getImageData(0, 0, chart.canvas.width, chart.canvas.height).data.some(value => value > 0))""")
+    titles = page.locator('#tab-statistics .uwl-chart-title').all_text_contents()
+    assert titles == ['Valuation Path vs High-Water Mark', 'The Lakes (Underwater Drawdown %)']
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    boxes = page.locator('#tab-statistics .uwl-chart-panel').evaluate_all('nodes => nodes.map(node => node.getBoundingClientRect().toJSON())')
+    if width >= 900:
+        assert boxes[1]['x'] >= boxes[0]['right']
+        assert boxes[1]['y'] == pytest.approx(boxes[0]['y'], abs=1)
+    else:
+        assert boxes[1]['y'] >= boxes[0]['bottom']
+    assert page.locator('#tab-statistics .stats-section').evaluate_all("nodes => nodes.every(node => getComputedStyle(node).borderRadius === '0px' && getComputedStyle(node).backgroundColor === 'rgba(0, 0, 0, 0)')")
+    assert page.locator('#tab-statistics select:visible').evaluate_all('nodes => nodes.every(node => node.getBoundingClientRect().height >= 43.5)')
+    theme_matches = page.evaluate("""() => _underwaterPathChart.data.datasets[0].borderColor === getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim()""")
+    assert theme_matches
+    page.locator('#tab-statistics .statistics-help').first.locator('summary').click()
+    assert page.locator('#tab-statistics .statistics-help').first.get_attribute('open') is not None
+    page.keyboard.press('Escape')
+    assert page.locator('#tab-statistics .statistics-help[open]').count() == 0
+    assert not errors, errors
+
+
+def test_statistics_lake_selection_has_its_own_dates_and_wallet_filters(open_page):
+    page, errors = open_page()
+    page.evaluate("showTab('statistics')")
+    page.wait_for_selector('#statistics-lake-select:not([disabled])')
+    options = page.locator('#statistics-lake-select option').evaluate_all("nodes => nodes.map(node => node.value).filter(Boolean)")
+    assert options
+    page.locator('#statistics-lake-select').select_option(options[0])
+    page.wait_for_function('expected => String(_underwaterSelectedLakeId) === expected', arg=options[0])
+    dates = page.evaluate('({path:_underwaterPathChart.data.labels, lake:_underwaterLakesChart.data.labels})')
+    assert dates['path'] and dates['lake']
+    assert len(dates['lake']) <= len(dates['path'])
+    assert dates['lake'][0] >= dates['path'][0]
+    wallet_select = page.locator('#underwater-lakes-portfolio-btns select')
+    wallet_options = wallet_select.locator('option').evaluate_all('nodes => nodes.map(node => node.value)')
+    assert len(wallet_options) > 1
+    wallet_select.select_option(wallet_options[1])
+    page.wait_for_function('expected => _underwaterPortfolio === expected', arg=wallet_options[1])
+    assert not errors, errors
+
+
+def test_statistics_snapshot_pagination_and_empty_state(open_page):
+    page, errors = open_page(390, 844)
+    page.evaluate("showTab('statistics'); _openAccordion('monthly-snap')")
+    page.evaluate("""() => {
+        const rows = Array.from({length:30}, (_, index) => ({date:`2026-10-${String(index+1).padStart(2,'0')}`, value:1000+index*10, investment:1000, unitPrice:100+index, xirr:.12}));
+        renderMonthlySnapshotTable(rows, 'daily');
+    }""")
+    assert page.locator('#returns-table-wrap tbody tr:visible').count() == 12
+    assert page.locator('#returns-table-wrap tbody tr').count() == 29
+    page.locator('#returns-table-wrap button[aria-label="Next page"]').click()
+    assert page.locator('#returns-table-wrap .statistics-pagination span').inner_text() == '2 / 3'
+    assert page.locator('#returns-table-wrap tbody tr:visible').count() == 12
+    page.evaluate('renderMonthlySnapshotTable([], "daily")')
+    assert page.locator('#returns-table-wrap .stats-empty').is_visible()
+    assert page.locator('#returns-table-wrap .statistics-pagination').count() == 0
+    assert not errors, errors
+
+
 def _set_ath(page, ath_value):
     page.evaluate("""ath => { window._SNAPSHOT_ATH = null; window.PORTFOLIO_ATH = {athValue: ath, athDate: '2026-10-01'};
         renderSummaryCards(); renderAthCelebration('dash-ath-celebration'); }""", ath_value)
