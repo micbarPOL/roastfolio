@@ -458,6 +458,7 @@ function _renderEmptyState() {
 }
 
 function renderSummaryCards() {
+    renderDashboardVerdict();
     const totalEl    = document.getElementById('dash-total-value');
     const dailyPlnEl = document.getElementById('dash-daily-pln');
     const drawdownEl = document.getElementById('dash-drawdown');
@@ -472,7 +473,7 @@ function renderSummaryCards() {
     if (totalEl && typeof PORTFOLIO_TOTAL_VALUE !== 'undefined') {
         totalEl.textContent = PORTFOLIO_TOTAL_VALUE.toLocaleString('pl-PL', { minimumFractionDigits: 2 }) + ' PLN';
     }
-    if (dailyPlnEl) {
+    if (dailyPlnEl && !document.getElementById('daily-verdict')) {
         dailyPlnEl.innerHTML =
             `<span class="pill-delta dash-daily-main ${tone}"><span aria-hidden="true">${arrow}</span><span class="num">${sign}${pln.toLocaleString('pl-PL', { minimumFractionDigits: 2 })} PLN</span></span>` +
             `<span class="pill-delta dash-daily-pct num ${tone}">${sign}${pct.toFixed(2)}%</span>`;
@@ -536,7 +537,21 @@ function renderAthLake(drawdownPct) {
     if (window.AthOcean) window.AthOcean.render(drawdownPct);
 }
 
+function renderDashboardVerdict() {
+    const benchmarkValue = typeof window.BENCHMARK_DAILY_PCT === 'undefined' && (!window.BENCHMARK_ID || window.BENCHMARK_ID === 'WIG')
+        ? window.WIG_DAILY_PCT : window.BENCHMARK_DAILY_PCT;
+    window.DailyVerdict?.render({
+        portfolio: window.PORTFOLIO_DAILY_CHANGE_PCT, benchmark: benchmarkValue, cash: window.PORTFOLIO_DAILY_CHANGE_PLN,
+        name: window.BENCHMARK_NAME || window.BENCHMARK_ID || 'Benchmark',
+        ready: window._gaugeDataReady, roast: window.ROAST_DATA,
+    });
+}
+
 function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgress) {
+    if (canvasId === 'gaugeChart' && document.getElementById('daily-verdict')) {
+        renderDashboardVerdict();
+        return;
+    }
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
@@ -909,6 +924,11 @@ function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgre
 
 // Animated gauge entry: needle sweeps from centre (0%) to target, then fires onComplete
 function animateGaugeEntry(canvasId, value, benchmarkValue, onComplete) {
+    if (canvasId === 'gaugeChart' && document.getElementById('daily-verdict')) {
+        renderDashboardVerdict();
+        if (typeof onComplete === 'function') onComplete();
+        return;
+    }
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     

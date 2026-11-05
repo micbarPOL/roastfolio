@@ -34,7 +34,8 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("btn.classList.add('tab-locked')", self.user_profile_js)
 
     def test_main_gauge_exposes_benchmark_and_portfolio_return_hooks(self):
-        self.assertIn("id=\"gaugeChart\"", self.index_html)
+        self.assertIn("id=\"daily-verdict\"", self.index_html)
+        self.assertIn("id=\"dash-daily-return\"", self.index_html)
         self.assertIn("id=\"gauge-benchmark-tooltip\"", self.index_html)
         self.assertIn("id=\"dash-daily-pln\"", self.index_html)
 

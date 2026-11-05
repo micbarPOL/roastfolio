@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="daily-verdict-shared-axis">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>roastfolio | Shared axis</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-canvas); color: var(--text-primary); font-family: var(--font-sans); letter-spacing: 0; }
+    main { max-width: 1040px; margin: auto; padding: 28px 40px 48px; }
+    .masthead { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 12px; }
+    .brand { font-size: 26px; font-weight: 650; text-decoration: none; color: var(--text-primary); }
+    .brand span { color: var(--color-success); }
+    .sample-label { color: var(--text-secondary); font-size: 12px; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 24px; padding: 24px 0; border-bottom: 1px solid var(--bg-surface-3); }
+    .controls label { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 12px; color: var(--text-secondary); }
+    select { max-width: 100%; min-height: 44px; padding: 8px 10px; background: var(--bg-surface-1); color: var(--text-primary); border: 1px solid var(--text-muted); border-radius: 4px; font: inherit; }
+    input { accent-color: var(--color-success); width: 18px; height: 18px; }
+    :focus-visible { outline: 2px solid var(--color-warning); outline-offset: 4px; }
+    .hero { padding-top: 30px; }
+    h1 { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin: 0 0 12px; }
+    .return { font-size: 64px; line-height: 1.05; font-weight: 650; color: var(--return-color); font-variant-numeric: tabular-nums; }
+    .cash { margin: 10px 0 0; font-size: 22px; color: var(--return-color); font-variant-numeric: tabular-nums; }
+    .cash small { font-size: 13px; color: var(--text-secondary); font-weight: 400; }
+    figure { margin: 30px 0 0; }
+    figcaption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--text-secondary); font-size: 12px; }
+    figcaption span:first-child { font-weight: 600; color: var(--text-primary); }
+    .graphic { position: relative; height: 230px; margin-top: 16px; background: linear-gradient(180deg, transparent, var(--bg-surface-1) 45%, transparent); }
+    .plot { position: absolute; inset: 0 28px; }
+    .rail { position: absolute; left: 0; right: 0; top: 105px; height: 6px; background: var(--bg-surface-3); border-radius: 3px; }
+    .zero { position: absolute; left: 50%; top: 97px; height: 22px; border-left: 1px solid var(--text-muted); }
+    .zero-label { position: absolute; left: 50%; top: 124px; transform: translateX(-50%); font-size: 10px; color: var(--text-muted); }
+    .interval-wash { position: absolute; left: var(--interval-start); width: var(--interval-width); top: 85px; height: 46px; background: var(--edge-color); opacity: .13; }
+    .interval { position: absolute; left: var(--interval-start); width: var(--interval-width); top: 103px; height: 10px; background: var(--edge-color); }
+    .stem { position: absolute; left: var(--position); width: 1px; background: var(--text-muted); }
+    .stem.portfolio { top: 69px; height: 39px; }
+    .stem.benchmark { top: 108px; height: 43px; background: var(--color-warning); }
+    .point { position: absolute; top: 108px; left: var(--position); transform: translate(-50%, -50%); }
+    .point.portfolio { width: 28px; height: 28px; background: var(--text-primary); border: 5px solid var(--bg-canvas); border-radius: 50%; box-shadow: 0 0 0 1px var(--text-muted); }
+    .point.benchmark { width: 22px; height: 22px; background: var(--color-warning); border: 3px solid var(--bg-canvas); transform: translate(-50%, -50%) rotate(45deg); }
+    .annotation { position: absolute; left: clamp(60px, var(--position), calc(100% - 60px)); width: 120px; text-align: center; transform: translateX(-50%); }
+    .annotation span { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+    .annotation strong { font-variant-numeric: tabular-nums; font-size: 26px; font-weight: 600; }
+    .annotation.portfolio { top: 8px; }
+    .annotation.benchmark { top: 158px; }
+    .annotation.benchmark span { color: var(--color-warning); }
+    .annotation.benchmark strong { font-size: 22px; font-weight: 500; }
+    .endpoint { position: absolute; top: 123px; font-size: 10px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+    .endpoint.low { left: 0; }
+    .endpoint.high { right: 0; }
+    .edge { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px; margin: 0; }
+    .edge strong { font-size: 28px; font-weight: 600; color: var(--edge-color); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .edge span { font-size: 14px; color: var(--text-secondary); }
+    .roast { padding: 24px 0 28px; }
+    h2 { font-size: 11px; text-transform: uppercase; margin: 0; display: flex; align-items: center; gap: 9px; font-weight: 650; }
+    h2::before { content: ''; width: 6px; height: 6px; background: var(--edge-color); border-radius: 50%; }
+    .comment { font-size: 20px; line-height: 1.65; margin: 12px 0 0; max-width: 760px; overflow-wrap: anywhere; }
+    .footer { border-top: 1px solid var(--bg-surface-3); padding: 20px 0 0; display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; }
+    .footer span { color: var(--text-secondary); font-size: 12px; }
+    .footer strong { display: block; margin-top: 6px; font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .footer .timestamp { font-size: 11px; }
+    @media (max-width: 600px) {
+      main { padding: 22px 20px 32px; }
+      .controls { gap: 4px 20px; padding: 16px 0; }
+      .hero { padding-top: 26px; }
+      .return { font-size: 56px; }
+      .cash { font-size: 20px; }
+      .plot { inset: 0 14px; }
+      .comment { font-size: 17px; }
+      .edge { gap: 5px 10px; }
+      .edge strong { font-size: 25px; }
+      .edge span { font-size: 12px; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .interval, .interval-wash { animation: reveal .6s ease-out both; transform-origin: center; }
+      @keyframes reveal { from { opacity: 0; transform: scaleX(0); } }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="masthead"><a class="brand" href="daily-verdict-options.html">roastfolio<span>.</span></a><span class="sample-label">Shared axis / Sample data</span></header>
+    <form class="controls" onsubmit="return false">
+      <label for="scenario">Today <select id="scenario"><option value="ahead">Ahead of WIG</option><option value="behind">Behind WIG</option><option value="down">Both down</option><option value="level">Level with WIG</option><option value="close">Almost level</option><option value="large">Large difference</option></select></label>
+      <label><input id="long-comment" type="checkbox">Long commentary</label>
+      <label><input id="light-theme" type="checkbox">Light theme</label>
+    </form>
+    <section class="hero" aria-labelledby="return-label">
+      <h1 id="return-label">Your return today</h1>
+      <div class="return" id="daily-return"></div>
+      <p class="cash"><span id="daily-cash"></span> <small>PLN today</small></p>
+      <figure aria-labelledby="comparison-label" aria-describedby="edge">
+        <figcaption id="comparison-label"><span>Portfolio vs WIG</span><span>Since previous close</span></figcaption>
+        <div class="graphic">
+          <div class="plot">
+            <div class="rail" aria-hidden="true"></div><div class="zero" aria-hidden="true"></div><span class="zero-label" aria-hidden="true">0</span>
+            <div class="interval-wash" aria-hidden="true"></div><div class="interval" aria-hidden="true"></div>
+            <div class="stem portfolio" style="--position:var(--portfolio-position)" aria-hidden="true"></div>
+            <div class="stem benchmark" style="--position:var(--benchmark-position)" aria-hidden="true"></div>
+            <div class="point benchmark" style="--position:var(--benchmark-position)" aria-hidden="true"></div>
+            <div class="point portfolio" style="--position:var(--portfolio-position)" aria-hidden="true"></div>
+            <div class="annotation portfolio" style="--position:var(--portfolio-position)"><span>You</span><strong id="portfolio-label"></strong></div>
+            <div class="annotation benchmark" style="--position:var(--benchmark-position)"><span>WIG</span><strong id="benchmark-label"></strong></div>
+            <span class="endpoint low" id="scale-low" aria-hidden="true"></span><span class="endpoint high" id="scale-high" aria-hidden="true"></span>
+          </div>
+        </div>
+        <p class="edge" id="edge"><strong id="spread"></strong><span id="relation"></span></p>
+      </figure>
+      <section class="roast" aria-labelledby="roast-label"><h2 id="roast-label">Roastfolio says</h2><p class="comment" id="comment"></p></section>
+      <footer class="footer"><div><span>Total portfolio value / PLN</span><strong>284,650.00</strong></div><span class="timestamp">Sample session / 16:45 CET</span></footer>
+    </section>
+  </main>
+  <script>
+    const scenarios = {
+      ahead: { portfolio: .73, benchmark: .31, comment: 'You beat the market today. A compelling argument for checking the app another seventeen times.' },
+      behind: { portfolio: -.46, benchmark: .31, comment: 'The index did nothing and still beat you. Your research department would like to call this a long-term position.' },
+      down: { portfolio: -.28, benchmark: -.70, comment: 'You lost less than the market. Technically a victory. Your account balance has requested a second opinion.' },
+      level: { portfolio: .31, benchmark: .31, comment: 'All that research. All those tabs. Exactly the same return as the index. Efficiency remains a work in progress.' },
+      close: { portfolio: .32, benchmark: .31, comment: 'A lead of one hundredth of a percentage point. Your victory speech may be slightly ahead of the evidence.' },
+      large: { portfolio: 2.34, benchmark: -.80, comment: 'A very good day. Please allow at least one full market cycle before updating your biography to investing legend.' }
+    };
+    const extended = ' One session is not an investment thesis, although your confidence appears to have already scheduled a press conference. The benchmark will be back tomorrow, still charging nothing for its opinion. Try to bring more than conviction.';
+    const signed = value => `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+    const moneyFormat = new Intl.NumberFormat('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' });
+    function render() {
+      const sample = scenarios[document.getElementById('scenario').value];
+      const spread = Math.round((sample.portfolio - sample.benchmark) * 100) / 100;
+      const extent = Math.max(1, Math.ceil(Math.max(Math.abs(sample.portfolio), Math.abs(sample.benchmark))));
+      const portfolioPosition = 50 + sample.portfolio / extent * 50;
+      const benchmarkPosition = 50 + sample.benchmark / extent * 50;
+      const color = value => value > 0 ? 'var(--color-success)' : value < 0 ? 'var(--color-danger)' : 'var(--text-secondary)';
+      const hero = document.querySelector('.hero');
+      hero.style.setProperty('--return-color', color(sample.portfolio));
+      hero.style.setProperty('--edge-color', color(spread));
+      hero.style.setProperty('--portfolio-position', `${portfolioPosition}%`);
+      hero.style.setProperty('--benchmark-position', `${benchmarkPosition}%`);
+      hero.style.setProperty('--interval-start', `${Math.min(portfolioPosition, benchmarkPosition)}%`);
+      hero.style.setProperty('--interval-width', `${Math.abs(portfolioPosition - benchmarkPosition)}%`);
+      document.getElementById('daily-return').textContent = `${signed(sample.portfolio)}%`;
+      document.getElementById('daily-cash').textContent = moneyFormat.format(284650 - 284650 / (1 + sample.portfolio / 100));
+      document.getElementById('portfolio-label').textContent = `${signed(sample.portfolio)}%`;
+      document.getElementById('benchmark-label').textContent = `${signed(sample.benchmark)}%`;
+      document.getElementById('spread').textContent = `${signed(spread)} pp`;
+      document.getElementById('relation').textContent = spread > 0 ? 'Ahead of WIG today' : spread < 0 ? 'Behind WIG today' : 'Level with WIG today';
+      document.getElementById('comment').textContent = sample.comment + (document.getElementById('long-comment').checked ? extended : '');
+      document.getElementById('scale-low').textContent = `-${extent}%`;
+      document.getElementById('scale-high').textContent = `+${extent}%`;
+      document.documentElement.dataset.theme = document.getElementById('light-theme').checked ? 'light' : 'dark';
+    }
+    document.querySelector('.controls').addEventListener('change', render);
+    render();
+  </script>
+</body>
+</html>

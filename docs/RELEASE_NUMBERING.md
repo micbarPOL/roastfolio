@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.9.0`
-*Target Release Numbering Standard — v15.9.0*
+**Current Release:** `15.10.0`
+*Target Release Numbering Standard — v15.10.0*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.9.0`
+* **Current Active Release:** `15.10.0`
+  * **Minor 10:** Daily Verdict replaces the main dashboard gauge with a shared axis. Daily return and PLN change lead the hierarchy; context-aware accents, brief one-shot effects, reduced-motion support and explicit unavailable states preserve existing calculations and roast reactions.
+* **Previous Active Release:** `15.9.0`
   * **Minor 9:** Redesigned Coping Diary with a responsive master-detail ledger, searchable and tag-filterable notes, a focused thesis sheet, dated checkpoints, and a mobile composer. Existing API-backed data, local fallback, and diary actions are preserved.
 * **Previous Active Release:** `15.8.0`
   * **Minor 8:** Redesigned Statistics and Transactions with independent analytical controls, responsive charts, a filterable transaction ledger, and preserved live APIs and edit behavior.
