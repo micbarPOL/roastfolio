@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="daily-verdict-options">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>roastfolio | Daily verdict concepts</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <style>
+    * { box-sizing: border-box; }
+    :root { --benchmark: var(--color-warning); }
+    body { margin: 0; background: var(--bg-canvas); color: var(--text-primary); font-family: var(--font-sans); font-size: 14px; letter-spacing: 0; }
+    main { max-width: 1800px; margin: auto; padding: 32px 24px 48px; }
+    .masthead { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+    h1 { font-size: 26px; font-weight: 650; margin: 0; }
+    .prototype { color: var(--text-secondary); font-size: 12px; }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding: 22px 0 28px; }
+    .control { display: flex; align-items: center; gap: 10px; min-height: 44px; color: var(--text-secondary); }
+    select { font: inherit; color: var(--text-primary); background: var(--bg-surface-1); border: 1px solid var(--text-muted); border-radius: 4px; padding: 10px; min-height: 44px; max-width: 100%; }
+    input { accent-color: var(--color-success); width: 18px; height: 18px; }
+    :focus-visible { outline: 2px solid var(--benchmark); outline-offset: 4px; }
+    .options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: start; }
+    article { min-width: 0; }
+    h2 { display: flex; align-items: baseline; gap: 12px; margin: 0 0 16px; font-size: 17px; font-weight: 550; }
+    h2 span { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .surface { padding: 22px 20px 0; background: var(--bg-surface-1); border-top: 2px solid var(--text-muted); border-radius: 0 0 6px 6px; }
+    .eyebrow { font-size: 11px; font-weight: 650; text-transform: uppercase; color: var(--text-secondary); }
+    .summary { min-height: 83px; }
+    .gap { font-size: 34px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 10px; color: var(--outcome); white-space: nowrap; }
+    .gap small { font-size: 16px; font-weight: 450; }
+    .direction { margin-top: 5px; font-size: 12px; color: var(--text-secondary); }
+    .graphic { height: 150px; position: relative; margin-top: 10px; }
+    .metrics { display: flex; justify-content: space-between; gap: 12px; padding: 0 0 20px; border-bottom: 1px solid var(--bg-surface-3); }
+    .metrics div { min-width: 0; }
+    .metrics div:last-child { text-align: right; }
+    .metrics span { display: block; color: var(--text-secondary); font-size: 12px; margin-bottom: 6px; }
+    .metrics strong { font-size: 20px; font-weight: 550; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .roast { padding: 20px 0 22px; }
+    .roast .eyebrow { display: flex; align-items: center; gap: 7px; color: var(--text-primary); }
+    .roast .eyebrow::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--outcome); flex: 0 0 auto; }
+    .comment { font-size: 16px; line-height: 1.65; margin: 12px 0 0; overflow-wrap: anywhere; }
+    .portfolio-total { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 12px; padding: 18px 0; border-top: 1px solid var(--bg-surface-3); }
+    .portfolio-total span { display: block; font-size: 11px; color: var(--text-secondary); }
+    .portfolio-total strong { display: block; font-size: 18px; font-variant-numeric: tabular-nums; font-weight: 550; margin-top: 6px; }
+    .portfolio-total .money-change { font-size: 12px; white-space: nowrap; padding-bottom: 2px; }
+    .axis { position: absolute; inset: 20px 14px 36px; }
+    .axis-line { position: absolute; top: 50%; width: 100%; height: 2px; background: var(--bg-surface-3); }
+    .axis-gap { position: absolute; left: var(--left); width: var(--distance); top: calc(50% - 3px); height: 8px; background: var(--outcome); opacity: .65; }
+    .marker { position: absolute; top: 50%; left: var(--position); width: 12px; height: 12px; background: var(--text-primary); border: 2px solid var(--bg-surface-1); border-radius: 50%; transform: translate(-50%, -50%); }
+    .marker.benchmark { border-radius: 0; background: var(--benchmark); transform: translate(-50%, -50%) rotate(45deg); }
+    .marker-label { position: absolute; left: var(--position); transform: translateX(-50%); font-size: 11px; color: var(--text-secondary); }
+    .marker-label.portfolio { top: 12px; }
+    .marker-label.benchmark { bottom: 8px; }
+    .axis-zero { position: absolute; top: calc(50% - 9px); height: 18px; width: 1px; background: var(--text-muted); left: 50%; }
+    .scale { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 10px; font-variant-numeric: tabular-nums; }
+    .axis-scale { position: absolute; inset: auto 0 0; }
+    .altitude { background: repeating-linear-gradient(to bottom, transparent 0, transparent 35px, var(--bg-surface-2) 35px, var(--bg-surface-2) 36px); }
+    .horizon { position: absolute; top: 58%; width: 100%; border-top: 1px dashed var(--benchmark); }
+    .horizon span { position: absolute; right: 0; top: 7px; background: var(--bg-surface-1); color: var(--benchmark); font-size: 11px; padding-left: 5px; }
+    .altitude-gap { position: absolute; left: 32%; top: var(--alt-top); height: var(--alt-height); width: 2px; background: var(--outcome); }
+    .altitude-dot { position: absolute; top: var(--alt-position); left: 32%; width: 14px; height: 14px; border-radius: 50%; background: var(--text-primary); border: 3px solid var(--bg-surface-1); transform: translate(-6px, -7px); }
+    .altitude-label { position: absolute; left: calc(32% + 15px); top: calc(var(--alt-position) - 8px); font-size: 12px; }
+    .race { padding-top: 12px; }
+    .lane { position: relative; height: 56px; }
+    .lane-name { font-size: 11px; color: var(--text-secondary); }
+    .lane-track { position: absolute; left: 14px; right: 14px; top: 30px; height: 4px; background: var(--bg-surface-3); }
+    .lane-fill { position: absolute; left: var(--fill-start); width: var(--fill-width); height: 4px; background: var(--text-primary); }
+    .lane.benchmark .lane-fill { background: var(--benchmark); }
+    .lane .axis-zero { top: -5px; height: 14px; }
+    .race .scale { padding: 0 14px; margin-top: 8px; }
+    .editorial .summary { min-height: 160px; }
+    .editorial .gap { font-size: 48px; margin-top: 26px; }
+    .editorial .direction { font-size: 14px; margin-top: 10px; }
+    .editorial .graphic { height: 73px; }
+    .spread-track { position: absolute; left: 0; right: 0; top: 25px; height: 7px; background: var(--bg-surface-3); }
+    .spread-fill { position: absolute; left: var(--spread-left); width: var(--spread-width); height: 7px; background: var(--outcome); }
+    .spread-track .axis-zero { top: -5px; height: 17px; }
+    .spread-labels { position: absolute; top: 46px; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: var(--text-secondary); }
+    @media (max-width: 1199px) { .options { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 20px; } }
+    @media (max-width: 639px) { main { padding: 24px 16px 40px; } .options { grid-template-columns: minmax(0, 1fr); gap: 32px; } .controls { gap: 6px 20px; } .surface { padding: 22px 20px 0; } .masthead { gap: 8px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="masthead"><h1>roastfolio<span style="color:var(--color-success)">.</span></h1><span class="prototype">Daily verdict / 4 concepts / Sample data</span></header>
+    <form class="controls" onsubmit="return false">
+      <label class="control" for="scenario">Today <select id="scenario"><option value="ahead">Ahead of WIG</option><option value="behind">Behind WIG</option><option value="down">Both down</option><option value="level">Level with WIG</option></select></label>
+      <label class="control"><input id="long-comment" type="checkbox">Long commentary</label>
+      <label class="control"><input id="light-theme" type="checkbox">Light theme</label>
+    </form>
+    <div class="options" id="options"></div>
+  </main>
+  <script>
+    const scenarios = {
+      ahead: { portfolio: 0.73, benchmark: 0.31, comment: 'You beat the market today. A compelling argument for checking the app another seventeen times.' },
+      behind: { portfolio: -0.46, benchmark: 0.31, comment: 'The index did nothing and still beat you. Your research department would like to call this a long-term position.' },
+      down: { portfolio: -0.28, benchmark: -0.70, comment: 'You lost less than the market. Technically a victory. Your account balance has requested a second opinion.' },
+      level: { portfolio: 0.31, benchmark: 0.31, comment: 'All that research. All those tabs. Exactly the same return as the index. Efficiency remains a work in progress.' }
+    };
+    const extended = ' One session is not an investment thesis, although your confidence appears to have already scheduled a press conference. The benchmark will be back tomorrow, still charging nothing for its opinion. Try to bring more than conviction.';
+    const variants = [
+      { name: 'Shared axis', className: 'shared', graphic: '<div class="axis"><div class="axis-line"></div><div class="axis-zero"></div><div class="axis-gap"></div><span class="marker-label portfolio" style="--position:var(--portfolio-position)">You</span><span class="marker-label benchmark" style="--position:var(--benchmark-position)">WIG</span><i class="marker benchmark" style="--position:var(--benchmark-position)"></i><i class="marker" style="--position:var(--portfolio-position)"></i></div><div class="scale axis-scale"><span>-1%</span><span>0</span><span>+1%</span></div>' },
+      { name: 'Above the market', className: 'altitude-option', graphic: '<div class="horizon"><span>WIG reference</span></div><div class="altitude-gap"></div><div class="altitude-dot"></div><span class="altitude-label">You</span>' },
+      { name: 'Head to head', className: 'head-to-head', graphic: '<div class="lane"><span class="lane-name">Portfolio</span><div class="lane-track"><i class="lane-fill" style="--fill-start:var(--portfolio-start);--fill-width:var(--portfolio-width)"></i><i class="axis-zero"></i></div></div><div class="lane benchmark"><span class="lane-name">WIG</span><div class="lane-track"><i class="lane-fill" style="--fill-start:var(--benchmark-start);--fill-width:var(--benchmark-width)"></i><i class="axis-zero"></i></div></div><div class="scale"><span>-1%</span><span>0</span><span>+1%</span></div>' },
+      { name: 'The daily verdict', className: 'editorial', graphic: '<div class="spread-track"><i class="spread-fill"></i><i class="axis-zero"></i></div><div class="spread-labels"><span>-1 pp / Behind</span><span>Ahead / +1 pp</span></div>' }
+    ];
+    const signed = value => `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+    const options = document.getElementById('options');
+    options.innerHTML = variants.map((variant, index) => `<article class="${variant.className}" aria-labelledby="option-${index}">
+      <h2 id="option-${index}"><span>0${index + 1}</span>${variant.name}</h2>
+      <section class="surface">
+        <div class="summary"><div class="eyebrow">Today vs WIG</div><div class="gap"></div><div class="direction"></div></div>
+        <div class="graphic ${index === 1 ? 'altitude' : index === 2 ? 'race' : ''}" aria-hidden="true">${variant.graphic}</div>
+        <div class="metrics"><div><span>Portfolio</span><strong class="portfolio-return"></strong></div><div><span>WIG</span><strong class="benchmark-return"></strong></div></div>
+        <div class="roast"><div class="eyebrow">Roastfolio says</div><p class="comment"></p></div>
+        <footer class="portfolio-total"><div><span>Total value / PLN</span><strong>284,650.00</strong></div><span class="money-change"></span></footer>
+      </section></article>`).join('');
+    function render() {
+      const sample = scenarios[document.getElementById('scenario').value];
+      const spread = Math.round((sample.portfolio - sample.benchmark) * 100) / 100;
+      const outcome = spread > 0 ? 'var(--color-success)' : spread < 0 ? 'var(--color-danger)' : 'var(--text-secondary)';
+      const portfolioPosition = 50 + sample.portfolio * 50;
+      const benchmarkPosition = 50 + sample.benchmark * 50;
+      const altitudePosition = 58 - spread * 48;
+      const properties = {
+        '--outcome': outcome,
+        '--portfolio-position': `${portfolioPosition}%`, '--benchmark-position': `${benchmarkPosition}%`,
+        '--left': `${Math.min(portfolioPosition, benchmarkPosition)}%`, '--distance': `${Math.abs(portfolioPosition - benchmarkPosition)}%`,
+        '--alt-position': `${altitudePosition}%`, '--alt-top': `${Math.min(58, altitudePosition)}%`, '--alt-height': `${Math.abs(58 - altitudePosition)}%`,
+        '--portfolio-start': `${Math.min(50, portfolioPosition)}%`, '--portfolio-width': `${Math.abs(portfolioPosition - 50)}%`,
+        '--benchmark-start': `${Math.min(50, benchmarkPosition)}%`, '--benchmark-width': `${Math.abs(benchmarkPosition - 50)}%`,
+        '--spread-left': `${Math.min(50, 50 + spread * 50)}%`, '--spread-width': `${Math.abs(spread * 50)}%`
+      };
+      for (const [property, value] of Object.entries(properties)) options.style.setProperty(property, value);
+      for (const article of options.children) {
+        article.querySelector('.gap').innerHTML = `${signed(spread)} <small>pp</small>`;
+        article.querySelector('.direction').textContent = spread > 0 ? 'Ahead of WIG' : spread < 0 ? 'Behind WIG' : 'Level with WIG';
+        article.querySelector('.portfolio-return').textContent = `${signed(sample.portfolio)}%`;
+        article.querySelector('.benchmark-return').textContent = `${signed(sample.benchmark)}%`;
+        article.querySelector('.comment').textContent = sample.comment + (document.getElementById('long-comment').checked ? extended : '');
+        const change = 284650 - 284650 / (1 + sample.portfolio / 100);
+        article.querySelector('.money-change').textContent = `${signed(change)} PLN today`;
+        article.querySelector('.money-change').style.color = sample.portfolio < 0 ? 'var(--color-danger)' : 'var(--color-success)';
+      }
+      document.documentElement.dataset.theme = document.getElementById('light-theme').checked ? 'light' : 'dark';
+    }
+    document.querySelector('.controls').addEventListener('change', render);
+    render();
+  </script>
+</body>
+</html>
