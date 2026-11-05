@@ -126,7 +126,9 @@ The dashboard synthesizes portfolio returns in the browser from the existing ful
 database tables, scheduled jobs, or additional holdings-price requests are used.
 `src/scripts/intraday-comparison.js` owns the pure calculation and Chart.js view.
 
-- Both curves use the selected benchmark's session-open baseline. WIG sessions
+- Both curves measure returns since each instrument's previous close, including
+  opening gaps. Cash remains constant; portfolio prices use constant FX.
+  The time window still starts at the benchmark open. WIG sessions
   use 09:00-17:00 in `Europe/Warsaw`; exchange-local time zones handle DST.
   Provider session metadata can shorten a scheduled session for early closure.
   Without metadata the UI explicitly identifies the scheduled closing time.
@@ -137,7 +139,8 @@ database tables, scheduled jobs, or additional holdings-price requests are used.
   at its last available candle or session close, whichever comes first.
 - Candle timestamps remain unchanged. Since Yahoo timestamps identify candle
   starts, closing prices become available one minute later; the opening price is
-  the initial baseline. Current quotes are not substituted for historical candles.
+  the initial plotted quote, not the return baseline. Current quotes are not
+  substituted for historical candles.
 - Each stock includes `intradayBaseline` (`openTime` and exchange `sessionStart`
   in epoch milliseconds, `openPrice`, `previousClose`) and an unrounded
   `intradayFxRate`. Before another market opens, its previous close is carried
@@ -149,18 +152,22 @@ database tables, scheduled jobs, or additional holdings-price requests are used.
   Late first prints are disclosed; their opening price is held flat until their
   first candle closes. Missing, invalid or later opening data must not fall back
   to yesterday's close, even when two-day history contains that close. This avoids
-  counting overnight gaps as since-open losses. Missing holdings are never excluded
+  inventing an opening quote. Missing holdings are never excluded
   and the remaining holdings are never renormalized. Unavailable states appear
   beside the chart, not only inside the info tooltip, and clear on a valid payload.
 - Holdings fetch two days of minute candles in the same history request and send
   them as `comparisonBars`, so an instrument-local midnight does not discard the
   shared session baseline. `todayBars` still contains only the latest instrument
   date for Today's Movers. This adds payload history, not another API call.
-- The chart baseline is the benchmark session open, while the dashboard gauge
-  measures from the previous close (including FX moves), using separately fetched
-  quotes rather than the chart's minute-bar cutoff. Their numbers need not match.
-  Overnight gaps for markets opening together appear in the gauge but not the
-  chart; gaps in markets opening later than the benchmark are included in the chart.
+- The benchmark's `previousClose` comes from `chartPreviousClose` (or
+  `previousClose`) metadata in the same one-day Yahoo history response as its
+  minute bars. The full API response and daily bars cache retain it together;
+  older cache entries lacking this field are refreshed. The browser requires
+  positive numeric previous closes for the benchmark and every nonzero holding;
+  missing values produce an unavailable state, never a silent since-open fallback.
+- The chart and daily gauge both include opening gaps. The gauge also includes
+  FX moves and uses separately fetched quotes rather than the chart's delayed
+  minute-bar cutoff, so their numbers and update times need not match.
   An info button (ⓘ) next to the chart title explains these differences in a tooltip
   (hover, focus or tap; Escape or an outside tap closes it).
 - Yahoo exchange quotes (benchmark and holdings) are 15 minutes late, so both

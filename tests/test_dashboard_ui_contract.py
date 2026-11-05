@@ -109,10 +109,12 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("return doFetch(view, attempt + 1, options);", self.live_data_js)
         self.assertNotIn("reloadScript('scripts/portfolio-data.js')", self.live_data_js)
 
-    def test_intraday_chart_explains_open_baseline_vs_gauge(self):
+    def test_intraday_chart_explains_previous_close_and_gauge_differences(self):
+        self.assertIn("previousClose: benchmarkPayload.previousClose ?? null", self.live_data_js)
         self.assertIn('id="intraday-comparison-basis"', self.index_html)
-        self.assertIn("overnight price gaps are excluded", self.index_html)
-        self.assertIn("measures from yesterday's close", self.index_html)
+        self.assertIn("including overnight price gaps", self.index_html)
+        self.assertIn("Portfolio vs benchmark · Since previous close", self.index_html)
+        self.assertIn("measures from the previous close", self.index_html)
         self.assertIn("includes FX changes and uses separately fetched quotes", self.index_html)
         self.assertIn('id="intraday-comparison-notice" role="status" hidden', self.index_html)
         self.assertIn('class="intraday-info-btn" aria-label="How this chart is measured" aria-describedby="intraday-comparison-basis"', self.index_html)

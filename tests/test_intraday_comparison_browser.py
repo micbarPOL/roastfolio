@@ -49,7 +49,7 @@ def fixture(page, *, benchmark_id="WIG", date="2026-10-14", mode="session", now=
         const start = IntradayComparison.localTime(date, open, zone);
         const end = IntradayComparison.localTime(date, benchmarkId === 'SP500' ? '16:00' : '17:00', zone);
         const dayNow = IntradayComparison.localTime(date, now, zone);
-        const benchmark = { session: {start: start/1000, end: end/1000}, intraday: [] };
+        const benchmark = { previousClose: 100, session: {start: start/1000, end: end/1000}, intraday: [] };
         const prices = [];
         for (let t = start; t < end; t += 60000) {
             benchmark.intraday.push({t: t/1000, o: 100, c: 101});
@@ -57,7 +57,7 @@ def fixture(page, *, benchmark_id="WIG", date="2026-10-14", mode="session", now=
         for (let t = start; t < dayNow; t += 60000) prices.push([t, t < end ? 110 : 120]);
         return { benchmarkId, benchmark, mode, now: dayNow, holdings: [
             {name: 'Stock', ticker: 'TEST', units: 2, intradayFxRate: 4,
-                intradayBaseline: {openTime: start, openPrice: 100, previousClose: 90},
+                intradayBaseline: {openTime: start, openPrice: 100, previousClose: 100},
                 todayBars: prices},
             {name: 'Cash', ticker: null, currentValue: 200}
         ] };
@@ -66,6 +66,29 @@ def fixture(page, *, benchmark_id="WIG", date="2026-10-14", mode="session", now=
 
 def synthesize(page, data):
     return page.evaluate("data => IntradayComparison.synthesize(data)", data)
+
+
+def test_previous_close_retains_opening_gap(page):
+    data = fixture(page)
+    data["holdings"][0]["intradayBaseline"]["previousClose"] = 90
+    data["benchmark"]["previousClose"] = 95
+    result = synthesize(page, data)
+    assert result["baseline"] == "previous-close"
+    assert result["baselineValue"] == 920
+    assert result["points"][0]["portfolioPct"] == pytest.approx((1000 / 920 - 1) * 100)
+    assert result["points"][0]["benchmarkPct"] == pytest.approx((100 / 95 - 1) * 100)
+    assert result["points"][1]["portfolioPct"] == pytest.approx((1080 / 920 - 1) * 100)
+    assert result["points"][1]["benchmarkPct"] == pytest.approx((101 / 95 - 1) * 100)
+
+
+@pytest.mark.parametrize("value", [None, 0, -1, "100"])
+@pytest.mark.parametrize("source", ["benchmark", "holding"])
+def test_missing_or_invalid_previous_close_never_uses_open(page, source, value):
+    data = fixture(page)
+    baseline = data["benchmark"] if source == "benchmark" else data["holdings"][0]["intradayBaseline"]
+    baseline["previousClose"] = value
+    with pytest.raises(sync_api.Error, match="[Pp]revious close.*unavailable"):
+        synthesize(page, data)
 
 
 def test_cash_weighting_and_common_baseline(page):
@@ -178,7 +201,7 @@ def test_future_benchmark_opening_is_not_used_before_delayed_cutoff(page):
 
 
 @pytest.mark.parametrize("with_previous_session", [False, True])
-def test_late_stock_first_print_excludes_overnight_gap(page, with_previous_session):
+def test_late_stock_first_print_retains_overnight_gap(page, with_previous_session):
     data = fixture(page)
     holding = data["holdings"][0]
     start = holding["intradayBaseline"]["openTime"]
@@ -191,8 +214,8 @@ def test_late_stock_first_print_excludes_overnight_gap(page, with_previous_sessi
         holding["comparisonBars"].insert(0, [start - 16 * 3600000, 100])
     result = synthesize(page, data)
     assert result["openValue"] == 992  # 2 units * 99 * FX 4 + cash 200
-    assert [p["portfolioPct"] for p in result["points"][:3]] == [0, 0, 0]
-    assert result["points"][3]["portfolioPct"] == pytest.approx(4 / 992 * 100)
+    assert [p["portfolioPct"] for p in result["points"][:3]] == pytest.approx([-0.8, -0.8, -0.8])
+    assert result["points"][3]["portfolioPct"] == pytest.approx(-0.4)
     assert any("Stock: first print 09:01" in w for w in result["warnings"])
 
 
@@ -215,7 +238,8 @@ def test_already_trading_market_keeps_price_at_benchmark_open(page):
     holding["todayBars"].insert(0, [start - 60000, 105])
     result = synthesize(page, data)
     assert result["openValue"] == 1040
-    assert result["points"][1]["portfolioPct"] == pytest.approx(40 / 1040 * 100)
+    assert result["points"][0]["portfolioPct"] == pytest.approx(4)
+    assert result["points"][1]["portfolioPct"] == pytest.approx(8)
 
 
 @pytest.mark.parametrize("open_delay", [1, 15, 16])
@@ -304,7 +328,7 @@ def test_comparison_history_preserves_baseline_across_ticker_midnight(page):
     # The latest instrument-local day's sparkline no longer contains the shared baseline.
     holding["comparisonBars"] = holding["todayBars"]
     holding["todayBars"] = holding["todayBars"][-5:]
-    holding["intradayBaseline"] = None
+    holding["intradayBaseline"] = {"previousClose": 100}
     start = data["benchmark"]["session"]["start"] * 1000
     holding["comparisonBars"].insert(0, [start - 60000, 100])
     result = synthesize(page, data)

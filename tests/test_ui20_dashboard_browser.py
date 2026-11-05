@@ -130,7 +130,7 @@ def test_intraday_comparison_renders_real_chart_and_saved_window(open_page, widt
         Date.now = () => now;
         window.BENCHMARK_ID = 'WIG';
         window.BENCHMARK_NAME = 'WIG';
-        window.BENCHMARK_DATA = {session: {start: start/1000, end: end/1000}, intraday: []};
+        window.BENCHMARK_DATA = {session: {start: start/1000, end: end/1000}, intraday: [], previousClose: 100};
         for (let t = start; t < end; t += 60000) {
             BENCHMARK_DATA.intraday.push({t: t/1000, o: 100, c: 101});
         }
@@ -140,7 +140,7 @@ def test_intraday_comparison_renders_real_chart_and_saved_window(open_page, widt
             const todayBars = [];
             for (let t = start; t < now; t += 60000) todayBars.push([t, price * (t < end ? 1.01 : 1.02)]);
             return {...holding, todayBars, comparisonBars: todayBars, intradayFxRate: 1,
-                intradayBaseline: {openTime: start, openPrice: price}};
+                intradayBaseline: {openTime: start, openPrice: price, previousClose: price}};
         });
         document.dispatchEvent(new CustomEvent('liveDataReady'));
     }""")
@@ -184,7 +184,7 @@ def test_intraday_baseline_note_is_a_compact_dismissible_tooltip(open_page, widt
     button.focus()
     page.wait_for_timeout(250)
     assert tip.is_visible()
-    assert "yesterday's close" in tip.inner_text()
+    assert "previous close" in tip.inner_text()
     box = tip.bounding_box()
     assert box["x"] >= 0 and box["x"] + box["width"] <= width
     page.keyboard.press("Escape")

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="diary" data-frameless>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>roastfolio · Coping Diary</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="diary.css">
+  <script src="statistics-icons.js" defer></script>
+  <script src="diary.js" defer></script>
+</head>
+<body>
+<a class="d-skip" href="#diary-screen">Skip to Coping Diary</a>
+<div class="app" data-sidebar="expanded">
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <div class="sidebar-head"><a class="brand" href="dashboard.html"><i data-lucide="chart-candlestick" aria-hidden="true"></i><span class="brand-wordmark nav-label" data-field="brand-wordmark">roastfolio</span></a></div>
+    <div class="nav-scroll">
+      <a class="nav-item" href="dashboard.html" data-field="nav-dashboard" data-label="Dashboard"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="wallets.html" data-field="nav-wallets" data-label="Wallets"><i data-lucide="wallet" aria-hidden="true"></i><span class="nav-label">Wallets</span></a>
+      <span class="nav-item" data-field="nav-portfolio" data-label="Portfolio"><i data-lucide="chart-pie" aria-hidden="true"></i><span class="nav-label">Portfolio</span></span>
+      <div class="nav-section nav-label">Analytics</div>
+      <a class="nav-item" href="history.html" data-field="nav-history" data-label="History"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i><span class="nav-label">History</span></a>
+      <a class="nav-item" href="statistics.html" data-field="nav-statistics" data-label="Statistics"><i data-lucide="chart-column" aria-hidden="true"></i><span class="nav-label">Statistics</span></a>
+      <a class="nav-item" href="../../src/index.html#retirement" data-field="nav-retirement" data-label="Retirement"><i data-lucide="calendar" aria-hidden="true"></i><span class="nav-label">Retirement</span></a>
+      <a class="nav-item" href="transactions.html" data-field="nav-transactions" data-label="Transactions"><i data-lucide="list" aria-hidden="true"></i><span class="nav-label">Transactions</span></a>
+      <a class="nav-item" href="analysis.html" data-field="nav-analysis" data-label="Analysis"><i data-lucide="search" aria-hidden="true"></i><span class="nav-label">Analysis</span></a>
+      <a class="nav-item" href="diary.html" aria-current="page" data-field="nav-diary" data-label="Coping Diary"><i data-lucide="notebook-pen" aria-hidden="true"></i><span class="nav-label">Coping Diary</span></a>
+      <div class="nav-section nav-label">Account</div>
+      <a class="nav-item" href="../../src/guide.html" data-field="nav-guide" data-label="User Guide"><i data-lucide="circle-help" aria-hidden="true"></i><span class="nav-label">User Guide</span></a>
+    </div>
+    <div class="sidebar-foot">
+      <div class="theme-switch nav-label" role="group" aria-label="Color mode" data-field="theme-switch"><button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button><button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button></div>
+      <div class="user-card" data-field="user-card"><span class="avatar">M</span><span class="user-meta nav-label"><span class="user-name">Michal B.</span><span class="user-role">Premium</span></span></div>
+      <div class="brand-footer nav-label" data-field="brand-footer">Powered by <strong>TOMINEX</strong> <span class="num">v15.8.0</span></div>
+      <button type="button" class="sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar" aria-pressed="false"><i data-lucide="panel-left-close" aria-hidden="true"></i></button>
+    </div>
+  </nav>
+  <div class="app-main">
+    <header class="top-bar"><button type="button" class="d-icon d-menu" aria-label="Open menu" title="Open menu" aria-controls="diary-menu" aria-expanded="false"><i data-lucide="menu" aria-hidden="true"></i></button><span class="page-title">Coping Diary</span><span class="live-status" data-field="live-data-status">Sample data · <span class="num">3 Nov 2026</span></span><button type="button" class="d-icon d-mobile-theme" aria-label="Switch color mode" title="Switch color mode"><i data-lucide="sun-moon" aria-hidden="true"></i></button></header>
+    <div class="d-market ticker-tape-container" aria-label="Sample market indices"><span data-field="index-WIG">WIG <b class="num">+0.62%</b></span><span data-field="index-WIG20">WIG20 <b class="num">+0.48%</b></span><span data-field="index-SP500">S&amp;P 500 <b class="num">−0.18%</b></span><span data-field="index-NASDAQ">NASDAQ <b class="num">−0.31%</b></span><span data-field="index-DAX">DAX <b class="num">+0.22%</b></span><span data-field="index-MSCI_WORLD">MSCI World <b class="num">+0.09%</b></span></div>
+    <p class="d-market-note" data-field="market-commentary">Illustrative market snapshot · not live prices</p>
+    <main id="diary-screen" class="d-main" data-field="diary-screen">
+      <header class="d-heading"><div><span class="d-eyebrow">DECISION JOURNAL</span><h1>Coping Diary</h1></div><p class="d-prompt">The market changes. Your reasoning stays on record.</p><button id="new-note" type="button" class="d-primary"><i data-lucide="plus" aria-hidden="true"></i>New note</button></header>
+      <div class="d-ledger-layout">
+        <section class="d-ledger" aria-labelledby="ledger-title">
+          <div class="d-ledger-heading"><div><h2 id="ledger-title">Conviction ledger</h2><p id="ledger-count" class="d-muted" aria-live="polite"></p></div><button id="mobile-new-note" type="button" class="d-icon" aria-label="New note" title="New note"><i data-lucide="plus" aria-hidden="true"></i></button></div>
+          <label class="d-search" data-field="diary-ledger-search"><i data-lucide="search" aria-hidden="true"></i><span class="d-sr-only">Search notes, assets or tags</span><input id="ledger-search" type="search" placeholder="Search notes, assets or tags"></label>
+          <div class="d-filter-row"><label class="d-check-filter" data-field="diary-open-checklist-filter"><input id="only-open-checklist" type="checkbox"><span>Open checklist</span></label><button id="clear-ledger-filter" type="button" class="d-text-button" hidden>Clear</button></div>
+          <div id="tag-filters" class="d-tags" role="group" aria-label="Filter by tag" data-field="diary-tag-filters"></div>
+          <div id="note-ledger" class="d-note-ledger" data-field="diary-ledger" aria-label="Investment notes"></div>
+          <div id="diary-ledger-empty" class="d-empty empty-state-card" data-field="diary-ledger-empty" hidden><span class="empty-state-icon" aria-hidden="true"><i data-lucide="search-x"></i></span><h3 class="empty-state-title">No matching notes</h3><p class="empty-state-desc">Change your search or filters.</p><button id="empty-clear" class="empty-state-btn" type="button">Clear filters</button></div>
+          <div id="diary-loading" class="card-cl-overlay" data-field="diary-loading" hidden><div class="cl-loader" aria-hidden="true"><div class="cl-candle cl-candle-1"><div class="cl-wick"></div><div class="cl-body"></div></div><div class="cl-candle cl-candle-2"><div class="cl-wick"></div><div class="cl-body"></div></div><div class="cl-candle cl-candle-3"><div class="cl-wick"></div><div class="cl-body"></div></div></div><span class="d-muted">Loading diary</span></div>
+        </section>
+        <section id="focus-sheet" class="d-focus" aria-labelledby="focus-title" data-field="diary-focus-sheet">
+          <div id="focus-empty" class="d-focus-empty"><span class="d-empty-index">01</span><h2>Select a note</h2><p>Review the thesis, open questions and follow-up for a position.</p><button type="button" id="focus-empty-new">Create a note</button></div>
+          <div id="focus-content" hidden>
+            <header class="d-focus-header"><div class="d-focus-title"><span id="focus-ticker" class="d-symbol"></span><h2 id="focus-title"></h2><div id="focus-tags" class="d-focus-tags"></div></div><div class="d-focus-actions"><span id="focus-status" class="d-status"></span><button id="toggle-active" type="button" aria-pressed="true"></button><button id="delete-note" type="button" class="d-icon d-danger" aria-label="Delete note" title="Delete note"><i data-lucide="trash-2" aria-hidden="true"></i></button><button id="mobile-back" type="button" class="d-icon d-mobile-only" aria-label="Back to notes" title="Back to notes" data-field="diary-mobile-back"><i data-lucide="arrow-left" aria-hidden="true"></i></button></div></header>
+            <div class="d-focus-body">
+              <section class="d-note-section" data-field="diary-note-text"><div class="d-section-label"><span>01</span><h3>Field note</h3><span id="note-updated" class="d-muted"></span></div><div id="note-editor-wrap"><textarea id="note-text" rows="4" aria-label="Diary note"></textarea><div class="d-note-actions"><span class="d-hint">Use <code>@TICKER</code> to link an asset · <code>#tag</code> to classify</span><button id="save-note" type="button" class="d-primary d-compact"><i data-lucide="check" aria-hidden="true"></i>Save note</button></div></div><div id="note-mentions" class="d-mentions" aria-label="Linked assets" data-field="diary-linked-assets"></div></section>
+              <section class="d-note-section" data-field="diary-hypothesis"><div class="d-section-label"><span>02</span><h3>Investment thesis</h3><span class="d-muted">Revisit when the facts change</span></div><div class="d-thesis-grid"><label>Why I bought<textarea id="why-buy" rows="3"></textarea></label><label>What would change my mind<textarea id="exit-plan" rows="3"></textarea></label><label class="d-wide">Risks I am watching<textarea id="risk-factors" rows="3"></textarea></label></div><button id="save-thesis" type="button" class="d-text-button"><i data-lucide="save" aria-hidden="true"></i>Save thesis</button></section>
+              <section class="d-note-section" data-field="diary-checklist"><div class="d-section-label"><span>03</span><h3>Next review</h3><span id="checklist-count" class="d-muted"></span></div><div id="checklist-items"></div><form id="add-check-form" class="d-add-check"><input id="new-check-text" type="text" placeholder="Add a checkpoint" aria-label="Checkpoint text"><input id="new-check-date" type="date" aria-label="Checkpoint due date"><button type="submit" class="d-icon" aria-label="Add checkpoint" title="Add checkpoint"><i data-lucide="plus" aria-hidden="true"></i></button></form></section>
+              <section class="d-note-section" data-field="diary-running-notes"><div class="d-section-label"><span>04</span><h3>Running notes</h3><span id="comment-count" class="d-muted"></span></div><div id="comment-list" class="d-comment-list"></div><form id="add-comment-form" class="d-add-comment"><input id="new-comment" type="text" placeholder="Add a dated observation" aria-label="New observation"><button type="submit" class="d-icon" aria-label="Add observation" title="Add observation"><i data-lucide="arrow-up" aria-hidden="true"></i></button></form></section>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div id="composer-backdrop" class="d-backdrop" hidden></div>
+      <section id="note-composer" class="d-composer" aria-labelledby="composer-title" aria-hidden="true" data-field="diary-composer"><div class="d-composer-head"><div><span class="d-eyebrow">NEW ENTRY</span><h2 id="composer-title">Before the next decision</h2></div><button id="composer-close" type="button" class="d-icon" aria-label="Close new note"><i data-lucide="x" aria-hidden="true"></i></button></div><form id="composer-form"><label>Asset or topic<input id="composer-ticker" type="text" placeholder="Ticker or decision topic" required></label><label>Your note<textarea id="composer-text" rows="5" placeholder="What happened? What were you thinking?" required></textarea></label><div id="composer-error" class="d-form-error" role="alert" hidden></div><div class="d-composer-foot"><span class="d-muted">#tags and @asset mentions are kept with the note</span><button type="submit" class="d-primary"><i data-lucide="check" aria-hidden="true"></i>Create note</button></div></form></section>
+    </main>
+  </div>
+</div>
+<dialog id="diary-menu" class="d-menu-dialog" aria-label="Main navigation"><div class="d-menu-head"><strong>roastfolio</strong><button type="button" class="d-icon" id="menu-close" aria-label="Close menu"><i data-lucide="x" aria-hidden="true"></i></button></div><nav id="diary-menu-links" aria-label="Navigation links"></nav></dialog>
+<nav class="d-bottom" aria-label="Primary navigation"><a href="dashboard.html"><i data-lucide="layout-dashboard" aria-hidden="true"></i>Dashboard</a><a href="wallets.html"><i data-lucide="wallet" aria-hidden="true"></i>Wallets</a><a href="diary.html" aria-current="page"><i data-lucide="notebook-pen" aria-hidden="true"></i>Diary</a></nav>
+<p id="diary-announcement" class="d-sr-only" role="status" aria-live="polite"></p>
+</body>
+</html>
