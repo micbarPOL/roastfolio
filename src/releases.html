@@ -770,7 +770,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.11.0</span>
+                    <span>v15.11.1</span>
                 </div>
             </div>
 
@@ -786,7 +786,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.11.0 (Dashboard Focus)</strong>
+                    <strong>v15.11.1 (Candle Loader Fix)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -833,6 +833,21 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.11.1">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.11.1</span>
+                        <h2 class="rel-card-title">Candle Loader Animation Consistency</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-05">November 5, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li class="rel-item">Ensured all candle animation loaders across the dashboard, wallet, chart, and analysis cards consistently render the full 8-bar animation sequence.</li>
+                    <li class="rel-item">Enforced flex-wrap: nowrap and non-shrinking candle dimensions to prevent narrow cards from squishing or dropping outer animation bars.</li>
+                    <li class="rel-item">Added contract test coverage verifying all loaders maintain all 8 animation candles and layout integrity.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="minor" data-version="15.11.0">
                 <header class="rel-card-header">

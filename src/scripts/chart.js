@@ -111,12 +111,14 @@ function _showHistoryChartLoader(canvasId) {
         loader.innerHTML = `
             <div class="cl-loader">
                 <div class="cl-candles">
-                    <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
-                    <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
-                    <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
-                    <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
-                    <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                    <div class="cl-candle cl-bear" style="--d:0s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                    <div class="cl-candle cl-bull" style="--d:.18s"><span class="cl-body" style="--t:8%;--h:65%"></span></div>
+                    <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                    <div class="cl-candle cl-bear" style="--d:.54s"><span class="cl-body" style="--t:35%;--h:40%"></span></div>
+                    <div class="cl-candle cl-bull" style="--d:.72s"><span class="cl-body" style="--t:5%;--h:70%"></span></div>
                     <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                    <div class="cl-candle cl-bear" style="--d:1.08s"><span class="cl-body" style="--t:30%;--h:45%"></span></div>
+                    <div class="cl-candle cl-bull" style="--d:1.26s"><span class="cl-body" style="--t:12%;--h:62%"></span></div>
                 </div>
                 <span class="cl-loader-text">Loading chart…</span>
             </div>

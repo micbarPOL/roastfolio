@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.11.0`
-*Target Release Numbering Standard — v15.11.0*
+**Current Release:** `15.11.1`
+*Target Release Numbering Standard — v15.11.1*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.11.0`
+* **Current Active Release:** `15.11.1`
+  * **Service 1:** Ensured all candlestick animation loaders across dashboard, wallet, chart, and analysis cards consistently render the full 8-bar animation sequence with fixed dimensions and `flex-wrap: nowrap` to prevent dropped or squeezed candles in constrained viewports.
+* **Previous Active Release:** `15.11.0`
   * **Minor 11:** Daily Verdict sits beside Today's Movers from the top of the dashboard, aligned to the Since previous close chart. The separate benchmark price chart is opt-in and renders on demand. Verdict effects last 1.8 seconds and replay every 30 seconds only while visible, respecting reduced-motion preferences.
 * **Previous Active Release:** `15.10.0`
   * **Minor 10:** Daily Verdict replaces the main dashboard gauge with a shared axis. Daily return and PLN change lead the hierarchy; context-aware accents, brief one-shot effects, reduced-motion support and explicit unavailable states preserve existing calculations and roast reactions.

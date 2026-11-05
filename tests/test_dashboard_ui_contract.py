@@ -255,6 +255,23 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("_fetchStockPricePLN(symbol)", manage_js)
         self.assertIn("_getLivePricePLN(symbol, displayName)", manage_js)
 
+    def test_all_loaders_render_all_eight_candles_and_never_shrink(self):
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(self.index_html, "html.parser")
+        candle_containers = soup.select(".cl-candles")
+        self.assertGreaterEqual(len(candle_containers), 6, "Expected at least 6 candle loader containers in index.html")
+        for container in candle_containers:
+            candles = container.select(".cl-candle")
+            self.assertEqual(len(candles), 8, f"Every loader container in index.html must have 8 candles, found {len(candles)}")
+
+        chart_js = (ROOT / "src" / "scripts" / "chart.js").read_text()
+        self.assertEqual(chart_js.count('class="cl-candle '), 8, "Dynamic chart loader must inject all 8 candles")
+
+        self.assertIn("flex-wrap: nowrap;", self.main_css)
+        self.assertIn("flex: 0 0 6px;", self.main_css)
+        self.assertIn(".cl-candle:nth-child(7)::before", self.main_css)
+        self.assertIn(".cl-candle:nth-child(8)::before", self.main_css)
+
 
 if __name__ == "__main__":
     unittest.main()
