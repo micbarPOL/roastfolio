@@ -111,6 +111,8 @@ function renderBenchmarkChart(benchmarkData, range, chartType) {
         _benchmarkRange = pickSmartRange(benchmarkData);
     }
     if (chartType) _benchmarkChartType = chartType;
+    const disclosure = document.getElementById('benchmark-chart-disclosure');
+    if (disclosure && !disclosure.open) return;
     updateBenchmarkChartLabels();
 
     const container = document.getElementById('benchmarkChartContainer');
@@ -290,6 +292,15 @@ function renderBenchmarkChart(benchmarkData, range, chartType) {
 
 window.addEventListener('roastfolio:themechange', () => {
     if (_benchmarkData) renderBenchmarkChart(_benchmarkData, _benchmarkRange, _benchmarkChartType);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const disclosure = document.getElementById('benchmark-chart-disclosure');
+    if (!disclosure) return;
+    disclosure.addEventListener('toggle', () => {
+        if (disclosure.open) renderBenchmarkChart(_benchmarkData, _benchmarkRange, _benchmarkChartType);
+        else destroyBenchmarkChart();
+    });
 });
 
 function syncBenchmarkButtons() {

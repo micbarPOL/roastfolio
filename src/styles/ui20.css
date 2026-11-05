@@ -126,15 +126,15 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 /* ---------- Dashboard ---------- */
 #tab-dashboard { width: min(1320px, calc(100% - 48px)); margin: 0 auto; padding-bottom: calc(112px + var(--space-5));
   animation: none; /* the tab fade leaves a transform behind, which would turn this tab into the containing block of the fixed player */ }
-#tab-dashboard .d-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: "hero hero" "bench rail" "ath rail" "summary rail"; column-gap: 64px; row-gap: 64px; align-items: start; }
+#tab-dashboard .d-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: "hero movers" "bench accounts" "ath accounts" "summary accounts"; column-gap: 64px; row-gap: 64px; align-items: start; }
 #tab-dashboard .col-main { display: contents; }
-#tab-dashboard .col-rail { grid-area: rail; display: flex; flex-direction: column; gap: 56px; min-width: 0; padding-top: 0; }
+#tab-dashboard .col-rail { display: contents; }
 #tab-dashboard .hero { grid-area: hero; }
 #tab-dashboard .bench { grid-area: bench; }
 #tab-dashboard .ath-six { grid-area: ath; }
 #tab-dashboard .summary { grid-area: summary; }
 #tab-dashboard .movers { grid-area: movers; }
-#tab-dashboard .accounts { grid-area: accounts; }
+#tab-dashboard .accounts { grid-area: accounts; min-width: 0; }
 #tab-dashboard [data-o] { animation: ui20-rise var(--dur-slow) var(--ease-enter) both; }
 
 /* Frameless: legacy `:root[data-theme] section:not(.wallet-screen)` paints a !important fill and shadow on every section.
@@ -231,6 +231,18 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 #tab-dashboard .bench-ohlc { font-size: var(--fs-xs); color: var(--text-secondary); }
 #tab-dashboard .bench-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 #tab-dashboard .bench-chart { position: relative; height: 320px; border-radius: 0; overflow: hidden; }
+#tab-dashboard .benchmark-chart-disclosure { margin-top: var(--space-6); }
+#tab-dashboard .benchmark-chart-disclosure > summary { display: flex; align-items: center; gap: var(--space-2); width: fit-content; min-height: 44px; cursor: pointer; color: var(--text-secondary); font-size: var(--fs-sm); }
+#tab-dashboard .benchmark-chart-disclosure > summary::before { content: "+"; display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--border-strong); border-radius: 50%; color: var(--text-primary); font-size: 16px; }
+#tab-dashboard .benchmark-chart-disclosure[open] > summary::before { content: "−"; }
+#tab-dashboard .benchmark-chart-disclosure > summary:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+#tab-dashboard .benchmark-chart-panel { padding-top: var(--space-4); }
+#tab-dashboard .benchmark-chart-disclosure { margin-top: var(--space-6); }
+#tab-dashboard .benchmark-chart-disclosure > summary { display: flex; align-items: center; gap: var(--space-2); width: fit-content; min-height: 44px; cursor: pointer; color: var(--text-secondary); font-size: var(--fs-sm); }
+#tab-dashboard .benchmark-chart-disclosure > summary::before { content: "+"; display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--border-strong); border-radius: 50%; color: var(--text-primary); font-size: 16px; }
+#tab-dashboard .benchmark-chart-disclosure[open] > summary::before { content: "−"; }
+#tab-dashboard .benchmark-chart-disclosure > summary:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+#tab-dashboard .benchmark-chart-panel { padding-top: var(--space-4); }
 #tab-dashboard .bench-no-data { position: absolute; inset: 0; align-items: center; justify-content: center; text-align: center; color: var(--text-secondary); }
 #tab-dashboard .bench-foot { margin-top: var(--space-3); }
 #tab-dashboard .intraday-comparison { margin-top: var(--space-6); }

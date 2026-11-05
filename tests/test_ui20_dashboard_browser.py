@@ -168,6 +168,20 @@ def test_intraday_comparison_renders_real_chart_and_saved_window(open_page, widt
     assert not errors, errors
 
 
+def test_benchmark_price_chart_is_hidden_until_requested(open_page):
+    page, errors = open_page(1440, 900)
+    disclosure = page.locator("#benchmark-chart-disclosure")
+    assert not disclosure.evaluate("element => element.open")
+    assert page.locator("#intraday-comparison-title").is_visible()
+    assert page.locator("#benchmarkChartContainer").is_hidden()
+    assert page.locator("#benchmarkChartContainer .tv-lightweight-charts").count() == 0
+    disclosure.locator("summary").click()
+    assert disclosure.evaluate("element => element.open")
+    assert page.locator("#benchmarkChartContainer").is_visible()
+    page.wait_for_selector("#benchmarkChartContainer .tv-lightweight-charts", timeout=10000)
+    assert not errors, errors
+
+
 @pytest.mark.parametrize("width,height", [(1440, 900), (390, 844)])
 def test_intraday_baseline_note_is_a_compact_dismissible_tooltip(open_page, width, height):
     page, errors = open_page(width, height)
@@ -214,11 +228,14 @@ def test_desktop_layout_order_matches_the_decisions(open_page):
     assert rail == sorted(rail)
     hero = page.locator("#tab-dashboard section.hero").bounding_box()
     dashboard = page.locator("#tab-dashboard .d-page").bounding_box()
-    right_rail = page.locator("#tab-dashboard .col-rail").bounding_box()
+    benchmark = page.locator("#tab-dashboard section.bench").bounding_box()
+    movers = page.locator("#tab-dashboard section.movers").bounding_box()
+    accounts = page.locator("#tab-dashboard section.accounts").bounding_box()
     assert abs(hero["x"] - dashboard["x"]) <= 1
-    assert abs(hero["width"] - dashboard["width"]) <= 1
-    assert right_rail["y"] >= hero["y"] + hero["height"]
-    assert page.locator("#tab-dashboard section.movers").bounding_box()["x"] > page.locator("#tab-dashboard section.bench").bounding_box()["x"]
+    assert abs(hero["width"] - benchmark["width"]) <= 1
+    assert movers["y"] <= hero["y"] + 1
+    assert movers["x"] > hero["x"] + hero["width"]
+    assert accounts["x"] > benchmark["x"] + benchmark["width"]
 
 
 def test_mobile_layout_order_matches_the_decisions(open_page):
@@ -498,8 +515,9 @@ def test_daily_verdict_long_roast_scale_and_safe_text(verdict_page, width):
 
 
 @pytest.mark.parametrize("reduced", [False, True])
-def test_daily_verdict_effect_once_and_reduced_motion(verdict_page, reduced):
+def test_daily_verdict_effect_replays_and_respects_reduced_motion(verdict_page, reduced):
     page = verdict_page(reduced=reduced)
+    page.clock.install()
     render = "DailyVerdict.render({portfolio: .73, benchmark: -.31, cash: 123, name: 'WIG', ready: true})"
     page.evaluate(render)
     assert page.locator(".dv-effect").get_attribute("data-playing") == ("false" if reduced else "true")
@@ -507,10 +525,17 @@ def test_daily_verdict_effect_once_and_reduced_motion(verdict_page, reduced):
     label = page.locator(".dv-annotation.dv-you").bounding_box()
     if not reduced:
         assert effect["y"] + effect["height"] < label["y"]
-    page.wait_for_function("document.querySelector('.dv-effect').dataset.playing === 'false'")
+    page.clock.fast_forward(1800)
+    assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
     page.evaluate(render)
     assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
     assert page.locator(".dv-point.dv-you").evaluate("el => getComputedStyle(el).animationName") == "none"
+    for _ in range(2):
+        page.clock.fast_forward(10000)
+        page.evaluate(render)
+        assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
+    page.clock.fast_forward(10000)
+    assert page.locator(".dv-effect").get_attribute("data-playing") == ("false" if reduced else "true")
 
 
 def test_daily_verdict_unavailable_clears_stale_comparison(verdict_page):

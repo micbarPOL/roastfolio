@@ -19,26 +19,74 @@
 
     let played = false;
     let observer;
-    let timer;
+    let effectTimer;
+    let replayTimer;
+    let rootElement;
+    let isVisible = false;
     let narrativeSignature;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const EFFECT_DURATION = 1800;
+    const EFFECT_INTERVAL = 30000;
 
     function stopEffect() {
-        const effect = document.querySelector('#daily-verdict .dv-effect');
+        const effect = rootElement?.querySelector('.dv-effect');
         if (effect) effect.dataset.playing = 'false';
-        clearTimeout(timer);
+        clearTimeout(effectTimer);
+        effectTimer = null;
     }
 
-    function play(root) {
-        if (played || root.dataset.state !== 'ready') return;
+    function scheduleReplay(root, delay = EFFECT_INTERVAL) {
+        if (replayTimer) return;
+        clearTimeout(replayTimer);
+        if (!played || !isVisible || document.hidden || motion.matches || root.dataset.state !== 'ready' || root.dataset.effect === 'none') return;
+        replayTimer = setTimeout(() => {
+            replayTimer = null;
+            if (isVisible && !document.hidden && !motion.matches) play(root, true);
+            scheduleReplay(root);
+        }, delay);
+    }
+
+    function play(root, replay = false) {
+        if ((!replay && played) || root.dataset.state !== 'ready') return;
         played = true;
         if (motion.matches || root.dataset.effect === 'none') return;
         const effect = root.querySelector('.dv-effect');
         effect.dataset.playing = 'true';
-        timer = setTimeout(stopEffect, 1200);
+        effectTimer = setTimeout(stopEffect, EFFECT_DURATION);
+        if (!replay) scheduleReplay(root);
     }
 
-    motion.addEventListener('change', stopEffect);
+    function setVisibility(root, visible) {
+        const becameVisible = visible && !isVisible;
+        isVisible = visible;
+        if (!visible || document.hidden || motion.matches) {
+            stopEffect();
+            clearTimeout(replayTimer);
+            replayTimer = null;
+            return;
+        }
+        if (!played) play(root);
+        else if (becameVisible) scheduleReplay(root, 3000);
+    }
+
+    motion.addEventListener('change', () => {
+        if (motion.matches) {
+            stopEffect();
+            clearTimeout(replayTimer);
+            replayTimer = null;
+        } else if (rootElement && isVisible) {
+            scheduleReplay(rootElement, 3000);
+        }
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopEffect();
+            clearTimeout(replayTimer);
+            replayTimer = null;
+        } else if (rootElement && isVisible) {
+            scheduleReplay(rootElement, 3000);
+        }
+    });
 
     function renderNarrative(root, roast, available) {
         const tooltip = root.querySelector('#gauge-benchmark-tooltip');
@@ -68,9 +116,14 @@
     function render({ portfolio, benchmark, cash, name, ready, roast }) {
         const root = document.getElementById('daily-verdict');
         if (!root) return;
+        rootElement = root;
         const available = !!ready && valid(portfolio) && valid(benchmark);
         const state = classify(ready ? portfolio : null, ready ? benchmark : null);
         if (root.dataset.mood !== state.mood || !available) stopEffect();
+        if (!available || state.effect === 'none') {
+            clearTimeout(replayTimer);
+            replayTimer = null;
+        }
         root.dataset.state = available ? 'ready' : ready ? 'unavailable' : 'loading';
         root.dataset.mood = state.mood;
         root.dataset.effect = state.effect;
@@ -100,14 +153,16 @@
             root.querySelector('.dv-relation').textContent = Math.abs(spread) < .005 ? `In line with ${name}` : `${spread > 0 ? 'Ahead of' : 'Behind'} ${name}`;
             const say = document.getElementById('dash-player-say');
             if (say) say.textContent = root.querySelector('#gauge-lead').textContent;
-            if (!observer && !played) {
+            if (!observer) {
                 observer = new IntersectionObserver(entries => {
-                    if (entries.some(entry => entry.isIntersecting)) play(root);
+                    const entry = entries[0];
+                    if (entry) setVisibility(root, entry.isIntersecting);
                 });
                 observer.observe(root);
             }
             const bounds = root.getBoundingClientRect();
-            if (bounds.height && bounds.top < window.innerHeight && bounds.bottom > 0) play(root);
+            if (bounds.height && bounds.top < window.innerHeight && bounds.bottom > 0) setVisibility(root, true);
+            if (played && isVisible && state.effect !== 'none') scheduleReplay(root);
         }
         renderNarrative(root, roast, available);
     }

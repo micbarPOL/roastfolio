@@ -8,7 +8,7 @@
     <title>roastfolio</title>
 
     <!-- PWA manifest -->
-    <link rel="manifest" href="manifest.json?v=15.10.0">
+    <link rel="manifest" href="manifest.json?v=15.11.0">
 
     <!-- Theme & status-bar colour (light + dark) -->
     <meta name="theme-color" content="#cde8f7" media="(prefers-color-scheme: light)">
@@ -37,13 +37,13 @@
 
     <link rel="stylesheet" href="styles/main.css?v=20260915b">
     <link rel="stylesheet" href="styles/tokens-v9.css?v=ui20a">
-    <link rel="stylesheet" href="styles/monthly-audit.css?v=15.10.0">
-    <link rel="stylesheet" href="styles/ui20.css?v=15.10.0">
-    <link rel="stylesheet" href="styles/daily-verdict.css?v=15.10.0">
-    <link rel="stylesheet" href="styles/analysis.css?v=15.10.0">
-    <link rel="stylesheet" href="styles/ath-ocean.css?v=15.10.0">
+    <link rel="stylesheet" href="styles/monthly-audit.css?v=15.11.0">
+    <link rel="stylesheet" href="styles/ui20.css?v=15.11.0">
+    <link rel="stylesheet" href="styles/daily-verdict.css?v=15.11.0">
+    <link rel="stylesheet" href="styles/analysis.css?v=15.11.0">
+    <link rel="stylesheet" href="styles/ath-ocean.css?v=15.11.0">
     <link rel="stylesheet" href="styles/statistics.css?v=statistics-redesign">
-    <link rel="stylesheet" href="styles/transactions.css?v=15.10.0">
+    <link rel="stylesheet" href="styles/transactions.css?v=15.11.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         (function() {
@@ -246,7 +246,7 @@
         </div>
         <div class="sidenav-bottom-brand">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="sidenav-version-tag">v15.10.0</span>
+            <span class="sidenav-version-tag">v15.11.0</span>
         </div>
         <button type="button" class="sidenav-collapse" id="sidenav-collapse" aria-label="Collapse sidebar" aria-pressed="false" title="Collapse sidebar (Ctrl+B)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
@@ -345,42 +345,8 @@
                     <div id="engagement-strip" class="eng-strip-wrap" aria-label="Your progress"></div>
                 </section>
 
-                <section class="bench" data-o="2" aria-labelledby="benchmark-chart-title">
-                    <div class="section-head">
-                        <div class="bench-title-row">
-                            <span id="benchmark-chart-title" class="bench-title">Benchmark</span>
-                            <span id="benchmark-change-badge" class="bench-change num"></span>
-                            <span id="benchmark-ohlc-legend" class="bench-ohlc num"></span>
-                        </div>
-                        <div class="bench-actions">
-                            <div class="benchmark-range-btns segmented" role="group" aria-label="Chart range">
-                                <button type="button" class="benchmark-range-btn seg-btn" data-range="1D" onclick="setBenchmarkRange('1D')">1D</button>
-                                <button type="button" class="benchmark-range-btn seg-btn" data-range="YTD" onclick="setBenchmarkRange('YTD')">YTD</button>
-                                <button type="button" class="benchmark-range-btn seg-btn" data-range="1Y" onclick="setBenchmarkRange('1Y')">1Y</button>
-                            </div>
-                            <div class="benchmark-type-btns segmented" role="group" aria-label="Chart type">
-                                <button type="button" class="benchmark-type-btn seg-btn active" data-type="line" onclick="setBenchmarkChartType('line')">Line</button>
-                                <button type="button" class="benchmark-type-btn seg-btn" data-type="candle" onclick="setBenchmarkChartType('candle')">Candle</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="benchmarkChartContainer" class="bench-chart" style="position:relative;">
-                        <div id="benchmark-cl-loader" class="card-cl-overlay" style="display:flex;">
-                            <div class="cl-loader">
-                                <div class="cl-candles">
-                                    <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
-                                    <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
-                                    <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
-                                    <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
-                                    <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
-                                    <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
-                                </div>
-                                <span class="cl-loader-text">Loading chart…</span>
-                            </div>
-                        </div>
-                        <div id="benchmark-no-data" class="bench-no-data" style="display:none;">Refresh prices to load benchmark chart data</div>
-                    </div>
-                    <section class="bench-foot intraday-comparison" aria-labelledby="intraday-comparison-title">
+                <section class="bench" data-o="2" aria-labelledby="intraday-comparison-title">
+                    <section class="intraday-comparison" aria-labelledby="intraday-comparison-title">
                         <div class="section-head">
                             <div class="intraday-title-wrap">
                                 <h3 class="section-title" id="intraday-comparison-title">Portfolio vs benchmark · Since previous close</h3>
@@ -404,6 +370,45 @@
                             <canvas id="intraday-comparison-chart" role="img" aria-label="Portfolio and benchmark percentage returns since previous close" aria-describedby="intraday-comparison-status"></canvas>
                         </div>
                     </section>
+                    <details id="benchmark-chart-disclosure" class="benchmark-chart-disclosure">
+                        <summary>Show benchmark price chart</summary>
+                        <div class="benchmark-chart-panel">
+                            <div class="section-head bench-head">
+                                <div class="bench-title-row">
+                                    <span id="benchmark-chart-title" class="bench-title">Benchmark</span>
+                                    <span id="benchmark-change-badge" class="bench-change num"></span>
+                                    <span id="benchmark-ohlc-legend" class="bench-ohlc num"></span>
+                                </div>
+                                <div class="bench-actions">
+                                    <div class="benchmark-range-btns segmented" role="group" aria-label="Chart range">
+                                        <button type="button" class="benchmark-range-btn seg-btn" data-range="1D" onclick="setBenchmarkRange('1D')">1D</button>
+                                        <button type="button" class="benchmark-range-btn seg-btn" data-range="YTD" onclick="setBenchmarkRange('YTD')">YTD</button>
+                                        <button type="button" class="benchmark-range-btn seg-btn" data-range="1Y" onclick="setBenchmarkRange('1Y')">1Y</button>
+                                    </div>
+                                    <div class="benchmark-type-btns segmented" role="group" aria-label="Chart type">
+                                        <button type="button" class="benchmark-type-btn seg-btn active" data-type="line" onclick="setBenchmarkChartType('line')">Line</button>
+                                        <button type="button" class="benchmark-type-btn seg-btn" data-type="candle" onclick="setBenchmarkChartType('candle')">Candle</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="benchmarkChartContainer" class="bench-chart" style="position:relative;">
+                                <div id="benchmark-cl-loader" class="card-cl-overlay" style="display:flex;">
+                                    <div class="cl-loader">
+                                        <div class="cl-candles">
+                                            <div class="cl-candle cl-bull" style="--d:0s"><span class="cl-body" style="--t:15%;--h:55%"></span></div>
+                                            <div class="cl-candle cl-bear" style="--d:.18s"><span class="cl-body" style="--t:28%;--h:48%"></span></div>
+                                            <div class="cl-candle cl-bull" style="--d:.36s"><span class="cl-body" style="--t:8%;--h:38%"></span></div>
+                                            <div class="cl-candle cl-bull" style="--d:.54s"><span class="cl-body" style="--t:5%;--h:65%"></span></div>
+                                            <div class="cl-candle cl-bear" style="--d:.72s"><span class="cl-body" style="--t:32%;--h:42%"></span></div>
+                                            <div class="cl-candle cl-bull" style="--d:.90s"><span class="cl-body" style="--t:10%;--h:58%"></span></div>
+                                        </div>
+                                        <span class="cl-loader-text">Loading chart…</span>
+                                    </div>
+                                </div>
+                                <div id="benchmark-no-data" class="bench-no-data" style="display:none;">Refresh prices to load benchmark chart data</div>
+                            </div>
+                        </div>
+                    </details>
                 </section>
 
                 <section class="ath-six" data-o="5" aria-label="All-time high, last six months and summary">
@@ -2030,7 +2035,7 @@
                     <span class="app-footer-version-pill" title="Current Release Version">
                         <span class="app-footer-status-indicator" aria-hidden="true"></span>
                         <span class="app-footer-version-prefix">Version</span>
-                        <strong id="app-version-display" class="app-footer-version-code">15.10.0</strong>
+                        <strong id="app-version-display" class="app-footer-version-code">15.11.0</strong>
                     </span>
                     <a href="releases.html" class="app-footer-release-link" id="app-footer-release-link" title="View interactive release summary & changelog">
                         <span>Release Summary &amp; Notes</span>
@@ -2066,13 +2071,13 @@
     <script src="scripts/roast-engine.js"></script>
     <script src="scripts/xp-engine.js"></script>
     <script src="scripts/engagement-strip.js"></script>
-    <script src="scripts/ath-ocean.js?v=15.10.0"></script>
-    <script src="scripts/daily-verdict.js?v=15.10.0"></script>
-    <script src="scripts/dashboard.js?v=15.10.0"></script>
-    <script src="scripts/wig-chart.js?v=20260625a"></script>
+    <script src="scripts/ath-ocean.js?v=15.11.0"></script>
+    <script src="scripts/daily-verdict.js?v=15.11.0"></script>
+    <script src="scripts/dashboard.js?v=15.11.0"></script>
+    <script src="scripts/wig-chart.js?v=15.11.0"></script>
     <script src="scripts/statistics.js?v=20261103a"></script>
     <script src="scripts/transactions.js?v=20260702a"></script>
-    <script src="scripts/chart.js?v=15.10.0"></script>
+    <script src="scripts/chart.js?v=15.11.0"></script>
     <script>
         (function() {
             const isLocalHost = ['localhost', '127.0.0.1', ''].includes(window.location.hostname);
@@ -2148,9 +2153,9 @@
             });
         })();
     </script>
-    <script src="scripts/monthly-audit-share.js?v=15.10.0"></script>
-    <script src="scripts/monthly-audit.js?v=15.10.0"></script>
-    <script src="scripts/benchmark-chart.js?v=15.10.0"></script>
+    <script src="scripts/monthly-audit-share.js?v=15.11.0"></script>
+    <script src="scripts/monthly-audit.js?v=15.11.0"></script>
+    <script src="scripts/benchmark-chart.js?v=15.11.0"></script>
     <script src="scripts/intraday-comparison.js?v=20261105a"></script>
     <script src="scripts/analysis.js?v=20261102a"></script>
 
@@ -3312,7 +3317,7 @@
     <!-- Swipe-to-refresh (mobile pull-down gesture) -->
     <script src="scripts/swipe-refresh.js" defer></script>
     <!-- Portfolio management -->
-    <script src="scripts/manage.js?v=15.10.0"></script>
+    <script src="scripts/manage.js?v=15.11.0"></script>
 
     <!-- ── User Settings Modal ──────────────────────────────── -->
     <div id="user-modal" class="user-modal-overlay" style="display:none" onclick="if(event.target===this)closeUserModal()">
@@ -3429,11 +3434,11 @@
         <div class="user-modal-footer" style="flex-wrap: wrap; gap: 12px; justify-content: space-between;">
           <div class="user-modal-branding">
             <span>Powered by <strong class="tominex-brand-name">TOMINEX</strong></span>
-            <span class="user-modal-version">v15.10.0</span>
+            <span class="user-modal-version">v15.11.0</span>
           </div>
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <a href="releases.html" class="user-guide-link">
-              <span aria-hidden="true">🏷️</span> Release Summary v15.10.0
+              <span aria-hidden="true">🏷️</span> Release Summary v15.11.0
             </a>
             <a href="guide.html" class="user-guide-link">
               <span aria-hidden="true">📖</span> User Guide

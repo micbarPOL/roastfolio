@@ -65,10 +65,10 @@
 #daily-verdict[data-effect="umbrella"] .dv-rain i { top: 0; }
 #daily-verdict[data-effect="spotlight"] .dv-spotlight { display: block; position: absolute; inset: -4px 8px 10px; background: var(--color-warning); clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); opacity: .25; }
 @media (prefers-reduced-motion: no-preference) {
-    #daily-verdict .dv-effect[data-playing="true"] { animation: dv-punchline 1.2s both; }
-    #daily-verdict .dv-effect[data-playing="true"] .dv-bursts i { animation-name: dv-burst; animation-duration: .7s; animation-fill-mode: both; }
-    #daily-verdict .dv-effect[data-playing="true"] .dv-rain i { animation-name: dv-drop; animation-duration: .6s; animation-fill-mode: both; }
-    @keyframes dv-punchline { 0%, 100% { opacity: 0; } 15%, 75% { opacity: 1; } }
+    #daily-verdict .dv-effect[data-playing="true"] { animation: dv-punchline 1.8s both; }
+    #daily-verdict .dv-effect[data-playing="true"] .dv-bursts i { animation-name: dv-burst; animation-duration: 1.2s; animation-fill-mode: both; }
+    #daily-verdict .dv-effect[data-playing="true"] .dv-rain i { animation-name: dv-drop; animation-duration: 1.2s; animation-fill-mode: both; }
+    @keyframes dv-punchline { 0%, 100% { opacity: 0; } 10%, 80% { opacity: 1; } }
     @keyframes dv-burst { from { transform: scale(.1); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1.1); opacity: 0; } }
     @keyframes dv-drop { from { transform: translateY(0); opacity: 0; } 25% { opacity: 1; } to { transform: translateY(15px); opacity: 0; } }
 }

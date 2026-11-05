@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.10.0`
-*Target Release Numbering Standard — v15.10.0*
+**Current Release:** `15.11.0`
+*Target Release Numbering Standard — v15.11.0*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.10.0`
+* **Current Active Release:** `15.11.0`
+  * **Minor 11:** Daily Verdict sits beside Today's Movers from the top of the dashboard, aligned to the Since previous close chart. The separate benchmark price chart is opt-in and renders on demand. Verdict effects last 1.8 seconds and replay every 30 seconds only while visible, respecting reduced-motion preferences.
+* **Previous Active Release:** `15.10.0`
   * **Minor 10:** Daily Verdict replaces the main dashboard gauge with a shared axis. Daily return and PLN change lead the hierarchy; context-aware accents, brief one-shot effects, reduced-motion support and explicit unavailable states preserve existing calculations and roast reactions.
 * **Previous Active Release:** `15.9.0`
   * **Minor 9:** Redesigned Coping Diary with a responsive master-detail ledger, searchable and tag-filterable notes, a focused thesis sheet, dated checkpoints, and a mobile composer. Existing API-backed data, local fallback, and diary actions are preserved.
