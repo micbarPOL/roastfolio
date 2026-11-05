@@ -232,7 +232,8 @@ def test_every_dashboard_value_is_still_present(open_page):
         assert page.locator(selector).count() == 1, selector
     assert "PLN" in page.inner_text("#dash-total-value")
     assert page.locator("#dash-breakdown .m-row").count() >= 1
-    assert page.locator("#gaugeChart").count() == 1
+    assert page.locator("#daily-verdict .dv-plot").is_visible()
+    assert page.locator("#gaugeChart").count() == 0
 
 
 def test_ticker_tape_is_mounted_once(open_page):
@@ -261,6 +262,7 @@ def test_dashboard_sections_paint_no_background_rectangles(open_page, theme):
 
 def test_dashboard_stays_frameless_with_everything_open(open_page):
     page, _ = open_page(1440, 900)
+    page.evaluate("window.ROAST_DATA = {message: 'The index did nothing and still made you work.', templateId: 'test-verdict'}; renderDashboard();")
     page.locator(".roast-toggle").first.click()
     page.locator(".acct-toggle").first.click()
     page.locator("#monthly-benchmarks-btn").click()
@@ -271,6 +273,7 @@ def test_dashboard_stays_frameless_with_everything_open(open_page):
 
 def test_roast_reactions_stay_hidden_until_tapped(open_page):
     page, _ = open_page(1440, 900)
+    page.evaluate("window.ROAST_DATA = {message: 'The index did nothing and still made you work.', templateId: 'test-verdict'}; renderDashboard();")
     assert page.locator("#roast-reactions").is_hidden()
     page.locator(".roast-toggle").first.click()
     assert page.locator("#roast-reactions").is_visible()
@@ -426,16 +429,110 @@ def test_reduced_motion_stops_the_ticker(open_page):
     assert page.evaluate("getComputedStyle(document.querySelector('.market-ticker-lane')).animationName") == "none"
 
 
-def test_phone_hero_puts_roast_and_gauge_side_by_side(open_page):
+def test_phone_hero_orders_return_cash_axis_roast_and_total(open_page):
     page, _ = open_page(390, 844)
-    roast = page.locator("#gauge-benchmark-tooltip").bounding_box()
-    gauge = page.locator("#gaugeChart").bounding_box()
-    total = page.locator("#dash-total-value").bounding_box()
-    assert roast["x"] + roast["width"] <= gauge["x"]
-    assert gauge["y"] < roast["y"] + roast["height"] and roast["y"] < gauge["y"] + gauge["height"]
-    assert total["y"] > max(roast["y"] + roast["height"], gauge["y"] + gauge["height"])
-    canvas = page.evaluate("() => { const c = document.getElementById('gaugeChart'); const r = c.getBoundingClientRect(); return [c.width, c.height, r.width, r.height]; }")
-    assert abs(canvas[0] / canvas[1] - canvas[2] / canvas[3]) < 0.05  # drawn at its displayed size, not stretched
+    selectors = ["#dash-daily-return", "#dash-daily-pln", ".dv-plot", "#gauge-lead", "#gauge-benchmark-tooltip", "#dash-total-value"]
+    boxes = [page.locator(selector).bounding_box() for selector in selectors]
+    assert all(previous["y"] + previous["height"] <= following["y"] for previous, following in zip(boxes, boxes[1:]))
+    assert page.locator(".dv-plot").bounding_box()["width"] > 250
+
+
+@pytest.fixture
+def verdict_page(browser):
+    contexts = []
+
+    def create(width=390, reduced=False):
+        context = browser.new_context(viewport={"width": width, "height": 1200}, reduced_motion="reduce" if reduced else "no-preference")
+        contexts.append(context)
+        page = context.new_page()
+        markup = page.evaluate("html => new DOMParser().parseFromString(html, 'text/html').querySelector('#daily-verdict').outerHTML", (ROOT / "src/index.html").read_text())
+        page.set_content(f'<html data-theme="dark"><body><div id="tab-dashboard">{markup}</div></body></html>')
+        page.add_style_tag(path=str(ROOT / "src/styles/tokens-v9.css"))
+        page.add_style_tag(path=str(ROOT / "src/styles/daily-verdict.css"))
+        page.add_script_tag(path=str(ROOT / "src/scripts/daily-verdict.js"))
+        return page
+
+    yield create
+    for context in contexts:
+        context.close()
+
+
+@pytest.mark.parametrize("portfolio,benchmark,mood,effect", [
+    (.73, .31, "winning", "fireworks"), (.31, .73, "profitable", "fireworks"),
+    (-.28, -.70, "losing-less", "umbrella"), (-.70, -.28, "losing", "rain"),
+    (.73, -.31, "exceptional", "fireworks"), (-.46, .31, "against-market", "spotlight"),
+    (.01, -.31, "neutral", "none"), (0, 0, "neutral", "none"),
+    (.05, -.31, "neutral", "none"), (-.05, .31, "neutral", "none"),
+    (None, .31, "unavailable", "none"), (.31, None, "unavailable", "none"),
+    ("0.31", .31, "unavailable", "none"),
+])
+def test_daily_verdict_mood_matrix(verdict_page, portfolio, benchmark, mood, effect):
+    page = verdict_page()
+    page.evaluate("values => DailyVerdict.render({...values, cash: -12, name: 'WIG', ready: true})", {"portfolio": portfolio, "benchmark": benchmark})
+    assert page.locator("#daily-verdict").get_attribute("data-mood") == mood
+    assert page.locator("#daily-verdict").get_attribute("data-effect") == effect
+    if mood == "unavailable":
+        assert page.locator(".dv-plot").is_hidden()
+    else:
+        assert page.locator("#dash-daily-return").inner_text() == f'{"+" if portfolio > 0 else ""}{portfolio:.2f}%'
+    if mood == "losing-less":
+        assert page.locator("#dash-daily-return").evaluate("el => getComputedStyle(el).color") != page.locator(".dv-spread").evaluate("el => getComputedStyle(el).color")
+
+
+@pytest.mark.parametrize("width", [320, 390, 1440])
+def test_daily_verdict_long_roast_scale_and_safe_text(verdict_page, width):
+    page = verdict_page(width)
+    page.evaluate("""() => DailyVerdict.render({portfolio: 2.34, benchmark: -.8, cash: 1234.56, name: 'MSCI World', ready: true,
+        roast: {message: '<img src=x onerror=alert(1)> ' + 'Long commentary. '.repeat(60)}})""")
+    assert page.locator(".dv-spread").inner_text() == "+3.14 pp"
+    assert page.locator(".dv-high").inner_text() == "+3%"
+    assert page.locator(".roast-msg img").count() == 0
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    for selector in (".dv-annotation.dv-you", ".dv-annotation.dv-benchmark"):
+        box = page.locator(selector).bounding_box()
+        assert box["x"] >= 0 and box["x"] + box["width"] <= width
+
+
+@pytest.mark.parametrize("reduced", [False, True])
+def test_daily_verdict_effect_once_and_reduced_motion(verdict_page, reduced):
+    page = verdict_page(reduced=reduced)
+    render = "DailyVerdict.render({portfolio: .73, benchmark: -.31, cash: 123, name: 'WIG', ready: true})"
+    page.evaluate(render)
+    assert page.locator(".dv-effect").get_attribute("data-playing") == ("false" if reduced else "true")
+    effect = page.locator(".dv-effect").bounding_box()
+    label = page.locator(".dv-annotation.dv-you").bounding_box()
+    if not reduced:
+        assert effect["y"] + effect["height"] < label["y"]
+    page.wait_for_function("document.querySelector('.dv-effect').dataset.playing === 'false'")
+    page.evaluate(render)
+    assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
+    assert page.locator(".dv-point.dv-you").evaluate("el => getComputedStyle(el).animationName") == "none"
+
+
+def test_daily_verdict_unavailable_clears_stale_comparison(verdict_page):
+    page = verdict_page()
+    page.evaluate("DailyVerdict.render({portfolio: .73, benchmark: .31, cash: 123, name: 'WIG', ready: true})")
+    page.evaluate("DailyVerdict.render({portfolio: .73, benchmark: null, cash: 123, name: 'WIG', ready: true})")
+    assert page.locator("#dash-daily-return").inner_text() == "+0.73%"
+    assert page.locator("#gauge-lead").is_hidden()
+    assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
+    assert page.locator(".dv-unavailable").is_visible()
+
+
+def test_daily_verdict_legacy_entry_does_not_invent_zero_returns(open_page):
+    page, errors = open_page()
+    page.evaluate("""() => {
+        window.PORTFOLIO_DAILY_CHANGE_PCT = null;
+        window.BENCHMARK_DAILY_PCT = null;
+        window.WIG_DAILY_PCT = 1;
+        window.BENCHMARK_ID = 'SP500';
+        window._gaugeDataReady = true;
+        animateGaugeEntry('gaugeChart', 0, 1, () => { window.verdictComplete = true; });
+    }""")
+    assert page.locator("#daily-verdict").get_attribute("data-state") == "unavailable"
+    assert page.locator("#dash-daily-return").inner_text() == "\u2014"
+    assert page.evaluate("window.verdictComplete") is True
+    assert not errors
 
 
 @pytest.mark.parametrize("width,height", [(1440, 900), (1024, 768), (768, 1024), (390, 844)])

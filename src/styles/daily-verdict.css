@@ -1,0 +1,82 @@
+#daily-verdict { --dv-color: var(--text-secondary); --dv-return: var(--text-secondary); min-width: 0; }
+#daily-verdict[data-return="positive"] { --dv-return: var(--color-success); }
+#daily-verdict[data-return="negative"] { --dv-return: var(--color-danger); }
+#daily-verdict[data-mood="winning"], #daily-verdict[data-mood="exceptional"] { --dv-color: var(--color-success); }
+#daily-verdict[data-mood="losing-less"] { --dv-color: var(--color-warning); }
+#daily-verdict[data-mood="losing"], #daily-verdict[data-mood="against-market"] { --dv-color: var(--color-danger); }
+#daily-verdict [hidden] { display: none !important; }
+#tab-dashboard #dash-daily-return { font-size: 4rem; line-height: 1.1; font-weight: 650; color: var(--dv-return); margin-top: 12px; }
+#tab-dashboard #daily-verdict #dash-daily-pln { font-size: 1.25rem; color: var(--dv-return); margin-top: 8px; }
+#daily-verdict .dv-comparison { margin: 28px 0 0; }
+#daily-verdict figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: .75rem; color: var(--text-secondary); }
+#daily-verdict figcaption span:first-child { color: var(--text-primary); font-weight: 600; }
+#daily-verdict .dv-plot { height: 288px; position: relative; margin: 14px 28px 0; }
+#daily-verdict .dv-plot > :not(.dv-effect) { translate: 0 52px; }
+#daily-verdict .dv-rail { position: absolute; top: 105px; left: 0; right: 0; height: 6px; background: var(--bg-surface-3); border-radius: 3px; }
+#daily-verdict .dv-zero { position: absolute; top: 97px; left: 50%; height: 22px; border-left: 1px solid var(--text-muted); }
+#daily-verdict .dv-zero-label { position: absolute; left: 50%; top: 124px; transform: translateX(-50%); font-size: .625rem; color: var(--text-muted); }
+#daily-verdict .dv-wash, #daily-verdict .dv-interval { position: absolute; left: var(--dv-start); width: var(--dv-width); background: var(--dv-color); }
+#daily-verdict .dv-wash { top: 85px; height: 46px; opacity: .13; }
+#daily-verdict .dv-interval { top: 103px; height: 10px; }
+#daily-verdict .dv-you { --dv-position: var(--dv-portfolio); }
+#daily-verdict .dv-benchmark { --dv-position: var(--dv-benchmark); }
+#daily-verdict .dv-stem { position: absolute; left: var(--dv-position); width: 1px; background: var(--text-muted); }
+#daily-verdict .dv-stem.dv-you { top: 69px; height: 39px; }
+#daily-verdict .dv-stem.dv-benchmark { top: 108px; height: 43px; background: var(--color-warning); }
+#daily-verdict .dv-point { position: absolute; top: 108px; left: var(--dv-position); transform: translate(-50%, -50%); }
+#daily-verdict .dv-point.dv-you { width: 28px; height: 28px; border-radius: 50%; background: var(--text-primary); border: 5px solid var(--bg-canvas); box-shadow: 0 0 0 1px var(--text-muted); }
+#daily-verdict .dv-point.dv-benchmark { width: 22px; height: 22px; background: var(--color-warning); border: 3px solid var(--bg-canvas); transform: translate(-50%, -50%) rotate(45deg); }
+#daily-verdict .dv-annotation { position: absolute; left: clamp(62px, var(--dv-position), calc(100% - 62px)); width: 124px; text-align: center; transform: translateX(-50%); }
+#daily-verdict .dv-annotation span { display: block; font-size: .75rem; color: var(--text-secondary); margin-bottom: 5px; overflow-wrap: anywhere; }
+#daily-verdict .dv-annotation strong { font-size: 1.625rem; font-weight: 600; }
+#daily-verdict .dv-annotation.dv-you { top: 8px; }
+#daily-verdict .dv-annotation.dv-benchmark { top: 158px; }
+#daily-verdict .dv-annotation.dv-benchmark span { color: var(--color-warning); }
+#daily-verdict .dv-annotation.dv-benchmark strong { font-size: 1.375rem; font-weight: 500; }
+#daily-verdict .dv-low, #daily-verdict .dv-high { position: absolute; top: 123px; font-size: .625rem; color: var(--text-muted); }
+#daily-verdict .dv-low { left: 0; }
+#daily-verdict .dv-high { right: 0; }
+#daily-verdict #gauge-lead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+#daily-verdict .dv-spread { color: var(--dv-color); font-size: 1.75rem; font-weight: 600; }
+#daily-verdict .dv-relation { color: var(--text-secondary); font-size: .875rem; overflow-wrap: anywhere; }
+#daily-verdict .dv-roast { padding: 24px 0 28px; }
+#tab-dashboard #daily-verdict #gauge-benchmark-tooltip { background: none; border: 0; padding: 0; margin-top: 12px; color: var(--text-primary); grid-area: auto; }
+#tab-dashboard #daily-verdict .roast-msg { font-size: 1.25rem; line-height: 1.65; font-weight: 400; overflow-wrap: anywhere; }
+#daily-verdict .roast-toggle:disabled { opacity: 1; cursor: default; }
+#daily-verdict .dv-total { border-top: 1px solid var(--bg-surface-3); padding-top: 20px; }
+#tab-dashboard #daily-verdict #dash-total-value { font-size: 1.25rem; font-weight: 500; margin-top: 6px; }
+#daily-verdict .dv-unavailable { min-height: 160px; display: flex; align-items: center; color: var(--text-secondary); font-size: .875rem; }
+#daily-verdict .dv-effect { position: absolute; left: clamp(32px, var(--dv-portfolio), calc(100% - 32px)); top: 6px; width: 64px; height: 66px; transform: translateX(-50%) scale(.65); transform-origin: top center; pointer-events: none; visibility: hidden; }
+#daily-verdict .dv-effect > * { display: none; }
+#daily-verdict .dv-effect[data-playing="true"] { visibility: visible; }
+#daily-verdict[data-effect="fireworks"] .dv-bursts { display: block; }
+#daily-verdict .dv-bursts i { position: absolute; top: 14px; left: 29px; width: 4px; height: 4px; color: var(--color-success); border-radius: 50%; box-shadow: 0 -16px, 12px -12px, 16px 0, 12px 12px, 0 16px, -12px 12px, -16px 0, -12px -12px; }
+#daily-verdict .dv-bursts i:nth-child(2) { left: 5px; top: 28px; animation-delay: .15s; }
+#daily-verdict .dv-bursts i:nth-child(3) { left: 51px; top: 21px; animation-delay: .3s; }
+#daily-verdict:not([data-mood="exceptional"]) .dv-bursts i:nth-child(3), #daily-verdict[data-mood="profitable"] .dv-bursts i:nth-child(2) { display: none; }
+#daily-verdict .dv-cloud { position: absolute; top: 0; left: 12px; width: 40px; height: 15px; border-radius: 10px; background: var(--text-muted); }
+#daily-verdict .dv-cloud::before { content: ''; position: absolute; left: 8px; top: -9px; width: 23px; height: 23px; border-radius: 50%; background: inherit; }
+#daily-verdict[data-effect="rain"] .dv-cloud, #daily-verdict[data-effect="rain"] .dv-rain, #daily-verdict[data-effect="umbrella"] .dv-umbrella, #daily-verdict[data-effect="umbrella"] .dv-rain { display: block; }
+#daily-verdict .dv-umbrella { position: absolute; top: 22px; left: 13px; width: 38px; height: 19px; border-radius: 24px 24px 0 0; background: var(--color-warning); }
+#daily-verdict .dv-umbrella::after { content: ''; position: absolute; top: 18px; left: 18px; width: 7px; height: 11px; border-right: 2px solid var(--color-warning); border-bottom: 2px solid var(--color-warning); border-radius: 0 0 5px 0; }
+#daily-verdict .dv-rain i { position: absolute; top: 17px; left: 20px; height: 7px; width: 2px; background: var(--text-muted); }
+#daily-verdict .dv-rain i:nth-child(2) { left: 32px; animation-delay: .1s; }
+#daily-verdict .dv-rain i:nth-child(3) { left: 44px; animation-delay: .2s; }
+#daily-verdict[data-effect="umbrella"] .dv-rain i { top: 0; }
+#daily-verdict[data-effect="spotlight"] .dv-spotlight { display: block; position: absolute; inset: -4px 8px 10px; background: var(--color-warning); clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); opacity: .25; }
+@media (prefers-reduced-motion: no-preference) {
+    #daily-verdict .dv-effect[data-playing="true"] { animation: dv-punchline 1.2s both; }
+    #daily-verdict .dv-effect[data-playing="true"] .dv-bursts i { animation-name: dv-burst; animation-duration: .7s; animation-fill-mode: both; }
+    #daily-verdict .dv-effect[data-playing="true"] .dv-rain i { animation-name: dv-drop; animation-duration: .6s; animation-fill-mode: both; }
+    @keyframes dv-punchline { 0%, 100% { opacity: 0; } 15%, 75% { opacity: 1; } }
+    @keyframes dv-burst { from { transform: scale(.1); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1.1); opacity: 0; } }
+    @keyframes dv-drop { from { transform: translateY(0); opacity: 0; } 25% { opacity: 1; } to { transform: translateY(15px); opacity: 0; } }
+}
+@media (prefers-reduced-motion: reduce) { #daily-verdict .dv-effect { display: none !important; } }
+@media (max-width: 600px) {
+    #tab-dashboard #dash-daily-return { font-size: 3.5rem; }
+    #daily-verdict .dv-plot { margin-inline: 14px; }
+    #tab-dashboard #daily-verdict .roast-msg { font-size: 1.0625rem; }
+    #daily-verdict .dv-spread { font-size: 1.5625rem; }
+    #daily-verdict .dv-effect { width: 64px; }
+}
