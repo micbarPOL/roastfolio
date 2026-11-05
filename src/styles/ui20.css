@@ -126,9 +126,15 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 /* ---------- Dashboard ---------- */
 #tab-dashboard { width: min(1320px, calc(100% - 48px)); margin: 0 auto; padding-bottom: calc(112px + var(--space-5));
   animation: none; /* the tab fade leaves a transform behind, which would turn this tab into the containing block of the fixed player */ }
-#tab-dashboard .d-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; column-gap: 64px; align-items: start; }
-#tab-dashboard .col-main { display: flex; flex-direction: column; gap: 64px; min-width: 0; }
-#tab-dashboard .col-rail { display: flex; flex-direction: column; gap: 56px; min-width: 0; padding-top: var(--space-6); }
+#tab-dashboard .d-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: "hero hero" "bench rail" "ath rail" "summary rail"; column-gap: 64px; row-gap: 64px; align-items: start; }
+#tab-dashboard .col-main { display: contents; }
+#tab-dashboard .col-rail { grid-area: rail; display: flex; flex-direction: column; gap: 56px; min-width: 0; padding-top: 0; }
+#tab-dashboard .hero { grid-area: hero; }
+#tab-dashboard .bench { grid-area: bench; }
+#tab-dashboard .ath-six { grid-area: ath; }
+#tab-dashboard .summary { grid-area: summary; }
+#tab-dashboard .movers { grid-area: movers; }
+#tab-dashboard .accounts { grid-area: accounts; }
 #tab-dashboard [data-o] { animation: ui20-rise var(--dur-slow) var(--ease-enter) both; }
 
 /* Frameless: legacy `:root[data-theme] section:not(.wallet-screen)` paints a !important fill and shadow on every section.
@@ -381,7 +387,7 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 
 /* ---------- Tablet and mobile ---------- */
 @media (max-width: 1099px) {
-  #tab-dashboard .d-page { grid-template-columns: minmax(0, 1fr); row-gap: 56px; }
+  #tab-dashboard .d-page { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "bench" "movers" "accounts" "ath" "summary"; row-gap: 56px; }
   #tab-dashboard .col-main, #tab-dashboard .col-rail { display: contents; }
   #tab-dashboard [data-o="1"] { order: 1; } #tab-dashboard [data-o="2"] { order: 2; } #tab-dashboard [data-o="3"] { order: 3; }
   #tab-dashboard [data-o="4"] { order: 4; } #tab-dashboard [data-o="5"] { order: 5; } #tab-dashboard [data-o="6"] { order: 6; }

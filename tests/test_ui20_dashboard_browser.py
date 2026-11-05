@@ -213,8 +213,12 @@ def test_desktop_layout_order_matches_the_decisions(open_page):
     rail = _tops(page, ["section.movers", "section.accounts"])
     assert rail == sorted(rail)
     hero = page.locator("#tab-dashboard section.hero").bounding_box()
-    assert page.locator("#tab-dashboard section.movers").bounding_box()["x"] > hero["x"] + hero["width"] - 40
-    assert page.locator("#tab-dashboard section.accounts").bounding_box()["x"] > hero["x"] + hero["width"] - 40
+    dashboard = page.locator("#tab-dashboard .d-page").bounding_box()
+    right_rail = page.locator("#tab-dashboard .col-rail").bounding_box()
+    assert abs(hero["x"] - dashboard["x"]) <= 1
+    assert abs(hero["width"] - dashboard["width"]) <= 1
+    assert right_rail["y"] >= hero["y"] + hero["height"]
+    assert page.locator("#tab-dashboard section.movers").bounding_box()["x"] > page.locator("#tab-dashboard section.bench").bounding_box()["x"]
 
 
 def test_mobile_layout_order_matches_the_decisions(open_page):
