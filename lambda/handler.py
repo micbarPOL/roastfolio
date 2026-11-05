@@ -2815,9 +2815,10 @@ def handler(event, context):
                 # bars_cache is keyed by ticker symbol — works for any user-selected benchmark.
                 bm_cached = bars_cache.get(bm_ticker, {})
                 bm_bars_fresh = _time.time() - bm_cached.get("ts", 0) < 180
-                if bm_bars_fresh and bm_cached.get("todayBars") and isinstance(bm_cached["todayBars"][0], dict):
+                if bm_bars_fresh and bm_cached.get("previousClose") and bm_cached.get("todayBars") and isinstance(bm_cached["todayBars"][0], dict):
                     bm_out["intraday"] = bm_cached["todayBars"]
                     bm_out["session"] = bm_cached.get("session")
+                    bm_out["previousClose"] = bm_cached["previousClose"]
                     print(f"  {bm_ticker}: intraday bars from cache ({len(bm_out['intraday'])} pts)")
                 else:
                     try:
@@ -2825,6 +2826,7 @@ def handler(event, context):
                         intra_df = benchmark_ticker.history(period='1d', interval='1m')
                         bm_out["intraday"] = _to_ts_rows_plain(intra_df) if not intra_df.empty else []
                         metadata = benchmark_ticker.history_metadata or {}
+                        bm_out["previousClose"] = metadata.get("chartPreviousClose") or metadata.get("previousClose")
                         session_start, session_end = _regular_session(metadata)
                         bm_out["session"] = {
                             "start": session_start,
@@ -2835,6 +2837,7 @@ def handler(event, context):
                         bars_cache[bm_ticker] = {
                             "todayBars": bm_out["intraday"], "yearBars": bm_cached.get("yearBars", []),
                             "session": bm_out["session"],
+                            "previousClose": bm_out["previousClose"],
                             "ytdPct":    bm_cached.get("ytdPct", 0.0),
                             "ts": _time.time(), "date": date.today().isoformat(),
                         }
@@ -2844,6 +2847,7 @@ def handler(event, context):
                         bm_cache = load_benchmark_cache(benchmark_id)
                         bm_out["intraday"] = bm_cache.get("intraday", [])
                         bm_out["session"] = bm_cache.get("session")
+                        bm_out["previousClose"] = bm_cache.get("previousClose")
                 benchmark_daily_pct = None  # gauge is owned by lite — don't override
 
                 # Carousel still needs benchmark data; build from intraday

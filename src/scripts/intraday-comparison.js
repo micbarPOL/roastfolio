@@ -74,7 +74,10 @@
         const bars = allBenchmarkBars.filter(bar => bar.timestamp >= start && bar.timestamp < end);
         // Index feeds (e.g. WIG on Yahoo) often publish the first print a minute or two after the open.
         if (!bars.length || bars[0].timestamp - start > MAX_OPEN_DELAY || !validPrice(bars[0].open)) {
-            throw new Error('Benchmark opening candle is missing; a since-open comparison is unavailable.');
+            throw new Error('Benchmark opening candle is missing; the intraday comparison is unavailable.');
+        }
+        if (!validPrice(benchmark.previousClose)) {
+            throw new Error('Benchmark previous close is unavailable. Refresh prices.');
         }
         const warnings = ['Current holdings and cash; constant FX. Benchmark return is in its native currency.'];
         const benchmarkStart = bars[0].timestamp;
@@ -116,6 +119,9 @@
             ).map(pair => ({ timestamp: pair[0] + MINUTE, price: pair[1] }))
                 .sort((a, b) => a.timestamp - b.timestamp);
             const baseline = holding.intradayBaseline;
+            if (!validPrice(baseline?.previousClose)) {
+                throw new Error(`Previous close unavailable: ${name}. Refresh prices. No holdings were excluded.`);
+            }
             let price = null;
             let priceTime = null;
             for (const bar of prices) {
@@ -160,10 +166,12 @@
             }
             let index = 0;
             while (index < prices.length && prices[index].timestamp <= start) index++;
-            stocks.push({ prices, price, index, units: holding.units, fx: holding.intradayFxRate });
+            stocks.push({ prices, price, index, previousClose: baseline.previousClose, units: holding.units, fx: holding.intradayFxRate });
         }
         const openValue = cash + stocks.reduce((sum, stock) => sum + stock.units * stock.price * stock.fx, 0);
         if (!validPrice(openValue)) throw new Error('Portfolio session-start value must be positive.');
+        const baselineValue = cash + stocks.reduce((sum, stock) => sum + stock.units * stock.previousClose * stock.fx, 0);
+        if (!validPrice(baselineValue)) throw new Error('Portfolio previous-close value must be positive.');
         const points = [];
         let benchmarkIndex = 0;
         let benchmarkPrice = bars[0].open;
@@ -181,17 +189,17 @@
                 benchmarkPrice = bars[benchmarkIndex++].price;
             }
             const value = cash + stocks.reduce((sum, stock) => sum + stock.units * stock.price * stock.fx, 0);
-            const portfolioPct = (value / openValue - 1) * 100;
+            const portfolioPct = (value / baselineValue - 1) * 100;
             const benchmarkPct = timestamp >= benchmarkStart && timestamp <= benchmarkAsOf && timestamp <= end
-                ? (benchmarkPrice / bars[0].open - 1) * 100 : null;
+                ? (benchmarkPrice / benchmark.previousClose - 1) * 100 : null;
             points.push({
                 timestamp, portfolioPct, benchmarkPct,
                 spreadPp: portfolioPct == null || benchmarkPct == null ? null : portfolioPct - benchmarkPct,
             });
         }
         return {
-            points, sessionDate: date, baseline: 'benchmark-session-open',
-            start, end, timeZone, benchmarkCurrency, openValue,
+            points, sessionDate: date, baseline: 'previous-close',
+            start, end, timeZone, benchmarkCurrency, openValue, baselineValue,
             axisStart: mode === 'day' ? dayStart : start,
             axisEnd: mode === 'day' ? dayEnd : end,
             portfolioAsOf, benchmarkAsOf, quoteDelay, warnings,
@@ -291,7 +299,7 @@
                     },
                 },
             });
-            status.textContent = `${data.sessionDate} · ${data.timeZone} · Since ${time(data.start)} · ` +
+            status.textContent = `${data.sessionDate} · ${data.timeZone} · Since previous close · Bars from ${time(data.start)} · ` +
                 `Benchmark ${Date.now() >= data.end ? 'closed' : 'closes'} ${time(data.end)} · ` +
                 `Benchmark bars through ${time(data.benchmarkAsOf)} · ` +
                 `Portfolio bars through ${time(data.portfolioAsOf)} · ` +

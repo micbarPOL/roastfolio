@@ -756,7 +756,7 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 | D-026 | active | Frameless layout (Section 1.1, principle 3): no cards, borders or shadows around areas. Space and hairlines separate sections. Rounded shapes remain only for chips, pills, buttons, avatars and floating islands (sidebar, drawer, bottom tabs, player). The browser test scans every screen that carries `data-frameless`. | `@dashboard-d-player-v2 dom: html[data-frameless]` |
 | D-027 | provisional | ATH distance is shown by the lake graphic with its numbers, not by a second gauge mode. | `@dashboard-d-player-v2 dom: .ath-six .ath-lake[data-field="gauge-ath"]` |
 | D-028 | provisional | On mobile the order is hero, benchmark chart, Today's Movers, Accounts, ATH, last 6 months, Summary. Daily information comes first, analysis last. | `@dashboard-d-player-v2 css: \[data-o="6"\]` |
-| D-029 | active | Under the benchmark chart, "Portfolio vs benchmark · since open" plots the portfolio return against the benchmark return at 1-minute resolution. The curve is synthesised in the browser from the minute bars and cash already loaded (no backend storage). Both lines start at 0% at the benchmark open and are delayed 15 minutes to match the Yahoo quotes. The benchmark line ends at its session close; a "Portfolio window" setting lets the portfolio line run for 24 hours. The opening-gap explanation sits behind an info button, not in the page. | `@dashboard-d-player-v2 dom: .bench .intraday-comparison [data-field="intraday-window"]` |
+| D-029 | active | Updated with owner approval 2026-11-05: "Portfolio vs benchmark · Since previous close" plots returns at 1-minute resolution using each instrument's previous close, preserving opening gaps instead of zeroing them. The curve is synthesised in the browser from minute bars, cash and previous-close metadata (no new backend storage). The time window still starts at the benchmark open and both lines are delayed 15 minutes. The benchmark line ends at session close; "Portfolio window" can extend the portfolio to 24 hours. The info button explains constant FX, separately fetched daily quotes and missing-data behavior. | `@dashboard-d-player-v2 dom: .bench .intraday-comparison [data-field="intraday-window"]` |
 | D-030 | active | The header is one compact left-aligned row at every width: title and live status, with the menu button first on mobile. The wordmark appears only in the sidebar and drawer (Section 4.1). | `@dashboard-d-player-v2 no-dom: .top-bar .brand` |
 | D-031 | active | On phones the hero keeps the roast and the gauge side by side (gauge column about 148px), with total value and today's change spanning underneath. | `@dashboard-d-player-v2 css: grid-template-areas:\s*"say gauge"` |
 | D-032 | active | The ATH lake uses a logarithmic distance scale so a 0.3% dip on a large portfolio is visible and a 50% drawdown still fits. States: `pending`, `below` (water with rising bubbles), `at` and `above` (a green tide rises over the dashed ATH line). Answers the former question about the ATH gauge scale. | `@dashboard-d-player-v2 dom: .ath-lake[data-state]` |
@@ -783,6 +783,7 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 
 | D-052 | active | Approved 2026-11-03 under D-008: Statistics uses five frameless analytical sections with independent wallet controls, accessible disclosures and responsive benchmark rows. The valuation-path and lake-drawdown charts keep their original UI titles and independent X ranges, side by side on desktop and stacked below 900px. Production retains the existing API, calculations and Chart.js engine; the mockup remains deterministic. | `@statistics dom: main[data-field="statistics-screen"] details[data-field="statistics-snapshots"]` |
 | D-053 | active | Approved 2026-11-03 under D-008: Transactions uses frameless turnover KPIs, an activity calendar and monthly turnover above a ledger with a separate filter toolbar and 12-row pagination. Combined filters retain independent KPI, calendar and chart totals. Mobile keeps operation, asset and signed value; date and wallet stay in asset metadata, while existing edit actions expose all fields. Automatic cash rows remain read-only. Production reuses the ledger API and mutation validation; no sample data is used. | `@transactions dom: main[data-field="transactions-screen"] table[data-field="transactions-ledger"]` |
+| D-054 | active | Owner approved 2026-11-03 under D-008. Coping Diary keeps the desktop master-detail workflow: conviction ledger and selected Focus Sheet remain visible together. Search and tag filters, open-checklist filtering, concise state/asset/date summaries, and distinct sections for field note, investment thesis, dated checkpoints and running comments are implemented in the production renderer. Phones use a one-column list/detail drill-down with an explicit back action; the composer is a bottom sheet. Inactive hypotheses, linked assets, existing API/local fallback semantics and the shared app shell are preserved. Production browser regressions use deterministic mocked API responses. | `@diary dom: main[data-field="diary-screen"] [data-field="diary-composer"]` |
 
 ## 10. Consistency Contract
 
@@ -1243,3 +1244,32 @@ Local Lucide icons reuse `statistics-icons.js`; the illustrative chart is SVG.
 | `transactions-loading` | Shared candle loader; no alternative spinner |
 | `transactions-edit` | Local sample date/asset/units/price/commission/value edit, cash restrictions and numeric validation; `handleTransactionSave` |
 | `transactions-day-detail` | Day transactions, turnover total, full values and show-in-ledger action; `openDayModal` |
+
+## Appendix H. Screen Registry: Diary
+
+Approved mockup: `design/mockups/diary.html`, approved under D-008 and active
+D-054. The prototype uses deterministic local records only; it does not call
+Diary APIs or write to the real localStorage key. Production is implemented in
+`src/js/diary.js` and mounted at `#diary-app-root`, using the existing API and
+local fallback semantics. Production browser regressions are in
+`tests/test_diary_production_browser.py`. The implementation preserves the
+desktop master-detail model and the mobile single-column drill-down prescribed
+by Section 3.
+
+| Field | Shows / existing source mapping |
+| :--- | :--- |
+| `diary-screen` | Coping Diary heading and live summary counts; `tab-diary`, `diary-app-root`, `.diary-overview` |
+| `diary-ledger` | Conviction notes sorted by active/held status and update date; `.diary-ledger-list`, `sortForLedger` |
+| `diary-ledger-search` | Text, asset and tag search; `diary-ledger-filter`, `filteredNotes` |
+| `diary-open-checklist-filter` | Only notes with unchecked follow-ups; `diary-filter-unchecked` |
+| `diary-tag-filters` | Tag quick filters and counts; `diary-tags-cloud` |
+| `diary-ledger-empty` | No-entry or no-match recovery state; `diary-ledger-empty` |
+| `diary-focus-sheet` | Selected note and active/inactive status; `diary-detail`, `diary-active-toggle` |
+| `diary-note-text` | Editable note body, extracted tags and linked asset mentions; `diary-focus-note`, `_renderDiaryMentions` |
+| `diary-linked-assets` | Tickers mentioned in the selected note; `_renderDiaryMentions` |
+| `diary-hypothesis` | Why buy, exit plan and risk factors; `diary-why-buy`, `diary-exit-plan`, `diary-risk-factors` |
+| `diary-checklist` | Dated follow-ups, due-state and open/completed state; `diary-checklist`, `diary-add-check` |
+| `diary-running-notes` | Timestamped comments and add-comment flow; `coping-chat-log`, `diary-chat-input` |
+| `diary-composer` | Accessible new ticker/topic sheet and note creation; `diary-compose`, `diary-compose-backdrop`, `diary-new-ticker`, `diary-new-text` |
+| `diary-mobile-back` | Return from Focus Sheet to the ledger on phones; `diary-detail-back`, `data-mobile-detail` |
+| `diary-loading` | Existing loading behavior while records resolve |
