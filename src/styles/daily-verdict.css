@@ -63,7 +63,9 @@
 #daily-verdict .dv-rain i:nth-child(2) { left: 32px; animation-delay: .1s; }
 #daily-verdict .dv-rain i:nth-child(3) { left: 44px; animation-delay: .2s; }
 #daily-verdict[data-effect="umbrella"] .dv-rain i { top: 0; }
-#daily-verdict[data-effect="spotlight"] .dv-spotlight { display: block; position: absolute; inset: -4px 8px 10px; background: var(--color-warning); clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); opacity: .25; }
+#daily-verdict[data-effect="spotlight"] .dv-spotlight { display: block; position: absolute; top: -4px; left: 0; width: 64px; height: 66px; opacity: 1; }
+#daily-verdict[data-effect="spotlight"] .dv-spotlight::before { content: ""; position: absolute; top: 8px; right: 3px; bottom: 0; left: 3px; background: linear-gradient(to bottom, color-mix(in srgb, var(--color-warning) 42%, transparent), color-mix(in srgb, var(--color-warning) 20%, transparent) 62%, transparent); clip-path: polygon(41% 0, 59% 0, 100% 100%, 0 100%); }
+#daily-verdict[data-effect="spotlight"] .dv-spotlight::after { content: ""; position: absolute; top: 0; left: 20px; width: 24px; height: 10px; border-radius: 6px 6px 3px 3px; background: linear-gradient(to bottom, var(--text-secondary), var(--text-primary)); box-shadow: inset 0 -2px 0 var(--color-warning), 0 0 9px color-mix(in srgb, var(--color-warning) 75%, transparent); }
 @media (prefers-reduced-motion: no-preference) {
     #daily-verdict .dv-effect[data-playing="true"] { animation: dv-punchline 1.8s both; }
     #daily-verdict .dv-effect[data-playing="true"] .dv-bursts i { animation-name: dv-burst; animation-duration: 1.2s; animation-fill-mode: both; }
