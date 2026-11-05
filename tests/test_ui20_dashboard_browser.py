@@ -458,6 +458,15 @@ def test_phone_hero_orders_return_cash_axis_roast_and_total(open_page):
     assert page.locator(".dv-plot").bounding_box()["width"] > 250
 
 
+@pytest.mark.parametrize("width,height", [(1440, 900), (390, 844)])
+def test_roast_comment_uses_full_daily_verdict_column(open_page, width, height):
+    page, _ = open_page(width, height)
+    verdict = page.locator("#daily-verdict").bounding_box()
+    comment = page.locator("#gauge-benchmark-tooltip").bounding_box()
+    assert abs(comment["width"] - verdict["width"]) <= 1
+    assert abs(comment["x"] - verdict["x"]) <= 1
+
+
 @pytest.fixture
 def verdict_page(browser):
     contexts = []
@@ -498,6 +507,23 @@ def test_daily_verdict_mood_matrix(verdict_page, portfolio, benchmark, mood, eff
         assert page.locator("#dash-daily-return").inner_text() == f'{"+" if portfolio > 0 else ""}{portfolio:.2f}%'
     if mood == "losing-less":
         assert page.locator("#dash-daily-return").evaluate("el => getComputedStyle(el).color") != page.locator(".dv-spread").evaluate("el => getComputedStyle(el).color")
+
+
+def test_daily_verdict_against_market_effect_reads_as_a_spotlight(verdict_page):
+    page = verdict_page()
+    page.evaluate("DailyVerdict.render({portfolio: -.46, benchmark: .31, cash: -12, name: 'WIG', ready: true})")
+    assert page.locator("#daily-verdict").get_attribute("data-mood") == "against-market"
+    spotlight = page.locator(".dv-spotlight")
+    assert spotlight.is_visible()
+    beam = spotlight.evaluate("el => getComputedStyle(el, '::before')")
+    lamp = spotlight.evaluate("el => getComputedStyle(el, '::after')")
+    assert beam["clipPath"].startswith("polygon(")
+    assert "linear-gradient" in beam["backgroundImage"]
+    assert lamp["content"] != "none"
+    assert float(lamp["width"].removesuffix("px")) >= 20
+    effect = page.locator(".dv-effect").bounding_box()
+    marker = page.locator(".dv-point.dv-you").bounding_box()
+    assert effect["y"] + effect["height"] < marker["y"]
 
 
 @pytest.mark.parametrize("width", [320, 390, 1440])
