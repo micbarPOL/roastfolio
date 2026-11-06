@@ -115,6 +115,14 @@ def test_summaries_poster_navigator_headline_and_invite(open_history):
     assert poster.get_attribute("data-mood") in {"up", "down", "flat"}
     assert page.get_by_role("tab", name="Yearly Soon").is_disabled()
     assert not page.locator("#recap-show-amounts-switch").is_checked()
+    switch_track = page.locator(".rc-switch .rc-switch-track")
+    assert switch_track.is_visible()
+    box = switch_track.bounding_box()
+    assert box and box["width"] >= 30 and box["height"] >= 18
+    switch_track.click()
+    assert page.locator("#recap-show-amounts-switch").is_checked()
+    switch_track.click()
+    assert not page.locator("#recap-show-amounts-switch").is_checked()
     before = page.locator(".rc-poster h1").inner_text()
     page.locator(".rc-step").first.click()
     page.wait_for_timeout(500)

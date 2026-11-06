@@ -101,6 +101,15 @@ def open_page(browser, base_url):
         context.close()
 
 
+@pytest.mark.parametrize("width,height", [(1440, 900), (390, 844)])
+def test_portfolio_is_not_an_active_navigation_entry(open_page, width, height):
+    page, errors = open_page(width, height)
+    assert page.locator('[data-tab="portfolio"]').count() == 0
+    assert page.locator('.sidenav-nav [data-tab="dashboard"]').count() == 1
+    assert page.locator('.sidenav-nav [data-tab="wallets"]').count() == 1
+    assert not errors, errors
+
+
 @pytest.mark.parametrize("theme", THEMES)
 @pytest.mark.parametrize("width,height", VIEWPORTS)
 def test_dashboard_never_scrolls_sideways_and_has_no_script_errors(open_page, width, height, theme):
@@ -121,7 +130,7 @@ def test_intraday_comparison_renders_real_chart_and_saved_window(open_page, widt
         Date.now = () => now;
         window.BENCHMARK_ID = 'WIG';
         window.BENCHMARK_NAME = 'WIG';
-        window.BENCHMARK_DATA = {session: {start: start/1000, end: end/1000}, intraday: []};
+        window.BENCHMARK_DATA = {session: {start: start/1000, end: end/1000}, intraday: [], previousClose: 100};
         for (let t = start; t < end; t += 60000) {
             BENCHMARK_DATA.intraday.push({t: t/1000, o: 100, c: 101});
         }
@@ -131,7 +140,7 @@ def test_intraday_comparison_renders_real_chart_and_saved_window(open_page, widt
             const todayBars = [];
             for (let t = start; t < now; t += 60000) todayBars.push([t, price * (t < end ? 1.01 : 1.02)]);
             return {...holding, todayBars, comparisonBars: todayBars, intradayFxRate: 1,
-                intradayBaseline: {openTime: start, openPrice: price}};
+                intradayBaseline: {openTime: start, openPrice: price, previousClose: price}};
         });
         document.dispatchEvent(new CustomEvent('liveDataReady'));
     }""")
@@ -152,10 +161,24 @@ def test_intraday_comparison_renders_real_chart_and_saved_window(open_page, widt
     assert any(sample["name"] == "intraday-render" and sample.get("status") == "ok"
                for sample in timings["samples"])
     assert any(sample["name"] == "api-parse" for sample in timings["samples"])
-    assert "Benchmark closed 17:00" in page.locator("#intraday-comparison-status").inner_text()
+    assert "Benchmark closed 17:00" in page.locator("#intraday-comparison-status").text_content()
     page.select_option("#intraday-comparison-window", "session")
     assert page.evaluate("Chart.getChart('intraday-comparison-chart').data.datasets[0].data.length") == 481
     assert page.evaluate("document.documentElement.scrollWidth - innerWidth") <= 0
+    assert not errors, errors
+
+
+def test_benchmark_price_chart_is_hidden_until_requested(open_page):
+    page, errors = open_page(1440, 900)
+    disclosure = page.locator("#benchmark-chart-disclosure")
+    assert not disclosure.evaluate("element => element.open")
+    assert page.locator("#intraday-comparison-title").is_visible()
+    assert page.locator("#benchmarkChartContainer").is_hidden()
+    assert page.locator("#benchmarkChartContainer .tv-lightweight-charts").count() == 0
+    disclosure.locator("summary").click()
+    assert disclosure.evaluate("element => element.open")
+    assert page.locator("#benchmarkChartContainer").is_visible()
+    page.wait_for_selector("#benchmarkChartContainer .tv-lightweight-charts", timeout=10000)
     assert not errors, errors
 
 
@@ -175,7 +198,7 @@ def test_intraday_baseline_note_is_a_compact_dismissible_tooltip(open_page, widt
     button.focus()
     page.wait_for_timeout(250)
     assert tip.is_visible()
-    assert "yesterday's close" in tip.inner_text()
+    assert "previous close" in tip.inner_text()
     box = tip.bounding_box()
     assert box["x"] >= 0 and box["x"] + box["width"] <= width
     page.keyboard.press("Escape")
@@ -204,8 +227,15 @@ def test_desktop_layout_order_matches_the_decisions(open_page):
     rail = _tops(page, ["section.movers", "section.accounts"])
     assert rail == sorted(rail)
     hero = page.locator("#tab-dashboard section.hero").bounding_box()
-    assert page.locator("#tab-dashboard section.movers").bounding_box()["x"] > hero["x"] + hero["width"] - 40
-    assert page.locator("#tab-dashboard section.accounts").bounding_box()["x"] > hero["x"] + hero["width"] - 40
+    dashboard = page.locator("#tab-dashboard .d-page").bounding_box()
+    benchmark = page.locator("#tab-dashboard section.bench").bounding_box()
+    movers = page.locator("#tab-dashboard section.movers").bounding_box()
+    accounts = page.locator("#tab-dashboard section.accounts").bounding_box()
+    assert abs(hero["x"] - dashboard["x"]) <= 1
+    assert abs(hero["width"] - benchmark["width"]) <= 1
+    assert movers["y"] <= hero["y"] + 1
+    assert movers["x"] > hero["x"] + hero["width"]
+    assert accounts["x"] > benchmark["x"] + benchmark["width"]
 
 
 def test_mobile_layout_order_matches_the_decisions(open_page):
@@ -223,7 +253,8 @@ def test_every_dashboard_value_is_still_present(open_page):
         assert page.locator(selector).count() == 1, selector
     assert "PLN" in page.inner_text("#dash-total-value")
     assert page.locator("#dash-breakdown .m-row").count() >= 1
-    assert page.locator("#gaugeChart").count() == 1
+    assert page.locator("#daily-verdict .dv-plot").is_visible()
+    assert page.locator("#gaugeChart").count() == 0
 
 
 def test_ticker_tape_is_mounted_once(open_page):
@@ -252,6 +283,7 @@ def test_dashboard_sections_paint_no_background_rectangles(open_page, theme):
 
 def test_dashboard_stays_frameless_with_everything_open(open_page):
     page, _ = open_page(1440, 900)
+    page.evaluate("window.ROAST_DATA = {message: 'The index did nothing and still made you work.', templateId: 'test-verdict'}; renderDashboard();")
     page.locator(".roast-toggle").first.click()
     page.locator(".acct-toggle").first.click()
     page.locator("#monthly-benchmarks-btn").click()
@@ -262,6 +294,7 @@ def test_dashboard_stays_frameless_with_everything_open(open_page):
 
 def test_roast_reactions_stay_hidden_until_tapped(open_page):
     page, _ = open_page(1440, 900)
+    page.evaluate("window.ROAST_DATA = {message: 'The index did nothing and still made you work.', templateId: 'test-verdict'}; renderDashboard();")
     assert page.locator("#roast-reactions").is_hidden()
     page.locator(".roast-toggle").first.click()
     assert page.locator("#roast-reactions").is_visible()
@@ -417,16 +450,317 @@ def test_reduced_motion_stops_the_ticker(open_page):
     assert page.evaluate("getComputedStyle(document.querySelector('.market-ticker-lane')).animationName") == "none"
 
 
-def test_phone_hero_puts_roast_and_gauge_side_by_side(open_page):
+def test_phone_hero_orders_return_cash_axis_roast_and_total(open_page):
     page, _ = open_page(390, 844)
-    roast = page.locator("#gauge-benchmark-tooltip").bounding_box()
-    gauge = page.locator("#gaugeChart").bounding_box()
-    total = page.locator("#dash-total-value").bounding_box()
-    assert roast["x"] + roast["width"] <= gauge["x"]
-    assert gauge["y"] < roast["y"] + roast["height"] and roast["y"] < gauge["y"] + gauge["height"]
-    assert total["y"] > max(roast["y"] + roast["height"], gauge["y"] + gauge["height"])
-    canvas = page.evaluate("() => { const c = document.getElementById('gaugeChart'); const r = c.getBoundingClientRect(); return [c.width, c.height, r.width, r.height]; }")
-    assert abs(canvas[0] / canvas[1] - canvas[2] / canvas[3]) < 0.05  # drawn at its displayed size, not stretched
+    selectors = ["#dash-daily-return", "#dash-daily-pln", ".dv-plot", "#gauge-lead", "#gauge-benchmark-tooltip", "#dash-total-value"]
+    boxes = [page.locator(selector).bounding_box() for selector in selectors]
+    assert all(previous["y"] + previous["height"] <= following["y"] for previous, following in zip(boxes, boxes[1:]))
+    assert page.locator(".dv-plot").bounding_box()["width"] > 250
+
+
+@pytest.mark.parametrize("width,height", [(1440, 900), (390, 844)])
+def test_roast_comment_uses_full_daily_verdict_column(open_page, width, height):
+    page, _ = open_page(width, height)
+    verdict = page.locator("#daily-verdict").bounding_box()
+    comment = page.locator("#gauge-benchmark-tooltip").bounding_box()
+    assert abs(comment["width"] - verdict["width"]) <= 1
+    assert abs(comment["x"] - verdict["x"]) <= 1
+
+
+@pytest.fixture
+def verdict_page(browser):
+    contexts = []
+
+    def create(width=390, reduced=False):
+        context = browser.new_context(viewport={"width": width, "height": 1200}, reduced_motion="reduce" if reduced else "no-preference")
+        contexts.append(context)
+        page = context.new_page()
+        markup = page.evaluate("html => new DOMParser().parseFromString(html, 'text/html').querySelector('#daily-verdict').outerHTML", (ROOT / "src/index.html").read_text())
+        page.set_content(f'<html data-theme="dark"><body><div id="tab-dashboard">{markup}</div></body></html>')
+        page.add_style_tag(path=str(ROOT / "src/styles/tokens-v9.css"))
+        page.add_style_tag(path=str(ROOT / "src/styles/daily-verdict.css"))
+        page.add_script_tag(path=str(ROOT / "src/scripts/daily-verdict.js"))
+        return page
+
+    yield create
+    for context in contexts:
+        context.close()
+
+
+@pytest.mark.parametrize("portfolio,benchmark,mood,effect", [
+    (.73, .31, "winning", "fireworks"), (.31, .73, "profitable", "fireworks"),
+    (-.28, -.70, "losing-less", "umbrella"), (-.70, -.28, "losing", "rain"),
+    (.73, -.31, "exceptional", "fireworks"), (-.46, .31, "against-market", "spotlight"),
+    (.01, -.31, "neutral", "none"), (0, 0, "neutral", "none"),
+    (.05, -.31, "neutral", "none"), (-.05, .31, "neutral", "none"),
+    (None, .31, "unavailable", "none"), (.31, None, "unavailable", "none"),
+    ("0.31", .31, "unavailable", "none"),
+])
+def test_daily_verdict_mood_matrix(verdict_page, portfolio, benchmark, mood, effect):
+    page = verdict_page()
+    page.evaluate("values => DailyVerdict.render({...values, cash: -12, name: 'WIG', ready: true})", {"portfolio": portfolio, "benchmark": benchmark})
+    assert page.locator("#daily-verdict").get_attribute("data-mood") == mood
+    assert page.locator("#daily-verdict").get_attribute("data-effect") == effect
+    if mood == "unavailable":
+        assert page.locator(".dv-plot").is_hidden()
+    else:
+        assert page.locator("#dash-daily-return").inner_text() == f'{"+" if portfolio > 0 else ""}{portfolio:.2f}%'
+    if mood == "losing-less":
+        assert page.locator("#dash-daily-return").evaluate("el => getComputedStyle(el).color") != page.locator(".dv-spread").evaluate("el => getComputedStyle(el).color")
+
+
+def test_daily_verdict_against_market_effect_reads_as_a_spotlight(verdict_page):
+    page = verdict_page()
+    page.evaluate("DailyVerdict.render({portfolio: -.46, benchmark: .31, cash: -12, name: 'WIG', ready: true})")
+    assert page.locator("#daily-verdict").get_attribute("data-mood") == "against-market"
+    spotlight = page.locator(".dv-spotlight")
+    assert spotlight.is_visible()
+    beam = spotlight.evaluate("el => getComputedStyle(el, '::before')")
+    lamp = spotlight.evaluate("el => getComputedStyle(el, '::after')")
+    assert beam["clipPath"].startswith("polygon(")
+    assert "linear-gradient" in beam["backgroundImage"]
+    assert lamp["content"] != "none"
+    assert float(lamp["width"].removesuffix("px")) >= 20
+    effect = page.locator(".dv-effect").bounding_box()
+    marker = page.locator(".dv-point.dv-you").bounding_box()
+    assert effect["y"] + effect["height"] < marker["y"]
+
+
+@pytest.mark.parametrize("width", [320, 390, 1440])
+def test_daily_verdict_long_roast_scale_and_safe_text(verdict_page, width):
+    page = verdict_page(width)
+    page.evaluate("""() => DailyVerdict.render({portfolio: 2.34, benchmark: -.8, cash: 1234.56, name: 'MSCI World', ready: true,
+        roast: {message: '<img src=x onerror=alert(1)> ' + 'Long commentary. '.repeat(60)}})""")
+    assert page.locator(".dv-spread").inner_text() == "+3.14 pp"
+    assert page.locator(".dv-high").inner_text() == "+3%"
+    assert page.locator(".roast-msg img").count() == 0
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    for selector in (".dv-annotation.dv-you", ".dv-annotation.dv-benchmark"):
+        box = page.locator(selector).bounding_box()
+        assert box["x"] >= 0 and box["x"] + box["width"] <= width
+
+
+@pytest.mark.parametrize("reduced", [False, True])
+def test_daily_verdict_effect_replays_and_respects_reduced_motion(verdict_page, reduced):
+    page = verdict_page(reduced=reduced)
+    page.clock.install()
+    render = "DailyVerdict.render({portfolio: .73, benchmark: -.31, cash: 123, name: 'WIG', ready: true})"
+    page.evaluate(render)
+    assert page.locator(".dv-effect").get_attribute("data-playing") == ("false" if reduced else "true")
+    effect = page.locator(".dv-effect").bounding_box()
+    label = page.locator(".dv-annotation.dv-you").bounding_box()
+    if not reduced:
+        assert effect["y"] + effect["height"] < label["y"]
+    page.clock.fast_forward(1800)
+    assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
+    page.evaluate(render)
+    assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
+    assert page.locator(".dv-point.dv-you").evaluate("el => getComputedStyle(el).animationName") == "none"
+    for _ in range(2):
+        page.clock.fast_forward(10000)
+        page.evaluate(render)
+        assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
+    page.clock.fast_forward(10000)
+    assert page.locator(".dv-effect").get_attribute("data-playing") == ("false" if reduced else "true")
+
+
+def test_daily_verdict_unavailable_clears_stale_comparison(verdict_page):
+    page = verdict_page()
+    page.evaluate("DailyVerdict.render({portfolio: .73, benchmark: .31, cash: 123, name: 'WIG', ready: true})")
+    page.evaluate("DailyVerdict.render({portfolio: .73, benchmark: null, cash: 123, name: 'WIG', ready: true})")
+    assert page.locator("#dash-daily-return").inner_text() == "+0.73%"
+    assert page.locator("#gauge-lead").is_hidden()
+    assert page.locator(".dv-effect").get_attribute("data-playing") == "false"
+    assert page.locator(".dv-unavailable").is_visible()
+
+
+def test_daily_verdict_legacy_entry_does_not_invent_zero_returns(open_page):
+    page, errors = open_page()
+    page.evaluate("""() => {
+        window.PORTFOLIO_DAILY_CHANGE_PCT = null;
+        window.BENCHMARK_DAILY_PCT = null;
+        window.WIG_DAILY_PCT = 1;
+        window.BENCHMARK_ID = 'SP500';
+        window._gaugeDataReady = true;
+        animateGaugeEntry('gaugeChart', 0, 1, () => { window.verdictComplete = true; });
+    }""")
+    assert page.locator("#daily-verdict").get_attribute("data-state") == "unavailable"
+    assert page.locator("#dash-daily-return").inner_text() == "\u2014"
+    assert page.evaluate("window.verdictComplete") is True
+    assert not errors
+
+
+@pytest.mark.parametrize("width,height", [(1440, 900), (1024, 768), (768, 1024), (390, 844)])
+def test_ath_summary_layout_preserves_the_separate_rail(open_page, width, height):
+    page, errors = open_page(width, height)
+    layout = page.evaluate("""() => {
+        const box = selector => document.querySelector(selector).getBoundingClientRect().toJSON();
+        return { ath: box('.ath-part'), six: box('.six-part'), summary: box('.summary'),
+            railSeparate: document.querySelector('.col-rail').parentElement === document.querySelector('.d-page')
+                && !document.querySelector('.ath-six .col-rail') };
+    }""")
+    assert layout['railSeparate']
+    if width >= 900:
+        assert layout['six']['width'] / layout['ath']['width'] == pytest.approx(2, abs=0.02)
+        assert layout['summary']['x'] == pytest.approx(layout['six']['x'], abs=1)
+        assert layout['summary']['width'] == pytest.approx(layout['six']['width'], abs=1)
+        assert layout['summary']['y'] - layout['six']['bottom'] == pytest.approx(32, abs=1)
+    else:
+        assert layout['six']['y'] >= layout['ath']['bottom']
+        assert layout['summary']['y'] >= layout['six']['bottom']
+    assert not errors, errors
+
+
+@pytest.mark.parametrize('theme', THEMES)
+@pytest.mark.parametrize('width,height', VIEWPORTS)
+def test_statistics_redesign_preserves_independent_charts_and_tokens(open_page, theme, width, height):
+    page, errors = open_page(width, height, theme)
+    page.evaluate("showTab('statistics')")
+    page.wait_for_selector('#underwater-lakes-portfolio-btns select')
+    page.wait_for_function('typeof _underwaterPathChart !== "undefined" && _underwaterPathChart !== null')
+    page.wait_for_function('_underwaterLakesChart !== null && _underwaterLakesChart.width > 0')
+    assert page.locator('#tab-statistics').evaluate('node => getComputedStyle(node).opacity') == '1'
+    page.wait_for_function("""() => [_underwaterPathChart, _underwaterLakesChart].every(chart =>
+        chart.width > 0 && chart.height > 0 && chart.ctx.getImageData(0, 0, chart.canvas.width, chart.canvas.height).data.some(value => value > 0))""")
+    titles = page.locator('#tab-statistics .uwl-chart-title').all_text_contents()
+    assert titles == ['Valuation Path vs High-Water Mark', 'The Lakes (Underwater Drawdown %)']
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    boxes = page.locator('#tab-statistics .uwl-chart-panel').evaluate_all('nodes => nodes.map(node => node.getBoundingClientRect().toJSON())')
+    if width >= 900:
+        assert boxes[1]['x'] >= boxes[0]['right']
+        assert boxes[1]['y'] == pytest.approx(boxes[0]['y'], abs=1)
+    else:
+        assert boxes[1]['y'] >= boxes[0]['bottom']
+    assert page.locator('#tab-statistics .stats-section').evaluate_all("nodes => nodes.every(node => getComputedStyle(node).borderRadius === '0px' && getComputedStyle(node).backgroundColor === 'rgba(0, 0, 0, 0)')")
+    assert page.locator('#tab-statistics select:visible').evaluate_all('nodes => nodes.every(node => node.getBoundingClientRect().height >= 43.5)')
+    theme_matches = page.evaluate("""() => _underwaterPathChart.data.datasets[0].borderColor === getComputedStyle(document.documentElement).getPropertyValue('--accent-primary').trim()""")
+    assert theme_matches
+    page.locator('#tab-statistics .statistics-help').first.locator('summary').click()
+    assert page.locator('#tab-statistics .statistics-help').first.get_attribute('open') is not None
+    page.keyboard.press('Escape')
+    assert page.locator('#tab-statistics .statistics-help[open]').count() == 0
+    assert not errors, errors
+
+
+def test_statistics_lake_selection_has_its_own_dates_and_wallet_filters(open_page):
+    page, errors = open_page()
+    page.evaluate("showTab('statistics')")
+    page.wait_for_selector('#statistics-lake-select:not([disabled])')
+    options = page.locator('#statistics-lake-select option').evaluate_all("nodes => nodes.map(node => node.value).filter(Boolean)")
+    assert options
+    page.locator('#statistics-lake-select').select_option(options[0])
+    page.wait_for_function('expected => String(_underwaterSelectedLakeId) === expected', arg=options[0])
+    dates = page.evaluate('({path:_underwaterPathChart.data.labels, lake:_underwaterLakesChart.data.labels})')
+    assert dates['path'] and dates['lake']
+    assert len(dates['lake']) <= len(dates['path'])
+    assert dates['lake'][0] >= dates['path'][0]
+    wallet_select = page.locator('#underwater-lakes-portfolio-btns select')
+    wallet_options = wallet_select.locator('option').evaluate_all('nodes => nodes.map(node => node.value)')
+    assert len(wallet_options) > 1
+    wallet_select.select_option(wallet_options[1])
+    page.wait_for_function('expected => _underwaterPortfolio === expected', arg=wallet_options[1])
+    assert not errors, errors
+
+
+def test_statistics_snapshot_pagination_and_empty_state(open_page):
+    page, errors = open_page(390, 844)
+    page.evaluate("showTab('statistics'); _openAccordion('monthly-snap')")
+    page.evaluate("""() => {
+        const rows = Array.from({length:30}, (_, index) => ({date:`2026-10-${String(index+1).padStart(2,'0')}`, value:1000+index*10, investment:1000, unitPrice:100+index, xirr:.12}));
+        renderMonthlySnapshotTable(rows, 'daily');
+    }""")
+    assert page.locator('#returns-table-wrap tbody tr:visible').count() == 12
+    assert page.locator('#returns-table-wrap tbody tr').count() == 29
+    page.locator('#returns-table-wrap button[aria-label="Next page"]').click()
+    assert page.locator('#returns-table-wrap .statistics-pagination span').inner_text() == '2 / 3'
+    assert page.locator('#returns-table-wrap tbody tr:visible').count() == 12
+    page.evaluate('renderMonthlySnapshotTable([], "daily")')
+    assert page.locator('#returns-table-wrap .stats-empty').is_visible()
+    assert page.locator('#returns-table-wrap .statistics-pagination').count() == 0
+    assert not errors, errors
+
+
+@pytest.mark.parametrize("theme", THEMES)
+@pytest.mark.parametrize("width,height", VIEWPORTS)
+def test_transactions_redesign_retains_filters_pagination_and_mobile_context(open_page, width, height, theme):
+    page, errors = open_page(width, height, theme)
+    page.evaluate("showTab('transactions')")
+    page.wait_for_function("document.querySelectorAll('#tx-body tr[data-tx-id]').length > 0")
+    assert page.locator('#tab-transactions').evaluate("node => getComputedStyle(node).opacity") == '1'
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    assert page.locator('#tx-body tr[data-tx-id]').count() <= 12
+    assert page.locator('#tx-pagination').is_visible()
+    assert page.locator('#tx-calendar .cal-day.cal-active').evaluate_all('nodes => nodes.every(node => node.tagName === "BUTTON" && node.getAttribute("aria-label"))')
+    assert page.locator('#tx-month-value').inner_text() != '—'
+    if width <= 767:
+        assert page.locator('#tx-body tr:first-child .tx-asset-mobile-meta').inner_text()
+        assert page.locator('#tx-body tr:first-child td:first-child').is_hidden()
+        assert page.locator('#tx-calendar .cal-day.cal-active').evaluate_all('nodes => nodes.every(node => node.getBoundingClientRect().width >= 43.5 && node.getBoundingClientRect().height >= 43.5)')
+
+    asset = page.locator('#tx-body tr:first-child .tx-asset-text').inner_text()
+    page.locator('#f-asset').fill(asset.split('(')[0].strip())
+    assert page.locator('#tx-body tr[data-tx-id]').count() > 0
+    assert page.locator('#tx-page-status').inner_text().endswith('1 of 1')
+    page.locator('#tx-clear-filters').click()
+    assert page.locator('#f-asset').input_value() == ''
+    assert page.locator('#tx-body tr[data-tx-id]').count() <= 12
+
+    page.locator('#tx-page-next').click()
+    assert 'page 2 of' in page.locator('#tx-page-status').inner_text()
+    page.locator('#tx-page-prev').click()
+    assert 'page 1 of' in page.locator('#tx-page-status').inner_text()
+
+    page.locator('#btn-op').click()
+    operation = page.locator('#op-checkboxes .op-pill').first
+    operation.click()
+    assert page.locator('#tx-page-status').inner_text()
+    page.locator('#tx-clear-filters').click()
+    page.locator('#btn-value').click()
+    thumb = page.locator('#thumb-min')
+    thumb.focus()
+    before = float(thumb.get_attribute('aria-valuenow'))
+    page.keyboard.press('ArrowRight')
+    assert float(thumb.get_attribute('aria-valuenow')) > before
+
+    page.locator('#btn-date').click()
+    assert page.locator('#pop-date').is_visible()
+    page.locator('#date-quick-month').click()
+    assert page.locator('#tx-page-status').inner_text()
+    page.keyboard.press('Escape')
+    assert page.locator('.filter-popup.open').count() == 0
+    assert not errors, errors
+
+
+def test_transactions_calendar_day_detail_and_filter_recovery(open_page):
+    page, errors = open_page(1440, 900)
+    page.evaluate("showTab('transactions')")
+    page.wait_for_function("document.querySelectorAll('#tx-body tr[data-tx-id]').length > 0")
+    active_day = page.locator('#tx-calendar .cal-day.cal-active').first
+    assert active_day.get_attribute('aria-label')
+    active_day.click()
+    assert page.locator('#cal-modal-overlay').is_visible()
+    page.locator('#cal-modal-close').click()
+
+    page.locator('#f-asset').fill('definitely-not-an-asset')
+    assert page.locator('#tx-filter-empty').is_visible()
+    page.locator('#tx-empty-clear').click()
+    assert page.locator('#tx-body tr[data-tx-id]').count() > 0
+    assert not errors, errors
+
+
+def test_transactions_value_slider_supports_keyboard(open_page):
+    page, errors = open_page(1440, 900)
+    page.evaluate("showTab('transactions')")
+    page.wait_for_function("document.querySelectorAll('#tx-body tr[data-tx-id]').length > 0")
+    page.locator('#btn-value').click()
+    thumb = page.locator('#thumb-min')
+    thumb.focus()
+    before = float(thumb.get_attribute('aria-valuenow'))
+    page.keyboard.press('ArrowRight')
+    assert float(thumb.get_attribute('aria-valuenow')) > before
+    page.keyboard.press('Home')
+    assert float(thumb.get_attribute('aria-valuenow')) == pytest.approx(float(thumb.get_attribute('aria-valuemin')))
+    assert not errors, errors
 
 
 def _set_ath(page, ath_value):
@@ -435,39 +769,147 @@ def _set_ath(page, ath_value):
     page.wait_for_timeout(1400)
 
 
-def _lake(page):
-    return page.evaluate("""() => { const box = s => document.querySelector('#dash-ath-lake ' + s).getBoundingClientRect().toJSON();
-        const lake = document.getElementById('dash-ath-lake');
-        return { state: lake.dataset.state, label: lake.getAttribute('aria-label'), lake: lake.getBoundingClientRect().toJSON(),
-                 ath: box('.lake-ath'), now: box('.lake-now'), athTag: box('.lake-ath .lake-tag'), nowTag: box('.lake-tag-now'),
-                 nowText: document.querySelector('#dash-ath-lake .lake-tag-now').textContent }; }""")
-
-
-def _overlap(a, b):
-    return a["x"] < b["x"] + b["width"] and b["x"] < a["x"] + a["width"] and a["y"] < b["y"] + b["height"] and b["y"] < a["y"] + a["height"]
-
-
 @pytest.mark.parametrize("width,height", [(1440, 900), (390, 844)])
-def test_lake_shows_small_drawdowns_and_rises_above_the_ath(open_page, width, height):
+def test_ocean_uses_live_dashboard_values_and_keeps_new_ath_ashore(open_page, width, height):
     page, errors = open_page(width, height)
     total = page.evaluate("PORTFOLIO_TOTAL_VALUE")
-    _set_ath(page, round(total / (1 - 0.003), 2))  # 0.3% under the high: invisible on the old linear scale
-    lake = _lake(page)
-    assert lake["state"] == "below" and lake["lake"]["width"] >= 300
-    assert lake["now"]["y"] - lake["ath"]["y"] >= 15
-    assert lake["nowText"] == "now −0.30%"
-    assert not _overlap(lake["athTag"], lake["nowTag"])
-    assert "0.30% below" in lake["label"]
-
-    deep = _lake(page) if not _set_ath(page, total * 2) else None
-    assert lake["now"]["y"] < deep["now"]["y"] <= deep["lake"]["y"] + deep["lake"]["height"]
-
+    _set_ath(page, round(total / (1 - 0.003), 2))
+    assert page.locator('#dash-ath-lake').get_attribute('data-state') == 'snorkeling'
+    assert page.locator('#ath-ocean-depth-readout').text_content() == '−0.30%'
+    assert page.locator('.ath-ocean-scene').is_visible()
+    _set_ath(page, total * 2)
+    assert page.locator('#dash-ath-lake').get_attribute('data-zone') == 'danger'
+    assert page.locator('#ath-ocean-depth-readout').text_content() == '−50.00%'
+    assert page.locator('.ath-ocean-scene .scale-label').last.text_content() == '−60%'
     _set_ath(page, round(total / 1.012, 2))
-    above = _lake(page)
-    assert above["state"] == "above" and above["now"]["y"] < above["ath"]["y"] - 15
-    assert not _overlap(above["athTag"], above["nowTag"])
-    assert page.locator("#dash-ath-lake .lake-peak").evaluate("el => getComputedStyle(el).opacity") == "1"
+    assert page.locator('#dash-ath-lake').get_attribute('data-state') == 'ashore'
+    assert page.locator('#ath-ocean-beach-person').is_visible()
+    assert page.locator('#ath-ocean-drawdown-marker').is_hidden()
     assert not errors, errors
+
+
+@pytest.fixture
+def ocean_page(browser):
+    page = browser.new_page(reduced_motion='reduce')
+    page.evaluate("""html => {
+        const dashboard = document.createElement('section'); dashboard.id = 'tab-dashboard';
+        dashboard.appendChild(new DOMParser().parseFromString(html, 'text/html').querySelector('.ath-part'));
+        document.body.appendChild(dashboard);
+    }""", (ROOT / 'src/index.html').read_text())
+    for stylesheet in ('tokens-v9.css', 'ath-ocean.css'):
+        page.add_style_tag(path=str(ROOT / 'src/styles' / stylesheet))
+    page.add_style_tag(content='body { margin: 0; } #tab-dashboard { padding: 16px; }')
+    page.add_script_tag(path=str(ROOT / 'src/scripts/ath-ocean.js'))
+    yield page
+    page.close()
+
+
+@pytest.mark.parametrize('drawdown,state,zone', [
+    (3, 'ashore', 'relax'), (0, 'ashore', 'relax'), (-2, 'snorkeling', 'explore'),
+    (-2.1, 'diving', 'explore'), (-5, 'diving', 'explore'), (-5.1, 'diving', 'danger'),
+])
+def test_ocean_equipment_and_zone_thresholds(ocean_page, drawdown, state, zone):
+    page = ocean_page
+    page.evaluate('value => AthOcean.render(value)', drawdown)
+    assert page.locator('#dash-ath-lake').get_attribute('data-state') == state
+    assert page.locator('#dash-ath-lake').get_attribute('data-zone') == zone
+    assert page.locator('[data-ocean-zone]').text_content() == zone.capitalize() + '.'
+    assert page.locator('.ath-ocean-scene .scale-label').all_text_contents() == ['ATH · 0%', '−5%', '−10%', '−15%']
+    for selector, expected in [('#ath-ocean-beach-person', 'ashore'), ('#ath-ocean-snorkeler', 'snorkeling'), ('#ath-ocean-expedition-diver', 'diving')]:
+        assert page.locator(selector).is_visible() == (state == expected)
+
+
+@pytest.mark.parametrize('drawdown,critical', [(-12, 'false'), (-12.01, 'true'), (-50, 'true')])
+def test_ocean_critical_danger_threshold_is_strictly_below_twelve(ocean_page, drawdown, critical):
+    ocean_page.evaluate('value => AthOcean.render(value)', drawdown)
+    assert ocean_page.locator('#dash-ath-lake').get_attribute('data-critical-drawdown') == critical
+
+
+def test_ocean_scuba_bubbles_rise_only_with_diver_and_respect_reduced_motion(ocean_page):
+    ocean_page.emulate_media(reduced_motion='no-preference')
+    ocean_page.evaluate('AthOcean.render(-3)')
+    bubbles = ocean_page.locator('#ath-ocean-expedition-diver .scuba-bubbles')
+    assert bubbles.is_visible()
+    assert bubbles.locator('circle').count() == 3
+    assert bubbles.locator('circle').evaluate_all("nodes => nodes.every(node => getComputedStyle(node).animationName === 'ocean-bubble-rise')")
+    ocean_page.emulate_media(reduced_motion='reduce')
+    assert bubbles.locator('circle').evaluate_all("nodes => nodes.every(node => getComputedStyle(node).animationName === 'none')")
+    ocean_page.evaluate('AthOcean.render(-1)')
+    assert not bubbles.is_visible()
+
+
+def test_ocean_danger_icon_and_label_pulse_neon_red_below_twelve(ocean_page):
+    ocean_page.emulate_media(reduced_motion='no-preference')
+    ocean_page.evaluate('AthOcean.render(-12)')
+    assert ocean_page.locator('#dash-ath-lake').get_attribute('data-critical-drawdown') == 'false'
+    assert ocean_page.locator('.danger-zone-label').evaluate('node => getComputedStyle(node).animationName') == 'none'
+    ocean_page.evaluate('AthOcean.render(-12.01)')
+    assert ocean_page.locator('#dash-ath-lake').get_attribute('data-critical-drawdown') == 'true'
+    assert ocean_page.locator('.danger-pulse').evaluate('node => getComputedStyle(node).animationName') == 'ocean-danger-neon'
+    label = ocean_page.locator('.danger-zone-label')
+    assert label.evaluate('node => getComputedStyle(node).animationName') == 'ocean-danger-text'
+    assert label.evaluate('node => getComputedStyle(node).fill') == 'rgb(239, 68, 68)'
+    ocean_page.emulate_media(reduced_motion='reduce')
+    assert ocean_page.locator('.danger-zone-label').evaluate('node => getComputedStyle(node).animationName') == 'none'
+
+
+def test_ocean_recent_low_tracks_historical_peaks_and_missing_data(ocean_page):
+    result = ocean_page.evaluate("""() => {
+        const now = new Date('2026-11-02T12:00:00Z');
+        const rows = [{date:'2026-10-20',value:200}, {date:'2026-09-01',value:100},
+            {date:'2026-10-10',value:80}, {date:'2026-11-01',value:190}];
+        return { low: AthOcean.recentLow(rows,-3,now), live: AthOcean.recentLow(rows,-40,now),
+            missing: AthOcean.recentLow([],0,now), old: AthOcean.recentLow([{date:'2026-09-01',value:100}],0,now),
+            zero: AthOcean.recentLow([{date:'2026-10-10',value:100},{date:'2026-11-01',value:0}],0,now),
+            inputOrder: rows[0].date, large: AthOcean.levels(-50,-55), invalid: AthOcean.levels(NaN) };
+    }""")
+    assert result['low'] == pytest.approx(-20)
+    assert result['live'] == -40
+    assert result['missing'] is None and result['old'] is None
+    assert result['zero'] == -100
+    assert result['inputOrder'] == '2026-10-20'
+    assert result['large']['nowY'] == pytest.approx(405)
+    assert result['large']['lowY'] == pytest.approx(427.5)
+    assert [tick['value'] for tick in result['large']['ticks']] == [-20, -40, -60]
+    assert result['invalid']['state'] == 'pending'
+
+
+def test_ocean_pending_and_history_refresh(ocean_page):
+    page = ocean_page
+    page.evaluate('AthOcean.render(null)')
+    assert page.locator('.ath-ocean-scene').is_hidden()
+    assert page.locator('.ath-ocean-pending').is_visible()
+    page.evaluate('AthOcean.render(-7.2)')
+    assert page.locator('.ath-ocean-scene').is_visible()
+    assert page.locator('#ath-ocean-low-marker').is_hidden()
+    assert page.locator('[data-ocean-low]').text_content() == '—'
+    page.evaluate("AthOcean.setHistory([{date:new Date().toISOString().slice(0,10),value:100}])")
+    assert page.locator('[data-ocean-low]').text_content() == '−7.20%'
+    assert page.locator('#ath-ocean-low-marker').is_visible()
+    page.evaluate('AthOcean.render(-25)')
+    assert page.locator('[data-ocean-low]').text_content() == '−25.00%'
+    page.evaluate('AthOcean.setHistory([])')
+    assert page.locator('#ath-ocean-low-marker').is_hidden()
+
+
+@pytest.mark.parametrize('theme', THEMES)
+@pytest.mark.parametrize('width', [1440, 390])
+def test_ocean_responsive_assets_and_reduced_motion(ocean_page, theme, width):
+    page = ocean_page
+    page.set_viewport_size({'width': width, 'height': 1000})
+    page.evaluate('theme => document.documentElement.dataset.theme = theme', theme)
+    page.evaluate('AthOcean.render(-7.2)')
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+    assert page.locator('.shark-patrol').count() == 3
+    assert page.locator('.reef-swim').count() == 3
+    assert page.evaluate("""() => [...document.querySelectorAll('use')].every(node => document.querySelector(node.getAttribute('href')))""")
+    assert page.locator('.ath-ocean *').evaluate_all("nodes => nodes.every(node => getComputedStyle(node).animationName === 'none')")
+    page.locator('.ath-ocean-help summary').click()
+    assert page.locator('.ath-ocean-help').get_attribute('open') is not None
+    page.emulate_media(reduced_motion='no-preference')
+    for value, selector, name in [(0, '.sun-rays', 'ocean-sun'), (-3, '.sunrays', 'ocean-light'), (-6, '.danger-pulse', 'ocean-danger')]:
+        page.evaluate('value => AthOcean.render(value)', value)
+        assert page.locator(selector).evaluate('node => getComputedStyle(node).animationName') == name
 
 
 def test_new_ath_banner_breaks_out_once_per_record(open_page):
@@ -484,4 +926,19 @@ def test_new_ath_banner_breaks_out_once_per_record(open_page):
     assert page.evaluate("document.querySelector('#dash-ath-celebration .ath20').dataset.marker") == "kept"  # no replay on refresh
     page.evaluate("window.PORTFOLIO_ATH = {athValue: PORTFOLIO_TOTAL_VALUE * 2, athDate: '2026-10-01'}; renderAthCelebration('dash-ath-celebration')")
     assert banner.is_hidden()
+    assert not errors, errors
+
+
+def test_clicking_roastfolio_logo_triggers_refresh_live_prices(open_page):
+    page, errors = open_page(1440, 900)
+    page.evaluate("""() => {
+        window.__refreshCallCount = 0;
+        const orig = window.refreshLivePrices;
+        window.refreshLivePrices = function() {
+            window.__refreshCallCount++;
+            return orig ? orig() : Promise.resolve();
+        };
+    }""")
+    page.locator(".sidenav-header .sidenav-brand").click()
+    assert page.evaluate("window.__refreshCallCount") == 1
     assert not errors, errors

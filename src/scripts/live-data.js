@@ -691,6 +691,7 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
                     ...existing,
                     intraday: benchmarkPayload.intraday || existing.intraday || [],
                     session: benchmarkPayload.session || null,
+                    previousClose: benchmarkPayload.previousClose ?? null,
                     benchmarkId: window.BENCHMARK_ID,
                 };
             } else {

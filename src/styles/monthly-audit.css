@@ -912,37 +912,81 @@
     margin: 0;
     color: var(--text-secondary);
 }
-#monthly-audit-root .rc-switch {
+#monthly-audit-root .rc-switch,
+.rc-switch {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-3, 10px);
     width: max-content;
-    color: var(--text-primary);
+    min-height: 44px;
+    font-size: var(--fs-sm, 14px);
     font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
 }
-#monthly-audit-root .rc-switch input {
+#monthly-audit-root .rc-switch input,
+.rc-switch input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    pointer-events: none;
+}
+#monthly-audit-root .rc-switch-track,
+.rc-switch-track {
+    position: relative;
+    display: inline-block;
     width: 44px;
     height: 24px;
-    appearance: none;
+    flex-shrink: 0;
     border-radius: 999px;
-    background: var(--bg-surface-3);
+    background: var(--bg-surface-3, #223247);
+    border: 1px solid var(--border-strong, rgba(255, 255, 255, 0.2));
+    transition: background-color var(--dur-fast, 180ms) var(--ease-hover, ease),
+                border-color var(--dur-fast, 180ms) var(--ease-hover, ease);
+    box-sizing: border-box;
 }
-#monthly-audit-root .rc-switch input::before {
+:root[data-theme="light"] #monthly-audit-root .rc-switch-track,
+:root[data-theme="light"] .rc-switch-track {
+    background: var(--bg-surface-3, #e2e8f0);
+    border-color: var(--border-subtle, rgba(0, 0, 0, 0.15));
+}
+#monthly-audit-root .rc-switch-track::after,
+.rc-switch-track::after {
     content: "";
-    display: block;
+    position: absolute;
+    top: 2px;
+    left: 2px;
     width: 18px;
     height: 18px;
-    margin: 3px;
     border-radius: 50%;
-    background: var(--text-secondary);
-    transition: transform 180ms var(--ease-hover), background-color 180ms var(--ease-hover);
+    background: var(--text-secondary, #94a3b8);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform var(--dur-base, 180ms) var(--ease-spring, cubic-bezier(0.4, 0, 0.2, 1)),
+                background-color var(--dur-fast, 180ms) var(--ease-hover, ease);
 }
-#monthly-audit-root .rc-switch input:checked {
-    background: var(--accent-glow);
+:root[data-theme="light"] #monthly-audit-root .rc-switch-track::after,
+:root[data-theme="light"] .rc-switch-track::after {
+    background: var(--text-secondary, #64748b);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
-#monthly-audit-root .rc-switch input:checked::before {
+#monthly-audit-root .rc-switch input:checked + .rc-switch-track,
+.rc-switch input:checked + .rc-switch-track {
+    background: var(--accent-primary, #0099ff);
+    border-color: var(--accent-primary, #0099ff);
+}
+#monthly-audit-root .rc-switch input:checked + .rc-switch-track::after,
+.rc-switch input:checked + .rc-switch-track::after {
     transform: translateX(20px);
-    background: var(--accent-primary);
+    background: #ffffff;
+}
+#monthly-audit-root .rc-switch input:focus-visible + .rc-switch-track,
+.rc-switch input:focus-visible + .rc-switch-track {
+    outline: 2px solid var(--accent-primary, #0099ff);
+    outline-offset: 2px;
 }
 #monthly-audit-root .rc-invite-actions {
     display: flex;

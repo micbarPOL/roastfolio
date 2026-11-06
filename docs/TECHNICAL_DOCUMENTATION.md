@@ -126,7 +126,9 @@ The dashboard synthesizes portfolio returns in the browser from the existing ful
 database tables, scheduled jobs, or additional holdings-price requests are used.
 `src/scripts/intraday-comparison.js` owns the pure calculation and Chart.js view.
 
-- Both curves use the selected benchmark's session-open baseline. WIG sessions
+- Both curves measure returns since each instrument's previous close, including
+  opening gaps. Cash remains constant; portfolio prices use constant FX.
+  The time window still starts at the benchmark open. WIG sessions
   use 09:00-17:00 in `Europe/Warsaw`; exchange-local time zones handle DST.
   Provider session metadata can shorten a scheduled session for early closure.
   Without metadata the UI explicitly identifies the scheduled closing time.
@@ -137,21 +139,37 @@ database tables, scheduled jobs, or additional holdings-price requests are used.
   at its last available candle or session close, whichever comes first.
 - Candle timestamps remain unchanged. Since Yahoo timestamps identify candle
   starts, closing prices become available one minute later; the opening price is
-  the initial baseline. Current quotes are not substituted for historical candles.
+  the initial plotted quote, not the return baseline. Current quotes are not
+  substituted for historical candles.
 - Each stock includes `intradayBaseline` (`openTime` and exchange `sessionStart`
   in epoch milliseconds, `openPrice`, `previousClose`) and an unrounded
   `intradayFxRate`. Before another market opens, its previous close is carried
   forward only when its later exchange opening is verified. A known price at/before
-  the shared baseline is otherwise required. Missing holdings are never excluded
-  and the remaining holdings are never renormalized.
+  the shared baseline on the benchmark-local date is otherwise required.
+  For holdings opening with the benchmark, the first candle's open within 15 minutes
+  of session start is used, just as for late benchmark prints. The matching candle
+  must be present and its start must not exceed the delayed chart cutoff.
+  Late first prints are disclosed; their opening price is held flat until their
+  first candle closes. Missing, invalid or later opening data must not fall back
+  to yesterday's close, even when two-day history contains that close. This avoids
+  inventing an opening quote. Missing holdings are never excluded
+  and the remaining holdings are never renormalized. Unavailable states appear
+  beside the chart, not only inside the info tooltip, and clear on a valid payload.
 - Holdings fetch two days of minute candles in the same history request and send
   them as `comparisonBars`, so an instrument-local midnight does not discard the
   shared session baseline. `todayBars` still contains only the latest instrument
   date for Today's Movers. This adds payload history, not another API call.
-- The chart baseline is the benchmark session open, while the dashboard gauge
-  measures from the previous close (including FX moves). Overnight gaps therefore
-  appear in the gauge but not the chart; an info button (ⓘ) next to the chart title
-  explains this in a tooltip (hover, focus or tap; Escape or an outside tap closes it).
+- The benchmark's `previousClose` comes from `chartPreviousClose` (or
+  `previousClose`) metadata in the same one-day Yahoo history response as its
+  minute bars. The full API response and daily bars cache retain it together;
+  older cache entries lacking this field are refreshed. The browser requires
+  positive numeric previous closes for the benchmark and every nonzero holding;
+  missing values produce an unavailable state, never a silent since-open fallback.
+- The chart and daily gauge both include opening gaps. The gauge also includes
+  FX moves and uses separately fetched quotes rather than the chart's delayed
+  minute-bar cutoff, so their numbers and update times need not match.
+  An info button (ⓘ) next to the chart title explains these differences in a tooltip
+  (hover, focus or tap; Escape or an outside tap closes it).
 - Yahoo exchange quotes (benchmark and holdings) are 15 minutes late, so both
   lines stop at now − 15 minutes (`QUOTE_DELAY`); otherwise the portfolio line
   would run flat through the last 15 minutes. Until 15 minutes after the open
@@ -169,7 +187,10 @@ database tables, scheduled jobs, or additional holdings-price requests are used.
   Holidays/weekends show the latest supplied benchmark session with its date,
   rather than fabricating a new session. Minute resolution is not a guarantee of
   minute freshness: holdings bars may be cached for up to three minutes and the
-  view refreshes when the existing full price payload arrives.
+  view refreshes when the existing full price payload arrives. Cache expiry is
+  checked on requests (page load or Refresh prices), not by a scheduled session-hours
+  job. Flushing the cache cannot fix an incorrect baseline or force Yahoo to publish
+  a missing opening candle; the opening-data checks apply to cached and fresh data.
 
 Validation: `tests/test_intraday_comparison_browser.py` exercises the calculation,
 session boundaries, DST, missing-data handling, saved window setting and tooltips.
@@ -249,15 +270,67 @@ graph TD
 - Phones (≤767px): the roast and the gauge sit side by side, the total value
   spans underneath. The gauge canvas takes its height from its wrapper
   (220px desktop, 170px tablet, 112px phone) so it is never stretched.
-- "Under the surface" (`renderAthLake`): the dashed line is the ATH. Distance
-  uses a log scale (`log10(1 + 10·|d|)`, 50% drawdown or +20% gain at full
-  height) so small drawdowns stay visible. Below the ATH the gap fills red and
-  bubbles rise; above it a green tide rises with sparks. Labels sit on opposite
-  sides of their lines so they never overlap.
+- "Under the surface" (`renderAthLake` delegates to `AthOcean`): the approved
+  Deep Ocean SVG is embedded in `src/index.html`; IDs and styles are scoped to
+  avoid collisions. No additional graphics or history requests are made.
+  At/above recorded ATH the scene shows the beach (0% drawdown); below ATH it
+  shows snorkeling through -2%, then scuba diving. Zone accents are independent:
+  Relax at ATH, Explore through -5%, Danger below -5%. Reduced motion disables
+  animation without hiding the active zone or financial readouts.
+- The default linear axis is 0/-5/-10/-15%. Its maximum expands in 15-point
+  increments to fit both current drawdown and the 30-day low, with three evenly
+  spaced labeled ticks. The diamond is the measurement; surface snorkeling is
+  decorative. Above-ATH gains remain visible in the existing financial text.
+- `loadSnapshotAth` passes summary snapshots already fetched by the dashboard
+  to `AthOcean.setHistory`. The low uses the last 30 UTC calendar dates including
+  today and a running peak across all available snapshots, not today's ATH
+  retroactively applied to historical values. A deeper live drawdown is included
+  only when recent snapshot history exists. Missing ATH displays a pending state;
+  missing recent history displays an em dash and no low marker. No cash-flow
+  normalization or backend ATH calculations are changed.
+- The approved component comparison is retained at
+  `design/mockups/components/ath-ocean-options.html`. Unlike full-screen mockups,
+  it has no screen-field registry; production coverage lives in the ocean tests
+  in `tests/test_ui20_dashboard_browser.py`.
 - New-ATH banner (`athBreakoutMarkup`): a sparkline breaks through the dashed
   previous-peak ceiling, the new high pulses and throws sparks. It is rebuilt
   only when the record changes, so live refreshes do not replay it. Wallet
   carousel slides keep the older `athCelebrationMarkup`.
+
+### Statistics presentation (D-052)
+
+The Statistics redesign keeps the existing `statistics.js` calculations and API
+sources. Scoped `statistics.css` replaces legacy card surfaces with frameless
+records, token-colored charts and horizontally scrollable tables. Snapshot and
+benchmark tables paginate 12 rows at a time without discarding observations.
+Each section keeps its own wallet selection. The accessible lake selector calls
+the same selection handler as clicking the valuation chart.
+
+Valuation Path vs High-Water Mark and The Lakes (Underwater Drawdown %) retain
+independent dates and X axes. They sit side by side from 900px and stack below it.
+No sample history, fixed financial values or mockup SVG charts enter production.
+Help closes with Escape/outside click; disclosure buttons and range controls
+expose their state to assistive technology. Reduced motion disables presentation
+transitions and smooth scrolling to a selected lake.
+
+### Transactions presentation (D-053)
+
+The Transactions redesign keeps `LedgerTransactions.loadRows`, `renderSummary`,
+`renderTurnoverChart`, `initCalendar`, `openDayModal` and the existing edit/save
+pipeline. The filter toolbar reuses the existing date, operation, asset, wallet
+and value-range state. The asset search matches the displayed asset text plus
+ledger ticker/symbol when available. It does not change the turnover rule:
+absolute Buy and Sell values only. KPI, calendar and monthly chart summaries
+continue to use the full ledger, independently of table filters.
+
+The table renders 12 filtered rows at a time and resets pagination when the
+filtered ledger changes. Mobile retains operation, asset, signed value and
+actions; the asset cell also exposes the row date and wallet. Calendar activity
+days are keyboard-operable buttons and keep the existing date-detail overlay.
+The value range supports pointer, touch and arrow/Home/End keyboard adjustment.
+Automatic cash rows remain read-only, and editable rows still pass through the
+original transaction validation and persistence handler. No mockup samples are
+used in the application.
 
 ## 2. Database Schema & Data Models
 

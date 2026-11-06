@@ -188,6 +188,23 @@ header {
     border-bottom: 1px solid rgba(0, 242, 254, 0.1);
     flex-shrink: 0;
 }
+.sidenav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    color: inherit;
+    flex: 1;
+    min-width: 0;
+}
+.sidenav-brand-text {
+    min-width: 0;
+}
 .sidenav-logo {
     width: 40px;
     height: 40px;
@@ -13307,13 +13324,16 @@ body.wallet-overlay-open {
 }
 .cl-candles {
     display: flex;
+    flex-wrap: nowrap;
     align-items: center;
     justify-content: center;
     gap: 8px;
     height: 48px;
 }
+/* Every loader renders the same 8 candles; never let a narrow card squeeze them out. */
 .cl-candle {
     position: relative;
+    flex: 0 0 6px;
     width: 6px;
     height: 100%;
     background: transparent;
@@ -13350,6 +13370,8 @@ body.wallet-overlay-open {
 .cl-candle:nth-child(4)::before { top: 0%; bottom: 10%; }
 .cl-candle:nth-child(5)::before { top: 20%; bottom: 15%; }
 .cl-candle:nth-child(6)::before { top: 5%; bottom: 25%; }
+.cl-candle:nth-child(7)::before { top: 12%; bottom: 18%; }
+.cl-candle:nth-child(8)::before { top: 3%; bottom: 28%; }
 @keyframes cl-bounce {
     0%, 100% { transform: scaleY(0.7); opacity: 0.5; }
     50% { transform: scaleY(1.1); opacity: 1; }

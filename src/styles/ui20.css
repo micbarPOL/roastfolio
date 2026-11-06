@@ -59,8 +59,13 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 .sidenav { background: var(--bg-glass); border-right: 1px solid var(--border-subtle); box-shadow: none; backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); }
 .sidenav::before { content: none; }
 .sidenav-header { border-bottom: 0; }
-.sidenav-logo { border: 0; border-radius: var(--radius-sm); }
-.sidenav-app-name { color: var(--text-primary); font-weight: 600; font-size: var(--fs-lg); letter-spacing: -0.03em; text-transform: none; }
+.sidenav-brand { display: flex; align-items: center; gap: var(--space-3); min-width: 0; flex: 1; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; touch-action: manipulation; }
+.sidenav-brand:hover .sidenav-app-name { color: var(--accent-primary); }
+.sidenav-brand:active .sidenav-logo { transform: scale(0.94); }
+.sidenav-brand:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+.sidenav-brand-text { min-width: 0; }
+.sidenav-logo { border: 0; border-radius: var(--radius-sm); transition: transform var(--dur-fast) var(--ease-hover); }
+.sidenav-app-name { color: var(--text-primary); font-weight: 600; font-size: var(--fs-lg); letter-spacing: -0.03em; text-transform: none; transition: color var(--dur-fast) var(--ease-hover); }
 .sidenav-app-sub { color: var(--text-secondary); opacity: 1; }
 .sidenav-close-btn { background: var(--bg-surface-2); border: 0; color: var(--text-secondary); min-width: var(--touch-min); min-height: var(--touch-min); }
 .sidenav-item { color: var(--text-secondary); border-radius: var(--radius-md); font-size: var(--fs-sm); min-height: 40px; padding: 8px 12px; }
@@ -121,9 +126,15 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 /* ---------- Dashboard ---------- */
 #tab-dashboard { width: min(1320px, calc(100% - 48px)); margin: 0 auto; padding-bottom: calc(112px + var(--space-5));
   animation: none; /* the tab fade leaves a transform behind, which would turn this tab into the containing block of the fixed player */ }
-#tab-dashboard .d-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; column-gap: 64px; align-items: start; }
-#tab-dashboard .col-main { display: flex; flex-direction: column; gap: 64px; min-width: 0; }
-#tab-dashboard .col-rail { display: flex; flex-direction: column; gap: 56px; min-width: 0; padding-top: var(--space-6); }
+#tab-dashboard .d-page { display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-areas: "hero movers" "bench accounts" "ath accounts" "summary accounts"; column-gap: 64px; row-gap: 64px; align-items: start; }
+#tab-dashboard .col-main { display: contents; }
+#tab-dashboard .col-rail { display: contents; }
+#tab-dashboard .hero { grid-area: hero; }
+#tab-dashboard .bench { grid-area: bench; }
+#tab-dashboard .ath-six { grid-area: ath; }
+#tab-dashboard .summary { grid-area: summary; }
+#tab-dashboard .movers { grid-area: movers; }
+#tab-dashboard .accounts { grid-area: accounts; min-width: 0; }
 #tab-dashboard [data-o] { animation: ui20-rise var(--dur-slow) var(--ease-enter) both; }
 
 /* Frameless: legacy `:root[data-theme] section:not(.wallet-screen)` paints a !important fill and shadow on every section.
@@ -155,7 +166,7 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 #tab-dashboard .hero-deltas { display: flex; flex-wrap: wrap; gap: var(--space-2); font-size: var(--fs-lg); }
 
 /* The roast headline (the element keeps its legacy id; its old banner styling is reset) */
-#tab-dashboard #gauge-benchmark-tooltip { all: unset; display: none; box-sizing: border-box; max-width: 34ch; color: var(--text-primary); }
+#tab-dashboard #gauge-benchmark-tooltip { all: unset; display: none; box-sizing: border-box; width: 100%; max-width: none; min-width: 0; color: var(--text-primary); }
 #tab-dashboard #gauge-benchmark-tooltip[style*="block"] { display: block; }
 #tab-dashboard #gauge-benchmark-tooltip .roast-msg { all: unset; display: block; font-size: clamp(1.25rem, 1.9vw, 1.75rem); font-weight: 800; line-height: 1.25; letter-spacing: -0.015em; color: var(--text-primary); }
 #tab-dashboard .roast-toggle { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); width: 100%; min-height: var(--touch-min); padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; touch-action: manipulation; }
@@ -220,6 +231,18 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 #tab-dashboard .bench-ohlc { font-size: var(--fs-xs); color: var(--text-secondary); }
 #tab-dashboard .bench-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 #tab-dashboard .bench-chart { position: relative; height: 320px; border-radius: 0; overflow: hidden; }
+#tab-dashboard .benchmark-chart-disclosure { margin-top: var(--space-6); }
+#tab-dashboard .benchmark-chart-disclosure > summary { display: flex; align-items: center; gap: var(--space-2); width: fit-content; min-height: 44px; cursor: pointer; color: var(--text-secondary); font-size: var(--fs-sm); }
+#tab-dashboard .benchmark-chart-disclosure > summary::before { content: "+"; display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--border-strong); border-radius: 50%; color: var(--text-primary); font-size: 16px; }
+#tab-dashboard .benchmark-chart-disclosure[open] > summary::before { content: "−"; }
+#tab-dashboard .benchmark-chart-disclosure > summary:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+#tab-dashboard .benchmark-chart-panel { padding-top: var(--space-4); }
+#tab-dashboard .benchmark-chart-disclosure { margin-top: var(--space-6); }
+#tab-dashboard .benchmark-chart-disclosure > summary { display: flex; align-items: center; gap: var(--space-2); width: fit-content; min-height: 44px; cursor: pointer; color: var(--text-secondary); font-size: var(--fs-sm); }
+#tab-dashboard .benchmark-chart-disclosure > summary::before { content: "+"; display: inline-grid; place-items: center; width: 22px; height: 22px; border: 1px solid var(--border-strong); border-radius: 50%; color: var(--text-primary); font-size: 16px; }
+#tab-dashboard .benchmark-chart-disclosure[open] > summary::before { content: "−"; }
+#tab-dashboard .benchmark-chart-disclosure > summary:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+#tab-dashboard .benchmark-chart-panel { padding-top: var(--space-4); }
 #tab-dashboard .bench-no-data { position: absolute; inset: 0; align-items: center; justify-content: center; text-align: center; color: var(--text-secondary); }
 #tab-dashboard .bench-foot { margin-top: var(--space-3); }
 #tab-dashboard .intraday-comparison { margin-top: var(--space-6); }
@@ -239,14 +262,17 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 #tab-dashboard .intraday-info:focus-within .intraday-info-tip, #tab-dashboard .intraday-info.is-open .intraday-info-tip { opacity: 1; visibility: visible; }
 #tab-dashboard .intraday-info.is-dismissed .intraday-info-tip { opacity: 0; visibility: hidden; }
 @media (max-width: 600px) { #tab-dashboard .intraday-info-tip { left: auto; right: -8px; transform: none; } }
-#tab-dashboard #intraday-comparison-status { font-size: var(--fs-xs); color: var(--text-secondary); line-height: 1.6; overflow-wrap: anywhere; }
+#tab-dashboard #intraday-comparison-status { display: block; margin-top: var(--space-2); padding-top: var(--space-2); border-top: 1px solid var(--border-subtle); font-size: 11px; color: var(--text-secondary); line-height: 1.45; overflow-wrap: anywhere; }
 #tab-dashboard .legend-soon { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border: 1px dashed var(--border-strong); border-radius: 999px; font-size: var(--fs-sm); color: var(--text-secondary); }
 
 /* Loader and skeleton: the app's candle loader is reused, only the backdrop changes */
 #tab-dashboard .card-cl-overlay { background: color-mix(in srgb, var(--bg-canvas) 88%, transparent); border-radius: 0; }
 
 /* ATH lake and last six months */
-#tab-dashboard .ath-six { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; }
+#tab-dashboard .ath-six { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); grid-template-rows: auto 1fr; gap: 32px; align-items: start; }
+#tab-dashboard .ath-six > .ath-part { grid-column: 1; grid-row: 1 / 3; min-width: 0; }
+#tab-dashboard .ath-six > .six-part { grid-column: 2; grid-row: 1; min-width: 0; }
+#tab-dashboard .ath-six > .summary { grid-column: 2; grid-row: 2; min-width: 0; }
 #tab-dashboard .ath-part .section-title, #tab-dashboard .six-part .section-title { margin-bottom: var(--space-4); }
 #tab-dashboard .ath-wrap { display: flex; flex-direction: column; gap: var(--space-4); }
 /* Lake: the dashed line is the ATH surface; "now" sits below it (underwater, log depth scale) or above it (green tide).
@@ -373,7 +399,7 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 
 /* ---------- Tablet and mobile ---------- */
 @media (max-width: 1099px) {
-  #tab-dashboard .d-page { grid-template-columns: minmax(0, 1fr); row-gap: 56px; }
+  #tab-dashboard .d-page { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "bench" "movers" "accounts" "ath" "summary"; row-gap: 56px; }
   #tab-dashboard .col-main, #tab-dashboard .col-rail { display: contents; }
   #tab-dashboard [data-o="1"] { order: 1; } #tab-dashboard [data-o="2"] { order: 2; } #tab-dashboard [data-o="3"] { order: 3; }
   #tab-dashboard [data-o="4"] { order: 4; } #tab-dashboard [data-o="5"] { order: 5; } #tab-dashboard [data-o="6"] { order: 6; }
@@ -381,7 +407,10 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 @media (max-width: 899px) {
   #tab-dashboard .hero-grid { grid-template-columns: minmax(0, 1fr) 220px; gap: var(--space-5); }
   #tab-dashboard .d-gauge .gauge-wrapper { height: 170px; }
-  #tab-dashboard .ath-six { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  #tab-dashboard .ath-six { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; gap: 40px; }
+  #tab-dashboard .ath-six > .ath-part,
+  #tab-dashboard .ath-six > .six-part,
+  #tab-dashboard .ath-six > .summary { grid-column: auto; grid-row: auto; }
 }
 @media (max-width: 767px) {
   body { padding-bottom: calc(var(--bottom-tabs-h) + env(safe-area-inset-bottom)); }

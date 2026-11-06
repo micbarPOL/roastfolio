@@ -74,7 +74,10 @@
         const bars = allBenchmarkBars.filter(bar => bar.timestamp >= start && bar.timestamp < end);
         // Index feeds (e.g. WIG on Yahoo) often publish the first print a minute or two after the open.
         if (!bars.length || bars[0].timestamp - start > MAX_OPEN_DELAY || !validPrice(bars[0].open)) {
-            throw new Error('Benchmark opening candle is missing; a since-open comparison is unavailable.');
+            throw new Error('Benchmark opening candle is missing; the intraday comparison is unavailable.');
+        }
+        if (!validPrice(benchmark.previousClose)) {
+            throw new Error('Benchmark previous close is unavailable. Refresh prices.');
         }
         const warnings = ['Current holdings and cash; constant FX. Benchmark return is in its native currency.'];
         const benchmarkStart = bars[0].timestamp;
@@ -96,6 +99,7 @@
                     timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
                 }).format(start + quoteDelay)}.`);
         }
+        if (benchmarkStart > until) throw new Error('Waiting for the benchmark opening candle.');
         if (!Array.isArray(holdings) || !holdings.length) throw new Error('Portfolio holdings are unavailable.');
         let cash = 0;
         const stocks = [];
@@ -115,20 +119,44 @@
             ).map(pair => ({ timestamp: pair[0] + MINUTE, price: pair[1] }))
                 .sort((a, b) => a.timestamp - b.timestamp);
             const baseline = holding.intradayBaseline;
+            if (!validPrice(baseline?.previousClose)) {
+                throw new Error(`Previous close unavailable: ${name}. Refresh prices. No holdings were excluded.`);
+            }
             let price = null;
+            let priceTime = null;
             for (const bar of prices) {
-                if (bar.timestamp <= start) price = bar.price;
+                if (bar.timestamp <= start) {
+                    price = bar.price;
+                    priceTime = bar.timestamp;
+                }
                 else break;
             }
-            if (baseline?.openTime === start && validPrice(baseline.openPrice)) {
-                price = baseline.openPrice;
-            } else if (!validPrice(price) && baseline?.sessionStart > start && baseline.sessionStart < dayEnd &&
-                baseline.openTime >= baseline.sessionStart && baseline.openTime < dayEnd &&
-                validPrice(baseline.previousClose)) {
-                price = baseline.previousClose;
+            const opensWithBenchmark = baseline?.sessionStart === start || baseline?.openTime === start ||
+                (baseline?.sessionStart == null && baseline?.openTime > start &&
+                    baseline.openTime <= start + MAX_OPEN_DELAY);
+            const opensLater = baseline?.sessionStart > start && baseline.sessionStart < dayEnd;
+            if (opensWithBenchmark) {
+                const first = prices.find(bar => bar.timestamp > start);
+                const hasOpeningPrice = baseline.openTime >= start &&
+                    baseline.openTime <= Math.min(start + MAX_OPEN_DELAY, until) &&
+                    first?.timestamp === baseline.openTime + MINUTE && validPrice(baseline.openPrice);
+                // Never let yesterday's candle silently replace a missing opening price.
+                price = hasOpeningPrice ? baseline.openPrice : null;
+                if (hasOpeningPrice && baseline.openTime > start) {
+                    warnings.push(`${name}: first print ${new Intl.DateTimeFormat('en-GB', {
+                        timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+                    }).format(baseline.openTime)} is used as its opening value; prices held flat until then.`);
+                }
+            } else if (opensLater) {
+                if (!validPrice(price) && baseline.openTime >= baseline.sessionStart && baseline.openTime < dayEnd &&
+                    validPrice(baseline.previousClose)) {
+                    price = baseline.previousClose;
+                }
+            } else if (priceTime === null || priceTime < dayStart) {
+                price = null;
             }
             if (!prices.length || !validPrice(price)) {
-                throw new Error(`Session-start price unavailable: ${name}. No holdings were excluded.`);
+                throw new Error(`Session-start price unavailable: ${name}. Refresh prices after opening candles arrive. No holdings were excluded.`);
             }
             const last = prices.at(-1).timestamp;
             if (last < until - 5 * MINUTE) {
@@ -138,10 +166,12 @@
             }
             let index = 0;
             while (index < prices.length && prices[index].timestamp <= start) index++;
-            stocks.push({ prices, price, index, units: holding.units, fx: holding.intradayFxRate });
+            stocks.push({ prices, price, index, previousClose: baseline.previousClose, units: holding.units, fx: holding.intradayFxRate });
         }
         const openValue = cash + stocks.reduce((sum, stock) => sum + stock.units * stock.price * stock.fx, 0);
         if (!validPrice(openValue)) throw new Error('Portfolio session-start value must be positive.');
+        const baselineValue = cash + stocks.reduce((sum, stock) => sum + stock.units * stock.previousClose * stock.fx, 0);
+        if (!validPrice(baselineValue)) throw new Error('Portfolio previous-close value must be positive.');
         const points = [];
         let benchmarkIndex = 0;
         let benchmarkPrice = bars[0].open;
@@ -159,17 +189,17 @@
                 benchmarkPrice = bars[benchmarkIndex++].price;
             }
             const value = cash + stocks.reduce((sum, stock) => sum + stock.units * stock.price * stock.fx, 0);
-            const portfolioPct = (value / openValue - 1) * 100;
+            const portfolioPct = (value / baselineValue - 1) * 100;
             const benchmarkPct = timestamp >= benchmarkStart && timestamp <= benchmarkAsOf && timestamp <= end
-                ? (benchmarkPrice / bars[0].open - 1) * 100 : null;
+                ? (benchmarkPrice / benchmark.previousClose - 1) * 100 : null;
             points.push({
                 timestamp, portfolioPct, benchmarkPct,
                 spreadPp: portfolioPct == null || benchmarkPct == null ? null : portfolioPct - benchmarkPct,
             });
         }
         return {
-            points, sessionDate: date, baseline: 'benchmark-session-open',
-            start, end, timeZone, benchmarkCurrency, openValue,
+            points, sessionDate: date, baseline: 'previous-close',
+            start, end, timeZone, benchmarkCurrency, openValue, baselineValue,
             axisStart: mode === 'day' ? dayStart : start,
             axisEnd: mode === 'day' ? dayEnd : end,
             portfolioAsOf, benchmarkAsOf, quoteDelay, warnings,
@@ -189,6 +219,7 @@
     function render() {
         const canvas = document.getElementById('intraday-comparison-chart');
         const status = document.getElementById('intraday-comparison-status');
+        const notice = document.getElementById('intraday-comparison-notice');
         if (!canvas || !status) return;
         const renderStarted = performance.now();
         try {
@@ -268,17 +299,19 @@
                     },
                 },
             });
-            status.textContent = `${data.sessionDate} · ${data.timeZone} · Since ${time(data.start)} · ` +
+            status.textContent = `${data.sessionDate} · ${data.timeZone} · Since previous close · Bars from ${time(data.start)} · ` +
                 `Benchmark ${Date.now() >= data.end ? 'closed' : 'closes'} ${time(data.end)} · ` +
                 `Benchmark bars through ${time(data.benchmarkAsOf)} · ` +
                 `Portfolio bars through ${time(data.portfolioAsOf)} · ` +
                 `Both lines delayed ${Math.round(data.quoteDelay / MINUTE)} min. ${data.warnings.join(' ')}`;
+            if (notice) { notice.hidden = true; notice.textContent = ''; }
             root.DashboardPerformance?.record('intraday-render', performance.now() - renderStarted, { status: 'ok' });
             requestAnimationFrame(() => requestAnimationFrame(() => root.DashboardPerformance?.mark('intraday-ready')));
         } catch (error) {
             root.DashboardPerformance?.record('intraday-render', performance.now() - renderStarted, { status: 'unavailable' });
             if (chart) { chart.destroy(); chart = null; }
             status.textContent = error.message;
+            if (notice) { notice.textContent = error.message; notice.hidden = false; }
         }
     }
     function init() {

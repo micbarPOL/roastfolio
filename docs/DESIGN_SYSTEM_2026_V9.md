@@ -749,17 +749,17 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 | D-019 | provisional | The active navigation item keeps `--text-primary` text and shows the accent only on its icon and left bar, because `--accent-primary` text on `--bg-surface-2` is 4.32:1 in dark mode (Section 10). | `css: \.nav-item\[aria-current="page"\] \.ico` |
 | D-020 | provisional | Accordion content (Control Room wallets, benchmark lists) appears with a short fade-and-rise and never animates `height`. | `dom: .wallet-card .wallet-more[hidden]` |
 | D-021 | active | The Dashboard hero follows direction C: the roast is the headline, with total value and today's change under it. | `@dashboard-d-player-v2 dom: .hero .hero-roast [data-field="roast-message"]` |
-| D-022 | active | The hero also shows today's portfolio return against the benchmark return (the comparison the roast talks about) as a gauge with both values and the difference in percentage points. | `@dashboard-d-player-v2 dom: .hero .gauge-widget [data-field="gauge-benchmark-pct"]` |
+| D-022 | superseded | The hero used a gauge for today's portfolio and benchmark returns. Replaced by the approved Shared axis in D-055. | none |
 | D-023 | active | Main column order: hero, benchmark chart, ATH with the last 6 months, and the Summary (month and year against benchmarks) at the very bottom. | `@dashboard-d-player-v2 dom: .col-main > .hero + .bench + .ath-six + .summary` |
 | D-024 | active | The right column holds Today's Movers, then Accounts. | `@dashboard-d-player-v2 dom: .col-rail > .movers + .accounts` |
 | D-025 | superseded | The benchmark chart showed only the benchmark with a "coming soon" slot for the portfolio line. Replaced by D-029. | none |
 | D-026 | active | Frameless layout (Section 1.1, principle 3): no cards, borders or shadows around areas. Space and hairlines separate sections. Rounded shapes remain only for chips, pills, buttons, avatars and floating islands (sidebar, drawer, bottom tabs, player). The browser test scans every screen that carries `data-frameless`. | `@dashboard-d-player-v2 dom: html[data-frameless]` |
 | D-027 | provisional | ATH distance is shown by the lake graphic with its numbers, not by a second gauge mode. | `@dashboard-d-player-v2 dom: .ath-six .ath-lake[data-field="gauge-ath"]` |
 | D-028 | provisional | On mobile the order is hero, benchmark chart, Today's Movers, Accounts, ATH, last 6 months, Summary. Daily information comes first, analysis last. | `@dashboard-d-player-v2 css: \[data-o="6"\]` |
-| D-029 | active | Under the benchmark chart, "Portfolio vs benchmark · since open" plots the portfolio return against the benchmark return at 1-minute resolution. The curve is synthesised in the browser from the minute bars and cash already loaded (no backend storage). Both lines start at 0% at the benchmark open and are delayed 15 minutes to match the Yahoo quotes. The benchmark line ends at its session close; a "Portfolio window" setting lets the portfolio line run for 24 hours. The opening-gap explanation sits behind an info button, not in the page. | `@dashboard-d-player-v2 dom: .bench .intraday-comparison [data-field="intraday-window"]` |
+| D-029 | active | Updated with owner approval 2026-11-05: "Portfolio vs benchmark · Since previous close" plots returns at 1-minute resolution using each instrument's previous close, preserving opening gaps instead of zeroing them. The curve is synthesised in the browser from minute bars, cash and previous-close metadata (no new backend storage). The time window still starts at the benchmark open and both lines are delayed 15 minutes. The benchmark line ends at session close; "Portfolio window" can extend the portfolio to 24 hours. The info button explains constant FX, separately fetched daily quotes and missing-data behavior. | `@dashboard-d-player-v2 dom: .bench .intraday-comparison [data-field="intraday-window"]` |
 | D-030 | active | The header is one compact left-aligned row at every width: title and live status, with the menu button first on mobile. The wordmark appears only in the sidebar and drawer (Section 4.1). | `@dashboard-d-player-v2 no-dom: .top-bar .brand` |
-| D-031 | active | On phones the hero keeps the roast and the gauge side by side (gauge column about 148px), with total value and today's change spanning underneath. | `@dashboard-d-player-v2 css: grid-template-areas:\s*"say gauge"` |
-| D-032 | active | The ATH lake uses a logarithmic distance scale so a 0.3% dip on a large portfolio is visible and a 50% drawdown still fits. States: `pending`, `below` (water with rising bubbles), `at` and `above` (a green tide rises over the dashed ATH line). Answers the former question about the ATH gauge scale. | `@dashboard-d-player-v2 dom: .ath-lake[data-state]` |
+| D-031 | superseded | The phone hero kept roast and gauge side by side. D-055 replaces this with a full-width vertical hierarchy. | none |
+| D-032 | active | The ATH lake uses a logarithmic distance scale so a 0.3% dip on a large portfolio is visible and a 50% drawdown still fits. The scuba diver releases rising tank bubbles only while diving. The Danger zone begins below −5%; below −12%, the danger marker and label pulse neon red. All lake motion respects reduced-motion preferences. | `@dashboard-d-player-v2 dom: .ath-lake[data-state]` |
 | D-033 | active | A new all-time high shows a one-shot breakout banner: a sparkline draws through the dashed ATH ceiling, then the badge shimmers. It replays only when the recorded ATH changes. | `@dashboard-d-player-v2 dom: .ath-celebration .ath-ceiling` |
 | D-034 | provisional | One-shot data entrance animations may last up to 1.2s; interactive transitions stay within 150ms to 300ms (Section 4.14). | `@dashboard-d-player-v2 css: @keyframes ath-draw` |
 | D-035 | provisional | Wallets uses the dashboard's frameless language (D-026): one `h1` in the top bar, a glowing hero with the selected wallet's total, then hairline-separated sections in a main column and a 340px rail. Below 1100px the rail drops under the main column. | `@wallets count: h1 = 1` |
@@ -776,6 +776,15 @@ Check syntax: `dom: <css selector>` (at least one match in the mockup), `count: 
 | D-046 | provisional | Summaries is an editorial recap: a poster cover (D-047), a strip of three big numbers, then numbered chapters 01–07 separated by hairlines in a two-column grid, with no cards. The journey chart fills the gap between the portfolio and the benchmark as "Your lead". | `@history dom: .rc-story .rc-numbers + .rc-grid` |
 | D-047 | provisional | The recap poster is the one printed object allowed on a frameless screen, together with its mini preview in the share invite. Its pastel paper follows the period mood (`--recap-up`, `--recap-down`, `--recap-flat`) in both themes, all text uses `--recap-ink` or `--recap-ink-soft`, and the Spotify-style type runs the TWR up to 7rem. A "Beat the WIG" sticker shows only when the benchmark was beaten. | `@history dom: .rc-poster[data-mood] [data-field="recap-twr"]` |
 | D-048 | provisional | Recap periods use a navigator, not a select: a Monthly / Yearly segmented control, a timeline strip that shows each period's return with year marks and a dot on the live period, and previous / next buttons. A share invite ends the recap with a poster preview and a switch for PLN amounts, which stay hidden by default. The headline is built from data, in priority order: (1) beat or trailed the benchmark, plus the carry holding's share of the gain or the anchor's cost; (2) a new all-time high; (3) the sign-based fallback. Stories that need new backend logic, such as positions sold just before a rally, are future work. | `@history dom: .rc-nav [data-field="recap-period-type"]` |
+
+| D-049 | superseded | Analysis initially used a persistent company list beside details. Replaced by D-050 after review identified lost table width and missing contextual help. | none |
+| D-050 | active | Approved 2026-11-02: Analysis gives the chart and financial statements the full content width. Company search and favorites open in an on-demand dialog, a bottom sheet on mobile. Help popovers explain price returns, indicators, fundamentals and statement units. The metric column stays pinned during horizontal table scrolling. | `@analysis dom: dialog.a-company-picker + .a-detail [data-help="statements"]` |
+| D-051 | active | Approved 2026-11-02: Deep Ocean replaces the ATH lake. The component study is retained in `design/mockups/components/ath-ocean-options.html`, outside the full-screen registry. Beach at ATH, snorkeling through -2%, scuba below; Relax/Explore/Danger accents are separate, with Danger below -5%. Default linear ticks are 0/-5/-10/-15%, expanding for larger drawdowns. The 30-day low uses historical running peaks; missing data is not zero. Illustrative colors stay local to the SVG; surrounding UI uses tokens. Production behavior is covered by the ocean cases in `tests/test_ui20_dashboard_browser.py`. | `@ath-ocean-options count: #abyss-sharks .shark-patrol = 3` |
+
+| D-052 | active | Approved 2026-11-03 under D-008: Statistics uses five frameless analytical sections with independent wallet controls, accessible disclosures and responsive benchmark rows. The valuation-path and lake-drawdown charts keep their original UI titles and independent X ranges, side by side on desktop and stacked below 900px. Production retains the existing API, calculations and Chart.js engine; the mockup remains deterministic. | `@statistics dom: main[data-field="statistics-screen"] details[data-field="statistics-snapshots"]` |
+| D-053 | active | Approved 2026-11-03 under D-008: Transactions uses frameless turnover KPIs, an activity calendar and monthly turnover above a ledger with a separate filter toolbar and 12-row pagination. Combined filters retain independent KPI, calendar and chart totals. Mobile keeps operation, asset and signed value; date and wallet stay in asset metadata, while existing edit actions expose all fields. Automatic cash rows remain read-only. Production reuses the ledger API and mutation validation; no sample data is used. | `@transactions dom: main[data-field="transactions-screen"] table[data-field="transactions-ledger"]` |
+| D-054 | active | Owner approved 2026-11-03 under D-008. Coping Diary keeps the desktop master-detail workflow: conviction ledger and selected Focus Sheet remain visible together. Search and tag filters, open-checklist filtering, concise state/asset/date summaries, and distinct sections for field note, investment thesis, dated checkpoints and running comments are implemented in the production renderer. Phones use a one-column list/detail drill-down with an explicit back action; the composer is a bottom sheet. Inactive hypotheses, linked assets, existing API/local fallback semantics and the shared app shell are preserved. Production browser regressions use deterministic mocked API responses. | `@diary dom: main[data-field="diary-screen"] [data-field="diary-composer"]` |
+| D-055 | active | Owner approved Shared axis and contextual effects on 2026-11-05 under D-008. Daily Verdict occupies the main column beside Today's Movers from the first dashboard row, with the same width as the visible portfolio-versus-benchmark return chart. Accounts begin beside that chart in the row below. The separate benchmark price chart is collapsed by default and renders on demand. The hero orders daily percentage return, PLN return, a shared benchmark axis, spread, full roast and total value. Both-negative outperformance uses amber, both-positive underperformance stays neutral, and opposite-sign results get the strongest accents. A 0.05% neutral zone suppresses effects. Effects last 1.8 seconds and replay every 30 seconds only while visible; they respect reduced motion and never move data markers. Production preserves API calculations and roast reactions. | `@daily-verdict-shared-axis dom: .hero #dash-daily-return` |
 
 ## 10. Consistency Contract
 
@@ -1084,3 +1093,184 @@ Every row is a piece of information or a control that the current History screen
 | :--- | :--- |
 | `history-loading` | Candle loader state |
 | `history-empty` | No history yet |
+
+## Appendix D. Screen Registry: Portfolio
+
+Proposed mockup: `design/mockups/portfolio.html`, pending owner approval before implementation in `src/` (D-008). Uses sample data only. Retains the current Portfolio screen's total and per-wallet composition, wallet filter and holdings information. The shared Shell and Market ticker fields from Appendix A also apply.
+
+Desktop shows a dense holdings table; mobile shows compact rows with a bottom-sheet detail view. Purchase value, price, daily return, YTD, total return, profit/loss and portfolio weight remain available in position details. Summary returns describe open-position valuation, not historical TWR or XIRR. Wallet management remains on the Wallets screen.
+
+| Field | Shows |
+| :--- | :--- |
+| `portfolio-scope` | Total portfolio or selected wallet |
+| `portfolio-value` | Current value in PLN |
+| `portfolio-today` | Daily change since previous close, in PLN and percent |
+| `portfolio-return` | Unrealized gain and return versus purchase value |
+| `portfolio-cost` | Purchase value of open positions |
+| `portfolio-wallet-filter` | Total and per-wallet values, returns and selection |
+| `portfolio-allocation-group` | Asset-class or quote-currency grouping |
+| `portfolio-composition` | Allocation of the selected portfolio or wallet |
+| `portfolio-search` | Search by asset name, ticker or wallet |
+| `portfolio-sort` | Sort by value, return, daily return or name |
+| `portfolio-holdings` | Asset, wallet, PLN price, today, YTD, value, gain, return and weight |
+| `portfolio-details` | All position metrics including purchase value and quantity |
+| `portfolio-loading` | Shared candle loader |
+| `portfolio-empty` | Search empty state with recovery action |
+
+## Appendix E. Screen Registry: Analysis
+
+Approved mockup: `design/mockups/analysis.html` (2026-11-02, D-008, D-050). Implemented in the Analysis section of `src/index.html`, `src/styles/analysis.css` and `src/scripts/analysis.js`. The mockup retains deterministic samples; the application uses its existing API, favorites and Lightweight Charts engine. Quote and reporting currencies are returned separately by `/asset-analysis`. The shared Shell and Market ticker fields from Appendix A also apply. Portfolio remains a non-linked label in the mockup; its existing mockup is retained.
+
+The data inventory follows `src/index.html` and `src/scripts/analysis.js`. Company selection and favorites open on demand, leaving the full width for charts and statements. On mobile the picker is a bottom sheet; the table scrolls within its own region with metric names pinned. Help buttons open dismissible context popovers accessible by pointer or keyboard. Favorites persist only in mockup-local storage. Weekly averages use 50/100/250 trading-day samples and are unavailable in the intraday view. The chart is a price line for this first design proposal; it is not a replacement for the production chart engine.
+
+Production retains the existing MA10/20/50 calculations over bars (not fixed weeks), all dynamic statement metrics and the Trend column. Help labels document these semantics. The quote header shows the last available bar close with its date, not a separately fetched live quote. Changing indicators or theme redraws cached history; changing ticker, period or wallet fetches data. Out-of-order responses are ignored, and failures show an inline retry action. Offline regressions live in `tests/test_analysis_browser.py`.
+
+| Field | Shows |
+| :--- | :--- |
+| `analysis-search` | Company name or ticker search |
+| `analysis-favorites` | Favorite companies, quotes, daily returns and selection |
+| `analysis-empty` | Empty company list with recovery action |
+| `analysis-quote` | Selected company, ticker, exchange, currency, price and daily change |
+| `analysis-favorite-toggle` | Add or remove selected company from favorites |
+| `analysis-chart` | Price history with wallet-scoped buy and sell markers |
+| `analysis-range` | 1D, 1W, 1M, YTD, 1Y, 5Y and ALL ranges |
+| `analysis-range-return` | Price return for the selected range, not portfolio return |
+| `analysis-scope` | All wallets, one wallet or hidden transaction markers |
+| `analysis-indicators` | Volume, 10/20/50-week moving averages and MACD |
+| `analysis-transactions` | Buy/sell date, quantity and wallet for the visible range |
+| `analysis-loading` | Shared candle loader and chart failure recovery |
+| `analysis-fundamentals` | Sector, industry, market cap, trailing/forward P/E, dividend yield and 52-week high/low |
+| `analysis-financials` | Financial statement values and currency |
+| `analysis-statement-type` | Income statement or cash flow statement |
+| `analysis-statement-period` | Annual or quarterly reporting periods |
+| `analysis-context-help` | Definitions for price returns, transaction markers, indicators, fundamental metrics and financial statement units |
+
+## Appendix F. Screen Registry: Statistics
+
+Approved mockup: `design/mockups/statistics.html` (2026-11-03, D-008, active D-052). Implemented in `src/index.html`, `src/styles/statistics.css` and the existing `src/scripts/statistics.js`. Production uses the real portfolio, snapshot, benchmark and underwater APIs; no mockup data or local sample charts are copied into the application. Shared shell and market ticker fields are inherited from Appendix A through `screen_fields("statistics")`; Statistics alone is the current navigation destination, never Portfolio. The retained mockup labels samples as illustrative, non-live data.
+
+The approved chart titles remain **Valuation Path vs High-Water Mark** and **The Lakes (Underwater Drawdown %)**. They are side by side from 900px and stacked below it. Each retains its own data dates and X axis; no shared scrubber or synchronized date assumption is introduced. Production adds keyboard-accessible lake selection, tokenized chart colors, contextual help, independent wallet selectors and 12-row pagination for benchmark and snapshot tables.
+
+All values are derived from a fixed daily sample history ending 30 October 2026 and its transaction ledger. Monthly gain and return use the existing Modified Dietz midpoint-flow convention. Daily records divide net gain by the previous snapshot value; daily snapshot table returns use Modified Dietz, preserving the current distinction. Unit-price returns and HWM exclude deposits. XIRR uses dated investor cash flows and terminal value, not a proxy for period return. Records use snapshot value ATH, while underwater charts use unit-price HWM. Records and benchmarks use only the deterministic all-wallet summary dataset, without a wallet selector. Underwater lakes, heatmap and snapshots retain independent wallet selections; date controls clip only underwater charts, not all-time lake records. Missing benchmark observations remain unavailable, never zero; win denominators count only comparable months. Sample filters recalculate outputs and do not claim to refresh live data. Local Lucide 0.468.0 is vendored in `design/mockups/statistics-icons.js`; charts and icons require no network access.
+
+| Field | Shows / existing source mapping |
+| :--- | :--- |
+| `statistics-screen` | Statistics heading, sample date and approval status; `tab-statistics` |
+| `statistics-records` | All-time, monthly and daily record groups; `stats-alltime`, `stats-monthly`, `stats-daily` |
+| `record-ath` | Snapshot all-time high value, date and snapshot source; `athValue`, `athDate` |
+| `record-ath-age` | Days since snapshot ATH with its date; `daysFromATH` |
+| `record-ath-drawdown` | Current value distance from snapshot ATH in percent and PLN; `drawdownPct`, `drawdownDiff` |
+| `record-profit` | Highest value minus invested with date; `maxSpread`, `maxSpreadDate` |
+| `record-transactions` | Six-month moving average transactions per month, absolute change and previous six-month average; `avg6`, `changeSub` |
+| `record-best-month` | Best monthly net gain with month; `bestMonthGain`, `bestMonth` |
+| `record-worst-month` | Worst monthly net gain with month; `worstMonthGain`, `worstMonth` |
+| `record-month-turnover` | Highest monthly gross transaction turnover with month; `bestTurnoverVal`, `bestTurnoverMonth` |
+| `record-best-day-pct` | Best daily return with date; `bestDayPct`, `bestDayPctDate` |
+| `record-worst-day-pct` | Worst daily return with date; `worstDayPct`, `worstDayPctDate` |
+| `record-best-day-pln` | Best daily net gain with date; `bestDayPLN`, `bestDayPLNDate` |
+| `record-worst-day-pln` | Worst daily net gain with date; `worstDayPLN`, `worstDayPLNDate` |
+| `record-day-turnover` | Highest daily gross transaction turnover with date; `bestDayVal`, `bestDay` |
+| `statistics-benchmarks` | Monthly portfolio returns and eight comparisons; `BENCHMARK_COLS`, `_buildPortfolioMonthlyPeriods` |
+| `statistics-benchmark-wins` | Wins and comparable-month counts for each benchmark; unavailable observations excluded |
+| `statistics-benchmark-rows` | WIG, WIG20, mWIG40, sWIG80, S&P 500, NASDAQ, DAX, MSCI World returns, signed percentage-point differences and unavailable data; mobile disclosure per month |
+| `statistics-underwater` | Underwater lake exploration; existing underwater accordion |
+| `statistics-underwater-wallet` | Independent lake wallet selection; `underwater-lakes-portfolio-btns` |
+| `statistics-lake-selector` | Select individual historical underwater periods by dropdown or clicking the valuation chart, with peak, trough, recovery or ongoing state |
+| `statistics-lake-detail` | Selected lake peak/trough/recovery dates, depth and duration |
+| `statistics-unit-chart` | Local SVG unit-price and high-water-mark time series, date/value inspection; `underwater-path-chart` |
+| `statistics-drawdown-chart` | Local SVG selected-lake drawdown percent series with two observations of context on each side and independent keyboard date/value inspection; `underwater-lakes-chart`, `_selectedLakeDetailMetrics` |
+| `statistics-deepest` | Deepest all-time lake depth, peak/trough/recovery dates and duration; `uwl-deepest-value`, `uwl-deepest-meta` |
+| `statistics-longest` | Longest all-time lake duration, depth, peak/trough/recovery dates; `uwl-widest-value`, `uwl-widest-meta` |
+| `statistics-underwater-range` | ALL / 3Y / 1Y / YTD valuation-path range; independent of all-time lake metrics and explicitly labelled selected-lake detail dates; `underwater-lakes-range-btns` |
+| `statistics-heatmap` | Monthly return matrix and monthly averages; existing heatmap accordion |
+| `statistics-heatmap-wallet` | Independent heatmap wallet selection; `heatmap-portfolio-btns` |
+| `statistics-heatmap-unit` | Percent Modified Dietz return or PLN net gain; independent toggle; `heatmap-metric-btns` |
+| `statistics-heatmap-values` | Year/month cells, signed returns or net gains and unavailable months |
+| `statistics-monthly-averages` | Arithmetic calendar-month average in the selected unit, available observations only |
+| `statistics-snapshots` | Monthly/daily snapshot disclosure; `refreshSnapshotTable` |
+| `statistics-snapshot-wallet` | Independent snapshot wallet selection; `stats-snap-portfolio-btns` |
+| `statistics-snapshot-frequency` | Monthly or daily periods; `stats-snap-granularity-btns`, `_buildPortfolioMonthlyPeriods`, `_buildPortfolioDailyPeriods` |
+| `statistics-snapshot-values` | Date/month, ending portfolio value, invested capital, period net gain, period return and ending XIRR; missing XIRR is unavailable |
+| `statistics-context-help` | Keyboard/pointer-accessible definitions for ATH versus HWM, Dietz, benchmark pp/wins, heatmap averages and XIRR |
+| `statistics-empty` | Standard four-part empty history state with sample recovery action |
+| `statistics-loading` | Shared candle loader; no alternate spinner |
+
+## Appendix G. Screen Registry: Transactions
+
+Approved mockup: `design/mockups/transactions.html` (2026-11-03, D-008, D-053).
+Implemented in `src/index.html`, `src/styles/transactions.css` and the existing
+`src/scripts/transactions.js`. Production still reads through
+`LedgerTransactions`, applies its existing validation and save handlers, and
+never uses the mockup's sample values. The mockup's local editor is illustrative
+only. The implementation does not add import, recalculation or email flows.
+Turnover retains the existing Buy/Sell absolute-value convention. KPI counts
+include all rows. Ledger filters do not change global KPI, calendar or chart
+totals.
+
+The calendar retains deposit/withdrawal markers and keyboard-accessible active
+days. Day details can set the ledger's date range. All table columns remain
+available on desktop; compact mobile rows keep date and wallet in the asset
+summary, with existing inline edit behavior and validation. Automatic cash rows
+cannot be edited. The value range is keyboard accessible and the filter bar
+validates reversed date ranges. Tables paginate the existing filtered list; no
+rows are discarded.
+Price, commission and signed transaction values remain explicit PLN amounts.
+Local Lucide icons reuse `statistics-icons.js`; the illustrative chart is SVG.
+
+| Field | Shows / existing source mapping |
+| :--- | :--- |
+| `transactions-screen` | Transactions title and explicit sample/approval state; `tab-transactions` |
+| `transactions-summary` | Turnover summary independent of ledger filters; `renderSummary` |
+| `transactions-month-turnover` | Current sample month Buy/Sell turnover and transaction count; `tx-month-value`, `tx-month-sub` |
+| `transactions-ytd-turnover` | Sample-year turnover and count; `tx-ytd-value`, `tx-ytd-sub` |
+| `transactions-total-turnover` | All-time turnover and total count; `tx-total-value`, `tx-total-sub` |
+| `transactions-activity` | Activity section; `tx-activity-card` |
+| `transactions-activity-year` | Calendar year selector; `cal-year-tabs` |
+| `transactions-calendar` | Day activity, relative turnover intensity and day selection; `tx-calendar` |
+| `transactions-calendar-legend` | Less/more turnover plus deposit/withdrawal markers; `cal-legend` |
+| `transactions-turnover-chart` | Monthly Buy/Sell turnover in PLN; `txTurnoverChart` |
+| `transactions-history` | Ledger section; `tx-history-card` |
+| `transactions-filtered-summary` | Filtered row count and signed net value; `tx-summary` |
+| `transactions-filters` | Combined, independent ledger filters; `applyFilters` |
+| `transactions-filter-asset` | Asset name/ticker search; `f-asset` |
+| `transactions-filter-wallet` | Wallet filter; `f-wallet` |
+| `transactions-filter-date-from` | Inclusive start date; `f-date-from` |
+| `transactions-filter-date-to` | Inclusive end date; `f-date-to` |
+| `transactions-filter-operation` | Buy/Sell/Dividend/Deposit/Withdrawal/Extra Cost/Spin-off checkboxes; `op-checkboxes` |
+| `transactions-filter-value` | Signed PLN minimum/maximum; `value-slider` |
+| `transactions-date-shortcuts` | Today, this week and this month, relative to the sample date |
+| `transactions-ledger` | Date, operation, asset, wallet, units, price, commission, signed value and edit/automatic status; `tx-table`, `tx-body` |
+| `transactions-pagination` | 12-row pages without discarding filtered observations |
+| `transactions-empty` | Four-part no-results state with clear-filters action |
+| `transactions-loading` | Shared candle loader; no alternative spinner |
+| `transactions-edit` | Local sample date/asset/units/price/commission/value edit, cash restrictions and numeric validation; `handleTransactionSave` |
+| `transactions-day-detail` | Day transactions, turnover total, full values and show-in-ledger action; `openDayModal` |
+
+## Appendix H. Screen Registry: Diary
+
+Approved mockup: `design/mockups/diary.html`, approved under D-008 and active
+D-054. The prototype uses deterministic local records only; it does not call
+Diary APIs or write to the real localStorage key. Production is implemented in
+`src/js/diary.js` and mounted at `#diary-app-root`, using the existing API and
+local fallback semantics. Production browser regressions are in
+`tests/test_diary_production_browser.py`. The implementation preserves the
+desktop master-detail model and the mobile single-column drill-down prescribed
+by Section 3.
+
+| Field | Shows / existing source mapping |
+| :--- | :--- |
+| `diary-screen` | Coping Diary heading and live summary counts; `tab-diary`, `diary-app-root`, `.diary-overview` |
+| `diary-ledger` | Conviction notes sorted by active/held status and update date; `.diary-ledger-list`, `sortForLedger` |
+| `diary-ledger-search` | Text, asset and tag search; `diary-ledger-filter`, `filteredNotes` |
+| `diary-open-checklist-filter` | Only notes with unchecked follow-ups; `diary-filter-unchecked` |
+| `diary-tag-filters` | Tag quick filters and counts; `diary-tags-cloud` |
+| `diary-ledger-empty` | No-entry or no-match recovery state; `diary-ledger-empty` |
+| `diary-focus-sheet` | Selected note and active/inactive status; `diary-detail`, `diary-active-toggle` |
+| `diary-note-text` | Editable note body, extracted tags and linked asset mentions; `diary-focus-note`, `_renderDiaryMentions` |
+| `diary-linked-assets` | Tickers mentioned in the selected note; `_renderDiaryMentions` |
+| `diary-hypothesis` | Why buy, exit plan and risk factors; `diary-why-buy`, `diary-exit-plan`, `diary-risk-factors` |
+| `diary-checklist` | Dated follow-ups, due-state and open/completed state; `diary-checklist`, `diary-add-check` |
+| `diary-running-notes` | Timestamped comments and add-comment flow; `coping-chat-log`, `diary-chat-input` |
+| `diary-composer` | Accessible new ticker/topic sheet and note creation; `diary-compose`, `diary-compose-backdrop`, `diary-new-ticker`, `diary-new-text` |
+| `diary-mobile-back` | Return from Focus Sheet to the ledger on phones; `diary-detail-back`, `data-mobile-detail` |
+| `diary-loading` | Existing loading behavior while records resolve |

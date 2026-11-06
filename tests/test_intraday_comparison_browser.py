@@ -25,7 +25,8 @@ def page(browser):
         body="""<select id="intraday-comparison-window">
         <option value="session">Benchmark session</option><option value="day">24 hours</option>
         </select><div style="height:240px"><canvas id="intraday-comparison-chart"></canvas></div>
-        <p id="intraday-comparison-status"></p>""",
+        <p id="intraday-comparison-status"></p>
+        <p id="intraday-comparison-notice" role="status" hidden></p>""",
     ))
     page.goto("http://intraday.test/")
     page.add_script_tag(content="""
@@ -48,7 +49,7 @@ def fixture(page, *, benchmark_id="WIG", date="2026-10-14", mode="session", now=
         const start = IntradayComparison.localTime(date, open, zone);
         const end = IntradayComparison.localTime(date, benchmarkId === 'SP500' ? '16:00' : '17:00', zone);
         const dayNow = IntradayComparison.localTime(date, now, zone);
-        const benchmark = { session: {start: start/1000, end: end/1000}, intraday: [] };
+        const benchmark = { previousClose: 100, session: {start: start/1000, end: end/1000}, intraday: [] };
         const prices = [];
         for (let t = start; t < end; t += 60000) {
             benchmark.intraday.push({t: t/1000, o: 100, c: 101});
@@ -56,7 +57,7 @@ def fixture(page, *, benchmark_id="WIG", date="2026-10-14", mode="session", now=
         for (let t = start; t < dayNow; t += 60000) prices.push([t, t < end ? 110 : 120]);
         return { benchmarkId, benchmark, mode, now: dayNow, holdings: [
             {name: 'Stock', ticker: 'TEST', units: 2, intradayFxRate: 4,
-                intradayBaseline: {openTime: start, openPrice: 100, previousClose: 90},
+                intradayBaseline: {openTime: start, openPrice: 100, previousClose: 100},
                 todayBars: prices},
             {name: 'Cash', ticker: null, currentValue: 200}
         ] };
@@ -65,6 +66,29 @@ def fixture(page, *, benchmark_id="WIG", date="2026-10-14", mode="session", now=
 
 def synthesize(page, data):
     return page.evaluate("data => IntradayComparison.synthesize(data)", data)
+
+
+def test_previous_close_retains_opening_gap(page):
+    data = fixture(page)
+    data["holdings"][0]["intradayBaseline"]["previousClose"] = 90
+    data["benchmark"]["previousClose"] = 95
+    result = synthesize(page, data)
+    assert result["baseline"] == "previous-close"
+    assert result["baselineValue"] == 920
+    assert result["points"][0]["portfolioPct"] == pytest.approx((1000 / 920 - 1) * 100)
+    assert result["points"][0]["benchmarkPct"] == pytest.approx((100 / 95 - 1) * 100)
+    assert result["points"][1]["portfolioPct"] == pytest.approx((1080 / 920 - 1) * 100)
+    assert result["points"][1]["benchmarkPct"] == pytest.approx((101 / 95 - 1) * 100)
+
+
+@pytest.mark.parametrize("value", [None, 0, -1, "100"])
+@pytest.mark.parametrize("source", ["benchmark", "holding"])
+def test_missing_or_invalid_previous_close_never_uses_open(page, source, value):
+    data = fixture(page)
+    baseline = data["benchmark"] if source == "benchmark" else data["holdings"][0]["intradayBaseline"]
+    baseline["previousClose"] = value
+    with pytest.raises(sync_api.Error, match="[Pp]revious close.*unavailable"):
+        synthesize(page, data)
 
 
 def test_cash_weighting_and_common_baseline(page):
@@ -169,15 +193,113 @@ def test_missing_opening_candle_is_unavailable(page):
         synthesize(page, data)
 
 
-def test_missing_stock_open_does_not_substitute_previous_close(page):
+def test_future_benchmark_opening_is_not_used_before_delayed_cutoff(page):
+    data = fixture(page, now="09:16")
+    del data["benchmark"]["intraday"][:2]
+    with pytest.raises(sync_api.Error, match="Waiting for the benchmark opening candle"):
+        synthesize(page, data)
+
+
+@pytest.mark.parametrize("with_previous_session", [False, True])
+def test_late_stock_first_print_retains_overnight_gap(page, with_previous_session):
     data = fixture(page)
     holding = data["holdings"][0]
     start = holding["intradayBaseline"]["openTime"]
     holding["intradayBaseline"]["sessionStart"] = start
     holding["intradayBaseline"]["openTime"] += 60000
-    holding["todayBars"].pop(0)
+    holding["intradayBaseline"]["openPrice"] = 99
+    holding["todayBars"] = [[start + 60000, 99], [start + 120000, 99.5]]
+    holding["comparisonBars"] = list(holding["todayBars"])
+    if with_previous_session:
+        holding["comparisonBars"].insert(0, [start - 16 * 3600000, 100])
+    result = synthesize(page, data)
+    assert result["openValue"] == 992  # 2 units * 99 * FX 4 + cash 200
+    assert [p["portfolioPct"] for p in result["points"][:3]] == pytest.approx([-0.8, -0.8, -0.8])
+    assert result["points"][3]["portfolioPct"] == pytest.approx(-0.4)
+    assert any("Stock: first print 09:01" in w for w in result["warnings"])
+
+
+def test_real_loss_after_late_open_is_not_hidden(page):
+    data = fixture(page)
+    holding = data["holdings"][0]
+    start = holding["intradayBaseline"]["openTime"]
+    holding["intradayBaseline"].update(sessionStart=start, openTime=start + 60000, openPrice=100)
+    holding["todayBars"] = [[start - 16 * 3600000, 105], [start + 60000, 99]]
+    result = synthesize(page, data)
+    assert result["openValue"] == 1000
+    assert result["points"][2]["portfolioPct"] == pytest.approx(-0.8)
+
+
+def test_already_trading_market_keeps_price_at_benchmark_open(page):
+    data = fixture(page)
+    holding = data["holdings"][0]
+    start = holding["intradayBaseline"]["openTime"]
+    holding["intradayBaseline"].update(sessionStart=start - 3600000, openTime=start - 3600000)
+    holding["todayBars"].insert(0, [start - 60000, 105])
+    result = synthesize(page, data)
+    assert result["openValue"] == 1040
+    assert result["points"][0]["portfolioPct"] == pytest.approx(4)
+    assert result["points"][1]["portfolioPct"] == pytest.approx(8)
+
+
+@pytest.mark.parametrize("open_delay", [1, 15, 16])
+def test_stock_opening_window_without_exchange_metadata(page, open_delay):
+    data = fixture(page)
+    holding = data["holdings"][0]
+    start = holding["intradayBaseline"]["openTime"]
+    holding["intradayBaseline"]["openTime"] = start + open_delay * 60000
+    holding["todayBars"] = [[start - 16 * 3600000, 95], [start + open_delay * 60000, 110]]
+    if open_delay > 15:
+        with pytest.raises(sync_api.Error, match="Session-start price unavailable"):
+            synthesize(page, data)
+    else:
+        result = synthesize(page, data)
+        assert result["openValue"] == 1000
+        assert result["points"][open_delay + 1]["portfolioPct"] == pytest.approx(8)
+
+
+@pytest.mark.parametrize("invalid_open", ["late", "missing", "no-candle", "future"])
+def test_invalid_stock_open_does_not_fall_back_to_yesterdays_close(page, invalid_open):
+    data = fixture(page, now="09:16")
+    holding = data["holdings"][0]
+    start = holding["intradayBaseline"]["openTime"]
+    holding["intradayBaseline"]["sessionStart"] = start
+    if invalid_open == "late":
+        holding["intradayBaseline"]["openTime"] += 16 * 60000
+        holding["todayBars"] = holding["todayBars"][16:]
+    elif invalid_open == "missing":
+        holding["intradayBaseline"]["openPrice"] = None
+    elif invalid_open == "no-candle":
+        holding["todayBars"] = []
+    else:
+        holding["intradayBaseline"]["openTime"] += 2 * 60000
+        holding["todayBars"] = holding["todayBars"][2:]
+    holding["comparisonBars"] = [[start - 16 * 3600000, 95]] + holding["todayBars"]
     with pytest.raises(sync_api.Error, match="Session-start price unavailable"):
         synthesize(page, data)
+
+
+def test_previous_session_cache_is_not_a_current_session_open(page):
+    data = fixture(page)
+    holding = data["holdings"][0]
+    start = holding["intradayBaseline"]["openTime"]
+    holding["intradayBaseline"]["openTime"] -= 86400000
+    holding["intradayBaseline"]["sessionStart"] = start - 86400000
+    holding["todayBars"] = [[start - 16 * 3600000, 95]]
+    with pytest.raises(sync_api.Error, match="Session-start price unavailable"):
+        synthesize(page, data)
+
+
+def test_later_market_can_carry_its_last_session_before_open(page):
+    data = fixture(page)
+    holding = data["holdings"][0]
+    start = holding["intradayBaseline"]["openTime"]
+    holding["intradayBaseline"]["sessionStart"] = start + 6 * 3600000
+    holding["intradayBaseline"]["openTime"] = start - 18 * 3600000
+    holding["todayBars"] = [[start - 12 * 3600000, 100]]
+    result = synthesize(page, data)
+    assert result["openValue"] == 1000
+    assert result["points"][-1]["portfolioPct"] == 0
 
 
 def test_previous_candles_do_not_overwrite_opening_baseline(page):
@@ -206,7 +328,7 @@ def test_comparison_history_preserves_baseline_across_ticker_midnight(page):
     # The latest instrument-local day's sparkline no longer contains the shared baseline.
     holding["comparisonBars"] = holding["todayBars"]
     holding["todayBars"] = holding["todayBars"][-5:]
-    holding["intradayBaseline"] = None
+    holding["intradayBaseline"] = {"previousClose": 100}
     start = data["benchmark"]["session"]["start"] * 1000
     holding["comparisonBars"].insert(0, [start - 60000, 100])
     result = synthesize(page, data)
@@ -267,6 +389,26 @@ def test_window_preference_events_and_tooltip(page):
         [{dataIndex: 600}])""") == "Comparison unavailable at this minute"
     page.add_script_tag(content=SCRIPT)
     assert page.locator("#intraday-comparison-window").input_value() == "day"
+
+
+def test_missing_open_is_visible_and_recovers_on_fresh_payload(page):
+    data = fixture(page)
+    page.evaluate("""data => {
+        window.PORTFOLIO_DATA = [{...data.holdings[0], todayBars: []}];
+        window.BENCHMARK_DATA = data.benchmark;
+        window.BENCHMARK_ID = data.benchmarkId;
+        Date.now = () => data.now;
+        document.dispatchEvent(new CustomEvent('liveDataReady'));
+    }""", data)
+    notice = page.locator("#intraday-comparison-notice")
+    assert notice.is_visible()
+    assert "Session-start price unavailable: Stock" in notice.inner_text()
+    page.evaluate("""data => {
+        window.PORTFOLIO_DATA = data.holdings;
+        document.dispatchEvent(new CustomEvent('liveDataReady'));
+    }""", data)
+    assert notice.is_hidden()
+    assert page.evaluate("charts.at(-1).config.data.datasets[0].data[0].y") == 0
 
 
 def test_calculation_for_fifteen_holdings(page):

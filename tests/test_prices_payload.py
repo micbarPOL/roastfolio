@@ -5,8 +5,12 @@ pytestmark = pytest.mark.full
 import json
 import sys
 import unittest
+from contextlib import ExitStack
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
+
+import pandas as pd
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -164,6 +168,15 @@ class PricesPayloadTests(unittest.TestCase):
         self.assertEqual(xtb["todayBars"], [140.0])
 
     def test_prices_handler_returns_benchmark_ath_and_total_value(self):
+        candles = pd.DataFrame(
+            {"Open": [100.0], "High": [102.0], "Low": [100.0], "Close": [102.0], "Volume": [0]},
+            index=pd.date_range("2026-11-05 09:30", periods=1, tz="America/New_York"),
+        )
+        benchmark_ticker = SimpleNamespace(
+            history=lambda **kwargs: candles,
+            history_metadata={"chartPreviousClose": 98.0, "previousClose": 97.0},
+        )
+        bars_cache = {"^GSPC": {"ts": handler._time.time(), "todayBars": [{"o": 100.0, "c": 102.0}]}}
         xtb_holdings = [{
             "name": "Apple",
             "ticker": "AAPL",
@@ -202,37 +215,42 @@ class PricesPayloadTests(unittest.TestCase):
             "ike-id": {"portfolioId": "ike-id", "athValue": 330.0, "athDate": "2026-05-10", "athSource": "MANUAL"},
         }
 
-        with patch.object(handler, "_get_caller_identity", return_value=("user-1", "michal.bardadyn@gmail.com", "Michal")), \
-             patch.object(handler, "load_s3_cache", return_value={}), \
-             patch.object(handler, "save_s3_cache"), \
-             patch.object(handler, "_load_wallets_from_dynamo", return_value={
-                 "XTB": [{"ticker": "AAPL"}],
-                 "IKE": [{"ticker": None}],
-             }), \
-             patch.object(handler.portfolios, "list_portfolios", return_value=[
-                 {"portfolioId": "xtb-id", "name": "XTB"},
-                 {"portfolioId": "ike-id", "name": "IKE"},
-             ]), \
-             patch.object(handler, "compute_wallet", side_effect=[
-                 (xtb_holdings, 100.0, 5.0, 5.26),
-                 (ike_holdings, 300.0, 0.0, 0.0),
-             ]), \
-             patch.object(handler.db, "get_user", return_value={"settings": {"benchmark": "SP500"}}), \
-             patch.object(handler, "load_benchmark_cache", return_value={"intraday": [{"o": 100.0, "c": 101.0}, {"o": 101.0, "c": 102.0}]}), \
-             patch.object(handler, "fetch_benchmark_history", return_value={
-                 "daily": [],
-                 "weekly": [],
-                 "monthly": [],
-                 "hourly": [],
-                 "intraday": [{"o": 100.0, "c": 101.0}, {"o": 101.0, "c": 102.0}],
-                 "updated": "2026-05-12",
-             }), \
-             patch.object(handler, "save_benchmark_cache"), \
-             patch.object(handler, "build_widget_payload", return_value={"ok": True}), \
-             patch.object(handler, "save_widget_cache"), \
-             patch.object(handler.snapshots, "get_portfolio_ath", side_effect=lambda user_id, portfolio_id: ath_map.get(portfolio_id)), \
-             patch.object(handler.snapshots, "list_snapshots", side_effect=AssertionError("daily change should not be derived from snapshots")):
+        with ExitStack() as stack:
+            ticker_fetch = stack.enter_context(patch.object(handler.yf, "Ticker", return_value=benchmark_ticker))
+            stack.enter_context(patch.object(handler, "load_bars_cache", return_value=bars_cache))
+            stack.enter_context(patch.object(handler, "save_bars_cache"))
+            stack.enter_context(patch.object(handler, "_get_caller_identity", return_value=("user-1", "michal.bardadyn@gmail.com", "Michal")))
+            stack.enter_context(patch.object(handler, "load_s3_cache", return_value={}))
+            stack.enter_context(patch.object(handler, "save_s3_cache"))
+            stack.enter_context(patch.object(handler, "_load_wallets_from_dynamo", return_value={
+                "XTB": [{"ticker": "AAPL"}], "IKE": [{"ticker": None}],
+            }))
+            stack.enter_context(patch.object(handler.portfolios, "list_portfolios", return_value=[
+                {"portfolioId": "xtb-id", "name": "XTB"}, {"portfolioId": "ike-id", "name": "IKE"},
+            ]))
+            stack.enter_context(patch.object(handler, "compute_wallet", side_effect=[
+                (xtb_holdings, 100.0, 5.0, 5.26), (ike_holdings, 300.0, 0.0, 0.0),
+                (xtb_holdings, 100.0, 5.0, 5.26), (ike_holdings, 300.0, 0.0, 0.0),
+            ]))
+            stack.enter_context(patch.object(handler.db, "get_user", return_value={"settings": {"benchmark": "SP500"}}))
+            stack.enter_context(patch.object(handler, "load_benchmark_cache", return_value={
+                "intraday": [{"o": 100.0, "c": 101.0}, {"o": 101.0, "c": 102.0}],
+            }))
+            stack.enter_context(patch.object(handler, "save_benchmark_cache"))
+            stack.enter_context(patch.object(handler, "build_widget_payload", return_value={"ok": True}))
+            stack.enter_context(patch.object(handler, "save_widget_cache"))
+            stack.enter_context(patch.object(handler.snapshots, "get_portfolio_ath", side_effect=lambda user_id, portfolio_id: ath_map.get(portfolio_id)))
+            stack.enter_context(patch.object(handler.snapshots, "list_snapshots", side_effect=AssertionError("daily change should not be derived from snapshots")))
             resp = handler.handler({"path": "/prices", "httpMethod": "GET", "headers": {}}, None)
+            self.assertEqual(json.loads(resp["body"])["benchmarkData"]["previousClose"], 98.0)
+            self.assertEqual(bars_cache["^GSPC"]["previousClose"], 98.0)
+            benchmark_fetches = [call for call in ticker_fetch.call_args_list if call.args == ("^GSPC",)]
+            self.assertTrue(benchmark_fetches)
+            with patch.object(handler, "_compute_benchmark_daily_pct", return_value=1.23):
+                ticker_fetch.reset_mock()
+                cached_resp = handler.handler({"path": "/prices", "httpMethod": "GET", "headers": {}}, None)
+            self.assertEqual(json.loads(cached_resp["body"])["benchmarkData"]["previousClose"], 98.0)
+            self.assertFalse([call for call in ticker_fetch.call_args_list if call.args == ("^GSPC",)])
 
         self.assertEqual(resp["statusCode"], 200)
         body = json.loads(resp["body"])

@@ -17,12 +17,13 @@ class DashboardUiContractTests(unittest.TestCase):
         self.live_data_js = (ROOT / "src" / "scripts" / "live-data.js").read_text()
         self.monthly_audit_js = (ROOT / "src" / "scripts" / "monthly-audit.js").read_text()
 
-    def test_basic_user_only_has_dashboard_portfolio_user_and_wallet_access(self):
+    def test_basic_user_has_dashboard_user_and_wallet_navigation_without_portfolio(self):
         self.assertNotIn("id=\"manage-btn\"", self.index_html)
         self.assertIn("openUserModal()", self.index_html)
         self.assertIn("showTab('dashboard')", self.index_html)
         self.assertIn("showTab('wallets')", self.index_html)
-        self.assertIn("showTab('portfolio')", self.index_html)
+        self.assertNotIn("showTab('portfolio')", self.index_html)
+        self.assertNotIn('data-tab="portfolio"', self.index_html)
         self.assertNotIn("scripts/data.js", self.index_html)
         self.assertNotIn("scripts/data-returns.js", self.index_html)
 
@@ -33,13 +34,14 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("btn.classList.add('tab-locked')", self.user_profile_js)
 
     def test_main_gauge_exposes_benchmark_and_portfolio_return_hooks(self):
-        self.assertIn("id=\"gaugeChart\"", self.index_html)
+        self.assertIn("id=\"daily-verdict\"", self.index_html)
+        self.assertIn("id=\"dash-daily-return\"", self.index_html)
         self.assertIn("id=\"gauge-benchmark-tooltip\"", self.index_html)
         self.assertIn("id=\"dash-daily-pln\"", self.index_html)
 
     def test_gauge_sarcastic_comment_uses_readable_typography(self):
         self.assertIn("styles/main.css?v=20260915b", self.index_html)
-        self.assertIn("const CACHE_NAME = 'roastfolio-v80';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v84';", self.service_worker_js)
         self.assertIn("font-family: 'Aptos', 'Segoe UI', 'Helvetica Neue', sans-serif !important;", self.main_css)
         self.assertIn("font-style: normal;", self.main_css)
         self.assertIn("line-height: 1.55 !important;", self.main_css)
@@ -108,10 +110,14 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("return doFetch(view, attempt + 1, options);", self.live_data_js)
         self.assertNotIn("reloadScript('scripts/portfolio-data.js')", self.live_data_js)
 
-    def test_intraday_chart_explains_open_baseline_vs_gauge(self):
+    def test_intraday_chart_explains_previous_close_and_gauge_differences(self):
+        self.assertIn("previousClose: benchmarkPayload.previousClose ?? null", self.live_data_js)
         self.assertIn('id="intraday-comparison-basis"', self.index_html)
-        self.assertIn("overnight price gaps are excluded", self.index_html)
-        self.assertIn("measures from yesterday's close", self.index_html)
+        self.assertIn("including overnight price gaps", self.index_html)
+        self.assertIn("Portfolio vs benchmark · Since previous close", self.index_html)
+        self.assertIn("measures from the previous close", self.index_html)
+        self.assertIn("includes FX changes and uses separately fetched quotes", self.index_html)
+        self.assertIn('id="intraday-comparison-notice" role="status" hidden', self.index_html)
         self.assertIn('class="intraday-info-btn" aria-label="How this chart is measured" aria-describedby="intraday-comparison-basis"', self.index_html)
         self.assertIn('id="intraday-comparison-basis" class="intraday-info-tip" role="tooltip"', self.index_html)
         self.assertIn('aria-describedby="intraday-comparison-status"', self.index_html)
@@ -161,14 +167,17 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("el.dataset.athKey === key", self.dashboard_js)
 
     def test_service_worker_prefers_fresh_shell_assets(self):
-        self.assertIn("const CACHE_NAME = 'roastfolio-v80';", self.service_worker_js)
+        self.assertIn("const CACHE_NAME = 'roastfolio-v84';", self.service_worker_js)
+        self.assertIn("'/styles/transactions.css'", self.service_worker_js)
+        self.assertIn("'/styles/ath-ocean.css'", self.service_worker_js)
+        self.assertIn("'/scripts/ath-ocean.js'", self.service_worker_js)
         self.assertIn("/scripts/ledger-transactions.js", self.service_worker_js)
         self.assertIn("function isShellAsset(url, request)", self.service_worker_js)
         self.assertIn("request.mode === 'navigate'", self.service_worker_js)
         self.assertIn("self.addEventListener('message'", self.service_worker_js)
         self.assertIn("event.data.type === 'SKIP_WAITING'", self.service_worker_js)
         self.assertIn("reg.update().catch(() => {});", self.index_html)
-        self.assertIn("service-worker.js?v=20260702b", self.index_html)
+        self.assertIn("service-worker.js?v=20261103a", self.index_html)
 
     def test_gauge_animation_uses_modern_neon_transition_hooks(self):
         self.assertIn("const _pulseP = (_animProgress && _animProgress.pulse != null)", self.dashboard_js)
@@ -199,7 +208,8 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("splash-to-gauge", self.index_html)
         self.assertIn("body.splash-to-gauge", self.main_css)
         self.assertIn("styles/main.css?v=20260915b", self.index_html)
-        self.assertIn("scripts/dashboard.js?v=ui20b", self.index_html)
+        self.assertRegex(self.index_html, r'scripts/dashboard\.js\?v=\d+\.\d+\.\d+')
+        self.assertLess(self.index_html.index('scripts/ath-ocean.js?v='), self.index_html.index('scripts/dashboard.js?v='))
         self.assertIn("candleTransmitOut", self.main_css)
         self.assertIn("gaugeCardHandoff", self.main_css)
         self.assertIn("roastTransmissionSweep", self.main_css)
@@ -244,6 +254,23 @@ class DashboardUiContractTests(unittest.TestCase):
         self.assertIn("fxCandle.c ?? fxCandle.close", manage_js)
         self.assertIn("_fetchStockPricePLN(symbol)", manage_js)
         self.assertIn("_getLivePricePLN(symbol, displayName)", manage_js)
+
+    def test_all_loaders_render_all_eight_candles_and_never_shrink(self):
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(self.index_html, "html.parser")
+        candle_containers = soup.select(".cl-candles")
+        self.assertGreaterEqual(len(candle_containers), 6, "Expected at least 6 candle loader containers in index.html")
+        for container in candle_containers:
+            candles = container.select(".cl-candle")
+            self.assertEqual(len(candles), 8, f"Every loader container in index.html must have 8 candles, found {len(candles)}")
+
+        chart_js = (ROOT / "src" / "scripts" / "chart.js").read_text()
+        self.assertEqual(chart_js.count('class="cl-candle '), 8, "Dynamic chart loader must inject all 8 candles")
+
+        self.assertIn("flex-wrap: nowrap;", self.main_css)
+        self.assertIn("flex: 0 0 6px;", self.main_css)
+        self.assertIn(".cl-candle:nth-child(7)::before", self.main_css)
+        self.assertIn(".cl-candle:nth-child(8)::before", self.main_css)
 
 
 if __name__ == "__main__":

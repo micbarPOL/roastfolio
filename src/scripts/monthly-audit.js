@@ -1134,7 +1134,7 @@
                 <span class="eyebrow">Share your month</span>
                 <h2>${beaten ? `Beat the ${escapeHtml(gapInfo.benchmarkName)}? Let the group chat know.` : 'Share your month anyway.'}</h2>
                 <p>Generate the same privacy-first recap image. PLN amounts stay hidden unless you opt in.</p>
-                <label class="rc-switch"><input type="checkbox" id="recap-show-amounts-switch" role="switch" aria-checked="false" onchange="this.setAttribute('aria-checked', String(this.checked))"><span>Show PLN amounts</span></label>
+                <label class="rc-switch"><input type="checkbox" id="recap-show-amounts-switch" role="switch" aria-checked="false" onchange="this.setAttribute('aria-checked', String(this.checked))"><span class="rc-switch-track" aria-hidden="true"></span><span>Show PLN amounts</span></label>
                 <div class="rc-invite-actions">
                     <button type="button" class="btn btn-primary" onclick="shareMonthlyAuditFromInvite('share')">Share poster</button>
                     <button type="button" class="btn btn-quiet" onclick="shareMonthlyAuditFromInvite('download')">Download image</button>

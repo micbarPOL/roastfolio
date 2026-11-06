@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="transactions" data-frameless>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>roastfolio · Transactions mockup</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="transactions.css">
+  <script src="statistics-icons.js" defer></script>
+  <script src="transactions.js" defer></script>
+</head>
+<body>
+<a class="t-skip" href="#transactions">Skip to transactions</a>
+<div class="app" data-sidebar="expanded">
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <div class="sidebar-head"><a class="brand" href="dashboard.html"><i data-lucide="chart-candlestick" aria-hidden="true"></i><span class="brand-wordmark nav-label" data-field="brand-wordmark">roastfolio</span></a></div>
+    <div class="nav-scroll">
+      <a class="nav-item" href="dashboard.html" data-field="nav-dashboard" data-label="Dashboard"><i data-lucide="layout-dashboard" aria-hidden="true"></i><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="wallets.html" data-field="nav-wallets" data-label="Wallets"><i data-lucide="wallet" aria-hidden="true"></i><span class="nav-label">Wallets</span></a>
+      <span class="nav-item" data-field="nav-portfolio" data-label="Portfolio"><i data-lucide="chart-pie" aria-hidden="true"></i><span class="nav-label">Portfolio</span></span>
+      <div class="nav-section nav-label">Analytics</div>
+      <a class="nav-item" href="history.html" data-field="nav-history" data-label="History"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i><span class="nav-label">History</span></a>
+      <a class="nav-item" href="statistics.html" data-field="nav-statistics" data-label="Statistics"><i data-lucide="chart-column" aria-hidden="true"></i><span class="nav-label">Statistics</span></a>
+      <a class="nav-item" href="../../src/index.html#retirement" data-field="nav-retirement" data-label="Retirement"><i data-lucide="calendar" aria-hidden="true"></i><span class="nav-label">Retirement</span></a>
+      <a class="nav-item" href="transactions.html" aria-current="page" data-field="nav-transactions" data-label="Transactions"><i data-lucide="list" aria-hidden="true"></i><span class="nav-label">Transactions</span></a>
+      <a class="nav-item" href="analysis.html" data-field="nav-analysis" data-label="Analysis"><i data-lucide="search" aria-hidden="true"></i><span class="nav-label">Analysis</span></a>
+      <a class="nav-item" href="../../src/index.html#diary" data-field="nav-diary" data-label="Coping Diary"><i data-lucide="notebook-pen" aria-hidden="true"></i><span class="nav-label">Coping Diary</span></a>
+      <div class="nav-section nav-label">Account</div>
+      <a class="nav-item" href="../../src/guide.html" data-field="nav-guide" data-label="User Guide"><i data-lucide="circle-help" aria-hidden="true"></i><span class="nav-label">User Guide</span></a>
+    </div>
+    <div class="sidebar-foot">
+      <div class="theme-switch nav-label" role="group" aria-label="Color mode" data-field="theme-switch"><button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button><button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button></div>
+      <div class="user-card" data-field="user-card"><span class="avatar">M</span><span class="user-meta nav-label"><span class="user-name">Michal B.</span><span class="user-role">Premium</span></span></div>
+      <div class="brand-footer nav-label" data-field="brand-footer">Powered by <strong>TOMINEX</strong> <span class="num">v15.8.0</span></div>
+      <button type="button" class="sidebar-collapse" aria-label="Collapse sidebar" title="Collapse sidebar" aria-pressed="false"><i data-lucide="panel-left-close" aria-hidden="true"></i></button>
+    </div>
+  </nav>
+  <div class="app-main">
+    <header class="top-bar"><button type="button" class="t-icon t-mobile-menu" aria-label="Open menu" title="Open menu" aria-controls="transactions-menu" aria-expanded="false"><i data-lucide="menu" aria-hidden="true"></i></button><span class="page-title">Transactions</span><span class="live-status" data-field="live-data-status">Sample data · <span class="num">3 Nov 2026</span></span><button type="button" class="t-icon t-mobile-theme" aria-label="Switch color mode" title="Switch color mode"><i data-lucide="sun-moon" aria-hidden="true"></i></button></header>
+    <div class="t-market ticker-tape-container" aria-label="Sample market indices"><span data-field="index-WIG">WIG <b class="num">+0.62%</b></span><span data-field="index-WIG20">WIG20 <b class="num">+0.48%</b></span><span data-field="index-SP500">S&amp;P 500 <b class="num">−0.18%</b></span><span data-field="index-NASDAQ">NASDAQ <b class="num">−0.31%</b></span><span data-field="index-DAX">DAX <b class="num">+0.22%</b></span><span data-field="index-MSCI_WORLD">MSCI World <b class="num">+0.09%</b></span></div>
+    <p class="t-market-note" data-field="market-commentary">Illustrative market snapshot · not live prices</p>
+    <main id="transactions" class="t-main" data-field="transactions-screen">
+      <div class="t-heading"><div><span class="t-eyebrow">Your investment ledger</span><h1>Transactions</h1></div><span class="t-caption">Design study · awaiting approval</span></div>
+      <section class="t-kpis" aria-label="Turnover" data-field="transactions-summary"><dl><dt>This month's turnover</dt><dd id="t-month-value" class="num" data-field="transactions-month-turnover">—</dd><dd id="t-month-count" class="t-caption num"></dd></dl><dl><dt>YTD turnover</dt><dd id="t-ytd-value" class="num" data-field="transactions-ytd-turnover">—</dd><dd id="t-ytd-count" class="t-caption num"></dd></dl><dl><dt>All-time turnover</dt><dd id="t-total-value" class="num" data-field="transactions-total-turnover">—</dd><dd id="t-total-count" class="t-caption num"></dd></dl></section>
+      <section class="t-section" data-field="transactions-activity">
+        <div class="t-section-head"><h2>Transaction activity</h2><div class="t-segments" role="group" aria-label="Activity year" id="t-years" data-field="transactions-activity-year"></div><button type="button" class="t-help t-icon" aria-label="About turnover" aria-describedby="t-help-turnover" title="About turnover"><i data-lucide="circle-help" aria-hidden="true"></i><span role="tooltip" id="t-help-turnover">Turnover is the sum of absolute Buy and Sell values. Deposits, withdrawals, dividends and costs do not count as turnover. Calendar and KPI totals use all sample rows, independently of ledger filters.</span></button></div>
+        <div class="t-calendar-scroll"><div id="t-calendar" class="t-calendar" data-field="transactions-calendar"></div></div>
+        <div class="t-calendar-legend" data-field="transactions-calendar-legend"><span>Less</span><span class="t-swatch t-level-1"></span><span class="t-swatch t-level-2"></span><span class="t-swatch t-level-3"></span><span class="t-swatch t-level-4"></span><span>More turnover</span><span class="t-deposit-key">Deposit</span><span class="t-withdrawal-key">Withdrawal</span></div>
+      </section>
+      <section class="t-section" data-field="transactions-turnover-chart"><div class="t-section-head"><h2>Monthly turnover</h2><span class="t-caption">Buy + Sell · PLN</span></div><div id="t-chart" class="t-chart"></div></section>
+      <section class="t-section" data-field="transactions-history">
+        <div class="t-section-head"><h2>Transaction history</h2><span class="t-caption num" id="t-result-count" data-field="transactions-filtered-summary" aria-live="polite"></span><button type="button" class="t-help t-icon" aria-label="About transaction values" aria-describedby="t-help-values" title="About transaction values"><i data-lucide="circle-help" aria-hidden="true"></i><span role="tooltip" id="t-help-values">Values preserve the ledger's sign. Price and commission are in PLN. Automatic cash rows follow their source transaction and cannot be edited independently. Changes here affect local sample data only.</span></button></div>
+        <form id="t-filters" class="t-filters" aria-label="Ledger filters" data-field="transactions-filters">
+          <label class="t-search">Asset<input type="search" id="t-asset" placeholder="Name or ticker" data-field="transactions-filter-asset"></label>
+          <label>Wallet<select id="t-wallet" data-field="transactions-filter-wallet"><option value="">All wallets</option></select></label>
+          <label>From<input type="date" id="t-from" data-field="transactions-filter-date-from"></label><label>To<input type="date" id="t-to" data-field="transactions-filter-date-to"></label>
+          <details class="t-filter-popover" data-field="transactions-filter-operation"><summary id="t-operation-label">All operations</summary><div id="t-operations" class="t-operation-list"></div></details>
+          <details class="t-filter-popover" data-field="transactions-filter-value"><summary>Value · PLN</summary><div class="t-value-inputs"><label>Minimum<input type="number" id="t-min" step="0.01" placeholder="Any"></label><label>Maximum<input type="number" id="t-max" step="0.01" placeholder="Any"></label></div></details>
+          <button type="button" class="t-icon" id="t-clear" aria-label="Clear filters" title="Clear filters"><i data-lucide="filter-x" aria-hidden="true"></i></button>
+          <div class="t-date-shortcuts" role="group" aria-label="Quick date range" data-field="transactions-date-shortcuts"><button type="button" data-preset="today">Today</button><button type="button" data-preset="week">This week</button><button type="button" data-preset="month">This month</button></div>
+        </form>
+        <p id="t-filter-error" class="t-error" role="alert" hidden></p>
+        <div class="t-table-scroll"><table class="t-table" data-field="transactions-ledger"><thead><tr><th>Date</th><th>Operation</th><th>Asset</th><th>Wallet</th><th>Units</th><th>Price · PLN</th><th>Commission</th><th>Value · PLN</th><th><span class="t-sr-only">Actions</span></th></tr></thead><tbody id="t-rows"></tbody></table></div>
+        <nav class="t-pagination" aria-label="Transaction pages" data-field="transactions-pagination"><button type="button" class="t-icon" id="t-prev" aria-label="Previous page" title="Previous page"><i data-lucide="chevron-left" aria-hidden="true"></i></button><span id="t-page" class="num" aria-live="polite"></span><button type="button" class="t-icon" id="t-next" aria-label="Next page" title="Next page"><i data-lucide="chevron-right" aria-hidden="true"></i></button></nav>
+        <div class="t-empty empty-state-card" data-field="transactions-empty" hidden><span class="empty-state-icon" aria-hidden="true"><i data-lucide="list-filter"></i></span><h3 class="empty-state-title">No matching transactions</h3><p class="empty-state-desc">Try a different wallet, date or operation.</p><button type="button" class="empty-state-btn" id="t-empty-clear">Clear filters</button></div>
+        <div class="card-cl-overlay" data-field="transactions-loading" hidden><div class="cl-loader" aria-hidden="true"><div class="cl-candle cl-candle-1"><div class="cl-wick"></div><div class="cl-body"></div></div><div class="cl-candle cl-candle-2"><div class="cl-wick"></div><div class="cl-body"></div></div><div class="cl-candle cl-candle-3"><div class="cl-wick"></div><div class="cl-body"></div></div></div><span class="t-caption">Loading ledger</span></div>
+      </section>
+      <p class="t-endnote">Sample ledger · edits remain in this preview.</p>
+    </main>
+  </div>
+</div>
+<dialog id="t-edit" class="t-dialog" aria-labelledby="t-edit-title" data-field="transactions-edit"><form id="t-edit-form"><div class="t-dialog-head"><div><span class="t-eyebrow">Local sample</span><h2 id="t-edit-title">Edit transaction</h2></div><button type="button" class="t-icon" data-close="t-edit" aria-label="Close editor" title="Close editor"><i data-lucide="x" aria-hidden="true"></i></button></div><p id="t-edit-meta" class="t-caption"></p><div class="t-edit-fields"><label>Date<input type="date" name="date" required></label><label>Asset<input name="asset" required></label><label>Units<input name="quantity" type="number" step="any" min="0.000001" required></label><label>Price · PLN<input name="price" type="number" step="any" min="0" required></label><label>Commission · PLN<input name="commission" type="number" step="any" min="0" required></label><label>Value · PLN<input name="value" type="number" step="any" required></label></div><p id="t-edit-error" class="t-error" role="alert" hidden></p><div class="t-dialog-actions"><button type="button" data-close="t-edit">Cancel</button><button type="submit"><i data-lucide="check" aria-hidden="true"></i>Save changes</button></div></form></dialog>
+<dialog id="t-day" class="t-dialog t-day-dialog" aria-labelledby="t-day-title" data-field="transactions-day-detail"><div class="t-dialog-head"><div><span class="t-eyebrow">Activity</span><h2 id="t-day-title"></h2></div><button type="button" class="t-icon" data-close="t-day" aria-label="Close day details" title="Close day details"><i data-lucide="x" aria-hidden="true"></i></button></div><p id="t-day-summary" class="t-caption num"></p><div id="t-day-rows"></div><button type="button" id="t-day-filter">Show in ledger</button></dialog>
+<dialog id="transactions-menu" class="t-dialog t-menu" aria-label="Main navigation"><div class="t-dialog-head"><h2>roastfolio</h2><button type="button" class="t-icon" data-close="transactions-menu" aria-label="Close menu" title="Close menu"><i data-lucide="x" aria-hidden="true"></i></button></div><div id="t-menu-links"></div></dialog>
+<nav class="bottom-tabs t-bottom" aria-label="Primary navigation"><a href="dashboard.html"><i data-lucide="layout-dashboard" aria-hidden="true"></i>Dashboard</a><a href="wallets.html"><i data-lucide="wallet" aria-hidden="true"></i>Wallets</a><a href="transactions.html" aria-current="page"><i data-lucide="list" aria-hidden="true"></i>Transactions</a></nav>
+<p id="t-announcement" class="t-sr-only" role="status" aria-live="polite"></p>
+</body>
+</html>

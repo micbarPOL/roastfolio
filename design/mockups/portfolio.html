@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="portfolio" data-frameless>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>roastfolio · Portfolio mockup</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="portfolio.css">
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  <script src="portfolio.js" defer></script>
+</head>
+<body>
+<div class="app" data-sidebar="expanded">
+  <nav class="sidebar-nav" aria-label="Main navigation">
+    <div class="sidebar-head"><a class="brand" href="dashboard.html"><i data-lucide="chart-candlestick" aria-hidden="true"></i><span class="brand-wordmark nav-label" data-field="brand-wordmark">roastfolio</span></a></div>
+    <div class="nav-scroll">
+      <a class="nav-item" href="dashboard.html" data-field="nav-dashboard" data-label="Dashboard"><i data-lucide="layout-dashboard"></i><span class="nav-label">Dashboard</span></a>
+      <a class="nav-item" href="wallets.html" data-field="nav-wallets" data-label="Wallets"><i data-lucide="wallet"></i><span class="nav-label">Wallets</span></a>
+      <span class="nav-item" data-field="nav-portfolio" data-label="Portfolio" aria-current="page"><i data-lucide="chart-pie"></i><span class="nav-label">Portfolio</span></span>
+      <div class="nav-section nav-label">Analytics</div>
+      <a class="nav-item" href="history.html" data-field="nav-history" data-label="History"><i data-lucide="chart-no-axes-combined"></i><span class="nav-label">History</span></a>
+      <a class="nav-item" href="../../src/index.html#statistics" data-field="nav-statistics" data-label="Statistics"><i data-lucide="chart-column"></i><span class="nav-label">Statistics</span></a>
+      <a class="nav-item" href="../../src/index.html#retirement" data-field="nav-retirement" data-label="Retirement"><i data-lucide="calendar"></i><span class="nav-label">Retirement</span></a>
+      <a class="nav-item" href="../../src/index.html#transactions" data-field="nav-transactions" data-label="Transactions"><i data-lucide="list"></i><span class="nav-label">Transactions</span></a>
+      <a class="nav-item" href="../../src/index.html#analysis" data-field="nav-analysis" data-label="Analysis"><i data-lucide="search"></i><span class="nav-label">Analysis</span></a>
+      <a class="nav-item" href="../../src/index.html#diary" data-field="nav-diary" data-label="Coping Diary"><i data-lucide="notebook-pen"></i><span class="nav-label">Coping Diary</span></a>
+      <div class="nav-section nav-label">Account</div>
+      <a class="nav-item" href="../../src/guide.html" data-field="nav-guide" data-label="User Guide"><i data-lucide="circle-help"></i><span class="nav-label">User Guide</span></a>
+    </div>
+    <div class="sidebar-foot">
+      <div class="theme-switch nav-label" role="group" aria-label="Color mode" data-field="theme-switch"><button type="button" class="theme-btn" data-theme-choice="dark" aria-pressed="true">Dark</button><button type="button" class="theme-btn" data-theme-choice="light" aria-pressed="false">Light</button></div>
+      <div class="user-card" data-field="user-card"><span class="avatar">M</span><span class="user-meta nav-label"><span class="user-name">Michal B.</span><span class="user-role">Premium</span></span></div>
+      <div class="brand-footer nav-label" data-field="brand-footer">Powered by <strong>TOMINEX</strong> <span class="num">v15.4.3</span></div>
+      <button type="button" class="sidebar-collapse" aria-label="Collapse sidebar" aria-pressed="false" title="Collapse sidebar"><i data-lucide="panel-left-close"></i></button>
+    </div>
+  </nav>
+  <div class="app-main">
+    <header class="top-bar"><h1 class="page-title">Portfolio</h1><span class="live-status" data-field="live-data-status">Sample snapshot <span class="num">12:41</span></span><button type="button" class="icon-btn p-mobile-theme" aria-label="Switch color mode" title="Switch color mode"><i data-lucide="sun-moon"></i></button></header>
+    <section class="p-ticker" aria-label="Major indices">
+      <span data-field="index-WIG">WIG <b class="num up">+0.62%</b></span><span data-field="index-WIG20">WIG20 <b class="num up">+0.48%</b></span><span data-field="index-SP500">S&amp;P 500 <b class="num down">-0.18%</b></span><span data-field="index-NASDAQ">NASDAQ <b class="num down">-0.31%</b></span><span data-field="index-DAX">DAX <b class="num up">+0.24%</b></span><span data-field="index-MSCI_WORLD">MSCI World <b class="num up">+0.12%</b></span>
+    </section>
+    <main class="p-main">
+      <div class="p-heading"><div><p class="p-eyebrow">The whole picture</p><h2>Your money. All accounted for.</h2></div><a class="p-manage" href="wallets.html"><i data-lucide="wallet"></i>Manage wallets<i data-lucide="arrow-up-right"></i></a></div>
+      <section class="p-summary" aria-label="Portfolio summary">
+        <div class="p-total"><h3 id="scope-label" data-field="portfolio-scope">Total portfolio</h3><div class="p-value num" data-field="portfolio-value"><span id="total-value"></span><span class="p-currency">PLN</span></div><p class="p-note" id="scope-meta"></p></div>
+        <div class="p-metric"><h3>Today <span title="Change since previous close, in PLN">/ previous close</span></h3><strong class="num" id="daily-result" data-field="portfolio-today"></strong><span class="num" id="daily-money"></span></div>
+        <div class="p-metric"><h3>Unrealized return</h3><strong class="num up" id="total-result" data-field="portfolio-return"></strong><span class="num" id="total-money"></span></div>
+        <div class="p-metric"><h3>Purchase value</h3><strong class="num p-cost" id="cost-value" data-field="portfolio-cost"></strong><span>PLN · open positions</span></div>
+      </section>
+      <p class="p-commentary" data-field="market-commentary"><i data-lucide="quote" aria-hidden="true"></i>Different wallets. Same person checking them every five minutes.</p>
+      <section class="p-wallet-section" aria-labelledby="wallet-title"><div class="p-section-head"><h2 id="wallet-title">Your wallets</h2><span class="p-note">Value in PLN</span></div><div class="p-wallets" id="wallets" data-field="portfolio-wallet-filter" role="group" aria-label="Filter by wallet"></div></section>
+      <section class="p-allocation" aria-labelledby="allocation-title">
+        <div class="p-section-head"><h2 id="allocation-title">Where your money sits</h2><div class="segmented" role="group" aria-label="Allocation grouping" data-field="portfolio-allocation-group"><button type="button" class="seg-btn is-active" data-group="type" aria-pressed="true">Asset class</button><button type="button" class="seg-btn" data-group="currency" aria-pressed="false">Currency</button></div></div>
+        <div id="allocation-bar" class="p-allocation-bar" data-field="portfolio-composition" role="img" aria-label="Portfolio allocation"></div><div id="allocation-legend" class="p-allocation-legend"></div>
+      </section>
+      <section class="p-holdings" aria-labelledby="holdings-title">
+        <div class="p-section-head p-holdings-head"><div class="p-title-count"><h2 id="holdings-title">Holdings</h2><span id="holdings-count" class="p-count num" aria-live="polite"></span></div><div class="p-tools"><label class="p-search"><i data-lucide="search" aria-hidden="true"></i><input id="search" type="search" placeholder="Find an asset" aria-label="Search holdings" data-field="portfolio-search"></label><label class="p-sort"><span class="sr-only">Sort holdings</span><select id="sort" aria-label="Sort holdings" data-field="portfolio-sort"><option value="value">Largest value</option><option value="return">Highest return</option><option value="daily">Today's return</option><option value="name">Name A-Z</option></select></label><button type="button" class="icon-btn" id="export" aria-label="Export visible holdings as CSV" title="Export visible holdings as CSV"><i data-lucide="download"></i></button></div></div>
+        <div class="card-cl-overlay" data-field="portfolio-loading" hidden><div class="cl-loader"><div class="cl-candles"><div class="cl-candle cl-bear"><div class="cl-wick"></div><div class="cl-body"></div></div><div class="cl-candle cl-bull"><div class="cl-wick"></div><div class="cl-body"></div></div><div class="cl-candle cl-bull"><div class="cl-wick"></div><div class="cl-body"></div></div></div><span class="cl-text">Loading portfolio</span></div></div>
+        <div class="p-table-wrap"><table class="p-table" data-field="portfolio-holdings"><thead><tr><th>Asset / wallet</th><th>Price <span>PLN</span></th><th>Today</th><th>YTD</th><th>Current value <span>PLN</span></th><th>Profit / loss <span>PLN</span></th><th>Weight</th><th><span class="sr-only">Details</span></th></tr></thead><tbody id="holdings"></tbody></table></div>
+        <div id="empty" class="p-empty empty-state-card" hidden data-field="portfolio-empty"><i class="empty-state-icon" data-lucide="search-x" aria-hidden="true"></i><h3 class="empty-state-title">No matching assets</h3><p class="empty-state-desc">Nothing here matches your search.</p><button type="button" class="p-text-button empty-state-btn" id="clear-search">Clear search</button></div>
+        <footer class="p-table-footer"><span>Values converted to PLN</span><span id="visible-total" class="num"></span></footer>
+      </section>
+    </main>
+  </div>
+</div>
+<nav class="p-bottom-nav" aria-label="Mobile navigation"><a href="dashboard.html"><i data-lucide="layout-dashboard"></i>Dashboard</a><a href="wallets.html"><i data-lucide="wallet"></i>Wallets</a><span aria-current="page"><i data-lucide="chart-pie"></i>Portfolio</span><a href="history.html"><i data-lucide="chart-no-axes-combined"></i>History</a></nav>
+<dialog id="asset-dialog" class="p-dialog" aria-labelledby="detail-name" data-field="portfolio-details"><div class="p-section-head"><span class="p-eyebrow">Position details</span><button type="button" class="icon-btn" id="close-detail" title="Close details" aria-label="Close details"><i data-lucide="x"></i></button></div><div id="detail-content"><h2 id="detail-name">Position details</h2></div><a class="p-manage" href="wallets.html">Open wallet<i data-lucide="arrow-up-right"></i></a></dialog>
+</body>
+</html>

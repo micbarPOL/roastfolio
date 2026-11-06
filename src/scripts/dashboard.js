@@ -170,6 +170,12 @@ async function loadSnapshotAth() {
         snapshotCalls.forEach((snapshotData, idx) => {
             const pid = pids[idx];
             const snapshots = snapshotData?.snapshots || [];
+            if (pid === 'summary' && window.AthOcean) {
+                window.AthOcean.setHistory(snapshots.map(snapshot => ({
+                    date: String(snapshot.snapshotDate || '').slice(0, 10),
+                    value: snapshot.portfolioValue == null ? NaN : Number(snapshot.portfolioValue)
+                })));
+            }
             if (!snapshots.length) return;
 
             let peakVal = 0, peakDate = '';
@@ -452,6 +458,7 @@ function _renderEmptyState() {
 }
 
 function renderSummaryCards() {
+    renderDashboardVerdict();
     const totalEl    = document.getElementById('dash-total-value');
     const dailyPlnEl = document.getElementById('dash-daily-pln');
     const drawdownEl = document.getElementById('dash-drawdown');
@@ -466,7 +473,7 @@ function renderSummaryCards() {
     if (totalEl && typeof PORTFOLIO_TOTAL_VALUE !== 'undefined') {
         totalEl.textContent = PORTFOLIO_TOTAL_VALUE.toLocaleString('pl-PL', { minimumFractionDigits: 2 }) + ' PLN';
     }
-    if (dailyPlnEl) {
+    if (dailyPlnEl && !document.getElementById('daily-verdict')) {
         dailyPlnEl.innerHTML =
             `<span class="pill-delta dash-daily-main ${tone}"><span aria-hidden="true">${arrow}</span><span class="num">${sign}${pln.toLocaleString('pl-PL', { minimumFractionDigits: 2 })} PLN</span></span>` +
             `<span class="pill-delta dash-daily-pct num ${tone}">${sign}${pct.toFixed(2)}%</span>`;
@@ -526,64 +533,25 @@ function renderSummaryCards() {
     }
 }
 
-// Lake graphic. The dashed line is the ATH. Distance from it uses a log scale so a 0.3% dip on a
-// large portfolio is still visible while a 50% drawdown fits; above the ATH a green tide rises instead.
-const ATH_LAKE_BELOW_SURFACE = 24;   // % from the top where the ATH line sits while underwater
-const ATH_LAKE_MAX_DEPTH = 66;       // % of height used for a 50% drawdown
-const ATH_LAKE_ABOVE_SURFACE = 66;   // ATH line drops lower when the tide rises above it
-const ATH_LAKE_MAX_RISE = 48;        // % of height used for +20% above the ATH
-
-function athLakeLevels(drawdownPct) {
-    if (drawdownPct == null || !Number.isFinite(drawdownPct)) {
-        return { state: 'pending', athY: ATH_LAKE_BELOW_SURFACE, nowY: ATH_LAKE_BELOW_SURFACE };
-    }
-    if (drawdownPct < -0.005) {
-        const depth = Math.min(1, Math.max(0.08, Math.log10(1 + 10 * -drawdownPct) / Math.log10(501)));
-        return { state: 'below', athY: ATH_LAKE_BELOW_SURFACE, nowY: ATH_LAKE_BELOW_SURFACE + depth * ATH_LAKE_MAX_DEPTH, depth };
-    }
-    const rise = Math.min(1, Math.max(0.1, Math.log10(1 + 10 * drawdownPct) / Math.log10(201)));
-    return { state: drawdownPct > 0.005 ? 'above' : 'at', athY: ATH_LAKE_ABOVE_SURFACE, nowY: ATH_LAKE_ABOVE_SURFACE - rise * ATH_LAKE_MAX_RISE, depth: 0 };
+function renderAthLake(drawdownPct) {
+    if (window.AthOcean) window.AthOcean.render(drawdownPct);
 }
 
-function renderAthLake(drawdownPct) {
-    const lake = document.getElementById('dash-ath-lake');
-    if (!lake) return;
-    const levels = athLakeLevels(drawdownPct);
-    const pctText = levels.state === 'pending' ? '' : `${drawdownPct >= 0 ? '+' : '−'}${Math.abs(drawdownPct).toFixed(2)}%`;
-    const nowTag = lake.querySelector('.lake-tag-now');
-    if (nowTag) nowTag.textContent = levels.state === 'at' ? 'now · at ATH' : `now ${pctText}`;
-    const athTag = lake.querySelector('.lake-ath .lake-tag');
-    if (athTag) athTag.textContent = levels.state === 'pending' ? 'ATH pending' : 'ATH';
-    lake.setAttribute('aria-label', levels.state === 'pending' ? 'All-time high pending the nightly snapshot'
-        : levels.state === 'below' ? `Portfolio is ${Math.abs(drawdownPct).toFixed(2)}% below its all-time high`
-        : levels.state === 'at' ? 'Portfolio is at its all-time high'
-        : `Portfolio is ${drawdownPct.toFixed(2)}% above its all-time high`);
-    const setLevels = (athY, nowY) => {
-        lake.style.setProperty('--ath-y', `${athY}%`);
-        lake.style.setProperty('--now-y', `${nowY.toFixed(2)}%`);
-        lake.style.setProperty('--gap', Math.max(0, (nowY - athY) / 100).toFixed(4));
-        lake.style.setProperty('--rise', Math.max(0, (athY - nowY) / 100).toFixed(4));
-    };
-    const apply = () => {
-        lake.dataset.state = levels.state;
-        setLevels(levels.athY, levels.nowY);
-    };
-    lake.dataset.depth = (levels.depth || 0).toFixed(2);
-    lake.toggleAttribute('data-low', levels.state === 'below' && levels.nowY > 72);
-    // First real value: start level with the ATH line, then let the water/tide settle into place once.
-    if (lake.dataset.state === 'pending' && levels.state !== 'pending') {
-        setLevels(levels.athY, levels.athY);
-        lake.dataset.state = levels.state;
-        lake.classList.add('is-filling');
-        void lake.offsetHeight;
-        requestAnimationFrame(apply);
-        setTimeout(() => lake.classList.remove('is-filling'), 1300);
-    } else {
-        apply();
-    }
+function renderDashboardVerdict() {
+    const benchmarkValue = typeof window.BENCHMARK_DAILY_PCT === 'undefined' && (!window.BENCHMARK_ID || window.BENCHMARK_ID === 'WIG')
+        ? window.WIG_DAILY_PCT : window.BENCHMARK_DAILY_PCT;
+    window.DailyVerdict?.render({
+        portfolio: window.PORTFOLIO_DAILY_CHANGE_PCT, benchmark: benchmarkValue, cash: window.PORTFOLIO_DAILY_CHANGE_PLN,
+        name: window.BENCHMARK_NAME || window.BENCHMARK_ID || 'Benchmark',
+        ready: window._gaugeDataReady, roast: window.ROAST_DATA,
+    });
 }
 
 function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgress) {
+    if (canvasId === 'gaugeChart' && document.getElementById('daily-verdict')) {
+        renderDashboardVerdict();
+        return;
+    }
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
 
@@ -956,6 +924,11 @@ function renderGauge(canvasId, value, width, height, benchmarkValue, _animProgre
 
 // Animated gauge entry: needle sweeps from centre (0%) to target, then fires onComplete
 function animateGaugeEntry(canvasId, value, benchmarkValue, onComplete) {
+    if (canvasId === 'gaugeChart' && document.getElementById('daily-verdict')) {
+        renderDashboardVerdict();
+        if (typeof onComplete === 'function') onComplete();
+        return;
+    }
     const canvas = document.getElementById(canvasId);
     if (!canvas) return;
     

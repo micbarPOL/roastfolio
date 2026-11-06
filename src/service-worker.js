@@ -8,7 +8,7 @@
  *    data always comes from the network and stale prices are never shown.
  */
 
-const CACHE_NAME = 'roastfolio-v80';
+const CACHE_NAME = 'roastfolio-v84';
 
 // Assets that live locally and rarely change — cache on install
 const PRECACHE = [
@@ -20,6 +20,9 @@ const PRECACHE = [
     '/styles/main.css',
     '/styles/tokens-v9.css',
     '/styles/ui20.css',
+    '/styles/ath-ocean.css',
+    '/styles/statistics.css',
+    '/styles/transactions.css',
     '/scripts/auth-guard.js',
     '/scripts/auth.js',
     '/scripts/user-profile.js',
@@ -27,6 +30,7 @@ const PRECACHE = [
     '/scripts/ledger-transactions.js',
     '/scripts/manage.js',
     '/scripts/dashboard.js',
+    '/scripts/ath-ocean.js',
     '/scripts/chart.js',
     '/scripts/benchmark-chart.js',
     '/scripts/intraday-comparison.js',

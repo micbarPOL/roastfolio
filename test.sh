@@ -35,11 +35,11 @@ case "$COMMAND" in
         ;;
     browser)
         echo "🌐 Running Playwright browser regressions..."
-        exec $PYTEST tests/test_monthly_audit_browser.py tests/test_benchmark_consent_browser.py "${@:2}"
+        exec $PYTEST tests/test_monthly_audit_browser.py tests/test_benchmark_consent_browser.py tests/test_analysis_browser.py "${@:2}"
         ;;
     design)
         echo "🎨 Checking design system consistency (document, mockups, decisions, browser)..."
-        exec $PYTEST tests/test_design_system_doc.py tests/test_design_mockups_contract.py tests/test_design_mockups_browser.py tests/test_ui20_dashboard_browser.py "${@:2}"
+        exec $PYTEST tests/test_design_system_doc.py tests/test_design_mockups_contract.py tests/test_design_mockups_browser.py tests/test_ui20_dashboard_browser.py tests/test_transactions_mockup_browser.py tests/test_diary_mockup_browser.py tests/test_diary_production_browser.py "${@:2}"
         ;;
     all)
         echo "🚀 Running all tests..."

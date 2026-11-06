@@ -12,6 +12,7 @@
         filterUncheckedOnly: false,
         saving: false,
         composeOpen: false,
+        mobileDetailOpen: false,
     };
 
     function chooseDiaryEmptyGraphic(theme) {
@@ -362,42 +363,139 @@
             '@media (max-width: 980px){.diary-split{grid-template-columns:1fr;gap:10px;min-height:auto}.diary-ledger-list{max-height:42vh}.diary-pane-head{padding:10px 12px}.diary-detail-body{padding:10px 12px}}' +
             '@media (max-width: 640px){.diary-split{gap:8px}.diary-pane{border-radius:12px}.diary-pane-head{flex-wrap:wrap}.diary-pane-head strong{font-size:15px}.diary-ledger-list{padding:8px;max-height:36vh}.diary-ledger-card{padding:8px;border-radius:10px}.diary-detail-body{gap:10px}.diary-glass-toggle{width:52px;height:28px}.diary-toggle-status{min-width:0;font-size:11px}.diary-chat-compose{flex-direction:column}.diary-chat-compose input,.diary-chat-compose button{width:100%}.diary-check-item{grid-template-columns:auto 1fr;gap:6px}.diary-check-item input[type="date"]{grid-column:2 / -1;width:100%}.diary-check-add-row{grid-template-columns:1fr !important}.diary-check-add-row input,.diary-check-add-row button{width:100%}}' +
             '@media (max-width: 760px){.diary-check-add-row{grid-template-columns:1fr !important}.diary-check-add-row input,.diary-check-add-row button{width:100%}}';
+            style.textContent += `
+        .diary-v3{max-width:1440px;margin:0 auto;padding:var(--space-6);color:var(--text-primary)}
+        .diary-v3,.diary-v3 *{min-width:0;letter-spacing:0}
+        .diary-v3 [hidden]{display:none!important}
+        .diary-v3 h1{margin:0;color:var(--text-primary);font-size:36px;line-height:1.2;font-weight:650}
+        .diary-v3 h2{margin:0;color:var(--text-primary);font-size:var(--fs-xl);line-height:1.35;font-weight:600}
+        .diary-v3 h3{margin:0;color:var(--text-primary);font-size:var(--fs-md);font-weight:600}
+        .diary-v3 .diary-screen-heading,.diary-v3 .diary-ledger-heading,.diary-v3 .diary-detail-header,.diary-v3 .diary-detail-top,.diary-v3 .diary-section-heading,.diary-v3 .diary-composer-heading{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4)}
+        .diary-v3 .diary-screen-heading{align-items:flex-end;margin-bottom:var(--space-5)}
+        .diary-v3 .diary-eyebrow{display:block;margin-bottom:var(--space-2);color:var(--text-secondary);font-size:var(--fs-xs)}
+        .diary-v3 .diary-intro,.diary-v3 .diary-muted{margin:0;color:var(--text-secondary);font-size:var(--fs-xs);line-height:1.6}
+        .diary-v3 .diary-overview{display:flex;flex-wrap:wrap;gap:var(--space-5);margin:0 0 var(--space-4);padding:0 0 var(--space-4);border-bottom:1px solid var(--border-subtle)}
+        .diary-v3 .diary-overview-item{display:flex;align-items:baseline;gap:var(--space-2);color:var(--text-secondary);font-size:var(--fs-xs)}
+        .diary-v3 .diary-overview-item strong{color:var(--text-primary);font-size:var(--fs-sm);font-variant-numeric:tabular-nums}
+        .diary-v3 .diary-split{display:grid;grid-template-columns:minmax(290px,36%) minmax(0,64%);gap:var(--space-6);min-height:640px;border:0}
+        .diary-v3 .diary-pane{min-width:0;border:0;border-radius:0;background:transparent;backdrop-filter:none}
+        .diary-v3 .diary-ledger-pane{padding-right:var(--space-4);border-right:1px solid var(--border-subtle)}
+        .diary-v3 .diary-pane-head{padding:0 0 var(--space-3);border:0;background:transparent}
+        .diary-v3 .diary-pane-head strong{color:var(--text-primary);font-size:var(--fs-md)}
+        .diary-v3 .diary-ledger-heading{margin-bottom:var(--space-3)}
+        .diary-v3 .diary-ledger-filter{width:100%;min-height:var(--touch-min);padding:var(--space-2) var(--space-3);border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-surface-1);color:var(--text-primary);font:inherit;font-size:var(--fs-sm)}
+        .diary-v3 .diary-ledger-tools{display:grid;gap:var(--space-2);padding:var(--space-2) 0}
+        .diary-v3 .diary-open-filter{display:flex;align-items:center;gap:var(--space-2);min-height:var(--touch-min);color:var(--text-secondary);font-size:var(--fs-xs)}
+        .diary-v3 .diary-open-filter input{width:18px;height:18px;accent-color:var(--accent-primary)}
+        .diary-v3 .diary-tags-cloud{display:flex;flex-wrap:wrap;gap:var(--space-2);max-height:104px;padding:0 0 var(--space-2);overflow:auto}
+        .diary-v3 .diary-tags-cloud button{min-height:32px;padding:var(--space-1) var(--space-2);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);font:inherit;font-size:var(--fs-xs)}
+        .diary-v3 .diary-tags-cloud button.match{border-color:var(--accent-primary);background:var(--accent-glow);color:var(--text-primary)}
+        .diary-v3 .diary-ledger-list{display:grid;gap:0;max-height:calc(100dvh - 380px);padding:0;overflow:auto;overscroll-behavior:contain}
+        .diary-v3 .diary-ledger-card{display:grid;gap:var(--space-2);padding:var(--space-4) var(--space-2);border:0;border-top:1px solid var(--border-subtle);border-left:2px solid transparent;border-radius:0;background:transparent;box-shadow:none;animation:none;cursor:pointer}
+        .diary-v3 .diary-ledger-card.is-selected{border-left-color:var(--accent-primary);background:var(--bg-surface-1);box-shadow:none}
+        .diary-v3 .diary-ledger-card.is-inactive{filter:none;opacity:.68}
+        @media(hover:hover){.diary-v3 .diary-ledger-card:hover{transform:none;border-color:var(--border-subtle);border-left-color:var(--accent-hover);background:var(--bg-surface-1)}}
+        .diary-v3 .diary-row-top,.diary-v3 .diary-row-meta,.diary-v3 .diary-row-badges,.diary-v3 .diary-row-tags{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-2)}
+        .diary-v3 .diary-row-top{justify-content:space-between}
+        .diary-v3 .diary-row-title{color:var(--text-primary);font-size:var(--fs-sm);font-weight:600;line-height:1.4}
+        .diary-v3 .diary-row-preview{display:-webkit-box;margin:0;color:var(--text-secondary);font-size:var(--fs-xs);line-height:1.6;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+        .diary-v3 .diary-row-meta{color:var(--text-secondary);font-size:11px}
+        .diary-v3 .diary-empty-list{padding:var(--space-4) var(--space-2);color:var(--text-secondary);font-size:var(--fs-sm);line-height:1.6}
+        .diary-v3 .diary-badge,.diary-v3 .diary-inactive-pill{display:inline-flex;align-items:center;min-height:24px;padding:2px var(--space-2);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary);font-size:11px}
+        .diary-v3 .diary-inactive-pill{border-color:var(--border-subtle);background:transparent;color:var(--text-secondary)}
+        .diary-v3 .diary-active-pill{border-color:color-mix(in srgb,var(--color-success) 40%,transparent);color:var(--color-success)}
+        .diary-v3 .diary-comments-pill{border-color:color-mix(in srgb,var(--accent-primary) 40%,transparent);color:var(--accent-primary)}
+        .diary-v3 .diary-checklist-pill{border-color:color-mix(in srgb,var(--color-warning) 42%,transparent);color:var(--color-warning)}
+        .diary-v3 .diary-detail-header{position:sticky;top:var(--tflow-header-h,0px);z-index:5;align-items:flex-start;padding:var(--space-4) 0;border-bottom:1px solid var(--border-strong);background:var(--bg-canvas)}
+        .diary-v3 .diary-detail-title{display:grid;gap:var(--space-2)}
+        .diary-v3 .diary-detail-title h2{font-size:var(--fs-xl)}
+        .diary-v3 .diary-detail-actions{display:flex;align-items:center;gap:var(--space-2)}
+        .diary-v3 .diary-detail-body{display:grid;gap:var(--space-5);padding:var(--space-4) 0}
+        .diary-v3 .diary-detail-section{display:grid;gap:var(--space-3);padding-top:var(--space-4);border-top:1px solid var(--border-subtle)}
+        .diary-v3 .diary-section-heading{justify-content:flex-start}
+        .diary-v3 .diary-section-index{color:var(--text-secondary);font-size:var(--fs-xs);font-variant-numeric:tabular-nums}
+        .diary-v3 .diary-section-heading .diary-muted{margin-left:auto}
+        .diary-v3 .diary-detail-body textarea,.diary-v3 .diary-detail-body input{width:100%;min-height:var(--touch-min);padding:var(--space-3);border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-surface-1);color:var(--text-primary);font:inherit;font-size:var(--fs-sm);line-height:1.6}
+        .diary-v3 .diary-detail-body textarea{min-height:78px;resize:vertical}
+        .diary-v3 .diary-detail-body #diary-focus-note{min-height:104px}
+        .diary-v3 .diary-detail-body label{display:grid;gap:var(--space-2);color:var(--text-secondary);font-size:var(--fs-xs)}
+        .diary-v3 .diary-thesis-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+        .diary-v3 .diary-thesis-grid .diary-risk-field{grid-column:1/-1}
+        .diary-v3 .diary-note-save-row{display:flex;justify-content:flex-end}
+        .diary-v3 .diary-focus-tags{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+        .diary-v3 .diary-focus-tags:empty{display:none}
+        .diary-v3 .diary-mention{display:inline-flex;align-items:center;gap:var(--space-2);min-height:32px;padding:var(--space-1) var(--space-2);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);color:var(--accent-primary);text-decoration:none;font-size:var(--fs-xs)}
+        .diary-v3 .diary-check-item{grid-template-columns:auto minmax(0,1fr) auto;gap:var(--space-3);padding:var(--space-3);border-color:var(--border-subtle);border-radius:var(--radius-sm);background:transparent}
+        .diary-v3 .diary-check-item input[type="checkbox"]{width:18px;height:18px;accent-color:var(--accent-primary)}
+        .diary-v3 .diary-chat-compose{display:flex;gap:var(--space-2)}
+        .diary-v3 .diary-chat-compose input{flex:1;min-width:0}
+        .diary-v3 .coping-chat-container{max-height:220px;padding:0;}
+        .diary-v3 .coping-chat-entry{padding:var(--space-3) 0;border-top:1px solid var(--border-subtle)}
+        .diary-v3 .coping-chat-head{align-items:center}
+        .diary-v3 .coping-chat-date{color:var(--text-secondary);font-variant-numeric:tabular-nums}
+        .diary-v3 .coping-chat-text{color:var(--text-primary);font-size:var(--fs-sm);line-height:1.6;white-space:pre-wrap}
+        .diary-v3 .diary-focus-empty{display:grid;align-content:center;min-height:420px;max-width:440px;gap:var(--space-3);padding:var(--space-5) 0}
+        .diary-v3 .diary-focus-empty h2{font-size:var(--fs-xl)}
+        .diary-v3 .diary-focus-empty p{margin:0;color:var(--text-secondary);font-size:var(--fs-sm);line-height:1.6}
+        .diary-v3 .diary-detail-back,.diary-v3 .diary-mobile-new-note{display:none}
+        .diary-v3 .diary-mobile-nav{display:none}
+        .diary-v3 .diary-composer-backdrop{position:fixed;inset:0;z-index:40;background:var(--bg-glass)}
+        .diary-v3 .diary-compose{position:fixed;inset:0 0 0 auto;z-index:41;width:min(480px,100%);height:100dvh;padding:var(--space-5);overflow:auto;border:0;border-left:1px solid var(--border-strong);background:var(--bg-surface-2);box-shadow:var(--shadow-md)}
+        .diary-v3 .diary-compose-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4)}
+        .diary-v3 .diary-compose-close{min-width:var(--touch-min);min-height:var(--touch-min);border:0;border-radius:var(--radius-sm);background:transparent;color:var(--text-secondary)}
+        .diary-v3 .diary-compose input,.diary-v3 .diary-compose textarea{width:100%;min-height:var(--touch-min);padding:var(--space-3);border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--bg-surface-1);color:var(--text-primary);font:inherit;font-size:var(--fs-sm)}
+        .diary-v3 .diary-compose textarea{min-height:150px;resize:vertical}
+        .diary-v3 :focus-visible{outline:2px solid var(--accent-primary);outline-offset:3px}
+        .diary-v3 button,.diary-v3 input,.diary-v3 textarea{touch-action:manipulation}
+        @media(max-width:980px){.diary-v3 .diary-split{grid-template-columns:minmax(270px,38%) minmax(0,62%);gap:var(--space-4)}.diary-v3 .diary-pane-head{padding:0 0 var(--space-3)}.diary-v3 .diary-detail-body{padding:var(--space-4) 0}}
+        @media(max-width:767px){.diary-v3{padding:var(--space-4) var(--space-3) calc(var(--bottom-tabs-h) + var(--space-5))}.diary-v3 .diary-screen-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}.diary-v3 .diary-screen-heading .diary-prompt{grid-column:1}.diary-v3 .diary-screen-heading .diary-new-note{grid-column:2;grid-row:1/3}.diary-v3 .diary-overview{gap:var(--space-3)}.diary-v3 .diary-overview-item{display:grid;gap:2px}.diary-v3 .diary-split{display:block;min-height:0}.diary-v3 .diary-ledger-pane{padding:var(--space-2) 0;border:0}.diary-v3 .diary-split[data-mobile-detail="true"] .diary-ledger-pane{display:none}.diary-v3 .diary-split:not([data-mobile-detail="true"]) .diary-focus-pane{display:none}.diary-v3 .diary-detail-header{top:0;flex-wrap:wrap}.diary-v3 .diary-detail-back,.diary-v3 .diary-mobile-new-note{display:inline-flex}.diary-v3 .diary-detail-body{padding:var(--space-3) 0}.diary-v3 .diary-thesis-grid{grid-template-columns:minmax(0,1fr)}.diary-v3 .diary-thesis-grid .diary-risk-field{grid-column:auto}.diary-v3 .diary-check-add-row{grid-template-columns:minmax(0,1fr) auto!important}.diary-v3 .diary-check-add-row input[type="date"]{grid-column:1}.diary-v3 .diary-chat-compose{flex-direction:row}.diary-v3 .diary-chat-compose button{width:auto}.diary-v3 .diary-ledger-list{max-height:none;overflow:visible}.diary-v3 .diary-compose{inset:auto 0 0;width:100%;height:auto;max-height:92dvh;padding:var(--space-4) var(--space-3) calc(var(--space-5) + env(safe-area-inset-bottom));border:1px solid var(--border-strong);border-bottom:0;border-radius:var(--radius-md) var(--radius-md) 0 0}.diary-v3 .diary-mobile-nav{position:fixed;z-index:50;inset:auto 0 0;display:flex;justify-content:space-around;min-height:var(--bottom-tabs-h);padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--border-strong);background:var(--bg-canvas)}.diary-v3 .diary-mobile-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:var(--touch-min);gap:var(--space-1);color:var(--text-secondary);font-size:11px;text-decoration:none}.diary-v3 .diary-mobile-nav a[aria-current="page"]{color:var(--text-primary)}.diary-v3 .diary-mobile-nav svg{width:18px;height:18px}}
+        @media(prefers-reduced-motion:reduce){.diary-v3 *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+        `;
         document.head.appendChild(style);
     }
 
     function mountShell() {
         const root = document.getElementById('diary-app-root');
         if (!root) return null;
+        root.classList.add('diary-v3');
         root.innerHTML = '' +
-            '<div class="diary-split">' +
-            '  <aside class="diary-pane">' +
-            '    <div class="diary-pane-head"><strong>Conviction Ledger</strong><button id="diary-new-note" class="mgmt-btn mgmt-btn-primary" type="button">+ Note</button></div>' +
-            '    <div id="diary-compose" style="display:none;padding:10px;border-bottom:1px solid rgba(127,143,164,.2);background:rgba(8,18,31,.22);">' +
+            '  <header class="diary-screen-heading">' +
+            '    <div class="diary-prompt"><span class="diary-eyebrow">DECISION JOURNAL</span><h1>Coping Diary</h1><p class="diary-intro">The market changes. Your reasoning stays on record.</p></div>' +
+            '    <button id="diary-new-note" class="mgmt-btn mgmt-btn-primary diary-new-note" type="button" aria-expanded="false"><span aria-hidden="true">+</span> New note</button>' +
+            '  </header>' +
+            '  <div class="diary-overview" id="diary-overview" aria-live="polite"></div>' +
+            '  <div class="diary-split" id="diary-split">' +
+            '    <aside class="diary-pane diary-ledger-pane" aria-labelledby="diary-ledger-title">' +
+            '      <div class="diary-ledger-heading"><div><h2 id="diary-ledger-title">Conviction ledger</h2><p id="diary-ledger-count" class="diary-muted" aria-live="polite"></p></div><button id="diary-mobile-new-note" type="button" class="mgmt-btn mgmt-btn-secondary diary-mobile-new-note" aria-label="New note" title="New note">+</button></div>' +
+            '      <div id="diary-compose-backdrop" class="diary-composer-backdrop" hidden></div>' +
+            '      <section id="diary-compose" class="diary-compose" role="dialog" aria-modal="true" aria-labelledby="diary-compose-title" aria-hidden="true" hidden>' +
+            '        <div class="diary-compose-head"><h2 id="diary-compose-title">New diary entry</h2><button id="diary-compose-close" class="diary-compose-close" type="button" aria-label="Close composer" title="Close">&times;</button></div>' +
             '      <div style="display:grid;gap:8px;">' +
-            '        <input id="diary-new-ticker" type="text" placeholder="Topic or ticker (required)" aria-required="true" style="border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;">' +
+            '        <label><span class="diary-muted">Topic or ticker</span><input id="diary-new-ticker" type="text" placeholder="e.g. NVDA" aria-required="true"></label>' +
             '        <div id="diary-compose-error" style="display:none;color:#fca5a5;font-size:12px;line-height:1.4;">Topic is required.</div>' +
-            '        <textarea id="diary-new-text" placeholder="Write quick note and add #tags..." style="min-height:80px;border:1px solid rgba(127,143,164,.4);border-radius:8px;background:transparent;color:inherit;padding:8px;resize:vertical;"></textarea>' +
-            '        <div id="diary-compose-tags" style="display:flex;gap:6px;flex-wrap:wrap;max-height:120px;overflow:auto;"></div>' +
+            '        <label><span class="diary-muted">Your note</span><textarea id="diary-new-text" placeholder="What are you thinking? Add #tags or @holdings."></textarea></label>' +
+            '        <div id="diary-compose-tags" class="diary-tags-cloud"></div>' +
             '        <div style="display:flex;justify-content:flex-end;gap:8px;">' +
             '          <button id="diary-compose-cancel" type="button" class="mgmt-btn mgmt-btn-secondary">Cancel</button>' +
-            '          <button id="diary-compose-save" type="button" class="mgmt-btn mgmt-btn-primary">Create</button>' +
+            '          <button id="diary-compose-save" type="button" class="mgmt-btn mgmt-btn-primary">Create entry</button>' +
             '        </div>' +
             '      </div>' +
-            '    </div>' +
-            '    <div style="padding:10px;display:grid;gap:8px;">' +
-            '      <input id="diary-ledger-filter" class="diary-ledger-filter" type="text" placeholder="Filter by tag or free text">' +
-            '      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#cbd5e1;">' +
+            '      </section>' +
+            '      <div class="diary-ledger-tools">' +
+            '      <input id="diary-ledger-filter" class="diary-ledger-filter" type="search" placeholder="Search notes and tags" aria-label="Search notes and tags">' +
+            '      <label class="diary-open-filter">' +
             '        <input id="diary-filter-unchecked" type="checkbox">' +
-            '        <span>Only open checklist items</span>' +
+            '        <span>Open checklist items</span>' +
             '      </label>' +
             '      <div id="diary-tags-cloud" class="diary-tags-cloud"></div>' +
-            '    </div>' +
-            '    <div id="diary-ledger-list" class="diary-ledger-list"></div>' +
-            '  </aside>' +
-            '  <section class="diary-pane">' +
-            '    <div id="diary-detail"></div>' +
-            '  </section>' +
-            '</div>';
+            '      </div>' +
+            '      <div id="diary-ledger-empty" class="diary-empty-list" role="status">Loading diary entries...</div>' +
+            '      <div id="diary-ledger-list" class="diary-ledger-list" hidden></div>' +
+            '    </aside>' +
+            '    <section class="diary-pane diary-focus-pane" aria-label="Focus Sheet">' +
+            '      <div id="diary-detail"></div>' +
+            '    </section>' +
+            '  </div>';
         return root;
     }
 
@@ -445,11 +543,11 @@
             if (am !== bm) return am ? -1 : 1;
             return (b.count - a.count) || a.tag.localeCompare(b.tag);
         });
-        root.innerHTML = sorted.map((it) => {
+        root.innerHTML = '<button type="button" class="' + (!state.activeTagFilter ? 'match' : '') + '" data-filter-tag="">All notes</button>' + sorted.map((it) => {
             const match = q && it.tag.toLowerCase().includes(q) ? 'match' : '';
             const isActive = String(state.activeTagFilter || '').toLowerCase() === it.tag.toLowerCase();
             const activeClass = isActive ? 'match' : '';
-            return '<button type="button" class="mgmt-btn mgmt-btn-secondary ' + match + ' ' + activeClass + '" data-filter-tag="' + escapeHtml(it.tag) + '" style="padding:3px 8px;font-size:12px;">' + escapeHtml(it.tag) + ' (' + it.count + ')</button>';
+            return '<button type="button" class="' + match + ' ' + activeClass + '" data-filter-tag="' + escapeHtml(it.tag) + '">' + escapeHtml(it.tag) + ' <span aria-hidden="true">' + it.count + '</span></button>';
         }).join('');
         root.querySelectorAll('[data-filter-tag]').forEach((btn) => {
             btn.addEventListener('click', () => {
@@ -468,6 +566,7 @@
     function renderNoteCards(notes) {
         const list = document.getElementById('diary-ledger-list');
         if (!list) return;
+        const empty = document.getElementById('diary-ledger-empty');
         const previous = new Map();
         Array.from(list.children).forEach((el) => {
             const id = el.getAttribute('data-note-id');
@@ -476,6 +575,13 @@
         });
 
         const sorted = sortForLedger(filteredNotes(notes));
+        list.hidden = sorted.length === 0;
+        if (empty) {
+            empty.hidden = sorted.length > 0;
+            empty.textContent = notes.length
+                ? 'No entries match these filters.'
+                : 'No entries yet. Start by writing down a thesis or an open question.';
+        }
         list.innerHTML = sorted.map((note) => {
             const held = state.holdings.has(note.ticker);
             const isInactive = !note.is_active;
@@ -489,27 +595,27 @@
             ].filter(Boolean).join(' ');
             const preview = escapeHtml(String(note.note_text || '').slice(0, 110) || 'No summary yet');
             const inactivePill = isInactive ? '<span class="diary-inactive-pill">Inactive hypothesis</span>' : '';
-            const activePill = note.is_active && held ? '<span class="diary-badge" style="border-color:rgba(34,197,94,.5);color:#86efac;">Active conviction</span>' : '';
-            const commentsPill = commentCount > 0 ? '<span class="diary-badge" style="border-color:rgba(96,165,250,.45);color:#bfdbfe;">Comments: ' + commentCount + '</span>' : '';
+            const activePill = note.is_active && held ? '<span class="diary-badge diary-active-pill">Held</span>' : '';
+            const commentsPill = commentCount > 0 ? '<span class="diary-badge diary-comments-pill">' + commentCount + ' comments</span>' : '';
             const checklistPill = uncheckedCount > 0
-                ? '<span class="diary-badge" style="border-color:rgba(245,158,11,.6);color:#fcd34d;">Open checklist: ' + uncheckedCount + '</span>'
+                ? '<span class="diary-badge diary-checklist-pill">' + uncheckedCount + ' open</span>'
                 : '';
             return '' +
-                '<article class="' + classes + '" data-note-id="' + escapeHtml(note.note_id) + '">' +
-                '  <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start;">' +
-                '    <strong>' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</strong>' +
-                '    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">' + inactivePill + activePill + commentsPill + checklistPill + '</div>' +
-                '  </div>' +
-                '  <p style="margin:7px 0 6px;color:#8ea1bb;font-size:13px;">' + preview + '</p>' +
-                '  <div style="display:flex;gap:6px;flex-wrap:wrap;">' +
-                (note.user_tags || []).slice(0, 4).map((t) => '<span class="diary-badge">' + escapeHtml(t) + '</span>').join(' ') +
-                '  </div>' +
-                '  <div style="margin-top:6px;font-size:11px;color:#8ea1bb;">' + (shortUpdated ? ('Last updated: ' + escapeHtml(shortUpdated)) : '') + '</div>' +
+                '<article class="' + classes + '" data-note-id="' + escapeHtml(note.note_id) + '" role="button" tabindex="0" aria-pressed="' + (state.selectedNoteId === note.note_id ? 'true' : 'false') + '">' +
+                '  <div class="diary-row-top"><strong class="diary-row-title">' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</strong><div class="diary-row-badges">' + inactivePill + activePill + commentsPill + checklistPill + '</div></div>' +
+                '  <p class="diary-row-preview">' + preview + '</p>' +
+                '  <div class="diary-row-tags">' + (note.user_tags || []).slice(0, 4).map((t) => '<span class="diary-badge">' + escapeHtml(t) + '</span>').join(' ') + '</div>' +
+                '  <div class="diary-row-meta">' + (shortUpdated ? ('Updated ' + escapeHtml(shortUpdated)) : '') + '</div>' +
                 '</article>';
         }).join('');
 
         list.querySelectorAll('[data-note-id]').forEach((card) => {
             card.addEventListener('click', () => selectNote(card.getAttribute('data-note-id')));
+            card.addEventListener('keydown', (event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') return;
+                event.preventDefault();
+                selectNote(card.getAttribute('data-note-id'));
+            });
         });
 
         requestAnimationFrame(() => {
@@ -559,30 +665,7 @@
         const root = document.getElementById('diary-detail');
         if (!root) return;
         if (!note) {
-            root.innerHTML = '' +
-                '<div style="padding:12px;display:flex;justify-content:center;align-items:center;min-height:420px;">' +
-                '  <img id="diary-empty-right-graphic" alt="Coping Diary empty state" style="display:none;width:min(100%,960px);height:auto;border-radius:12px;">' +
-                '  <p id="diary-empty-right-fallback" style="display:none;margin:0;color:#7f8c8d;">Select a ledger card to open Focus Sheet.</p>' +
-                '</div>';
-
-            const img = document.getElementById('diary-empty-right-graphic');
-            const fallback = document.getElementById('diary-empty-right-fallback');
-            if (img && fallback) {
-                const theme = (document.documentElement.dataset.theme || 'dark') === 'light' ? 'light' : 'dark';
-                const candidates = chooseDiaryEmptyGraphic(theme);
-                loadFirstExistingImage(
-                    candidates,
-                    (resolved) => {
-                        img.src = resolved;
-                        img.style.display = 'block';
-                        fallback.style.display = 'none';
-                    },
-                    () => {
-                        img.style.display = 'none';
-                        fallback.style.display = 'block';
-                    }
-                );
-            }
+            root.innerHTML = '<div class="diary-focus-empty"><span class="diary-eyebrow">FOCUS SHEET</span><h2>Keep the reasoning close.</h2><p>Select an entry to review its thesis, open questions, and checkpoints.</p></div>';
             return;
         }
 
@@ -623,54 +706,47 @@
             .map((ticker) => '<button type="button" class="diary-mention" data-mention="' + escapeHtml(ticker) + '">@' + escapeHtml(ticker) + '</button>')
             .join(' ');
         const mentionsBlock = mentionButtons
-            ? '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;"><span style="font-size:12px;color:#8ea1bb;">Linked holdings:</span>' + mentionButtons + '</div>'
+            ? '<div class="diary-focus-tags" aria-label="Linked holdings"><span class="diary-muted">Linked holdings</span>' + mentionButtons + '</div>'
             : '';
+        const noteTags = (note.user_tags || []).map((tag) => '<span class="diary-badge">' + escapeHtml(tag) + '</span>').join('');
         const commentCount = Array.isArray(note.comments) ? note.comments.length : 0;
-        const commentPill = commentCount > 0 ? '<span class="diary-badge" style="border-color:rgba(96,165,250,.45);color:#bfdbfe;">Comments: ' + commentCount + '</span>' : '';
 
         root.innerHTML = '' +
-            '<div class="diary-pane-head">' +
-            '  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">' +
-            '    <strong>Focus Sheet</strong>' +
-            '    <span class="diary-badge" id="diary-detail-ticker">' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</span>' +
-            '    ' + commentPill +
-            '  </div>' +
-            '  <div style="display:flex;align-items:center;gap:8px;">' +
-            '    <span class="diary-toggle-status">' + (note.is_active ? 'Active' : 'Inactive') + '</span>' +
-            '    <label class="diary-glass-toggle" title="Toggle active hypothesis">' +
-            '      <input id="diary-active-toggle" type="checkbox" ' + (note.is_active ? 'checked' : '') + '>' +
-            '      <span class="diary-glass-slider"></span>' +
-            '    </label>' +
-            '    <button id="diary-delete-note" type="button" class="mgmt-btn mgmt-btn-secondary" style="border-color:rgba(239,68,68,.6);color:#fecaca;">Delete</button>' +
-            '  </div>' +
+            '<div class="diary-detail-header">' +
+            '  <button id="diary-detail-back" type="button" class="mgmt-btn mgmt-btn-secondary diary-detail-back" aria-label="Back to entries">Back</button>' +
+            '  <div class="diary-detail-title"><span class="diary-eyebrow">FOCUS SHEET</span><h2 id="diary-detail-ticker">' + escapeHtml(note.title || note.ticker || 'Untitled note') + '</h2><div class="diary-row-badges"><span class="diary-badge">' + (note.is_active ? 'Active thesis' : 'Archived thesis') + '</span>' + (commentCount ? '<span class="diary-badge diary-comments-pill">' + commentCount + ' comments</span>' : '') + '</div></div>' +
+            '  <div class="diary-detail-actions"><label class="diary-glass-toggle" title="Toggle active hypothesis" aria-label="Active thesis"><input id="diary-active-toggle" type="checkbox" ' + (note.is_active ? 'checked' : '') + '><span class="diary-glass-slider"></span></label><span class="diary-toggle-status">' + (note.is_active ? 'Active' : 'Inactive') + '</span><button id="diary-delete-note" type="button" class="mgmt-btn mgmt-btn-secondary" aria-label="Delete entry" title="Delete entry">Delete</button></div>' +
             '</div>' +
             '<div class="diary-detail-body">' +
-            '  <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Diary note</span><textarea id="diary-focus-note" style="min-height:90px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.note_text || '') + '</textarea></label>' +
-            mentionsBlock +
-            '  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">' +
-            '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Why buy</span><textarea id="diary-why-buy" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.why_buy || '') + '</textarea></label>' +
-            '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Exit plan</span><textarea id="diary-exit-plan" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.exit_plan || '') + '</textarea></label>' +
-            '    <label style="display:grid;gap:6px;"><span style="font-size:12px;color:#8ea1bb;">Risk factors</span><textarea id="diary-risk-factors" style="min-height:78px;border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;resize:vertical;">' + escapeHtml(note.hypothesis.risk_factors || '') + '</textarea></label>' +
+            '  <section class="diary-detail-section"><div class="diary-section-heading"><span class="diary-section-index">01</span><h3>Diary note</h3></div>' +
+            '    <textarea id="diary-focus-note" aria-label="Diary note">' + escapeHtml(note.note_text || '') + '</textarea>' +
+            '    <div class="diary-focus-tags">' + noteTags + '</div>' + mentionsBlock +
+            '    <div class="diary-note-save-row"><button id="diary-save-focus" type="button" class="mgmt-btn mgmt-btn-primary">Save changes</button></div>' +
+            '  </section>' +
+            '  <section class="diary-detail-section"><div class="diary-section-heading"><span class="diary-section-index">02</span><h3>Thesis</h3><span class="diary-muted">What would change your mind?</span></div>' +
+            '  <div class="diary-thesis-grid">' +
+            '    <label><span>Why buy</span><textarea id="diary-why-buy" aria-label="Why buy">' + escapeHtml(note.hypothesis.why_buy || '') + '</textarea></label>' +
+            '    <label><span>Exit plan</span><textarea id="diary-exit-plan" aria-label="Exit plan">' + escapeHtml(note.hypothesis.exit_plan || '') + '</textarea></label>' +
+            '    <label class="diary-risk-field"><span>Risk factors</span><textarea id="diary-risk-factors" aria-label="Risk factors">' + escapeHtml(note.hypothesis.risk_factors || '') + '</textarea></label>' +
             '  </div>' +
-            '  <div style="display:flex;justify-content:flex-end;"><button id="diary-save-focus" type="button" class="mgmt-btn mgmt-btn-primary">Save Focus Sheet</button></div>' +
-            '  <div style="display:grid;gap:8px;">' +
-            '    <strong>Coping Chat Thread</strong>' +
+            '  <div class="diary-note-save-row"><button id="diary-save-thesis" type="button" class="mgmt-btn mgmt-btn-primary">Save thesis</button></div>' +
+            '  </section>' +
+            '  <section class="diary-detail-section"><div class="diary-section-heading"><span class="diary-section-index">03</span><h3>Coping thread</h3><span class="diary-muted">' + commentCount + ' notes</span></div>' +
             '    <div id="coping-chat-log" class="coping-chat-container">' + chat + '</div>' +
             '    <div class="diary-chat-compose">' +
-            '      <input id="diary-chat-input" type="text" placeholder="+ Add updates / thoughts..." style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;">' +
-            '      <button id="diary-chat-send" type="button" class="mgmt-btn mgmt-btn-secondary" aria-label="Send">Send</button>' +
+            '      <input id="diary-chat-input" type="text" placeholder="Add an update or thought" aria-label="Add comment">' +
+            '      <button id="diary-chat-send" type="button" class="mgmt-btn mgmt-btn-secondary" aria-label="Send comment" title="Send comment">Send</button>' +
             '    </div>' +
-            '  </div>' +
-            '  <div style="display:grid;gap:8px;">' +
-            '    <strong>Checklist</strong>' +
+            '  </section>' +
+            '  <section class="diary-detail-section"><div class="diary-section-heading"><span class="diary-section-index">04</span><h3>Checkpoints</h3><span class="diary-muted">' + countUncheckedChecklistItems(note) + ' open</span></div>' +
             '    <div id="diary-checklist">' + checklist + '</div>' +
             '    <div class="diary-check-add-row" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,180px) auto;gap:8px;">' +
-            '      <input id="diary-new-check-text" type="text" placeholder="Check Q3 reports" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;min-width:0;">' +
-            '      <input id="diary-new-check-date" type="date" style="border:1px solid rgba(127,143,164,.35);border-radius:10px;background:transparent;color:inherit;padding:8px;min-width:0;">' +
-            '      <button id="diary-add-check" type="button" class="mgmt-btn mgmt-btn-secondary">Add</button>' +
+            '      <input id="diary-new-check-text" type="text" placeholder="Add a checkpoint" aria-label="New checkpoint">' +
+            '      <input id="diary-new-check-date" type="date" aria-label="Checkpoint due date">' +
+            '      <button id="diary-add-check" type="button" class="mgmt-btn mgmt-btn-secondary">Add checkpoint</button>' +
             '    </div>' +
             '    <div id="diary-checklist-add-error" style="display:none;color:#fca5a5;font-size:12px;line-height:1.4;"></div>' +
-            '  </div>' +
+            '  </section>' +
             '</div>';
 
         bindDetailEvents(note);
@@ -860,8 +936,9 @@
             toggle.addEventListener('change', () => onToggleActive(note, toggle.checked));
         }
 
-        const saveFocusBtn = document.getElementById('diary-save-focus');
-        if (saveFocusBtn) saveFocusBtn.addEventListener('click', () => onSaveFocus(note));
+        document.querySelectorAll('#diary-save-focus, #diary-save-thesis').forEach((button) => {
+            button.addEventListener('click', () => onSaveFocus(note));
+        });
 
         const deleteBtn = document.getElementById('diary-delete-note');
         if (deleteBtn) deleteBtn.addEventListener('click', () => onDeleteNote(note));
@@ -1059,9 +1136,14 @@
     function toggleComposer(show) {
         state.composeOpen = Boolean(show);
         const box = document.getElementById('diary-compose');
+        const backdrop = document.getElementById('diary-compose-backdrop');
         const btn = document.getElementById('diary-new-note');
-        if (box) box.style.display = state.composeOpen ? 'block' : 'none';
-        if (btn) btn.textContent = state.composeOpen ? 'Close' : '+ Note';
+        if (box) {
+            box.hidden = !state.composeOpen;
+            box.setAttribute('aria-hidden', state.composeOpen ? 'false' : 'true');
+        }
+        if (backdrop) backdrop.hidden = !state.composeOpen;
+        if (btn) btn.setAttribute('aria-expanded', state.composeOpen ? 'true' : 'false');
         setComposerError('');
         if (state.composeOpen) {
             renderComposerTags();
@@ -1086,6 +1168,7 @@
 
     function selectNote(noteId) {
         state.selectedNoteId = String(noteId || '');
+        state.mobileDetailOpen = true;
         rerender();
     }
 
@@ -1127,6 +1210,7 @@
         const note = created;
         replaceNote(note);
         state.selectedNoteId = note.note_id;
+        state.mobileDetailOpen = true;
         if (tickerEl) tickerEl.value = '';
         if (textEl) textEl.value = '';
         toggleComposer(false);
@@ -1137,14 +1221,26 @@
         const all = state.notes;
         renderTagCloud(all);
         renderNoteCards(all);
+        const visibleCount = filteredNotes(all).length;
+        const ledgerCount = document.getElementById('diary-ledger-count');
+        const split = document.getElementById('diary-split');
+        if (ledgerCount) ledgerCount.textContent = visibleCount + ' of ' + all.length + ' entries';
+        if (split) split.setAttribute('data-mobile-detail', state.mobileDetailOpen ? 'true' : 'false');
+        const overview = document.getElementById('diary-overview');
+        if (overview) {
+            const activeCount = all.filter((note) => note.is_active).length;
+            const openCount = all.reduce((count, note) => count + countUncheckedChecklistItems(note), 0);
+            overview.innerHTML = '<div class="diary-overview-item"><strong>' + all.length + '</strong><span>entries</span></div>' +
+                '<div class="diary-overview-item"><strong>' + activeCount + '</strong><span>active theses</span></div>' +
+                '<div class="diary-overview-item"><strong>' + openCount + '</strong><span>open checkpoints</span></div>';
+        }
+        const visibleNotes = sortForLedger(filteredNotes(all));
+        if (visibleNotes.length && !visibleNotes.some((note) => String(note.note_id) === String(state.selectedNoteId))) {
+            state.selectedNoteId = visibleNotes[0].note_id;
+        }
         const selected = findSelectedNote();
         if (selected) state.selectedNoteId = selected.note_id;
         renderDetail(selected);
-
-        const list = document.getElementById('diary-ledger-list');
-        if (list && !all.length) {
-            list.innerHTML = '<article style="padding:10px;color:#8ea1bb;">No diary notes yet. Use + Note.</article>';
-        }
     }
 
     async function init() {
@@ -1152,12 +1248,14 @@
         if (!root) return;
         if (state.loaded) return;
         state.loaded = true;
+        root.setAttribute('aria-busy', 'true');
 
         ensureStyles();
         mountShell();
 
         const notes = await fetchNotes();
         state.notes = notes;
+        root.setAttribute('aria-busy', 'false');
         state.holdings = collectActiveHoldings();
         if (!state.selectedNoteId && notes.length) state.selectedNoteId = notes[0].note_id;
 
@@ -1182,6 +1280,21 @@
         if (addBtn) {
             addBtn.addEventListener('click', () => toggleComposer(!state.composeOpen));
         }
+        const mobileAddBtn = document.getElementById('diary-mobile-new-note');
+        if (mobileAddBtn) mobileAddBtn.addEventListener('click', () => toggleComposer(true));
+
+        const closeComposerBtn = document.getElementById('diary-compose-close');
+        if (closeComposerBtn) closeComposerBtn.addEventListener('click', () => toggleComposer(false));
+        const composeBackdrop = document.getElementById('diary-compose-backdrop');
+        if (composeBackdrop) composeBackdrop.addEventListener('click', () => toggleComposer(false));
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && state.composeOpen) toggleComposer(false);
+        });
+        root.addEventListener('click', (event) => {
+            if (!event.target.closest('#diary-detail-back')) return;
+            state.mobileDetailOpen = false;
+            rerender();
+        });
 
         const saveComposeBtn = document.getElementById('diary-compose-save');
         if (saveComposeBtn) {

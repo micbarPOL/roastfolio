@@ -1,0 +1,62 @@
+#tab-dashboard .ath-ocean { width: 100%; max-width: 360px; margin-inline: auto; }
+.ath-ocean [hidden] { display: none !important; }
+.ath-ocean-stage { position: relative; aspect-ratio: 360 / 560; }
+.ath-ocean-scene { display: block; width: 100%; height: auto; overflow: hidden; }
+.ath-ocean-pending { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; color: var(--text-secondary); padding: 24px; }
+.ath-ocean-status { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-top: 12px; font-size: 13px; }
+.ath-ocean-status strong { font-weight: 600; }
+.ath-ocean-status span { color: var(--text-secondary); }
+.ath-ocean-status b { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.ath-ocean-help { color: var(--text-secondary); font-size: 12px; }
+.ath-ocean-help summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; gap: 8px; width: fit-content; }
+.ath-ocean-help summary::before { content: '?'; border: 1px solid var(--border-strong); border-radius: 50%; width: 20px; text-align: center; }
+.ath-ocean-help p { margin: 0 0 12px; line-height: 1.5; }
+.ath-ocean-help summary:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+.ath-ocean-scene text { font-family: var(--font-sans); font-size: 10px; fill: #e2efed; letter-spacing: 0; }
+.ath-ocean-scene .zone-title { font-size: 11px; font-weight: 650; }
+.ath-ocean-scene .sky-label { fill: #27594f; }
+.ath-ocean-scene .shallow-label { fill: #113e3c; }
+.ath-ocean-scene .readout { fill: #fff5df; font-size: 14px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.ath-ocean-scene .scale-label { font-size: 11px; font-variant-numeric: tabular-nums; }
+.ath-ocean-scene .danger-zone-label { fill: #ed998c; }
+.ath-ocean-scene .expedition-grid { stroke: #c8e6df; stroke-opacity: .3; stroke-dasharray: 2 5; }
+.ath-ocean .state-illustration { display: none; }
+.ath-ocean[data-state="ashore"] .ashore-only,
+.ath-ocean[data-state="snorkeling"] .snorkeling-only,
+.ath-ocean[data-state="diving"] .diving-only { display: inline; }
+.ath-ocean[data-state="ashore"] #ath-ocean-drawdown-marker { display: none; }
+.ath-ocean .wave { animation: ocean-wave 7s ease-in-out infinite alternate; }
+.ath-ocean .wave-back { animation: ocean-wave 10s ease-in-out infinite alternate-reverse; opacity: .35; }
+.ath-ocean .holiday-palm { transform-origin: 181px 150px; animation: ocean-palm 8s ease-in-out infinite alternate; }
+.ath-ocean .holiday-hammock { transform-origin: 204px 126px; animation: ocean-hammock 6s ease-in-out infinite alternate; }
+.ath-ocean .sun-rays { opacity: .45; transform-origin: 278px 53px; }
+.ath-ocean .sunrays { opacity: .3; }
+.ath-ocean .danger-pulse { opacity: .45; }
+.ath-ocean[data-zone="relax"] .sun-rays { animation: ocean-sun 7s ease-in-out infinite alternate; }
+.ath-ocean[data-zone="explore"] .sunrays { animation: ocean-light 8s ease-in-out infinite alternate; }
+.ath-ocean[data-zone="danger"] .danger-pulse { animation: ocean-danger 3.6s ease-in-out infinite alternate; }
+.ath-ocean .reef-swim { animation: ocean-fish 12s ease-in-out infinite alternate; }
+.ath-ocean .reef-swim-second { animation-duration: 15s; animation-delay: -5s; animation-direction: alternate-reverse; }
+.ath-ocean .reef-swim-third { animation-duration: 17s; animation-delay: -8s; }
+.ath-ocean .shark-patrol { animation: ocean-shark 18s ease-in-out infinite; }
+.ath-ocean .shark-patrol-reverse { animation-duration: 23s; animation-delay: -9s; animation-direction: reverse; }
+.ath-ocean .shark-patrol-deep { animation-duration: 27s; animation-delay: -17s; }
+.ath-ocean .scuba-bubbles circle { animation: ocean-bubble-rise 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ath-ocean .scuba-bubbles circle:nth-child(2) { animation-delay: -.8s; }
+.ath-ocean .scuba-bubbles circle:nth-child(3) { animation-delay: -1.6s; }
+.ath-ocean[data-critical-drawdown="true"] #ath-ocean-danger-zone .danger-pulse { animation: ocean-danger-neon 1.15s ease-in-out infinite alternate; }
+.ath-ocean[data-critical-drawdown="true"] #ath-ocean-danger-zone .danger-zone-label { fill: var(--color-danger); animation: ocean-danger-text 1.15s ease-in-out infinite alternate; }
+@keyframes ocean-wave { from { transform: translateX(-9px); } to { transform: translateX(9px); } }
+@keyframes ocean-palm { from { transform: rotate(-1deg); } to { transform: rotate(1deg); } }
+@keyframes ocean-hammock { from { transform: rotate(-1deg); } to { transform: rotate(2deg); } }
+@keyframes ocean-sun { from { opacity: .4; transform: scale(.97); } to { opacity: .85; transform: scale(1.04); } }
+@keyframes ocean-light { from { opacity: .3; } to { opacity: .55; } }
+@keyframes ocean-danger { from { opacity: .55; } to { opacity: 1; } }
+@keyframes ocean-fish { from { transform: translate(-5px, 0); } to { transform: translate(7px, 2px); } }
+@keyframes ocean-shark { 0%, 100% { transform: translate(-18px, 0) rotate(-2deg); } 50% { transform: translate(18px, 5px) rotate(2deg); } }
+@keyframes ocean-bubble-rise { 0% { transform: translateY(3px) scale(.7); opacity: .25; } 45% { opacity: 1; } 100% { transform: translateY(-12px) scale(1.05); opacity: 0; } }
+@keyframes ocean-danger-neon { from { opacity: .72; filter: drop-shadow(0 0 1px var(--color-danger)); } to { opacity: 1; filter: drop-shadow(0 0 5px var(--color-danger)) drop-shadow(0 0 11px color-mix(in srgb, var(--color-danger) 72%, transparent)); } }
+@keyframes ocean-danger-text { from { opacity: .78; filter: drop-shadow(0 0 1px var(--color-danger)); } to { opacity: 1; filter: drop-shadow(0 0 6px var(--color-danger)); } }
+@media (prefers-reduced-motion: reduce) {
+    .ath-ocean * { animation: none !important; }
+}

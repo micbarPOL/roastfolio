@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.4.0`
-*Target Release Numbering Standard — v15.4.0*
+**Current Release:** `15.11.3`
+*Target Release Numbering Standard — v15.11.3*
 
 ---
 
@@ -52,7 +52,27 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.4.0`
+* **Current Active Release:** `15.11.3`
+  * **Service 3:** Animated scuba tank bubbles only while diving. Below a 12% drawdown, the Danger marker and label pulse neon red; reduced-motion preferences disable the effects.
+* **Previous Active Release:** `15.11.2`
+  * **Service 2:** Let Roastfolio Says use the full Daily Verdict column instead of a narrow 34-character measure, and clarify the against-market animation with a visible spotlight housing, lens and beam.
+* **Previous Active Release:** `15.11.1`
+  * **Service 1:** Ensured all candlestick animation loaders across dashboard, wallet, chart, and analysis cards consistently render the full 8-bar animation sequence with fixed dimensions and `flex-wrap: nowrap` to prevent dropped or squeezed candles in constrained viewports.
+* **Previous Active Release:** `15.11.0`
+  * **Minor 11:** Daily Verdict sits beside Today's Movers from the top of the dashboard, aligned to the Since previous close chart. The separate benchmark price chart is opt-in and renders on demand. Verdict effects last 1.8 seconds and replay every 30 seconds only while visible, respecting reduced-motion preferences.
+* **Previous Active Release:** `15.10.0`
+  * **Minor 10:** Daily Verdict replaces the main dashboard gauge with a shared axis. Daily return and PLN change lead the hierarchy; context-aware accents, brief one-shot effects, reduced-motion support and explicit unavailable states preserve existing calculations and roast reactions.
+* **Previous Active Release:** `15.9.0`
+  * **Minor 9:** Redesigned Coping Diary with a responsive master-detail ledger, searchable and tag-filterable notes, a focused thesis sheet, dated checkpoints, and a mobile composer. Existing API-backed data, local fallback, and diary actions are preserved.
+* **Previous Active Release:** `15.8.0`
+  * **Minor 8:** Redesigned Statistics and Transactions with independent analytical controls, responsive charts, a filterable transaction ledger, and preserved live APIs and edit behavior.
+* **Previous Active Release:** `15.4.3`
+  * **Service 3:** Cleaned up dashboard intraday chart by integrating the verbose market timing and quote metadata status line into the info tooltip popup ("i" button) next to the chart title, keeping the main chart view uncluttered.
+* **Earlier Release:** `15.4.2`
+  * **Service 2:** Fixed "Show PLN amounts" switch toggle visibility in the History Summaries recap share section ("Share your month") by introducing a dedicated `.rc-switch-track` element and styling, preventing transparent background overrides from global input resets and ensuring cross-browser rendering in Safari/WebKit.
+* **Previous Active Release:** `15.4.1`
+  * **Service 1:** Fixed Roastfolio logo click action in the UI 20 sidebar and header so clicking the brand logo or wordmark triggers a live price refresh from the Yahoo Finance price API.
+* **Previous Active Release:** `15.4.0`
   * **Minor 4:** Monthly recap summaries (History screen), share poster exports, and monthly email digests now resolve human-readable asset names (e.g. &ldquo;Mobruk&rdquo; instead of &ldquo;MBR.WA&rdquo;) with corporate legal suffixes trimmed (S.A., Ltd, Sp. z o.o., etc.), automatic fallback to clean tickers for names over 15 characters, and title casing.
 * **Previous Active Release:** `15.3.2`
   * **Service 2:** Fixed the Wallets value-history chart drawing old deposits/withdrawals (e.g. 2021) past today and below the x-axis; cash-flow markers now follow the plotted line and are hidden when outside the visible window. Also corrected the Monthly Recap headline so anchor losses no longer format with a misleading plus sign ("cost 16,173 PLN" instead of "cost +16,173 PLN").
