@@ -819,6 +819,40 @@ def test_ocean_equipment_and_zone_thresholds(ocean_page, drawdown, state, zone):
         assert page.locator(selector).is_visible() == (state == expected)
 
 
+@pytest.mark.parametrize('drawdown,critical', [(-12, 'false'), (-12.01, 'true'), (-50, 'true')])
+def test_ocean_critical_danger_threshold_is_strictly_below_twelve(ocean_page, drawdown, critical):
+    ocean_page.evaluate('value => AthOcean.render(value)', drawdown)
+    assert ocean_page.locator('#dash-ath-lake').get_attribute('data-critical-drawdown') == critical
+
+
+def test_ocean_scuba_bubbles_rise_only_with_diver_and_respect_reduced_motion(ocean_page):
+    ocean_page.emulate_media(reduced_motion='no-preference')
+    ocean_page.evaluate('AthOcean.render(-3)')
+    bubbles = ocean_page.locator('#ath-ocean-expedition-diver .scuba-bubbles')
+    assert bubbles.is_visible()
+    assert bubbles.locator('circle').count() == 3
+    assert bubbles.locator('circle').evaluate_all("nodes => nodes.every(node => getComputedStyle(node).animationName === 'ocean-bubble-rise')")
+    ocean_page.emulate_media(reduced_motion='reduce')
+    assert bubbles.locator('circle').evaluate_all("nodes => nodes.every(node => getComputedStyle(node).animationName === 'none')")
+    ocean_page.evaluate('AthOcean.render(-1)')
+    assert not bubbles.is_visible()
+
+
+def test_ocean_danger_icon_and_label_pulse_neon_red_below_twelve(ocean_page):
+    ocean_page.emulate_media(reduced_motion='no-preference')
+    ocean_page.evaluate('AthOcean.render(-12)')
+    assert ocean_page.locator('#dash-ath-lake').get_attribute('data-critical-drawdown') == 'false'
+    assert ocean_page.locator('.danger-zone-label').evaluate('node => getComputedStyle(node).animationName') == 'none'
+    ocean_page.evaluate('AthOcean.render(-12.01)')
+    assert ocean_page.locator('#dash-ath-lake').get_attribute('data-critical-drawdown') == 'true'
+    assert ocean_page.locator('.danger-pulse').evaluate('node => getComputedStyle(node).animationName') == 'ocean-danger-neon'
+    label = ocean_page.locator('.danger-zone-label')
+    assert label.evaluate('node => getComputedStyle(node).animationName') == 'ocean-danger-text'
+    assert label.evaluate('node => getComputedStyle(node).fill') == 'rgb(239, 68, 68)'
+    ocean_page.emulate_media(reduced_motion='reduce')
+    assert ocean_page.locator('.danger-zone-label').evaluate('node => getComputedStyle(node).animationName') == 'none'
+
+
 def test_ocean_recent_low_tracks_historical_peaks_and_missing_data(ocean_page):
     result = ocean_page.evaluate("""() => {
         const now = new Date('2026-11-02T12:00:00Z');
