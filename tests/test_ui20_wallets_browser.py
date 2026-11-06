@@ -321,13 +321,22 @@ def test_value_history_cash_flow_markers_stay_inside_the_plotted_line(open_page)
       ];
       const host = document.createElement('div');
       host.innerHTML = window._mgmt._buildSummarySparkline(snapshots, txs);
-      return [...host.querySelectorAll('.wallet-summary-event-marker')].map(el => ({
-        left: parseFloat(el.style.left), top: parseFloat(el.style.top), title: el.getAttribute('title'),
-      }));
+      const svg = host.querySelector('svg.sparkline-svg');
+      const pts = svg.querySelector('polyline').getAttribute('points').split(' ').map(p => p.split(',').map(Number));
+      const vb = svg.viewBox.baseVal;
+      return [...host.querySelectorAll('.wallet-summary-event-marker')].map(el => {
+        const x = parseFloat(el.style.left) / 100 * vb.width, y = parseFloat(el.style.top) / 100 * vb.height;
+        const onLine = pts.some(([px, py]) => Math.abs(px - x) < 0.6 && Math.abs(py - y) < 0.6);
+        return { left: parseFloat(el.style.left), top: parseFloat(el.style.top), title: el.getAttribute('data-tip'), onLine };
+      });
     }""")
     titles = " | ".join(m["title"] for m in result)
-    assert "2021-12" not in titles and "2021-W" not in titles, f"out-of-window deposit drawn: {titles}"
+    assert "2021" not in titles, f"out-of-window deposit drawn: {titles}"
     assert len(result) == 2, titles
-    assert all(4 <= m["left"] <= 96 for m in result)
+    assert all(0 < m["left"] < 100 for m in result)
+    # Hover text carries the type, date and amount.
+    assert all(("Deposit" in m["title"] or "Withdrawal" in m["title"]) and "PLN" in m["title"] for m in result)
+    # Markers sit exactly on the plotted value line, not below it.
+    assert all(m["onLine"] for m in result), result
     # Older marker sits left of the newer one, i.e. markers follow the time axis.
     assert result[0]["left"] < result[1]["left"]

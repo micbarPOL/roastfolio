@@ -1124,8 +1124,13 @@
     const valueNow = displaySeries[displaySeries.length - 1][1];
     const valueStart = displaySeries[0][1];
     const isUp = valueNow >= valueStart;
+    const SPARK_W = 520;
+    const SPARK_H = 170;
+    const SPARK_PAD = 2;
+    // viewBox keeps line + markers in one coordinate space when the SVG stretches to the card width.
     const sparkSVG = typeof makeSparkline === 'function'
-      ? makeSparkline(displaySeries, isUp, 520, 170)
+      ? makeSparkline(displaySeries, isUp, SPARK_W, SPARK_H)
+          .replace('<svg class="sparkline-svg"', `<svg class="sparkline-svg" viewBox="0 0 ${SPARK_W} ${SPARK_H}" preserveAspectRatio="none"`)
       : '';
 
     const firstTs = displaySeries[0][0];
@@ -1204,16 +1209,17 @@
         }
         if (idx < 0) return null;
 
+        // Same maths as makeSparkline so the marker lands exactly on the plotted line.
         const pct = (displaySeries[idx][1] - displayMin) / displayRange;
-        const left = (idx / Math.max(displaySeries.length - 1, 1)) * 100;
-        const top = 100 - (pct * 100);
+        const x = SPARK_PAD + (idx / Math.max(displaySeries.length - 1, 1)) * (SPARK_W - SPARK_PAD * 2);
+        const y = SPARK_PAD + (SPARK_H - SPARK_PAD * 2) - pct * (SPARK_H - SPARK_PAD * 2);
         return {
-          left: Math.min(96, Math.max(4, left)),
-          top: Math.min(92, Math.max(12, top)),
+          left: (x / SPARK_W) * 100,
+          top: (y / SPARK_H) * 100,
           label: tx.label || 'Cash flow',
           isDeposit: tx.isDeposit,
           total: tx.total,
-          dateLabel: tx.weekKey,
+          dateLabel: new Date(`${tx.dateKey}T12:00:00`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         };
       })
       .filter(Boolean);
@@ -1225,14 +1231,17 @@
           .slice(0, 6)
       : eventMarkers;
 
-    const markers = visibleMarkers.map((marker) => `
+    const markers = visibleMarkers.map((marker) => {
+      const tip = `${marker.label} · ${marker.dateLabel} · ${marker.isDeposit ? '+' : '-'}${marker.total.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
+      return `
       <span class="wallet-summary-event-marker ${marker.isDeposit ? 'is-deposit' : 'is-withdrawal'}"
         style="left:${marker.left}%; top:${marker.top}%;"
-        title="${marker.dateLabel} · ${marker.isDeposit ? '+' : '-'}${marker.total.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN"
-        aria-label="${marker.dateLabel} · ${marker.isDeposit ? '+' : '-'}${marker.total.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN">
+        data-tip="${tip}"
+        aria-label="${tip}">
         <span>${marker.isDeposit ? '+' : '−'}</span>
       </span>
-    `).join('');
+    `;
+    }).join('');
 
     return `
       <div class="wallet-summary-mini-card wallet-summary-chart-card">
@@ -1242,7 +1251,7 @@
         <div class="wallet-summary-spark-wrap">
           ${sparkSVG || '<div class="wallet-summary-empty-mini">No value history yet</div>'}
           ${axisLabels}
-          ${markers}
+          <div class="wallet-summary-marker-layer">${markers}</div>
         </div>
       </div>
     `;
@@ -1326,7 +1335,8 @@
 
         rect.addEventListener('mousemove', (event) => {
           const svgRect = svg.getBoundingClientRect();
-          const mouseX = event.clientX - svgRect.left;
+          // coords are in viewBox space (520 wide); scale from rendered pixels.
+          const mouseX = (event.clientX - svgRect.left) * ((svg.viewBox.baseVal && svg.viewBox.baseVal.width || svgRect.width) / (svgRect.width || 1));
           let best = coords[0];
           let bestDist = Infinity;
           let bestIdx = 0;
@@ -1357,6 +1367,18 @@
           dots.forEach((dot) => dot.setAttribute('opacity', '0'));
           tip.style.display = 'none';
         });
+      });
+    }
+
+    if (typeof getSparkTooltip === 'function') {
+      const tip = getSparkTooltip();
+      wrap.querySelectorAll('.wallet-summary-event-marker').forEach((marker) => {
+        marker.addEventListener('mouseenter', () => { tip.textContent = marker.dataset.tip || ''; tip.style.display = 'block'; });
+        marker.addEventListener('mousemove', (event) => {
+          tip.style.left = `${event.clientX + 12}px`;
+          tip.style.top = `${event.clientY - 18}px`;
+        });
+        marker.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
       });
     }
   }
