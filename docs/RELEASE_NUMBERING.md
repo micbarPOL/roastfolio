@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.11.2`
-*Target Release Numbering Standard — v15.11.2*
+**Current Release:** `15.11.3`
+*Target Release Numbering Standard — v15.11.3*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.11.2`
+* **Current Active Release:** `15.11.3`
+  * **Service 3:** Animated scuba tank bubbles only while diving. Below a 12% drawdown, the Danger marker and label pulse neon red; reduced-motion preferences disable the effects.
+* **Previous Active Release:** `15.11.2`
   * **Service 2:** Let Roastfolio Says use the full Daily Verdict column instead of a narrow 34-character measure, and clarify the against-market animation with a visible spotlight housing, lens and beam.
 * **Previous Active Release:** `15.11.1`
   * **Service 1:** Ensured all candlestick animation loaders across dashboard, wallet, chart, and analysis cards consistently render the full 8-bar animation sequence with fixed dimensions and `flex-wrap: nowrap` to prevent dropped or squeezed candles in constrained viewports.

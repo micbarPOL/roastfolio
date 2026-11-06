@@ -52,6 +52,7 @@
         const format = value => `${value < 0 ? '\u2212' : ''}${Math.abs(value).toFixed(2)}%`;
         ocean.dataset.state = model.state;
         ocean.dataset.zone = model.zone;
+        ocean.dataset.criticalDrawdown = String(!pending && model.value < -12);
         ocean.querySelector('.ath-ocean-scene').toggleAttribute('hidden', pending);
         ocean.querySelector('.ath-ocean-pending').hidden = !pending;
         ocean.querySelector('[data-ocean-zone]').textContent = {
