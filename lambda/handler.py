@@ -1351,19 +1351,44 @@ def search_handler(event: dict) -> dict:
         print(f"Search error for '{q}': {e}")
         return _resp(500, {"error": "Search failed"})
 
+def _valid_benchmark_daily(rows):
+    import math
+    from datetime import date as daily_date
+
+    if not isinstance(rows, list) or len(rows) < 2:
+        return False
+    previous_date = None
+    previous_price = None
+    try:
+        for row in rows:
+            day = daily_date.fromisoformat(row["t"])
+            price = float(row["c"])
+            if not math.isfinite(price) or price <= 0:
+                return False
+            if previous_date is not None:
+                gap = (day - previous_date).days
+                if gap <= 0 or gap > 31 or not 0.5 <= price / previous_price <= 2:
+                    return False
+            previous_date, previous_price = day, price
+    except (TypeError, ValueError, KeyError):
+        return False
+    return True
+
+
 def benchmark_daily_handler(event: dict) -> dict:
     """
     GET /benchmark-daily?benchmarkId=SP500
     GET /benchmark-daily?ticker=AAPL
 
-    Returns up to 10 years of daily close prices for a benchmark index or
-    any yfinance-compatible ticker. Used by the frontend "Return vs Benchmark"
+    Returns daily close prices for a benchmark index or any yfinance-compatible
+    ticker. Invalid index history is rejected; Polish indices can recover daily
+    closes from the available two-year hourly history. Used by "Return vs Benchmark"
     chart which computes % returns client-side.
 
     Response: { id, name, daily: [{t: "YYYY-MM-DD", c: float}] }
 
     Caching: results are stored in S3 under benchmark-daily-max-{id}.json.
-    Cache is refreshed if older than 7 days or missing.
+    Cache is refreshed if older than 7 days, missing, or inconsistent.
     """
     method = event.get("httpMethod", "GET")
     if method == "OPTIONS":
@@ -1420,6 +1445,9 @@ def benchmark_daily_handler(event: dict) -> dict:
         except Exception:
             pass
 
+    if benchmark_id and not _valid_benchmark_daily(cached.get("daily")):
+        cached = {}
+
     if is_fresh and cached.get("daily"):
         return _resp(200, {
             "id":    cache_id,
@@ -1450,6 +1478,22 @@ def benchmark_daily_handler(event: dict) -> dict:
             {"t": idx.strftime("%Y-%m-%d"), "c": round(float(r["Close"]), 4)}
             for idx, r in df.iterrows()
         ]
+
+        if benchmark_id and not _valid_benchmark_daily(daily):
+            if ticker.upper().endswith(".WA"):
+                retry_df = tk.history(period="2y", interval="60m")
+                if retry_df is not None and not retry_df.empty:
+                    if retry_df.index.tz is not None:
+                        retry_df.index = retry_df.index.tz_convert("Europe/Warsaw")
+                    retry_df = retry_df.resample("D").last().dropna(subset=["Close"])
+            else:
+                retry_df = tk.history(period="10y", interval="1d")
+            daily = [] if retry_df is None or retry_df.empty else [
+                {"t": idx.strftime("%Y-%m-%d"), "c": round(float(row["Close"]), 4)}
+                for idx, row in retry_df.dropna(subset=["Close"]).iterrows()
+            ]
+            if not _valid_benchmark_daily(daily):
+                raise ValueError("Benchmark daily history is incomplete or inconsistent")
 
         # Persist to S3
         payload = {

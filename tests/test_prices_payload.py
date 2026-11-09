@@ -319,5 +319,45 @@ class PricesPayloadTests(unittest.TestCase):
         self.assertEqual(mock_compute.call_args.kwargs["use_intraday"], False)
 
 
+@pytest.mark.parametrize("fetch_result", ["valid", "error", "corrupt"])
+def test_benchmark_daily_rejects_corrupt_wig_cache_and_recovers(fetch_result):
+    from datetime import date
+    from io import BytesIO
+    from unittest.mock import Mock
+
+    corrupt = [{"t": "2019-07-25", "c": 284.0}, {"t": "2026-11-03", "c": 157647.9375}]
+    valid = [{"t": "2026-11-02", "c": 156000.0}, {"t": "2026-11-03", "c": 157647.9375}]
+    cache = {"updated": date.today().isoformat(), "daily": corrupt}
+    storage = Mock()
+    storage.get_object.return_value = {"Body": BytesIO(json.dumps(cache).encode())}
+    ticker = Mock()
+    corrupt_frame = pd.DataFrame({"Close": [row["c"] for row in corrupt]}, index=pd.to_datetime([row["t"] for row in corrupt]))
+    valid_frame = pd.DataFrame({"Close": [155000.0, 156000.0, 157647.9375]},
+                              index=pd.to_datetime(["2026-11-02 09:00", "2026-11-02 16:00", "2026-11-03 16:00"]).tz_localize("Europe/Warsaw"))
+    ticker.history.side_effect = RuntimeError("Yahoo unavailable") if fetch_result == "error" else [
+        corrupt_frame, valid_frame if fetch_result == "valid" else corrupt_frame]
+    with patch.object(handler, "_require_role", return_value=("test-user", None)), \
+         patch.object(handler, "CACHE_BUCKET", "test-bucket"), \
+         patch.object(handler.boto3, "client", return_value=storage), \
+         patch("yfinance.Ticker", return_value=ticker):
+        response = handler.benchmark_daily_handler({"httpMethod": "GET", "queryStringParameters": {"benchmarkId": "WIG"}})
+    if fetch_result != "valid":
+        assert response["statusCode"] == 500
+        storage.put_object.assert_not_called()
+    else:
+        assert response["statusCode"] == 200
+        assert json.loads(response["body"])["daily"] == valid
+        assert ticker.history.call_args_list[-1].kwargs == {"period": "2y", "interval": "60m"}
+        assert json.loads(storage.put_object.call_args.kwargs["Body"])["daily"] == valid
+
+
+@pytest.mark.parametrize("rows", [[], [{"t": "2026-11-03", "c": 0}],
+    [{"t": "2026-11-02", "c": 100}, {"t": "2026-11-03", "c": 50000}],
+    [{"t": "2026-11-02", "c": 100}, {"t": "2026-11-03", "c": float("nan")}],
+])
+def test_benchmark_daily_invalid_history_is_not_cacheable(rows):
+    assert not handler._valid_benchmark_daily(rows)
+
+
 if __name__ == "__main__":
     unittest.main()
