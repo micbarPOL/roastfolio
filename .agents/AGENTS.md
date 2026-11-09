@@ -4,6 +4,7 @@
 - If doing multiple things, divide the changes into separate commits so they can be easily reverted.
 
 ## Branching Strategy
+- Effective 2026-11-09: start all new work on `dev`, including UI, CSS, mockups and redesigns. Do not use `roastfolio_ui_20` as a working branch or switch to it for UI tasks.
 - By default, you should commit and push changes to the `dev` branch, and then merge and push them to the `test` branch.
 - You must wait for explicit permission from the user before merging and pushing to the `prod` branch.
 
