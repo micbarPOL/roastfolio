@@ -776,6 +776,14 @@ function _alignBenchmarkSeries(points, labels) {
         .filter(point => /^\d{4}-\d{2}-\d{2}$/.test(point.date) && Number.isFinite(point.price) && point.price > 0)
         .sort((a, b) => a.date.localeCompare(b.date));
     if (!sorted.length) return labels.map(() => null);
+    const inconsistent = sorted.some((point, index) => {
+        if (!index) return false;
+        const previous = sorted[index - 1];
+        const gap = (Date.parse(point.date) - Date.parse(previous.date)) / 86400000;
+        const ratio = point.price / previous.price;
+        return gap <= 0 || gap > 31 || ratio < 0.5 || ratio > 2;
+    });
+    if (inconsistent) return labels.map(() => null);
     let cursor = 0;
     let lastPrice = null;
     let firstPrice = null;
