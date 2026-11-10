@@ -17,7 +17,19 @@
   - **Symptom**: The monthly returns table data for `mWIG40` is intermittently disappearing and showing again. It should remain static and stable.
   - **Context**: The `generate_returns_data()` function in `update-prices.py` parses `src/data/myfund.pl_Emerytura_StopaZwrotuWOkresach.csv` and merges it with existing hand-corrected values. We need to investigate why these values toggle or disappear and ensure the data loads and remains static in the frontend.
 
-## History UI 20 – Summaries poster (v15.3.0 on dev)
+## History UI 20
+
+- [ ] **History Screen Value Chart Missing ATH Marker and Cash-Flow Events (Deposits & Withdrawals)**:
+  - **Symptom**: On the History screen overview tab, the main portfolio value chart at the top of the page (`#investmentChart` / `.hx-chart`) does not show the All-Time High (ATH) marker, nor does it show deposit or withdrawal markers along the value line.
+  - **Action**: Add the ATH marker and cash-flow event markers (deposits and withdrawals) directly on the plotted value line with interactive hover tooltips (event type, date, and amount in PLN), consistent with the Wallets value history chart.
+
+- [ ] **History Cumulative Return Chart Benchmark Discrepancy (+6000%)**:
+  - **Symptom**: On the History screen return chart (`#returnsChart` / `.hx-return`), benchmarks are displayed with distorted, extreme return values (e.g. +6000%).
+  - **Action**: Investigate benchmark price baseline alignment, data normalization, or quote units in `_alignBenchmarkSeries` and `_loadHistoryBenchmark` in `src/scripts/chart.js`. Ensure the initial benchmark baseline price accurately anchors to the selected time range's start date so percentage returns are realistic and comparable to the portfolio.
+
+- [ ] **History Daily Change Scatter Chart Fails on 1M Filter**:
+  - **Symptom**: On production, the Daily Change scatter chart (`#dailyChangeChart` / `.hx-daily`) on the History screen fails to display data when filtering by `1M`, whereas longer timeframes (1Y, 3Y, 5Y, ALL) work correctly.
+  - **Action**: Investigate snapshot filtering, date cutoffs, and anchor handling in `_filterHistoryRows`, `_filterHistoryRowsWithAnchor`, and `_makeDailyChangeChart` in `src/scripts/chart.js`. Ensure that when the `1M` range yields few snapshots (e.g. at the start of a calendar month), the pipeline provides sufficient anchored data points to compute daily changes and render the scatter points properly.
 
 - [ ] **Poster stamp missing**: The circular "Beat the <benchmark>" sticker (stamp) is not visible on the Summaries poster in the app, although the mockup shows it when the benchmark was beaten.
 - [ ] **Poster data placement differs from the mockup** (`design/mockups/history.html`, D-047):
