@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.11.5`
-*Target Release Numbering Standard — v15.11.5*
+**Current Release:** `15.11.6`
+*Target Release Numbering Standard — v15.11.6*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.11.5`
+* **Current Active Release:** `15.11.6`
+  * **Service 6:** Rebase portfolio returns to start from 0% on filtered sub-ranges (1W, 1M, YTD, 1Y, 3Y, 5Y) to match benchmark range-relative baselines and eliminate multi-thousand percent distortion against benchmarks.
+* **Previous Active Release:** `15.11.5`
   * **Service 5:** Reject incomplete or inconsistent benchmark histories that produced exaggerated History returns. Recover Polish index daily closes from available hourly data, validate cached and fetched series, and avoid plotting corrupt data.
 * **Previous Active Release:** `15.11.4`
   * **Service 4:** Fixed the Wallets Value history chart so deposit and withdrawal markers sit on the plotted wallet-value line instead of below it, and hovering a marker shows its type, date and amount.
