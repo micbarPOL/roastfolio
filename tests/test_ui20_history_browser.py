@@ -99,6 +99,18 @@ def test_overview_hero_range_wallet_and_return_toggles(open_history):
     assert page.locator("#history-benchmark-series").is_visible()
 
 
+def test_history_benchmark_rejects_corrupt_wig_and_keeps_real_returns(open_history):
+    page, _ = open_history()
+    result = page.evaluate("""() => ({
+        corrupt: _alignBenchmarkSeries([{t:'2019-07-25',c:284},{t:'2026-11-03',c:157647.9375}], ['2026-11-02','2026-11-03']),
+        valid: _alignBenchmarkSeries([{t:'2026-11-02',c:156000},{t:'2026-11-03',c:157647.9375}], ['2026-11-02','2026-11-03']),
+        weekend: _alignBenchmarkSeries([{t:'2026-11-06',c:100},{t:'2026-11-09',c:102}], ['2026-11-06','2026-11-07','2026-11-09'])
+    })""")
+    assert result['corrupt'] == [None, None]
+    assert result['valid'] == [0, 1.06]
+    assert result['weekend'] == [0, 0, 2]
+
+
 def test_daily_chart_is_scatter_and_stats_update(open_history):
     page, _ = open_history()
     assert page.locator("#dailyChangeChart").get_attribute("data-chart-kind") == "scatter"

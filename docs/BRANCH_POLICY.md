@@ -1,4 +1,12 @@
-# Branch policy: roastfolio_ui_20
+# Branch Policy
+
+## Active Workflow
+
+Effective 2026-11-09, all new work starts on `dev`, including UI, CSS, mockups and redesigns. `roastfolio_ui_20` is a legacy branch, not the working branch for UI changes.
+
+The release flow remains `dev` -> `test` -> `prod`. Production promotion requires explicit owner approval. This workflow change does not authorize an automatic merge of outstanding legacy UI 20 commits or a production deployment.
+
+## Legacy roastfolio_ui_20 Protection
 
 `roastfolio_ui_20` must not be merged into `dev`, `test` or `prod` until explicitly approved. Deploying it to `dev` or `test` for testing is allowed.
 
