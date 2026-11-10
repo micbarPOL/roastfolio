@@ -949,18 +949,30 @@ async function _makeCumulativeReturnChart(canvasId, data, mode) {
                 const twr = _resolveTwrPct(item);
                 if (twr != null) {
                     lastTwr = twr;
-                    return Number(twr.toFixed(2));
+                    return twr;
                 }
-                if (lastTwr != null) return Number(lastTwr.toFixed(2));
+                if (lastTwr != null) return lastTwr;
                 return null;
             });
         } else {
             returns = data.map(item => {
                 const profit = item.value - item.investment;
                 if (!item.investment) return 0;
-                return Number(((profit / item.investment) * 100).toFixed(2));
+                return (profit / item.investment) * 100;
             });
         }
+
+        // Match the benchmark's range-relative baseline, not lifetime TWR.
+        // Rebase growth factors before rounding; subtracting percentages is wrong.
+        if (_historyRange !== 'ALL') {
+            const firstReturn = returns.find(value => value != null && Number.isFinite(value));
+            const base = firstReturn == null ? null : 1 + firstReturn / 100;
+            returns = returns.map(value => {
+                if (value == null || !Number.isFinite(value) || !(base > 0)) return null;
+                return ((1 + value / 100) / base - 1) * 100;
+            });
+        }
+        returns = returns.map(value => value == null ? null : Number(value.toFixed(2)));
     }
 
     const datasets = [{

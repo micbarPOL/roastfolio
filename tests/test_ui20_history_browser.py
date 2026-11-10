@@ -86,6 +86,13 @@ def test_overview_hero_range_wallet_and_return_toggles(open_history):
     first_total = page.locator("#history-hero-total").inner_text()
     page.locator('[data-history-range="1M"]').click()
     page.wait_for_function("() => document.querySelector('[data-history-range=\"1M\"]')?.getAttribute('aria-selected') === 'true'")
+    page.wait_for_function("""() => {
+        const chart = _historyCharts.returnsChart;
+        return chart && chart.data.datasets.every(dataset => {
+            const first = dataset.data.find(value => value != null);
+            return first == null || first === 0;
+        });
+    }""")
     assert "this month" in page.locator("#history-hero-range").inner_text()
     page.locator("#history-wallet-btns .history-wallet-btn").nth(1).click()
     page.wait_for_timeout(500)
@@ -109,6 +116,74 @@ def test_history_benchmark_rejects_corrupt_wig_and_keeps_real_returns(open_histo
     assert result['corrupt'] == [None, None]
     assert result['valid'] == [0, 1.06]
     assert result['weekend'] == [0, 0, 2]
+
+
+def test_filtered_return_rebases_portfolio_and_benchmark(open_history):
+    page, _ = open_history()
+    result = page.evaluate("""async () => {
+        const savedRange = _historyRange;
+        const savedSelection = new Set(_historySelectedBenchmarks);
+        const savedLoader = _loadHistoryBenchmark;
+        const rows = [
+            {date:'2026-10-01', value:218, investment:100, cumulativeReturnPct:118},
+            {date:'2026-10-02', value:239.8, investment:100, cumulativeReturnPct:139.8},
+            {date:'2026-10-03', value:196.2, investment:100, cumulativeReturnPct:96.2}
+        ];
+        const read = () => _historyCharts.returnsChart.data.datasets.map(d => [...d.data]);
+        const results = {};
+        try {
+            _historySelectedBenchmarks.clear();
+            _historySelectedBenchmarks.add('WIG');
+            _loadHistoryBenchmark = async () => ({name:'WIG', daily:[
+                {t:'2026-10-01', c:100}, {t:'2026-10-02', c:105}, {t:'2026-10-03', c:95}
+            ]});
+            for (const range of ['1W', '1M', 'YTD', '1Y', '3Y', '5Y', 'ALL']) {
+                _historyRange = range;
+                await _makeCumulativeReturnChart('returnsChart', rows, 'pct');
+                results[range] = read();
+            }
+            _historyRange = '1M';
+            await _makeCumulativeReturnChart('returnsChart', rows, 'pln');
+            results.pln = read()[0];
+            const withoutTwr = rows.map(({cumulativeReturnPct, ...row}) => row);
+            await _makeCumulativeReturnChart('returnsChart', withoutTwr, 'pct');
+            results.fallback = read()[0];
+            await _makeCumulativeReturnChart('returnsChart', [rows[0]], 'pct');
+            results.single = read()[0];
+            const missing = rows.map(row => ({...row}));
+            missing[0].cumulativeReturnPct = null;
+            await _makeCumulativeReturnChart('returnsChart', missing, 'pct');
+            results.missing = read()[0];
+            await _makeCumulativeReturnChart('returnsChart', rows.map(row => ({
+                ...row, cumulativeReturnPct:-100
+            })), 'pct');
+            results.zeroBase = read()[0];
+            await _makeCumulativeReturnChart('returnsChart', rows.map((row, i) => ({
+                ...row, cumulativeReturnPct:[-50, -45, -55][i]
+            })), 'pct');
+            results.negativeBase = read()[0];
+            await _makeCumulativeReturnChart('returnsChart', rows.map((row, i) => ({
+                ...row, cumulativeReturnPct:null, unitPrice:[218.004, 239.8044, 196.2036][i]
+            })), 'pct');
+            results.unitPrice = read()[0];
+        } finally {
+            _historyRange = savedRange;
+            _historySelectedBenchmarks.clear();
+            savedSelection.forEach(id => _historySelectedBenchmarks.add(id));
+            _loadHistoryBenchmark = savedLoader;
+        }
+        return results;
+    }""")
+    for selected_range in ('1W', '1M', 'YTD', '1Y', '3Y', '5Y'):
+        assert result[selected_range] == [[0, 10, -10], [0, 5, -5]]
+    assert result['ALL'] == [[118, 139.8, 96.2], [0, 5, -5]]
+    assert result['pln'] == [118, 139.8, 96.2]
+    assert result['fallback'] == [0, 10, -10]
+    assert result['single'] == [0]
+    assert result['missing'][0:2] == [None, 0]
+    assert result['zeroBase'] == [None, None, None]
+    assert result['negativeBase'] == [0, 10, -10]
+    assert result['unitPrice'] == [0, 10, -10]
 
 
 def test_daily_chart_is_scatter_and_stats_update(open_history):
