@@ -1025,7 +1025,7 @@ def _holdings_at_date(all_transactions: list, as_of_date: str, portfolio_currenc
             affect_cash = bool(affect_cash)
 
         if ticker:
-            currency = portfolios._MARKET_CURRENCY_BY_TICKER.get(str(ticker).upper(), currency)
+            currency = portfolios._infer_market_currency(ticker, currency)
 
         if tx_type in ("BUY", "SPINOFF"):
             cur = holdings.get(h_id) or {
