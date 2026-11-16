@@ -1064,18 +1064,20 @@
     <nav>
       <div class="section-label">Getting Started</div>
       <ul>
-        <li><a href="#registration">Registration</a></li>
-        <li><a href="#first-portfolio">First Wallet</a></li>
-        <li><a href="#dashboard-control-room">Dashboard &amp; Control Room</a></li>
-        <li><a href="#holdings">Holdings</a></li>
+        <li><a href="#registration">Registration &amp; Navigation</a></li>
+        <li><a href="#first-portfolio">Wallets &amp; Overview</a></li>
+        <li><a href="#dashboard-control-room">Dashboard &amp; Daily Verdict</a></li>
+        <li><a href="#holdings">Holdings &amp; Allocation</a></li>
         <li><a href="#closed-positions-avco">Closed Positions &amp; AVCO</a></li>
-        <li><a href="#transactions">Transactions</a></li>
+        <li><a href="#transactions">Transactions &amp; Quick Entry</a></li>
         <li><a href="#history-benchmarks">History &amp; Benchmarks</a></li>
-        <li><a href="#statistics-screen">Statistics</a></li>
-        <li><a href="#ath-management">ATH Management</a></li>
+        <li><a href="#monthly-audit">Monthly Recap &amp; Summaries</a></li>
+        <li><a href="#statistics-screen">Statistics &amp; Underwater Lakes</a></li>
+        <li><a href="#retirement-planner">Retirement Planner</a></li>
+        <li><a href="#ath-management">ATH &amp; Deep Ocean</a></li>
         <li><a href="#analysis-screen">Asset Analysis</a></li>
         <li><a href="#coping-diary">Coping Diary</a></li>
-        <li><a href="#monthly-audit">Monthly Recap &amp; Audit</a></li>
+        <li><a href="#user-settings-preferences">User Settings &amp; Email Privacy</a></li>
       </ul>
 
       <div class="section-label">Privacy &amp; Security</div>
@@ -1146,7 +1148,7 @@
     <!-- ══════════════════════════════════════════════════════════ -->
     <h2>Getting Started</h2>
 
-    <h3 id="registration">Creating an account</h3>
+    <h3 id="registration">Creating an account &amp; navigating the app</h3>
     <ol class="steps">
       <li>Click <strong>Sign Up</strong> on the login page and enter your e-mail address and a password (minimum 6 characters).</li>
       <li>Check your inbox for a verification code from Roastfolio and enter it when prompted.</li>
@@ -1162,24 +1164,36 @@
       <p><strong>Demo Account:</strong> You can quickly demo the app using email <code>roastfolio@app</code> and password <code>roastfolio</code> to explore a pre-populated 5-year portfolio history with active holdings, trades, and achievements.</p>
     </div>
 
-    <h3 id="first-portfolio">Creating your first wallet</h3>
-    <p>After logging in, open the <strong>Wallets</strong> tab. This is your main portfolio management screen. To add a wallet:</p>
+    <h4 style="font-size:15px;font-weight:600;margin:20px 0 10px;">Navigation, live refresh &amp; appearance</h4>
     <ul>
-      <li><strong>Desktop:</strong> click the <em>+ Wallet</em> button in the wallet selector panel, type a name, and press <em>Create</em>.</li>
-      <li><strong>Mobile:</strong> tap the <em>···</em> overflow button → <em>+ Add wallet</em>, type a name, and press <em>Create</em>.</li>
+      <li><strong>Desktop sidebar &amp; rail:</strong> The left navigation sidebar is always accessible on desktop and can be collapsed into a compact icon rail using the bottom collapse button or the <code>Ctrl+B</code> (<code>Cmd+B</code> on Mac) keyboard shortcut.</li>
+      <li><strong>Mobile navigation:</strong> On phones, a bottom thumb-zone tab bar provides instant access to <strong>Dashboard</strong>, <strong>Wallets</strong>, <strong>Diary</strong>, and <strong>Analysis</strong>, while the top-left menu button opens the full navigation drawer.</li>
+      <li><strong>One-click live price refresh:</strong> Clicking the <strong>roastfolio</strong> neon candlestick logo or wordmark in the header or sidebar immediately triggers a live price refresh from Yahoo Finance. On mobile, you can also pull down to refresh.</li>
+      <li><strong>Dark &amp; Light themes:</strong> Toggle between Dark and Light mode anytime under <em>Appearance</em> in the sidebar.</li>
     </ul>
-    <p>Name wallets after the brokerage or account they represent (e.g. <em>IKE</em>, <em>IKZE</em>, <em>XTB</em>, <em>Binance</em>). Each wallet tracks one account independently.</p>
-    <p><strong>Summary</strong> is always the first entry and is computed automatically as the aggregate of all your wallets. It is read-only — you cannot add transactions to it directly.</p>
 
-    <h3 id="dashboard-control-room">Dashboard &amp; Control Room</h3>
-    <p>The <strong>Dashboard</strong> provides a high-level overview of your entire portfolio. The top section features the <strong>Control Room</strong>, where you can see the aggregated value, daily returns, and performance of each individual wallet at a glance.</p>
+    <h3 id="first-portfolio">Wallets &amp; portfolio overview</h3>
+    <p>Open the <strong>Wallets</strong> tab to manage your investment accounts and holdings. The top of the screen features a sticky <strong>wallet chip strip</strong>:</p>
     <ul>
-      <li><strong>Wallet navigation:</strong> Clicking on any wallet in the Control Room will automatically take you to the History screen, pre-filtered for that specific wallet.</li>
-      <li><strong>Today's Movers:</strong> Ranks your active equity positions by absolute PLN daily move, displaying sparklines, live prices, percentage change, and session-adjusted volume pace.</li>
+      <li><strong>Creating a wallet:</strong> Click <em>+ New wallet</em> in the chip strip (or tap the overflow menu <em>+ Add wallet</em> on mobile), type a name (e.g. <em>IKE</em>, <em>IKZE</em>, <em>XTB</em>, <em>Interactive Brokers</em>), and press <em>Create</em>.</li>
+      <li><strong>Summary (All wallets):</strong> Pinned as the first chip, <strong>Summary</strong> is computed automatically as the combined read-only view of all your wallets. Select an individual wallet chip whenever you want to record trades or edit wallet settings.</li>
+      <li><strong>Selected Wallet Hero:</strong> Displays the wallet's total value, today's change in PLN and %, annualized money-weighted return (<strong>Annual return</strong> / XIRR), distance <strong>From all-time high</strong>, position count (<strong>Inside</strong>), and quick action buttons (<em>New transaction</em> and <em>Transaction history</em>).</li>
+      <li><strong>Wallet Value History Chart:</strong> Plotted alongside the wallet hero, showing your historical value trajectory with <strong>deposit and withdrawal markers</strong> placed directly on the value line. Hover over any marker to inspect its cash-flow type, date, and PLN amount.</li>
+    </ul>
+
+    <h3 id="dashboard-control-room">Dashboard, Daily Verdict &amp; Intraday Comparison</h3>
+    <p>The <strong>Dashboard</strong> is organized as a two-column command center on desktop (and a prioritized vertical feed on mobile) that puts your daily return and market context first:</p>
+    <ul>
+      <li><strong>Daily Verdict Hero (<em>Your return today</em>):</strong> Leads with your daily percentage return and nominal PLN change, followed by a shared-axis comparison (<strong>Today vs benchmark · Since previous close</strong>) plotting <em>You</em> against your selected benchmark. Context-aware mood accents distinguish making money from merely losing less than the index, accompanied by brief visual effects (fireworks, spotlight beam, rain, or umbrella — respecting reduced-motion preferences) and a full-width <strong>Roastfolio says</strong> commentary. When your portfolio sets a new record, a breakout-style <strong>New All-Time High</strong> banner celebrates the milestone.</li>
+      <li><strong>Portfolio vs Benchmark · Since Previous Close (Intraday Chart):</strong> Synthesizes minute-by-minute portfolio returns against your benchmark using current holdings, constant FX, and 15-minute delayed exchange bars. Use the <strong>Portfolio window</strong> selector to switch between <em>Benchmark session</em> and <em>24 hours</em>, and click or hover the <code>i</code> info button next to the title to view session timings, quote delays, and methodology notes.</li>
+      <li><strong>Opt-in Benchmark Price Chart:</strong> Expand <em>Show benchmark price chart</em> below the intraday comparison whenever you want to inspect the standalone index chart across <code>1D</code>, <code>YTD</code>, or <code>1Y</code> ranges in <em>Line</em> or <em>Candle</em> mode.</li>
+      <li><strong>Under the Surface (Deep Ocean ATH) &amp; Last 6 Months:</strong> Visualizes your live drawdown from All-Time High alongside a 6-month portfolio sparkline and the <strong>Summary</strong> card (with <em>Month</em> and <em>Year</em> tabs for return, benchmark win/loss score, and retirement deposit/return goal progress bars).</li>
+      <li><strong>Right Rail — Today's Movers &amp; Accounts:</strong> Sits beside Daily Verdict from the top of the dashboard. <strong>Today's movers</strong> ranks active equity holdings with a <code>1D</code> / <code>1Y</code> sparkline toggle, daily PLN move, and volume pace badges. <strong>Accounts</strong> lists <em>Summary</em> and each individual wallet with live value, daily delta, and dial gauge — clicking any wallet opens its History view.</li>
+      <li><strong>Now Playing Bar:</strong> A floating glass island at the bottom of the Dashboard summarizes total value, live status, daily delta, and provides a one-tap scroll-to-top button.</li>
     </ul>
 
     <h4 id="todays-movers-volume" style="margin-top: 18px; margin-bottom: 8px; color: var(--accent, #38bdf8); font-size: 15px;">📊 Today's Movers &amp; Time-Adjusted Volume (RVOL)</h4>
-    <p>In addition to intraday price changes, the Today's Movers table displays a <strong>Time-Adjusted Relative Volume (RVOL %) badge</strong> for each equity holding. Rather than comparing intraday volume against 100% of a full day's average, Roastfolio dynamically scales expected volume to the current trading session progress:</p>
+    <p>In addition to intraday price changes, the Today's Movers list displays a <strong>Time-Adjusted Relative Volume (RVOL %) badge</strong> for each equity holding. Rather than comparing intraday volume against 100% of a full day's average, Roastfolio dynamically scales expected volume to the current trading session progress:</p>
     <ul>
       <li><strong>Session-Progress Adjusted:</strong> If the Warsaw exchange (GPW, 09:00–17:00) is 1 hour in (12.5% of session time), today's volume is compared against 12.5% of the 3-month daily average. This prevents morning trading from appearing artificially low.</li>
       <li><strong>Multi-Market Awareness:</strong> Automatically recognizes market hours by exchange timezone (e.g. GPW 09:00–17:00 Warsaw, US markets 09:30–16:00 ET, London 08:00–16:30 London). Outside trading hours or on weekends, the baseline defaults to 100% of daily volume.</li>
@@ -1194,290 +1208,236 @@
       <li><strong>Detailed Tooltip:</strong> Hover over any volume badge to inspect exact metrics: current volume, 3-month daily average, session elapsed percentage, and expected volume pace.</li>
     </ul>
 
-    <h3 id="holdings">Holdings</h3>
-    <p>Holdings are created automatically when you record a <strong>BUY</strong> transaction. There is no separate "add holding" form. Each BUY transaction adds to (or creates) the matching position in your wallet.</p>
-    <p>The holdings table shows each position with live price data, current value, today's change in PLN and %, and allocation percentage. On mobile, holdings display as stacked cards. On desktop, they appear in a table with sortable columns.</p>
-    <p>To <strong>edit or delete</strong> a position, tap the ✏️ or 🗑️ icons on the holding row. To record a trade against an existing holding directly, use the <em>Buy</em> or <em>Sell</em> chip buttons on the holding card.</p>
+    <h3 id="holdings">Holdings &amp; Allocation</h3>
+    <p>Holdings are created automatically when you record a <strong>BUY</strong> transaction — there is no separate "add holding" form. Above the holdings list, a horizontal <strong>Allocation bar</strong> and legend show how your selected wallet is distributed across positions and cash.</p>
+    <p>The frameless holdings table displays each position with share count, live PLN value, today's change in PLN and %, and wallet allocation share (%). On mobile, holdings render as responsive cards. Use the inline <em>Buy</em> or <em>Sell</em> action buttons on any row to open the transaction sheet pre-filled for that asset, or click the company name to open <strong>Asset Analysis</strong>.</p>
     <div class="callout info">
-      <p><strong>Cash holding:</strong> any holding without a ticker (named e.g. <em>Cash</em> or <em>Konto</em>) is treated as a cash position. Its value is used to calculate available cash for BUY transactions.</p>
+      <p><strong>Cash holding:</strong> Any holding without a ticker (named e.g. <em>Cash</em> or <em>Konto</em>) is treated as your cash balance and is used automatically to fund BUY orders and receive SELL proceeds or dividends.</p>
     </div>
 
-    <h3 id="closed-positions-avco">Closed Positions &amp; AVCO</h3>
-    <p>Wallet Management has two holdings views: <strong>Active Holdings</strong> and <strong>The Cemetery</strong>.</p>
+    <h3 id="closed-positions-avco">Closed Positions &amp; AVCO (The Cemetery)</h3>
+    <p>On the <strong>Wallets</strong> screen, use the segmented toggle in the Holdings header to switch between <strong>Active</strong> and <strong>The Cemetery</strong>:</p>
     <ul>
-      <li><strong>Active Holdings:</strong> open positions with live value, daily move, and action buttons.</li>
-      <li><strong>The Cemetery:</strong> an AVCO performance table for positions history (both currently active and fully closed).</li>
+      <li><strong>Active:</strong> Open positions with live market value, daily move, allocation percentage, and quick trade actions.</li>
+      <li><strong>The Cemetery:</strong> An archive and performance table powered by an <strong>Average Cost Basis (AVCO)</strong> accounting model covering both closed and active positions.</li>
     </ul>
 
-    <p>For each asset, Roastfolio calculates return components using an <strong>Average Cost Basis (AVCO)</strong> model:</p>
+    <p>For each asset, Roastfolio computes four AVCO return components:</p>
     <ul>
-      <li><strong>Realized return:</strong> closed P/L from SELL transactions.</li>
-      <li><strong>Unrealized return:</strong> current open P/L on remaining units.</li>
-      <li><strong>Dividends received:</strong> cash dividends assigned to the asset.</li>
-      <li><strong>Total return:</strong> realized + unrealized + dividends.</li>
+      <li><strong>Realized return:</strong> Closed profit/loss locked in from SELL transactions.</li>
+      <li><strong>Unrealized return:</strong> Current open profit/loss on remaining shares.</li>
+      <li><strong>Dividends received:</strong> Cash dividends recorded for the asset.</li>
+      <li><strong>Total return:</strong> Realized + unrealized + dividends.</li>
     </ul>
 
-    <p>In the Active view, a <strong>Past Realized (AVCO)</strong> badge appears when a holding has non-trivial realized history. In The Cemetery, each row shows:</p>
+    <p>In the Active view, a <strong>Past Realized (AVCO)</strong> badge appears when a holding has prior realized gains or losses. In The Cemetery, you can:</p>
     <ul>
-      <li><strong>Asset:</strong> ticker and name.</li>
-      <li><strong>Holding lifespan:</strong> first buy date, last sell date, and days held.</li>
-      <li><strong>Realized (Unrealized):</strong> realized P/L, with unrealized P/L shown in brackets.</li>
-    </ul>
-
-    <p>The Cemetery table also includes power tools:</p>
-    <ul>
-      <li><strong>View filter:</strong> <em>All</em>, <em>Active</em>, or <em>Closed</em>.</li>
-      <li><strong>Sorting:</strong> by <em>Holding lifespan</em> or by <em>Realized (Unrealized)</em>.</li>
-      <li><strong>Drill-down:</strong> click an asset to open Analysis directly for that ticker.</li>
+      <li><strong>Filter by status:</strong> Switch the <em>View</em> dropdown between <em>All</em>, <em>Active</em>, and <em>Closed</em> positions.</li>
+      <li><strong>Sort columns:</strong> Sort by <em>Holding lifespan</em> (first buy date, close date, and days held) or by <em>Total (Realized) Return</em>.</li>
+      <li><strong>Drill down:</strong> Click any asset row to open <strong>Asset Analysis</strong> directly for that ticker.</li>
     </ul>
 
     <div class="callout info">
-      <p><strong>Summary wallet behavior:</strong> Summary remains read-only for trading, but The Cemetery is available there too. It is aggregated across all wallets by asset and shows combined AVCO returns for active and closed positions.</p>
+      <p><strong>Summary wallet behavior:</strong> While <em>Summary</em> is read-only for new trades, The Cemetery is available there too — aggregating AVCO lifespans and realized/unrealized returns across all of your wallets.</p>
     </div>
 
-    <h3 id="transactions">Recording transactions</h3>
-    <p>Transactions are recorded in a <strong>slide-up panel</strong> (bottom sheet) that opens without leaving the holdings view. To open it:</p>
-    <ul>
-      <li><strong>Desktop:</strong> click <em>New transaction</em> in the wallet overview bar.</li>
-      <li><strong>Mobile:</strong> tap the <em>+ Transaction</em> floating button at the bottom of the screen.</li>
-      <li>From a holding card: tap <em>Buy</em> or <em>Sell</em> to open the panel with that holding pre-selected.</li>
-    </ul>
+    <h3 id="transactions">Transactions, Quick Entry &amp; Activity Ledger</h3>
+    <p>Roastfolio gives you two ways to log transactions on the <strong>Wallets</strong> screen, plus a dedicated <strong>Transactions</strong> research screen in the sidebar.</p>
 
-    <p><strong>Inside the transaction panel</strong>, select the type using the buttons at the top:</p>
+    <h4 style="font-size:15px;font-weight:600;margin:20px 0 10px;">1. Transaction Sheet (Side Sheet / Bottom Sheet)</h4>
+    <p>Click <em>New transaction</em> in the wallet hero (or tap the floating <em>+ Transaction</em> button on mobile) to open the transaction sheet without leaving your wallet:</p>
     <table>
       <thead><tr><th>Type</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td><strong>Buy</strong></td><td>Adds units to an existing holding or creates a new one. Decreases cash balance.</td></tr>
-        <tr><td><strong>Sell</strong></td><td>Removes units from a holding. Increases cash balance.</td></tr>
-        <tr><td><strong>Deposit</strong></td><td>Adds cash to the wallet without buying anything. Increases cash balance. Counts toward the monthly contribution streak.</td></tr>
-        <tr><td><strong>Withdrawal</strong></td><td>Removes cash from the wallet. Decreases cash balance. Breaks the withdrawal-free streak.</td></tr>
+        <tr><td><strong>Buy</strong></td><td>Adds units to an existing holding or creates a new position. Decreases wallet cash balance.</td></tr>
+        <tr><td><strong>Sell</strong></td><td>Removes units from a holding (includes a <em>Max</em> button to pre-fill your entire position). Increases cash balance.</td></tr>
+        <tr><td><strong>Deposit</strong></td><td>Adds fresh cash to the wallet without buying an asset. Counts toward your monthly contribution streak.</td></tr>
+        <tr><td><strong>Withdrawal</strong></td><td>Removes cash from the wallet. Resets the withdrawal-free streak.</td></tr>
+        <tr><td><strong>Dividend</strong></td><td>Records a cash dividend payout linked to a holding and adds the proceeds to your wallet cash balance.</td></tr>
       </tbody>
     </table>
 
-    <p>For <strong>Buy</strong> and <strong>Sell</strong>, start by searching for the asset. Two sources are supported:</p>
+    <p>For <strong>Buy</strong>, <strong>Sell</strong>, and <strong>Dividend</strong>, select the asset source:</p>
     <ul>
-      <li><strong>Yahoo Finance</strong> — for stocks, ETFs, crypto, and international assets (e.g. <code>CDR.WA</code>, <code>AAPL</code>, <code>BTC-USD</code>). Use arrow keys and Enter to navigate results.</li>
-      <li><strong>Polish TFI</strong> — for Polish mutual funds (TFI). Enter the <a href="https://www.bankier.pl/fundusze" target="_blank" rel="noopener noreferrer">bankier.pl</a> fund code and press <em>Lookup</em>.</li>
+      <li><strong>Yahoo Finance:</strong> Search global stocks, ETFs, and crypto (e.g. <code>CDR.WA</code>, <code>AAPL</code>, <code>BTC-USD</code>). Focusing the search box immediately lists your current holdings, and selecting an asset automatically suggests the latest live market price (converted to PLN if traded in a foreign currency).</li>
+      <li><strong>Polish TFI:</strong> Enter the <a href="https://www.bankier.pl/fundusze" target="_blank" rel="noopener noreferrer">bankier.pl</a> fund code (e.g. <code>PCS21</code>) and press <em>Lookup</em>.</li>
     </ul>
-    
-    <div class="callout info">
-      <p><strong>Foreign currencies:</strong> Tickers natively traded in foreign currencies (e.g., <code>BTC-USD</code>, <code>ETH-USD</code>, <code>AAPL</code>) are automatically mapped and evaluated in their native market currency (USD, EUR, etc.) during historical recalculations. This guarantees accurate historical valuation regardless of the currency selected in your transactions.</p>
-    </div>
-
-    <p>Enter the <strong>quantity</strong> (number of units) and <strong>trade value</strong> (total cash impact in PLN). Commission and a free-text comment are optional under <em>Advanced options</em>. A live review summary appears before you submit.</p>
-
-    <p>The panel has two tabs — <strong>Trade</strong> (new transaction) and <strong>History</strong> (past transactions and daily value snapshots for the selected wallet). On mobile, swipe down from the handle at the top to dismiss the panel.</p>
 
     <div class="callout info">
-      <p><strong>Auto-add cash:</strong> if a BUY transaction would exceed your available cash balance, you can enable <em>Automatically add missing cash before a buy</em>. This records a DEPOSIT for the shortfall automatically before applying the buy.</p>
+      <p><strong>Linked price &amp; trade value inputs:</strong> Entering <em>Quantity</em> and <em>Price per share</em> automatically calculates <em>Trade value</em> (and vice versa). Under <em>Advanced options</em>, you can add an optional commission/fee and comment. Enable <strong>Automatically add missing cash before a buy</strong> to auto-record a matching cash deposit whenever a purchase exceeds available wallet cash. Validation issues are surfaced in a clear modal dialog before anything is saved.</p>
     </div>
 
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Managing existing transactions</h4>
+    <h4 style="font-size:15px;font-weight:600;margin:20px 0 10px;">2. Quick Entry (Natural-Language Trade Box)</h4>
+    <p>In the right-hand rail of the Wallets screen, the <strong>Quick entry</strong> card lets you record trades in plain text without filling out the full form — for example:</p>
     <ul>
-      <li><strong>Filtering:</strong> On the transactions screen, you can filter your history by specific <strong>wallet</strong> and use <strong>quick date filters</strong> (e.g., Today, This week, This month, This year, All time).</li>
-      <li><strong>Live editing:</strong> When you edit a transaction and change its price or quantity, the total value is instantly recalculated. This also automatically triggers a recalculation of your wallet balances and historical portfolio performance.</li>
+      <li><code>Buy 10 AAPL for 185.50 to XTB on 2025-06-01</code></li>
+      <li><code>Sell 5 CDR.WA for 120 to IKE</code></li>
+      <li><code>Deposit 5000 to IKZE</code></li>
+    </ul>
+    <p>Click any template chip to pre-fill an example, press <em>Save entry</em> (or hit <code>Enter</code>), or click <em>Full form</em> to continue in the transaction sheet.</p>
+
+    <h4 style="font-size:15px;font-weight:600;margin:20px 0 10px;">3. Dedicated Transactions Screen &amp; Activity Calendar</h4>
+    <p>Open <strong>Transactions</strong> from the sidebar to analyze your trading activity and manage your full ledger across all wallets:</p>
+    <ul>
+      <li><strong>Turnover Summary Cards:</strong> Displays <em>This Month's Turnover</em>, <em>YTD Turnover</em>, and <em>All-Time Turnover</em> (Buy + Sell volume in PLN).</li>
+      <li><strong>Transaction Activity Calendar:</strong> A yearly heatmap grid with year selector tabs showing daily turnover intensity alongside distinct <strong>Deposit</strong> and <strong>Withdrawal</strong> markers. Click any active day to open a modal listing all transactions recorded on that date.</li>
+      <li><strong>Monthly Turnover Chart:</strong> Bar chart visualizing monthly Buy + Sell volume over time.</li>
+      <li><strong>Filterable Transaction Ledger:</strong> Combine independent filters for <strong>Asset</strong> (name or ticker), <strong>Wallet</strong>, <strong>Date</strong> (quick <em>Today</em> / <em>This week</em> / <em>This month</em> presets or custom date range), <strong>Operation</strong> checkboxes, and a dual-thumb <strong>Value · PLN</strong> range slider. The table displays 12 rows per page with inline edit and delete actions that automatically recalculate wallet balances and historical snapshots.</li>
     </ul>
 
     <h3 id="history-benchmarks">History &amp; Benchmarks</h3>
-    <p>The <strong>History</strong> screen visualizes your portfolio over time. You can inspect the combined <strong>Summary</strong> of all wallets or switch to an individual wallet using the wallet selector. The section is split into three tabs to make the story clearer:</p>
+    <p>The <strong>History</strong> screen visualizes your portfolio performance over time and is organized into two top-level views via the segmented toggle at the top: <strong>Overview</strong> and <strong>Summaries</strong>.</p>
+
+    <h4 style="font-size:15px;font-weight:600;margin:20px 0 10px;">Overview Tab</h4>
+    <p>Use the wallet strip (<em>Total</em> or any individual wallet) and range selector (<code>ALL</code>, <code>5Y</code>, <code>3Y</code>, <code>1Y</code>, <code>YTD</code>, <code>1M</code>, <code>1W</code>) to inspect any period:</p>
     <ul>
-      <li><strong>Overview:</strong> This is the main performance view. It shows the portfolio value curve, cumulative return, monthly net gains, and the daily PLN/% change charts. It is the place to review trend quality, drawdowns, and whether performance is improving or losing ground over a selected period.</li>
-      <li><strong>Memory Lane:</strong> This tab turns the last period into a compact recap story. You will find a set of recap cards summarizing recent performance, wallet contributions, benchmark context, deposit progress, and "carry vs drag" framing. It is designed to help you quickly understand what moved the portfolio and which wallets mattered most during the period.</li>
-      <li><strong>Benchmarks:</strong> This tab focuses on external comparison. You can compare portfolio performance against major indices and market benchmarks, review benchmark drift, and see how your portfolio stacks up against the market over the selected time range.</li>
-    </ul>
-    <p>Across the History screen, the app also keeps the benchmark comparison logic aligned with a clean portfolio return model:</p>
-    <ul>
-      <li><strong>Performance Charts:</strong> View your Total Value, Daily PLN Change, and Daily % Change over time. The charts maintain high-fidelity <strong>daily datapoints</strong> for ranges up to 1 Year (e.g. YTD, 1Y) to keep ATH lines and trend analysis accurate.</li>
-      <li><strong>Return vs Benchmark:</strong> A dedicated chart calculates your Time-Weighted Return (TWR) using the <em>Modified Dietz</em> methodology. This prevents large deposits or withdrawals from distorting the percentage picture, making the portfolio comparison fairer.</li>
-      <li><strong>Benchmark selection:</strong> Compare against indices or assets such as <strong>S&amp;P 500</strong>, <strong>MSCI World</strong>, and <strong>WIG20</strong>. If needed, you can also add <strong>custom benchmarks</strong> in wallet settings using valid Yahoo Finance tickers such as <code>BTC-USD</code>.</li>
+      <li><strong>Value Hero &amp; Trajectory Chart:</strong> Displays current value, range gain in PLN and %, <strong>Invested capital</strong>, <strong>Deposits in range</strong>, and <strong>Market gain in range</strong> alongside the combined <em>Value</em>, <em>Invested capital</em>, and <em>Deposit</em> chart.</li>
+      <li><strong>Merged Return vs Benchmark Chart:</strong> Plots your cumulative Time-Weighted Return (TWR, using the cash-flow-adjusted <em>Modified Dietz</em> method) directly against benchmark series chips (<strong>WIG</strong>, <strong>S&amp;P 500</strong>, <strong>MSCI World</strong>).
+        <ul>
+          <li><strong>Range-relative baseline alignment:</strong> On filtered sub-ranges (<code>1W</code>, <code>1M</code>, <code>YTD</code>, <code>1Y</code>, <code>3Y</code>, <code>5Y</code>), both your portfolio return and selected benchmarks rebase to <code>0%</code> at the start of the window for an apples-to-apples comparison, while <code>ALL</code> preserves your full lifetime return.</li>
+          <li><strong>% vs PLN unit toggle:</strong> Switch between percentage return (<code>%</code>) and nominal return (<code>PLN</code>). In PLN mode, benchmark series hide automatically with a note because market indices do not have a personal PLN balance.</li>
+        </ul>
+      </li>
+      <li><strong>Monthly Bars &amp; Daily Change Scatter:</strong> Placed side by side below the return chart:
+        <ul>
+          <li><strong>Monthly bars:</strong> Switch between monthly net <em>Gain</em> and <em>Deposits</em> with summary statistics underneath.</li>
+          <li><strong>Daily change scatter:</strong> Plots up to 90 closing sessions as a scatter chart (in <code>%</code> or <code>PLN</code> mode) with best/worst session halos, an average reference line, and range statistics.</li>
+        </ul>
+      </li>
     </ul>
 
-    <h3 id="statistics-screen">Statistics</h3>
-    <p>The <strong>Statistics</strong> screen summarizes long-term performance using snapshots and transaction-adjusted return logic.</p>
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <h2 id="monthly-audit">Monthly Recap &amp; Summaries</h2>
+
+    <p>Switching the <strong>History</strong> screen to the <strong>Summaries</strong> tab opens Roastfolio's editorial monthly recaps — also delivered as automated monthly email reports when enabled in User Settings.</p>
+
+    <h3 id="interactive-audit">Period Navigator &amp; Recap Poster Cover</h3>
     <ul>
-      <li><strong>All-Time / Monthly / Daily cards:</strong> best and worst periods, drawdown from ATH, turnover, and trend summaries.</li>
-      <li><strong>Monthly snapshot table:</strong> end value, invested capital, net gain, return %, and XIRR.</li>
-      <li><strong>Benchmark comparison:</strong> month-by-month score against major benchmarks.</li>
+      <li><strong>Month Strip Navigator:</strong> Select a year and click any month pill to open that month's recap, or choose the current month for a <strong>Live Month-to-Date</strong> report generated dynamically from your latest transactions and prices.</li>
+      <li><strong>Editorial Poster Cover:</strong> Features mood-styled accents, a sparkline, a benchmark gap sticker, a three-number summary strip (TWR %, nominal PLN move, and external cash flows), a data-backed headline (driven by benchmark outperformance, top contributor/drag, or new ATH status), and scenario-matched roast commentary tailored to your chosen <strong>Roast Personality</strong>.</li>
+    </ul>
+
+    <h3 id="live-mtd">Deep-Dive Recap Cards</h3>
+    <ul>
+      <li><strong>The Journey:</strong> Interactive chart comparing your cumulative daily return against your benchmark throughout the month, complete with a floating hover tooltip.</li>
+      <li><strong>Who Moved Your Month (Carry vs Anchor):</strong> Highlights your best-performing holding (<em>Carry / Leader</em>) and biggest drag (<em>Anchor</em>) with their net PLN contribution. Corporate legal suffixes (such as <em>S.A.</em>, <em>Ltd</em>, <em>Sp. z o.o.</em>) are automatically trimmed so clean company names appear instead of raw exchange codes.</li>
+      <li><strong>The Bigger Picture &amp; Global Benchmarks:</strong> Compares your monthly return against major Polish and global indices (<em>WIG</em>, <em>MSCI World</em>, <em>S&amp;P 500</em>, <em>NASDAQ</em>, <em>DAX</em>, <em>FTSE 100</em>).</li>
+      <li><strong>Wallet Breakdown &amp; Primary Profit Engine:</strong> Ranks your individual wallets by percentage efficiency and nominal PLN profit.</li>
+      <li><strong>The Milestones &amp; Daily Returns Calendar:</strong> An interactive calendar heatmap coloring each trading day green or red with hover tooltips for daily PLN and % returns, Best/Worst day badges, and a radiant gold trophy badge when you hit a new All-Time High.</li>
+      <li><strong>Trading Activity:</strong> Summarizes monthly buy/sell turnover, dividends received, and your largest transactions of the month.</li>
+    </ul>
+
+    <h3 id="monthly-recap-email">Privacy-First Sharing &amp; Automated Email Reports</h3>
+    <p>At the bottom of every monthly summary, the <strong>Share your month</strong> card lets you export or email your recap with built-in privacy controls:</p>
+    <ul>
+      <li><strong>Show PLN amounts toggle:</strong> Off by default so you can share percentage performance posters without exposing your account size or cash flows.</li>
+      <li><strong>Download Poster Image:</strong> Generates a high-resolution recap poster image locally in your browser.</li>
+      <li><strong>Send Email Report &amp; Recipient Scope:</strong> Dispatch the monthly recap email on demand. If you have configured multiple notification email addresses in User Settings, you can choose between sending to <em>Just me</em> or <em>All emails on list</em>.</li>
+    </ul>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:36px 0;">
+
+    <h3 id="statistics-screen">Statistics &amp; Underwater Lakes</h3>
+    <p>The <strong>Statistics</strong> screen provides institutional-style risk and return analytics across your entire investing history, with contextual <code>?</code> help disclosures in every section:</p>
+    <ul>
+      <li><strong>Records (All Time / Monthly / Daily):</strong> Highlights your best and worst periods, peak portfolio value, longest streaks, and win rates.</li>
+      <li><strong>Benchmark Comparison Accordion:</strong> Month-by-month win/loss scoreboard and return table against major market benchmarks.</li>
+      <li><strong>Snapshot Summary Accordion:</strong> Paginated table of monthly or daily snapshots showing portfolio value, invested capital, net gain, percentage return, and annualized money-weighted <strong>XIRR</strong>.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Underwater Lakes (Cash-Flow-Adjusted Drawdowns)</h4>
+    <p>The <strong>Underwater Lakes</strong> section measures how deep and how long your portfolio stayed below its running <strong>unit-price High-Water Mark (HWM)</strong> — removing the distorting effect of deposits and withdrawals:</p>
+    <ul>
+      <li><strong>Independent Controls:</strong> Filter by portfolio (<em>Total</em> or individual wallet), time range (<code>All</code>, <code>3Y</code>, <code>1Y</code>, <code>YTD</code>), or pick a specific drawdown period from the <strong>Explore a lake</strong> dropdown.</li>
+      <li><strong>Summary Cards:</strong> <strong>The Deepest Trench</strong> (worst percentage drawdown trough) and <strong>The Widest Swamp</strong> (longest underwater duration in days).</li>
+      <li><strong>Dual Independent Charts:</strong>
+        <ul>
+          <li><strong>Left chart (Valuation Path vs High-Water Mark):</strong> Plots your unit-price trajectory against the dotted HWM across the chosen time range.</li>
+          <li><strong>Right chart (The Lakes — Underwater Drawdown %):</strong> Click any lake on the left chart (or use the dropdown) to inspect that specific lake's drawdown curve with its own start/recovery dates and X-axis.</li>
+        </ul>
+      </li>
     </ul>
 
     <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Monthly Performance Heatmap</h4>
-    <p>The heatmap visualizes seasonality by showing monthly performance in a matrix (<em>month rows</em> × <em>year columns</em>):</p>
+    <p>Visualizes seasonality in a <em>year × month</em> matrix with an <strong>Avg</strong> column:</p>
     <ul>
-      <li><strong>Metric toggle:</strong> switch between <em>% Return</em> and <em>PLN Return</em>.</li>
-      <li><strong>Portfolio toggle:</strong> switch between <em>Total</em> (Summary) and each individual wallet.</li>
-      <li><strong>Color intensity:</strong> stronger green/red means larger absolute move for the selected metric.</li>
-      <li><strong>Avg column:</strong> average result for each calendar month across available years.</li>
-    </ul>
-    <div class="callout info">
-      <p><strong>How to read it:</strong> Use the heatmap to spot recurring strong/weak months and compare whether a pattern persists in percentage terms or only in absolute PLN.</p>
-    </div>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Underwater Lakes</h4>
-    <p>The <strong>Underwater Lakes</strong> module shows how long and how deep your portfolio stayed below its running high-water mark.</p>
-    <ul>
-      <li><strong>Top chart:</strong> daily portfolio value vs. dotted high-water mark (HWM).</li>
-      <li><strong>Bottom chart:</strong> drawdown-only view (0% to -100%) with filled underwater areas.</li>
-      <li><strong>Range picker:</strong> switch between <em>All</em>, <em>3Y</em>, <em>1Y</em>, and <em>YTD</em> to focus on recent cycles.</li>
-      <li><strong>Lake inspection:</strong> click a highlighted lake on the left chart to show that exact lake on the right.</li>
-      <li><strong>Deepest Lake marker:</strong> vertical indicator and label at the worst drawdown trough.</li>
-      <li><strong>Widest Lake marker:</strong> highlighted span and label for the longest consecutive underwater period.</li>
-    </ul>
-    <p>Two summary cards are shown next to the charts:</p>
-    <ul>
-      <li><strong>The Deepest Trench:</strong> maximum drawdown depth in percent.</li>
-      <li><strong>The Widest Swamp:</strong> longest underwater duration in days.</li>
+      <li><strong>Metric toggle:</strong> Switch between <em>% Return</em> and <em>PLN Return</em>.</li>
+      <li><strong>Portfolio toggle:</strong> Switch between <em>Total</em> and individual wallets.</li>
     </ul>
 
-    <h3 id="ath-management">All-Time High (ATH) management</h3>
-    <p>Roastfolio tracks the <strong>All-Time High (ATH)</strong> portfolio value for each wallet and for the overall portfolio. ATH is used on the dashboard gauge to show how close you are to your peak. By default, ATH is computed automatically from your daily value snapshots.</p>
-    <p>To view or edit ATH for a wallet, open the <strong>Wallets</strong> tab and select the wallet from the list. In the wallet overview bar you will see an <strong>All-Time High (ATH)</strong> row showing the current peak value, its date, and whether it was set automatically or manually.</p>
-    <p>Tap the ✏️ icon to expand the ATH editor:</p>
+    <h3 id="retirement-planner">Retirement Planner &amp; Monte Carlo Forecast</h3>
+    <p>Open <strong>Retirement</strong> from the sidebar to model your long-term path to financial independence and compare your real portfolio trajectory against your plan:</p>
     <ul>
-      <li><strong>Manual ATH date</strong> — pick the date on which the peak occurred.</li>
-      <li><strong>Manual ATH value (PLN)</strong> — enter the peak value in PLN.</li>
-      <li>Click <em>Save manual ATH</em> to persist your override. The dashboard gauge will immediately reflect the new ATH.</li>
+      <li><strong>Multi-Scenario Plans:</strong> Create, rename, duplicate, and switch between multiple saved retirement plans (e.g. <em>Base Case</em>, <em>Early FIRE</em>, <em>Conservative</em>).</li>
+      <li><strong>Actual vs Theoretical Forecast Chart:</strong> Plots your real historical balance (blue), a theoretical monthly-compounded path from your start date (dashed blue), and forward projections from both today's actual balance (green) and theoretical balance (purple) through age <code>88.6</code> (Polish life expectancy <code>78.6</code> plus 10 years of longevity buffer).</li>
+      <li><strong>Y-Axis Zoom, Pan &amp; Log Scale:</strong> When multi-decade compounding makes today's actuals look flat at the bottom of the chart, use the <strong>Y zoom</strong> and <strong>Y scroll</strong> sliders or click <em>Focus actuals</em> / <em>Use log scale</em> / <em>Fit all</em> to inspect any part of the curve.</li>
+      <li><strong>Seeded Monte Carlo Confidence Bands (<code>P10</code> / <code>P50</code> / <code>P90</code>):</strong> Enable <em>Show confidence bands</em> under <em>More controls</em> to run a deterministic regime-switching simulation (modeling mild, weak, and stress monthly market regimes, inflation-adjusted withdrawals, and annual portfolio fee drag).</li>
+      <li><strong>Simple &amp; Advanced Inputs:</strong> Configure birth date, investing start date, retirement age, monthly contribution, working/retired growth rates, and monthly retirement spending. Expand <em>More controls</em> for starting capital, spending inflation, annual fee drag, volatility, and custom JSON schedules for pension income streams, one-time events, spending phases, and de-risking return phases.</li>
     </ul>
-    <div class="callout info">
-      <p><strong>Auto mode:</strong> click <em>Auto (reset from history)</em> to discard any manual override and let the system recalculate ATH from your historical daily snapshots. Auto mode is the default for all new wallets.</p>
-    </div>
-    <p>Manual ATH does <em>not</em> permanently disable automatic updates — if a new daily snapshot exceeds the stored ATH, the system will still update it automatically. Manual ATH only sets the current floor.</p>
-    <p><strong>Summary wallet</strong> — selecting <em>Summary</em> in the wallet list shows and lets you edit the ATH for the aggregated total portfolio value.</p>
 
+    <h3 id="ath-management">ATH Management &amp; Deep Ocean Visualization</h3>
+    <p>Roastfolio tracks the <strong>All-Time High (ATH)</strong> for each wallet and for your combined portfolio:</p>
+    <ul>
+      <li><strong>Under the Surface (Deep Ocean on Dashboard):</strong> Translates your live percentage distance from ATH into an animated ocean depth scene:
+        <ul>
+          <li>🏖️ <strong>Relax. (0% at or above ATH):</strong> Sunny beach and palm trees ashore.</li>
+          <li>🤿 <strong>Explore. (0% down to −5%):</strong> Shallow coral reef with tropical fish — snorkeling down to <code>−2%</code> and scuba diving with rising tank bubbles below <code>−2%</code>.</li>
+          <li>🦈 <strong>Danger. (below −5%):</strong> Deep ocean trench with patrolling sharks and shipwreck; below <code>−12%</code> drawdown, the Danger warning pulses neon red.</li>
+        </ul>
+        The card also marks your <strong>30-day low</strong> relative to the running ATH and expands its linear depth scale automatically during deeper drawdowns.
+      </li>
+      <li><strong>Manual ATH Override (Wallets Screen):</strong> Select any wallet (or <em>Summary</em>) on the <strong>Wallets</strong> tab, locate the <strong>Wallet settings</strong> card in the right rail, and expand <em>Set ATH manually</em>. Enter an <em>ATH date</em> and <em>ATH value</em> and click <strong>Save ATH</strong>, or click <strong>Reset from history</strong> to restore automatic snapshot detection. Manual ATH sets a floor — if a future daily snapshot exceeds it, Roastfolio automatically updates your ATH to the new record.</li>
+    </ul>
 
     <h3 id="analysis-screen">Asset Analysis</h3>
-    <p>The <strong>Analysis</strong> screen provides deep-dive research tools for any stock, ETF, or crypto asset. Use it to explore detailed price history, financial statements, and earnings data before making investment decisions.</p>
-    
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Opening the Analysis screen</h4>
-    <p>There are multiple ways to access the Analysis screen:</p>
+    <p>The <strong>Analysis</strong> screen is a full-width research workspace for any global stock, ETF, or cryptocurrency. You can open it by clicking any holding on the Dashboard, Wallets, Cemetery, or Coping Diary, or directly from the sidebar.</p>
+
+    <h4 style="font-size:15px;font-weight:600;margin:20px 0 10px;">On-Demand Asset Picker &amp; Favorites</h4>
     <ul>
-      <li><strong>From Dashboard movers:</strong> Click any holding in the "Daily Movers" section to open its analysis.</li>
-      <li><strong>From Portfolio tables:</strong> Click any row in the portfolio holdings table (desktop or mobile).</li>
-      <li><strong>From Chart legends:</strong> Click any company name in pie chart legends.</li>
-      <li><strong>From Wallets:</strong> Click the company name/logo in any wallet's holdings list.</li>
-      <li><strong>Direct search:</strong> Open the Analysis tab from the sidebar and search for any ticker symbol.</li>
+      <li>Click <strong>Select asset</strong> in the header to open the search and <strong>Favorites</strong> dialog.</li>
+      <li>Search Yahoo Finance by ticker or company name (holdings you own display a <strong>✓ Owned</strong> badge).</li>
+      <li>Click the ⭐ star button next to any loaded asset's title to save it to your <strong>Favorites</strong> list for one-click access later.</li>
     </ul>
-    
-    <div class="callout info">
-      <p><strong>Quick tip:</strong> Cash holdings are <em>not</em> clickable as they have no market data.</p>
-    </div>
 
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Search and selection</h4>
-    <p>At the top of the Analysis screen is a search bar where you can enter any ticker symbol or company name (e.g. <code>AAPL</code>, <code>CDR.WA</code>, <code>Meta</code>, <code>BTC-USD</code>). Results appear instantly from Yahoo Finance's global database. Holdings you already own are marked with a <strong>✓ Owned</strong> badge.</p>
-    <p>Use <strong>arrow keys</strong> to navigate the dropdown and press <strong>Enter</strong> to select an asset. The analysis loads automatically with a smooth animated loader.</p>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Price history chart</h4>
-    <p>The main chart shows the asset's price history with the following features:</p>
+    <h4 style="font-size:15px;font-weight:600;margin:20px 0 10px;">Interactive Price Chart, Trade Markers &amp; Technical Indicators</h4>
     <ul>
-      <li><strong>Time range buttons:</strong> 1D, 1W, 1M, YTD, 1Y, 5Y, ALL — click to reload the chart with different historical depth.</li>
-      <li><strong>Transaction markers:</strong> If you own the asset, your BUY and SELL transactions appear as markers on the chart:
+      <li><strong>Time Ranges &amp; Period Return:</strong> Switch between <code>1D</code>, <code>1W</code>, <code>1M</code>, <code>YTD</code>, <code>1Y</code>, <code>5Y</code>, and <code>ALL</code>; the header displays the exact percentage return over the selected window.</li>
+      <li><strong>Wallet Trade Scope Filter:</strong> Use the <em>Trades</em> dropdown to overlay BUY (🟢), SELL (🔴), or same-day BUY+SELL (🟠) markers from <em>All wallets</em>, filter to a single wallet, or choose <em>Hide trades</em>.</li>
+      <li><strong>Technical Overlays &amp; Indicators:</strong> Toggle <strong>VOL</strong> (volume histogram bars), <strong>MA10</strong>, <strong>MA20</strong>, <strong>MA50</strong> (moving averages), and <strong>MACD</strong> (12/26/9 momentum oscillator) directly above the chart. Click the <code>?</code> icon for plain-language explanations of each indicator.</li>
+    </ul>
+
+    <h4 style="font-size:15px;font-weight:600;margin:20px 0 10px;">Fundamentals &amp; Financial Statements</h4>
+    <ul>
+      <li><strong>Fundamentals Grid:</strong> Displays <em>Sector &amp; Industry</em>, <em>Market Cap</em>, <em>P/E Ratio</em> (Trailing &amp; Forward), <em>Dividend Yield</em>, and <em>52-Week High / Low</em>. Hover or focus any metric title to read its educational tooltip.</li>
+      <li><strong>Income Statement &amp; Cash Flow Statement:</strong> Switch between <em>Income Statement</em> and <em>Cash Flow Statement</em> tabs, and toggle between <em>Annual</em> (5 years) and <em>Quarterly</em> (last 8 quarters) views. The responsive table pins the metric column on horizontal scroll, discloses the reporting currency, and renders multi-period trend sparkbars.</li>
+    </ul>
+
+    <h3 id="coping-diary">Coping Diary (Investment Hypothesis &amp; Bias Ledger)</h3>
+    <p>The <strong>Coping Diary</strong> is a responsive master-detail journal designed to keep your investment theses honest over time:</p>
+    <ul>
+      <li><strong>Master-Detail Ledger &amp; Focus Sheet:</strong> On desktop, browse and filter your notes in the left ledger while reading and editing the selected note's full thesis, checkpoints, and comment timeline in the right <strong>Focus Sheet</strong>. On mobile, tap any note to open its detail sheet or use the bottom-sheet composer to write a new entry.</li>
+      <li><strong>Search, Tags &amp; Unchecked Filter:</strong> Search notes by keyword, filter by clickable <code>#tags</code> (such as <code>#Coping</code>, <code>#GLOBAL_MARKET</code>, or wallet tags), or toggle <strong>Unchecked only</strong> to isolate notes with open or overdue checkpoints.</li>
+      <li><strong>Linked Assets &amp; <code>@Ticker</code> Mentions:</strong> Link a primary asset to your thesis and mention any ticker inline (e.g. <code>@AAPL</code>, <code>@CDR.WA</code>) — clicking a mention opens <strong>Asset Analysis</strong> for that symbol.</li>
+      <li><strong>Dated Hypothesis Checkpoints:</strong> Attach falsifiable conditions with explicit audit dates to any note. Checkpoints track four states: <strong>PENDING</strong>, <strong>OVERDUE</strong>, <strong>TRUE</strong> (validated), and <strong>FALSE</strong> (falsified — which can automatically tag the note with <code>#Coping</code> during a <em>Fact-Check Your Bias</em> review).</li>
+      <li><strong>Follow-Up Comments:</strong> Append timestamped review comments to a thesis note as market conditions evolve without overwriting your original hypothesis.</li>
+    </ul>
+
+    <h3 id="user-settings-preferences">User Settings, Roast Personality &amp; Email Privacy</h3>
+    <p>Click your username at the bottom of the sidebar to open the <strong>User Settings</strong> modal:</p>
+    <ul>
+      <li><strong>Username &amp; Role:</strong> Update your display nickname and view your account tier (<code>BASIC</code> / <code>ADVANCED</code>).</li>
+      <li><strong>Dashboard Benchmark:</strong> Choose the default index used across the Dashboard and Wallets (<code>WIG</code>, <code>WIG20</code>, <code>mWIG40</code>, <code>sWIG80</code>, <code>S&amp;P 500</code>, or <code>MSCI World</code>).</li>
+      <li><strong>Roast Personality:</strong> Customize the tone of commentary across the Dashboard and Monthly Recaps:
         <ul>
-          <li>🟢 Green arrow up = BUY transaction</li>
-          <li>🔴 Red arrow down = SELL transaction</li>
-          <li>🟠 Orange circle = both BUY and SELL on the same date</li>
+          <li><em>Gentle:</em> Supportive, light humor.</li>
+          <li><em>Sarcastic:</em> Default witty, dry humor.</li>
+          <li><em>Brutal:</em> Sharper, unsparing critique.</li>
+          <li><em>Degen:</em> Chaotic WallStreetBets-inspired energy.</li>
         </ul>
       </li>
-      <li><strong>Tooltip:</strong> Hover over a transaction marker to see details (type, quantity, price).</li>
-      <li><strong>Responsive zoom:</strong> The chart automatically adjusts to fit the selected time period.</li>
+      <li><strong>Email Notifications &amp; Privacy Masking:</strong> Enable or disable automated monthly report emails, turn on <strong>Hide cash &amp; PLN amounts in recap emails</strong> (replacing nominal PLN figures with <code>—</code> for privacy), and manage your list of <strong>Notification Recipients</strong>.</li>
+      <li><strong>Dashboard Performance Timings:</strong> Export or clear browser-local load timing diagnostics (last 20 page loads; contains zero personal or financial data).</li>
     </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Fundamental properties</h4>
-    <p>Below the chart, a grid displays key fundamental metrics fetched from Yahoo Finance:</p>
-    <table>
-      <thead><tr><th>Metric</th><th>Description</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Sector &amp; Industry</strong></td><td>Business classification (e.g. Technology / Software)</td></tr>
-        <tr><td><strong>Market Cap</strong></td><td>Total market capitalization (formatted as B/M/T)</td></tr>
-        <tr><td><strong>P/E Ratio</strong></td><td>Trailing and forward price-to-earnings ratios</td></tr>
-        <tr><td><strong>Dividend Yield</strong></td><td>Annual dividend as percentage of current price</td></tr>
-        <tr><td><strong>52-Week High/Low</strong></td><td>Peak and bottom prices over the last year</td></tr>
-      </tbody>
-    </table>
-    <p>All metrics display "—" when data is unavailable (common for small-cap stocks, crypto, or newly listed assets).</p>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Cash Flow Statement</h4>
-    <p>For companies with available financial data, the Analysis screen shows a detailed <strong>Cash Flow Statement</strong> covering the last 5 years. This section includes:</p>
-    <ul>
-      <li><strong>Annual/Quarterly tabs:</strong> Switch between yearly summaries and quarterly breakdowns (last 8 quarters).</li>
-      <li><strong>Key metrics:</strong> Operating Cash Flow, Free Cash Flow, Capital Expenditures, Dividends Paid, and more.</li>
-      <li><strong>Scrollable table:</strong> Horizontal scroll on mobile; first column (metric names) stays fixed.</li>
-    </ul>
-    <p>Cash flow data is particularly useful for evaluating a company's ability to generate cash, fund operations, and pay dividends.</p>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Income Statement</h4>
-    <p>The <strong>Income Statement</strong> section displays profit-and-loss data for the same 5-year period:</p>
-    <ul>
-      <li><strong>Annual/Quarterly tabs:</strong> View yearly income statements or drill into quarterly results.</li>
-      <li><strong>Key metrics:</strong> Total Revenue, Operating Income, Net Income, EBITDA, Gross Profit, and more.</li>
-      <li><strong>Growth analysis:</strong> Compare year-over-year or quarter-over-quarter trends directly in the table.</li>
-    </ul>
-    <p>This data helps assess profitability, revenue growth, and operational efficiency over time.</p>
-
-    <div class="callout info">
-      <p><strong>Data availability:</strong> Financial statements are pulled from Yahoo Finance. Large-cap stocks typically have complete historical data. Small-cap stocks, ETFs, crypto, and international assets may have limited or missing financial data. If no data is available, the Cash Flow and Income Statement sections will be hidden automatically.</p>
-    </div>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Best practices for analysis</h4>
-    <ul>
-      <li><strong>Before buying:</strong> Check the P/E ratio, revenue trends, and cash flow to assess valuation and financial health.</li>
-      <li><strong>After earnings:</strong> Review the latest quarterly results to see if the company met expectations.</li>
-      <li><strong>For dividends:</strong> Look at dividend yield and check the cash flow statement to confirm sustainability.</li>
-      <li><strong>For growth stocks:</strong> Focus on revenue growth and operating cash flow trends rather than current profitability.</li>
-      <li><strong>Compare holdings:</strong> Open multiple assets (via dashboard or portfolio) to compare fundamentals side-by-side in separate browser tabs.</li>
-    </ul>
-
-    <h3 id="coping-diary">Coping Diary (Investment Hypothesis Notebook)</h3>
-    <p>The <strong>Coping Diary</strong> is a dedicated behavioral layer for documenting your thesis and auditing it over time.</p>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">What you can do</h4>
-    <ul>
-      <li>Create and edit thesis notes linked to specific assets.</li>
-      <li>Track falsifiable checkpoints with explicit audit dates.</li>
-      <li>Resolve checkpoints as <strong>TRUE</strong> or <strong>FALSE</strong>.</li>
-      <li>Use the <code>#Coping</code> tag to isolate failed-thesis behavior.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Hypothesis Checkpoint Board</h4>
-    <p>The Focus Sheet includes a checkpoint board with status states:</p>
-    <ul>
-      <li><strong>PENDING</strong> — not evaluated yet.</li>
-      <li><strong>OVERDUE</strong> — due date passed without resolution.</li>
-      <li><strong>TRUE</strong> — thesis condition confirmed.</li>
-      <li><strong>FALSE</strong> — thesis condition falsified.</li>
-    </ul>
-
-    <h4 style="font-size:15px;font-weight:600;margin:24px 0 12px;">Audit reminders</h4>
-    <p>When a <code>HYPOTHESIS_AUDIT</code> reminder appears, clicking it opens a guided <strong>Fact-Check Your Bias</strong> confirmation flow in Coping Diary.</p>
-    <ul>
-      <li><strong>YES, TRUE</strong> keeps your thesis validated.</li>
-      <li><strong>NO, FALSE</strong> marks failed thesis, auto-adds <code>#Coping</code>, and prioritizes the note for review.</li>
-    </ul>
-
-
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <h2 id="monthly-audit">Monthly Recap &amp; Audit</h2>
-
-    <p>Roastfolio automatically calculates a comprehensive monthly audit summarizing your performance, comparing it against benchmarks, and highlighting key portfolio drivers.</p>
-
-    <h3 id="monthly-recap-email">Automated Email Reports</h3>
-    <p>At the close of each month, if enabled in your settings, you will receive an elegant email summarizing your month's progress. Features include:</p>
-    <ul>
-      <li><strong>Journey Chart:</strong> A beautiful, dynamic chart plotting your portfolio's performance against your benchmark over the course of the month.</li>
-      <li><strong>Calendar Heatmap:</strong> A visual grid showing which days of the month were green (profitable) or red (losses).</li>
-      <li><strong>Who Moved Your Month:</strong> A typographic breakdown of your <em>Month Leader</em> (best performing holding) and <em>Month Anchor</em> (biggest drag), highlighting their net contribution to your PnL.</li>
-      <li><strong>Trading Activity:</strong> Your total turnover for the month compared against your 12-month average, along with your top 5 largest transactions.</li>
-      <li><strong>Global Benchmarks:</strong> Context on how the broader market (S&amp;P 500, MSCI World, DAX, WIG, etc.) performed during the month.</li>
-    </ul>
-
-    <h3 id="interactive-audit">Interactive Audit View</h3>
-    <p>Inside the app, you can view past monthly audits under the <strong>History</strong> screen. Selecting a month opens an immersive, full-screen interactive view that mirrors your email report but includes deeper breakdowns and hover interactions for daily data.</p>
-
-    <h3 id="live-mtd">Live Month-to-Date (MTD)</h3>
-    <p>In addition to historical audits, the <strong>History</strong> screen features a <em>Live Month-to-Date</em> report. This report acts exactly like a monthly wrapped audit, but it is generated dynamically using your latest live transactions. It clearly marks itself with a "Live Month-to-Date" badge, keeping you updated on the current month's trajectory in real-time.</p>
-
-    <div class="callout info">
-      <strong>Pro Tip:</strong> 
-      <p>Holdings in your email reports and UI are intelligently cleaned for better readability (e.g., stripping Polish "S.A." suffixes), focusing on the holding's clean name rather than raw ticker symbols whenever possible.</p>
-    </div>
 
 
     <!-- ══════════════════════════════════════════════════════════ -->
@@ -1954,7 +1914,7 @@
     <p>roastfolio is built and maintained by <strong>TOMINEX</strong>. To provide full transparency and predictable updates, our releases follow a three-tier semantic versioning structure:</p>
 
     <div class="callout ok">
-      <p><strong>Current Active Release:</strong> <code>v15.11.6</code> &mdash; Powered by <strong>TOMINEX</strong> &mdash; <a href="releases.html" style="font-weight:700;">View Interactive Release Summary &amp; Changelog &rarr;</a></p>
+      <p><strong>Current Active Release:</strong> <code>v15.12.0</code> &mdash; Powered by <strong>TOMINEX</strong> &mdash; <a href="releases.html" style="font-weight:700;">View Interactive Release Summary &amp; Changelog &rarr;</a></p>
     </div>
 
     <p>Every release follows the <code>MAJOR.MINOR.SERVICE</code> pattern (e.g. <code>11.5.0</code>), with each component signaling a distinct scope of changes:</p>
@@ -1988,14 +1948,14 @@
       </table>
     </div>
 
-    <p>Full architectural details and developer release workflows are documented in <code>docs/RELEASE_NUMBERING.md</code> in the repository. The active release number is always visible in the application footer.</p>
+    <p>Full architectural details and developer release workflows are documented in <code>docs/RELEASE_NUMBERING.md</code> in the repository, and every deployed milestone is searchable by tier and keyword on the interactive <a href="releases.html">Release Summary &amp; Changelog</a> page. The active release number is always visible in the application footer.</p>
 
     <!-- ══════════════════════════════════════════════════════════
          DESIGN SYSTEM
          ══════════════════════════════════════════════════════════ -->
     <div data-guide-advanced>
-    <h2>🎨 Design System</h2>
-    <p>This section documents the design decisions that define Roastfolio's visual identity. It is updated whenever a significant UI change is made so the reasoning behind each decision is never lost.</p>
+    <h2 id="design-system">🎨 Design System</h2>
+    <p>This section documents the design decisions that define Roastfolio's visual identity (including the UI 20 design system). It is updated whenever a significant UI change is made so the reasoning behind each decision is never lost.</p>
 
     <div class="callout info">
       <p><strong>Audience:</strong> This section is for ADVANCED users and contributors who want to understand why the app looks and behaves the way it does — not just what it looks like.</p>
@@ -2004,55 +1964,55 @@
     <!-- ─────────────────────────────────────────────────────── -->
     <h3 id="ds-philosophy">Design Philosophy</h3>
     <p>Roastfolio sits at the intersection of <strong>premium fintech</strong> and <strong>internet humor</strong>. Every design decision asks two questions: <em>does this feel like it belongs next to Revolut?</em> and <em>does this feel like it was made by someone who lost money on CDR and laughed about it?</em></p>
-    <p>The design language is <strong>dark-native</strong> (not dark-mode as an afterthought), <strong>card-first</strong>, and <strong>number-obsessed</strong> — financial data is the hero, personality is the seasoning.</p>
+    <p>The design language is <strong>dark-native</strong> (with full Light theme support), <strong>return-first</strong>, and <strong>number-obsessed</strong> — financial data leads the hierarchy with tabular numerals, while personality lives in copy and brief contextual effects.</p>
 
     <div class="callout ok">
-      <p><strong>The tone lives in copy, not chrome.</strong> Roastfolio's sarcasm comes from error messages, milestone notifications, and empty states. The UI itself is as premium as Revolut. Users need to trust the app with financial data — humor and visual roughness don't mix well in fintech.</p>
+      <p><strong>The tone lives in copy, not chrome.</strong> Roastfolio's sarcasm comes from Daily Verdict commentary, milestone notifications, and Monthly Recaps. The UI itself uses clean editorial typography, frameless tables, and disciplined spacing so users can trust the numbers.</p>
     </div>
 
     <!-- ─────────────────────────────────────────────────────── -->
     <h3 id="ds-use-cases">Design System &amp; Use Cases Specification</h3>
     
-    <p>Roastfolio's components are organized by the core user journeys they support. The system uses a strict set of CSS variables and class structures designed for mobile-first interaction (44px touch targets minimum) with 16px corner radii for large cards and 10px for standard elements.</p>
+    <p>Roastfolio's UI 20 components are organized by the core user journeys they support, built for mobile-first ergonomics (44px minimum touch targets) and responsive desktop two-column layouts.</p>
 
     <div class="callout info">
       <p><strong>Use Cases:</strong> All components map to specific user workflows. If a component does not fit one of these flows, its inclusion must be re-evaluated.</p>
     </div>
 
     <h4>1. As a user, I want to review my today return and compare it to the benchmark</h4>
-    <p>This is the primary engagement loop. Users want to quickly check how much money they made (or lost) today, relative to the market.</p>
+    <p>This is the primary engagement loop. Users want to immediately see how much they made or lost today and how that compares with the market.</p>
     
     <ul class="steps">
-        <li><strong>Glassmorphic Header Cards:</strong> Used at the very top of the Dashboard. These cards (using <code>.glass-card</code> or <code>.hero-stat</code>) display the <code>window.PORTFOLIO_TOTAL_VALUE</code> and Daily Change metrics prominently. The text uses <code>var(--green)</code> or <code>var(--red)</code> to instantly convey direction.</li>
-        <li><strong>Benchmark Carousel:</strong> A horizontal scrolling list of mini-cards (e.g. S&amp;P 500, WIG) using <code>.bm-mobile-only</code> and <code>.bm-mobile-list</code> for quick swipeable comparison on mobile. Desktop uses a dedicated grid.</li>
-        <li><strong>Portfolio History Chart (The Journey):</strong> An interactive Chart.js canvas (<code>.chart-container</code>) with tension=0.15 lines. Hover states highlight the exact day's return compared to the benchmark.</li>
+        <li><strong>Daily Verdict Hero (<code>#daily-verdict</code>):</strong> Replaces traditional gauges with a return-first hierarchy (daily <code>%</code> and <code>PLN</code> change) and a shared-axis comparison plot (<code>.dv-plot</code>) comparing <em>You</em> vs <em>Benchmark</em> since previous close, accompanied by brief 1.8-second contextual effects (fireworks, spotlight beam, rain, umbrella) that respect <code>prefers-reduced-motion</code>.</li>
+        <li><strong>Intraday Comparison &amp; Opt-In Benchmark Chart:</strong> Synthesizes minute-by-minute portfolio vs benchmark returns since previous close (<code>#intraday-comparison-chart</code>) with quote-delay and session disclosures tucked neatly into an <code>i</code> popover, while the standalone index chart stays opt-in via a <code>&lt;details&gt;</code> disclosure.</li>
+        <li><strong>Consistent 8-Bar Candlestick Loaders (<code>.cl-loader</code>):</strong> All asynchronous cards across Dashboard, Wallets, Benchmarks, and Analysis render an identical 8-candle animation sequence with <code>flex-wrap: nowrap</code> so outer bars never drop on narrow viewports.</li>
     </ul>
 
-    <h4>2. As a user, I want to add a transaction to my wallet</h4>
-    <p>Users need to securely and accurately log their trades. This flow prioritizes clear inputs and immediate visual validation.</p>
+    <h4>2. As a user, I want to manage wallets and log transactions effortlessly</h4>
+    <p>Users need fast, error-checked trade entry on both desktop and mobile.</p>
     
     <ul class="steps">
-        <li><strong>Bottom Sheets (Mobile) / Modals (Desktop):</strong> Uses <code>.bottom-sheet</code> with a drag handle (<code>.drag-handle</code>) on mobile for a native iOS feel. For desktop, it centers as a modal dialog. Contains the transaction form.</li>
-        <li><strong>Input Fields &amp; Toggle Buttons:</strong> Standardized inputs with <code>var(--surface2)</code> backgrounds and 10px borders. Type toggles (BUY/SELL/DEPOSIT) use <code>.wig-type-btn</code> pill groups to easily switch modes.</li>
-        <li><strong>Toast Notifications (Snackbar):</strong> Upon successful entry, a non-blocking toast (<code>.snackbar</code>) appears to confirm the transaction was recorded without disrupting the flow.</li>
+        <li><strong>Sticky Wallet Chip Strip &amp; Value Hero:</strong> Horizontal wallet chips (<code>.wallet-chips-strip</code>) lead into a value hero paired with an SVG value-history chart where deposit and withdrawal markers sit directly on the plotted line in shared <code>viewBox</code> coordinates.</li>
+        <li><strong>Side Sheets (Desktop) / Bottom Sheets (Mobile) &amp; Quick Entry:</strong> The transaction form (<code>#wallet-transaction-card</code>) opens as a contextual sheet supporting Buy, Sell, Deposit, Withdrawal, and Dividend flows, complemented by an inline natural-language <strong>Quick entry</strong> box in the right rail.</li>
+        <li><strong>Modal Validation &amp; Auto-Cash Safeguards:</strong> Cash invariant or input errors open in a dedicated modal dialog (<code>#tx-error-modal-overlay</code>) rather than cramping inline table rows.</li>
     </ul>
 
     <h4>3. As a user, I want to see when I made transactions and how big the turnover was</h4>
-    <p>Users analyzing their trading behavior need to see aggregate volume and chronological lists of trades.</p>
+    <p>Users analyzing their trading behavior need both high-level activity patterns and a fast, filterable ledger.</p>
     
     <ul class="steps">
-        <li><strong>Monthly Audit (History Screen):</strong> Employs <code>.monthly-audit-shell</code> and <code>.ma-card</code> structures to group data into logical blocks.</li>
-        <li><strong>Movers / Turnover Table:</strong> A responsive data table (<code>.holdings-table</code>) with alternating row highlights. On mobile, it collapses into a two-column layout (<code>.two-col-mobile</code>) where each row becomes a self-contained card for readability.</li>
-        <li><strong>Bar Charts (Turnover/Deposits):</strong> Uses Chart.js with solid bars for positive inflows and distinct colors for outflows, allowing quick visual scanning of high-activity periods.</li>
+        <li><strong>Transaction Activity Calendar &amp; Turnover Bar Chart:</strong> A yearly heatmap grid (<code>#tx-calendar</code>) highlights daily turnover intensity alongside deposit/withdrawal markers and opens a day drill-down modal on click.</li>
+        <li><strong>Frameless Filterable Ledger (<code>.tx-ledger</code>):</strong> Combines Asset, Wallet, Date, Operation, and Value range-slider filters with 12-row pagination and responsive mobile row cards.</li>
+        <li><strong>History Overview &amp; Editorial Monthly Summaries:</strong> Merges cumulative TWR and benchmark series into a range-rebased return chart, pairs monthly bars with a 90-session daily scatter plot, and presents monthly audits as shareable Bento posters (<code>.monthly-audit-shell</code>).</li>
     </ul>
 
-    <h4>4. As a user, I want to analyze my asset allocation and risks</h4>
-    <p>Advanced users need to see how their portfolio is distributed across currencies, sectors, and individual assets.</p>
+    <h4>4. As a user, I want to analyze my asset allocation, drawdowns, and theses</h4>
+    <p>Advanced users need clear visual metaphors for portfolio concentration, drawdown depth, and behavioral discipline.</p>
 
     <ul class="steps">
-        <li><strong>Doughnut Charts:</strong> Used in the Analysis tab for asset and currency allocation. Interactive segments with custom tooltips provide exact percentages.</li>
-        <li><strong>Heatmaps:</strong> The <code>.heatmap-cell</code> components visualize monthly returns across years. Cells scale their opacity based on the magnitude of the return (using <code>var(--green)</code> and <code>var(--red)</code> scales), offering instant pattern recognition.</li>
-        <li><strong>Underwater Lakes (Drawdowns):</strong> Visualizes the depth and duration of portfolio drawdowns using distinct visual blocks in the Statistics view to indicate recovery periods.</li>
+        <li><strong>Horizontal Allocation Bar (<code>.alloc-bar</code>):</strong> Replaces legacy pie charts on the Wallets screen with a scannable stacked allocation bar and interactive legend.</li>
+        <li><strong>Under the Surface — Deep Ocean ATH (<code>.ath-ocean</code>) &amp; Underwater Lakes:</strong> Visualizes live ATH drawdown on the Dashboard through Relax (beach), Explore (snorkeling/scuba reef), and Danger (deep-sea sharks &amp; pulsing warning below −12%) zones, while Statistics pairs independent unit-price/HWM and single-lake drawdown charts.</li>
+        <li><strong>Master-Detail Coping Diary (<code>#diary-app-root</code>) &amp; Full-Width Analysis:</strong> Gives research tables and thesis Focus Sheets full horizontal breathing room by moving asset selection into an on-demand dialog and keeping note lists and checkpoint boards side by side on desktop.</li>
     </ul>
 
     <h4>5. As a user, I want to review my long-term gamification and achievements</h4>
@@ -2104,7 +2064,7 @@
     </div><!-- /[data-guide-advanced] Design System -->
 
     <footer class="guide-footer">
-      <p>roastfolio <code>v15.11.6</code> &middot; Powered by <strong>TOMINEX</strong> &middot; <a href="releases.html" style="color:var(--accent);">Release Summary</a> &middot; &copy; 2026 TOMINEX. All rights reserved.</p>
+      <p>roastfolio <code>v15.12.0</code> &middot; Powered by <strong>TOMINEX</strong> &middot; <a href="releases.html" style="color:var(--accent);">Release Summary</a> &middot; &copy; 2026 TOMINEX. All rights reserved.</p>
     </footer>
 
   </main>
