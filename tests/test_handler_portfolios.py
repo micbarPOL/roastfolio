@@ -644,3 +644,40 @@ def test_widget_cache_miss_fallback_emits_stage_metric_without_yahoo(monkeypatch
     stage = next(metric for metric in metrics if metric.get("eventType") == "api_stage")
     assert stage["Route"] == "/widget"
     assert stage["Stage"] == "price_cache_load"
+
+
+def test_infer_market_currency_and_compute_wallet_converts_eur_holding_marked_pln():
+    import portfolios
+
+    assert portfolios._infer_market_currency("GB00BLD4ZL17.SG", "PLN") == "EUR"
+    assert portfolios._infer_market_currency("BITC.DE", "PLN") == "EUR"
+    assert portfolios._infer_market_currency("CSPX.L", "PLN") == "GBP"
+    assert portfolios._infer_market_currency("CDR.WA", "PLN") == "PLN"
+
+    handler._QUOTE_CURRENCY_CACHE.clear()
+    holdings = [{
+        "holdingId": "btc-etn",
+        "name": "CoinShares Physical Bitcoin",
+        "ticker": "GB00BLD4ZL17.SG",
+        "currency": "PLN",  # stale ledger/wallet currency
+        "units": 10.0,
+        "purchaseValue": 2490.0,
+    }]
+    price_cache = {
+        "GB00BLD4ZL17.SG": (58.0, 1.0, 1.0, 5.0, [], [], 0, 0, "Europe/Berlin"),
+    }
+    rates_cache = {
+        "FX_EURPLN": (4.30, 4.30),
+    }
+    s3_cache = {}
+    rows, total, daily_pln, daily_pct = handler.compute_wallet(
+        "user-1", "xtb", holdings, price_cache, rates_cache, s3_cache, include_bars=False
+    )
+    assert len(rows) == 1
+    row = rows[0]
+    assert row["priceOriginal"] == 58.0
+    assert row["priceOriginalCurrency"] == "EUR"
+    assert row["pricePLN"] == pytest.approx(249.40, abs=0.01)
+    assert row["currentValue"] == pytest.approx(2494.00, abs=0.01)
+    assert row["returnPct"] > 0  # ~+0.16%, NOT -76.7%
+    assert total == pytest.approx(2494.00, abs=0.01)

@@ -52,7 +52,56 @@ _MARKET_CURRENCY_BY_TICKER = {
     "BTC-USD": "USD",
     "ETH-USD": "USD",
     "META": "USD",
+    "AAPL": "USD",
+    "MSFT": "USD",
+    "NVDA": "USD",
+    "GOOGL": "USD",
+    "AMZN": "USD",
+    "TSLA": "USD",
+    "BRK-B": "USD",
 }
+
+_EUR_EXCHANGE_SUFFIXES = (
+    ".DE", ".SG", ".F", ".BE", ".DU", ".HM", ".HA", ".MU",
+    ".PA", ".AS", ".MI", ".MC", ".BR", ".VI", ".HE", ".IR", ".LS",
+)
+
+
+def _infer_market_currency(ticker: str | None, fallback_currency: str | None = "PLN") -> str:
+    """Infer the market quote currency from a ticker symbol (e.g. .SG/.DE -> EUR, .WA -> PLN)."""
+    fallback = str(fallback_currency or "PLN").strip().upper() or "PLN"
+    if not ticker:
+        return fallback
+    t = str(ticker).strip().upper()
+    if t in _MARKET_CURRENCY_BY_TICKER:
+        return _MARKET_CURRENCY_BY_TICKER[t]
+    if t.endswith(".WA"):
+        return "PLN"
+    if t.endswith(_EUR_EXCHANGE_SUFFIXES) or t.endswith("-EUR"):
+        return "EUR"
+    if t.endswith(".L") or t.endswith("-GBP"):
+        return "GBP"
+    if t.endswith(".SW") or t.endswith("-CHF"):
+        return "CHF"
+    if t.endswith((".TO", ".V")):
+        return "CAD"
+    if t.endswith(".AX"):
+        return "AUD"
+    if t.endswith(".HK"):
+        return "HKD"
+    if t.endswith(".T"):
+        return "JPY"
+    if t.endswith(".ST"):
+        return "SEK"
+    if t.endswith(".CO"):
+        return "DKK"
+    if t.endswith(".OL"):
+        return "NOK"
+    if t.endswith("-USD"):
+        return "USD"
+    if t.endswith("-PLN"):
+        return "PLN"
+    return fallback
 
 
 def _table():
@@ -446,7 +495,7 @@ def rebuild_holdings_from_transactions(user_id: str, portfolio_id: str) -> list[
         quantity = _to_decimal(tx.get("quantity", 0)) if tx.get("quantity") not in (None, "") else Decimal("0")
         holding_id = str(tx.get("holdingId") or _safe_id(str(tx.get("name") or tx.get("ticker") or "transaction")))
         ticker = tx.get("ticker")
-        holding_currency = _MARKET_CURRENCY_BY_TICKER.get(str(ticker or "").upper(), tx.get("currency") or portfolio_currency)
+        holding_currency = _infer_market_currency(ticker, tx.get("currency") or portfolio_currency)
 
         if tx_type in {"BUY", "SPINOFF"}:
             current = holdings.get(holding_id, {

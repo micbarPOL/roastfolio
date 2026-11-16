@@ -770,7 +770,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.13.1</span>
+                    <span>v15.13.2</span>
                 </div>
             </div>
 
@@ -786,7 +786,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.13.1 (Transaction Search Dropdown Visibility Fix)</strong>
+                    <strong>v15.13.2 (Foreign Exchange Market Currency Conversion Fix)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -833,6 +833,20 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.13.2">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.13.2</span>
+                        <h2 class="rel-card-title">Wallets &amp; Calculations: Foreign Market Currency Conversion</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li class="rel-item">Resolved an issue where European and international assets (e.g. Stuttgart <code>.SG</code>, XETRA <code>.DE</code>, Amsterdam <code>.AS</code>, London <code>.L</code>) purchased in PLN wallets stored <code>PLN</code> as their holding currency and skipped EUR/GBP/USD-to-PLN FX conversion.</li>
+                    <li class="rel-item">Live wallet valuation, historical snapshot recalculations, and transaction price suggestions now resolve the asset's market quote currency from Yahoo Finance and exchange suffixes, converting prices accurately to PLN.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.13.1">
                 <header class="rel-card-header">
