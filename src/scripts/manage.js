@@ -815,10 +815,13 @@
             if (!sym.endsWith('.WA')) {
               let fxTicker = 'USDPLN=X';
               let defaultRate = 3.85;
-              if (sym.endsWith('.DE') || sym.endsWith('.PA') || sym.endsWith('.AS') || sym.endsWith('.MC') || sym.endsWith('.MI') || sym.endsWith('.VI')) {
+              if (sym.endsWith('.DE') || sym.endsWith('.SG') || sym.endsWith('.F') || sym.endsWith('.BE') || sym.endsWith('.MU') || sym.endsWith('.DU') || sym.endsWith('.HM') || sym.endsWith('.HA') || sym.endsWith('.PA') || sym.endsWith('.AS') || sym.endsWith('.MC') || sym.endsWith('.MI') || sym.endsWith('.VI') || sym.endsWith('.BR') || sym.endsWith('.HE') || sym.endsWith('.IR') || sym.endsWith('.LS') || sym.endsWith('-EUR')) {
                 fxTicker = 'EURPLN=X';
                 defaultRate = 4.28;
-              } else if (sym.endsWith('.L')) {
+              } else if (sym.endsWith('.SW') || sym.endsWith('-CHF')) {
+                fxTicker = 'CHFPLN=X';
+                defaultRate = 4.55;
+              } else if (sym.endsWith('.L') || sym.endsWith('-GBP')) {
                 fxTicker = 'GBPPLN=X';
                 defaultRate = 5.12;
                 // UK London quotes in pence (GBp), convert to pounds

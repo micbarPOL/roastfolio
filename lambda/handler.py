@@ -599,6 +599,21 @@ def get_pln_rate(currency, rates_cache, s3_cache):
         return rate, rate
     return None, None
 
+_QUOTE_CURRENCY_CACHE: dict[str, str] = {}
+
+
+def _normalize_quote_currency(raw_currency: str | None, ticker_sym: str) -> tuple[str, float]:
+    """Return (ISO_CURRENCY, price_divisor) from Yahoo fast_info.currency or ticker suffix."""
+    raw = str(raw_currency or "").strip()
+    if raw == "GBp" or raw == "GBX":
+        return "GBP", 100.0
+    if raw == "ZAc":
+        return "ZAR", 100.0
+    if raw:
+        return raw.upper(), 1.0
+    return portfolios._infer_market_currency(ticker_sym, "PLN"), 1.0
+
+
 def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
     t = yf.Ticker(ticker_sym)
     h5d = None
@@ -606,6 +621,14 @@ def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
     price = getattr(info, 'last_price', None)
     prev_close = getattr(info, 'previous_close', None)
     open_price = getattr(info, 'open', None)
+    quote_currency, price_divisor = _normalize_quote_currency(getattr(info, 'currency', None), ticker_sym)
+    if price is not None and price_divisor != 1.0:
+        price = price / price_divisor
+    if prev_close is not None and price_divisor != 1.0:
+        prev_close = prev_close / price_divisor
+    if open_price is not None and price_divisor != 1.0:
+        open_price = open_price / price_divisor
+    _QUOTE_CURRENCY_CACHE[str(ticker_sym).upper()] = quote_currency
 
     # Robust fallback to history if fast_info missing price or prev_close
     if price is None or prev_close is None or price <= 0:
@@ -754,6 +777,8 @@ def _prefetch_prices_parallel(
             v = c[5] if len(c) > 5 else 0
             av = c[6] if len(c) > 6 else 0
             tz = c[7] if len(c) > 7 else None
+            qc = c[8] if len(c) > 8 and c[8] else portfolios._infer_market_currency(ticker, "PLN")
+            _QUOTE_CURRENCY_CACHE[str(ticker).upper()] = qc
             return ticker, (c[0], c[1], c[1], c[2], [], [], v, av, tz)  # (price, daily, intraday=daily, ytd, [], [], vol, avgVol, tz)
         return ticker, None
 
@@ -763,7 +788,8 @@ def _prefetch_prices_parallel(
         for ticker, result in pool.map(_fetch_one, needed):
             if result:
                 price_cache[ticker] = result
-                s3_cache[ticker]    = [result[0], result[1], result[3], [], [], result[6], result[7], result[8]]
+                qc = _QUOTE_CURRENCY_CACHE.get(str(ticker).upper()) or portfolios._infer_market_currency(ticker, "PLN")
+                s3_cache[ticker]    = [result[0], result[1], result[3], [], [], result[6], result[7], result[8], qc]
 
 
 def _compute_benchmark_intraday_pct(ticker: str) -> float | None:
@@ -805,8 +831,9 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                     )
                     if price and price > 0:
                         price_cache[h["ticker"]] = (price, daily_pct, intraday_pct, ytd_pct, today_bars, year_bars, vol_val, avg_vol_val, tz)
-                        s3_cache[h["ticker"]] = [price, daily_pct, ytd_pct, [], [], vol_val, avg_vol_val, tz]  # don't cache bar data in S3
-                        print(f"  {h['name']:40} {price:.2f} {h['currency']}  {daily_pct:+.2f}% daily  {intraday_pct:+.2f}% intraday  vol={vol_val}")
+                        qc = _QUOTE_CURRENCY_CACHE.get(str(h["ticker"]).upper()) or portfolios._infer_market_currency(h["ticker"], h.get("currency", "PLN"))
+                        s3_cache[h["ticker"]] = [price, daily_pct, ytd_pct, [], [], vol_val, avg_vol_val, tz, qc]  # don't cache bar data in S3
+                        print(f"  {h['name']:40} {price:.2f} {qc}  {daily_pct:+.2f}% daily  {intraday_pct:+.2f}% intraday  vol={vol_val}")
                     else:
                         raise ValueError("zero/null price")
                 except Exception as fetch_err:
@@ -815,9 +842,11 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                         v = cached[5] if len(cached) > 5 else 0
                         av = cached[6] if len(cached) > 6 else 0
                         tz = cached[7] if len(cached) > 7 else None
+                        qc = cached[8] if len(cached) > 8 and cached[8] else portfolios._infer_market_currency(h["ticker"], h.get("currency", "PLN"))
+                        _QUOTE_CURRENCY_CACHE[str(h["ticker"]).upper()] = qc
                         # Use daily_pct as intraday fallback when coming from S3 cache
                         price_cache[h["ticker"]] = (cached[0], cached[1], cached[1], cached[2], [], [], v, av, tz)
-                        print(f"  {h['name']}: cached price {cached[0]:.2f} (live fetch failed: {fetch_err})")
+                        print(f"  {h['name']}: cached price {cached[0]:.2f} {qc} (live fetch failed: {fetch_err})")
                     else:
                         fb_price = 1.0
                         if h.get("purchaseValue") and h.get("units"):
@@ -825,6 +854,7 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
                                 fb_price = float(h["purchaseValue"]) / float(h["units"])
                             except Exception:
                                 fb_price = 1.0
+                        _QUOTE_CURRENCY_CACHE[str(h["ticker"]).upper()] = "PLN"
                         price_cache[h["ticker"]] = (fb_price, 0.0, 0.0, 0.0, [], [], 0, 0, None)
                         print(f"  {h['name']}: no price available, using fallback {fb_price:.2f} ({fetch_err})")
 
@@ -832,9 +862,13 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
             if not include_bars:
                 today_bars = []
                 year_bars = []
-            rate, prev_rate = get_pln_rate(h["currency"], rates_cache, s3_cache)
+            market_currency = (
+                _QUOTE_CURRENCY_CACHE.get(str(h["ticker"]).upper())
+                or portfolios._infer_market_currency(h["ticker"], h.get("currency", "PLN"))
+            )
+            rate, prev_rate = get_pln_rate(market_currency, rates_cache, s3_cache)
             if rate is None:
-                print(f"  {h['name']}: no FX rate, skipping")
+                print(f"  {h['name']}: no FX rate for {market_currency}, skipping")
                 results.append(entry)
                 continue
 
@@ -852,7 +886,7 @@ def compute_wallet(user_id, portfolio_id, holdings, price_cache, rates_cache, s3
 
             entry.update({"currentValue": cv, "profit": profit, "returnPct": ret_pct,
                           "pricePLN": round(price_pln, 2), "priceOriginal": round(price, 2),
-                          "priceOriginalCurrency": h["currency"],
+                          "priceOriginalCurrency": market_currency,
                           "dailyChangePct": gauge_pct, "ytdChangePct": ytd_pct,
                           "dailyChangePLN": daily_pln, "pct": 0,
                           "todayBars": today_bars, "yearBars": year_bars,
