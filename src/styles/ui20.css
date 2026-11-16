@@ -528,13 +528,15 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 #tab-wallets .w-quick, #tab-wallets .w-settings { display: flex; flex-direction: column; gap: var(--space-4); }
 #tab-wallets .section-head { margin-bottom: 0; }
 #tab-wallets .section-title { font-size: var(--fs-xs); letter-spacing: 0.06em; }
-#tab-wallets .wallet-card-holdings { background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
-#tab-wallets .wallet-table-wrap { overflow: visible; background: transparent !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; min-height: 0 !important; }
+#tab-wallets .wallet-holdings-shell { overflow: visible; min-height: 0; }
+#tab-wallets .wallet-card-holdings { overflow: visible; background: transparent !important; border: 0 !important; box-shadow: none !important; padding: 0 !important; }
+#tab-wallets .wallet-table-wrap,
+#tab-wallets .wallet-table-wrap-stable { overflow: visible; max-height: none !important; min-height: 0 !important; background: transparent !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
 #tab-wallets .wallet-holdings-table { width: 100%; border-collapse: collapse; background: transparent !important; border: 0 !important; box-shadow: none !important; }
 #tab-wallets .wallet-holdings-table thead,
 #tab-wallets .wallet-holdings-table tr { background: transparent !important; }
 #tab-wallets .wallet-holdings-table th, #tab-wallets .wallet-holdings-table td { padding: 14px 10px; border-top: 1px solid var(--border-subtle); color: var(--text-secondary) !important; background: var(--bg-canvas) !important; }
-#tab-wallets .wallet-holdings-table th { font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--text-primary) !important; }
+#tab-wallets .wallet-holdings-table th { position: static; font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--text-primary) !important; }
 #tab-wallets .wallet-holdings-table td { font-size: var(--fs-sm); }
 #tab-wallets .wht-row { background: transparent !important; }
 #tab-wallets .wht-td-r, #tab-wallets .wht-th-r { text-align: right; }
@@ -575,27 +577,30 @@ header .market-commentary { margin: 0 0 var(--space-1); max-width: none; padding
 #tab-wallets .w-settings .set-row .link-btn { min-height: 44px; }
 #tab-wallets .w-disclosure-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
 #tab-wallets .w-disclosure .user-flash { margin-top: var(--space-2); }
-#tab-wallets .sheet-backdrop { position: fixed; inset: 0; z-index: 80; background: color-mix(in srgb, var(--bg-canvas) 42%, transparent); backdrop-filter: blur(6px); }
+#tab-wallets .sheet-backdrop { position: fixed; inset: 0; z-index: 1050; background: color-mix(in srgb, var(--bg-canvas) 42%, transparent); backdrop-filter: blur(6px); }
 #tab-wallets .sheet-backdrop[hidden] { display: none; }
 #tab-wallets .wallet-tx-card {
-  position: fixed; z-index: 81; inset: var(--space-4) var(--space-4) var(--space-4) auto; display: flex; flex-direction: column;
+  position: fixed; z-index: 1051; inset: var(--space-4) var(--space-4) var(--space-4) auto; display: flex; flex-direction: column;
   width: min(480px, calc(100vw - var(--space-8))); max-height: calc(100dvh - var(--space-8)); border-radius: var(--radius-lg);
-  background: var(--bg-glass); backdrop-filter: var(--blur-glass); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-lg); overflow: hidden;
+  background: var(--bg-glass) !important; backdrop-filter: var(--blur-glass); border: 1px solid var(--border-subtle) !important; box-shadow: var(--shadow-lg) !important; overflow: hidden;
 }
 #tab-wallets .wallet-tx-card[style*="display: none"] { display: none !important; }
-body > .sheet-backdrop { position: fixed; inset: 0; z-index: 80; background: color-mix(in srgb, var(--bg-canvas) 42%, transparent); backdrop-filter: blur(6px); }
+body > .sheet-backdrop { position: fixed; inset: 0; z-index: 1050; background: color-mix(in srgb, var(--bg-canvas) 42%, transparent); backdrop-filter: blur(6px); }
 body > .sheet-backdrop[hidden] { display: none; }
 body > .wallet-tx-card {
-  position: fixed; z-index: 81; inset: var(--space-4) var(--space-4) var(--space-4) auto; display: flex; flex-direction: column;
+  position: fixed; z-index: 1051; inset: var(--space-4) var(--space-4) var(--space-4) auto; display: flex; flex-direction: column;
   width: min(480px, calc(100vw - var(--space-8))); max-height: calc(100dvh - var(--space-8)); border-radius: var(--radius-lg);
-  background: var(--bg-glass); backdrop-filter: var(--blur-glass); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-lg); overflow: hidden; padding: 0; margin: 0;
+  background: var(--bg-glass) !important; backdrop-filter: var(--blur-glass); border: 1px solid var(--border-subtle) !important; box-shadow: var(--shadow-lg) !important; overflow: hidden; padding: 0; margin: 0;
+}
+:root[data-theme] #wallet-transaction-card.wallet-tx-card {
+  background: var(--bg-glass) !important; border: 1px solid var(--border-subtle) !important; box-shadow: var(--shadow-lg) !important;
 }
 body > .wallet-tx-card[style*="display: none"] { display: none !important; }
 body > .wallet-tx-card .tflow-chrome { padding: var(--space-4) var(--space-4) var(--space-2); }
 body > .wallet-tx-card .tflow-type-rail, body > .wallet-tx-card .tflow-source-toggle { display: flex; gap: 2px; overflow-x: auto; padding: 3px; border-radius: 999px; background: var(--bg-surface-2); }
 body > .wallet-tx-card .tflow-type-btn, body > .wallet-tx-card .tflow-source-btn { min-width: 40px; min-height: 40px; border: 0; border-radius: 999px; padding: 8px 12px; background: var(--bg-surface-2); color: var(--text-secondary); font: inherit; font-weight: 700; cursor: pointer; }
 body > .wallet-tx-card .tflow-type-btn.is-active, body > .wallet-tx-card .tflow-source-btn.is-active { background: var(--bg-surface-1); color: var(--text-primary); }
-body > .wallet-tx-card .tflow-body { flex: 1 1 auto; overflow: auto; padding: var(--space-2) var(--space-4) var(--space-4); }
+body > .wallet-tx-card .tflow-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: var(--space-2) var(--space-4) var(--space-4); }
 body > .wallet-tx-card .tflow-view, body > .wallet-tx-card .tflow-search-section, body > .wallet-tx-card .tflow-confirm, body > .wallet-tx-card .tflow-amounts, body > .wallet-tx-card .tflow-advanced-body { display: flex; flex-direction: column; gap: var(--space-3); }
 body > .wallet-tx-card .tflow-meta-row, body > .wallet-tx-card .tflow-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 body > .wallet-tx-card .tflow-search-box, body > .wallet-tx-card .tflow-amount-wrap, body > .wallet-tx-card .tflow-tfi-row { display: flex; align-items: center; gap: var(--space-2); }
@@ -606,7 +611,7 @@ body > .wallet-tx-card .tflow-footer-btns { display: flex; gap: var(--space-2); 
 #tab-wallets .tflow-type-rail, #tab-wallets .tflow-source-toggle { display: flex; gap: 2px; overflow-x: auto; padding: 3px; border-radius: 999px; background: var(--bg-surface-2); }
 #tab-wallets .tflow-type-btn, #tab-wallets .tflow-source-btn { border: 0; padding: 8px 12px; color: var(--text-secondary); }
 #tab-wallets .tflow-type-btn.is-active, #tab-wallets .tflow-source-btn.is-active { background: var(--bg-surface-1); color: var(--text-primary); }
-#tab-wallets .tflow-body { flex: 1 1 auto; overflow: auto; padding: var(--space-2) var(--space-4) var(--space-4); }
+#tab-wallets .tflow-body { flex: 1 1 auto; min-height: 0; overflow: auto; padding: var(--space-2) var(--space-4) var(--space-4); }
 #tab-wallets .tflow-view, #tab-wallets .tflow-search-section, #tab-wallets .tflow-confirm, #tab-wallets .tflow-amounts, #tab-wallets .tflow-advanced-body { display: flex; flex-direction: column; gap: var(--space-3); }
 #tab-wallets .tflow-meta-row, #tab-wallets .tflow-footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
 #tab-wallets .tflow-search-box, #tab-wallets .tflow-amount-wrap, #tab-wallets .tflow-tfi-row { display: flex; align-items: center; gap: var(--space-2); }

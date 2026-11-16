@@ -1002,11 +1002,14 @@
     card.setAttribute('aria-hidden', 'false');
     if (backdrop) backdrop.hidden = false;
     document.body.style.overflow = 'hidden';
+    const tflowBody = card.querySelector('.tflow-body');
+    if (tflowBody) tflowBody.scrollTop = 0;
 
     if (_transactionsPanelMode === 'trade') {
       setTimeout(() => {
+        if (tflowBody) tflowBody.scrollTop = 0;
         const target = document.getElementById(_selectedHolding ? 'mgmt-units-input' : 'mgmt-search-input') || card.querySelector('button, input, textarea, select');
-        if (target) target.focus();
+        if (target) target.focus({ preventScroll: true });
       }, 180);
     } else if (typeof showTab === 'function') {
       showTab('transactions');
@@ -2583,7 +2586,6 @@
     dropdown.style.bottom = 'auto';
 
     _setSearchStatus(`${_searchResults.length} Yahoo Finance result${_searchResults.length === 1 ? '' : 's'} ready`);
-    setTimeout(() => dropdown.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
   }
 
 
@@ -2650,9 +2652,10 @@
     });
 
     setTimeout(() => {
-      confirmEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const tflowBody = document.querySelector('#wallet-transaction-card .tflow-body');
+      if (tflowBody) tflowBody.scrollTop = 0;
       const unitsEl = document.getElementById('mgmt-units-input');
-      if (unitsEl) unitsEl.focus();
+      if (unitsEl) unitsEl.focus({ preventScroll: true });
     }, 50);
   }
 
@@ -2862,8 +2865,10 @@
     });
     openTransactionsPanel('trade');
     setTimeout(() => {
+      const tflowBody = document.querySelector('#wallet-transaction-card .tflow-body');
+      if (tflowBody) tflowBody.scrollTop = 0;
       const unitsEl = document.getElementById('mgmt-units-input');
-      if (unitsEl) unitsEl.focus();
+      if (unitsEl) unitsEl.focus({ preventScroll: true });
     }, 20);
   }
 

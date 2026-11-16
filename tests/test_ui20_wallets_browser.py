@@ -340,3 +340,77 @@ def test_value_history_cash_flow_markers_stay_inside_the_plotted_line(open_page)
     assert all(m["onLine"] for m in result), result
     # Older marker sits left of the newer one, i.e. markers follow the time axis.
     assert result[0]["left"] < result[1]["left"]
+
+
+def test_transaction_sheet_not_covered_by_header_and_search_visible(open_page):
+    """Regression: header (z-index: 100) previously sat above .wallet-tx-card (z-index: 81),
+    and opening/selecting a holding scrolled .tflow-body so #mgmt-search-input was hidden."""
+    page, _ = open_page(1440, 900)
+    _select_wallet(page, 1)
+    page.locator(".wht-btn-sell").first.click()
+    page.wait_for_timeout(250)
+
+    check = page.evaluate("""() => {
+      const card = document.getElementById('wallet-transaction-card');
+      const header = document.querySelector('header');
+      const searchInput = document.getElementById('mgmt-search-input');
+      const typeRail = card.querySelector('.tflow-type-rail');
+      const body = card.querySelector('.tflow-body');
+      const sRect = searchInput.getBoundingClientRect();
+      const rRect = typeRail.getBoundingClientRect();
+      const bRect = body.getBoundingClientRect();
+      const hitSearch = document.elementFromPoint(sRect.left + sRect.width / 2, sRect.top + sRect.height / 2);
+      const hitRail = document.elementFromPoint(rRect.left + rRect.width / 2, rRect.top + rRect.height / 2);
+      return {
+        cardZ: Number(getComputedStyle(card).zIndex || 0),
+        headerZ: Number(getComputedStyle(header).zIndex || 0),
+        bodyScrollTop: body.scrollTop,
+        searchInBody: sRect.top >= bRect.top - 1 && sRect.bottom <= bRect.bottom + 1,
+        searchInCard: card.contains(hitSearch),
+        railInCard: card.contains(hitRail),
+      };
+    }""")
+    assert check["cardZ"] > check["headerZ"], check
+    assert check["bodyScrollTop"] == 0, check
+    assert check["searchInBody"], check
+    assert check["searchInCard"], check
+    assert check["railInCard"], check
+
+
+def test_holdings_table_does_not_clip_last_cash_row(open_page):
+    """Regression: .wallet-table-wrap-stable had max-height: min(58vh, 620px) while
+    #tab-wallets .wallet-table-wrap had overflow: visible and .wallet-card-holdings had
+    overflow: hidden, clipping the bottom rows (like Cash) without a scrollbar."""
+    page, _ = open_page(1440, 700)
+    check = page.evaluate("""() => {
+      const wrap = document.querySelector('#tab-wallets .wallet-table-wrap-stable');
+      const cardHoldings = document.querySelector('#tab-wallets .wallet-card-holdings');
+      const shell = document.querySelector('#tab-wallets .wallet-holdings-shell');
+      const tbody = document.getElementById('mgmt-holdings-body');
+      // Clone existing rows so the table height exceeds 58vh (406px at 700px height)
+      const templateRow = tbody.querySelector('tr');
+      for (let i = 0; i < 10; i += 1) {
+        tbody.insertBefore(templateRow.cloneNode(true), tbody.lastElementChild);
+      }
+      const lastRow = tbody.lastElementChild;
+      const lastRect = lastRow.getBoundingClientRect();
+      const wrapRect = wrap.getBoundingClientRect();
+      const cardRect = cardHoldings.getBoundingClientRect();
+      const shellRect = shell.getBoundingClientRect();
+      return {
+        wrapMaxHeight: getComputedStyle(wrap).maxHeight,
+        cardOverflow: getComputedStyle(cardHoldings).overflow,
+        shellOverflow: getComputedStyle(shell).overflow,
+        tableHeight: tbody.parentElement.getBoundingClientRect().height,
+        lastRowBottomDeltaWrap: wrapRect.bottom - lastRect.bottom,
+        lastRowBottomDeltaCard: cardRect.bottom - lastRect.bottom,
+        lastRowBottomDeltaShell: shellRect.bottom - lastRect.bottom,
+      };
+    }""")
+    assert check["wrapMaxHeight"] == "none", check
+    assert check["cardOverflow"] == "visible", check
+    assert check["shellOverflow"] == "visible", check
+    assert check["tableHeight"] > 500, check
+    assert check["lastRowBottomDeltaWrap"] >= -1, check
+    assert check["lastRowBottomDeltaCard"] >= -1, check
+    assert check["lastRowBottomDeltaShell"] >= -1, check
