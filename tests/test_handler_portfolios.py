@@ -276,6 +276,39 @@ class PortfolioHandlerTests(unittest.TestCase):
         self.assertEqual(body["results"][0]["exchange"], "NASDAQ")
         mock_search.assert_called_once_with("aapl", max_results=10)
 
+    def test_search_handler_resolves_isin_query_and_cleans_xwar_name(self):
+        fake_search = type("FakeSearch", (), {
+            "quotes": [
+                {
+                    "symbol": "CDR.WA",
+                    "shortname": "CDR C.XWAR PLN",
+                    "exchDisp": "WSE",
+                    "typeDisp": "Equity",
+                },
+                {
+                    "symbol": "PLOPTTC00011.SG",
+                    "longname": "CD Projekt S.A.",
+                    "exchDisp": "Stuttgart",
+                    "typeDisp": "Equity",
+                },
+            ]
+        })()
+        with patch.object(handler.yf, "Search", return_value=fake_search) as mock_search:
+            resp = handler.search_handler({
+                "httpMethod": "GET",
+                "queryStringParameters": {"q": "ISIN: PL OPTTC 00011"},
+            })
+        self.assertEqual(resp["statusCode"], 200)
+        body = json.loads(resp["body"])
+        self.assertGreaterEqual(len(body["results"]), 1)
+        self.assertEqual(body["results"][0]["symbol"], "CDR.WA")
+        self.assertEqual(body["results"][0]["name"], "CD Projekt S.A.")
+        self.assertEqual(body["results"][0]["isin"], "PLOPTTC00011")
+        # Duplicate Stuttgart synthetic ISIN listing should be omitted when .WA is present
+        symbols = [r["symbol"] for r in body["results"]]
+        self.assertNotIn("PLOPTTC00011.SG", symbols)
+        mock_search.assert_called_once_with("PLOPTTC00011", max_results=10)
+
     def test_migrate_removes_legacy_portfolios(self):
         import migrate  # noqa: E402
 

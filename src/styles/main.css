@@ -11442,6 +11442,12 @@ body.wallet-overlay-open {
     color: #b91c3a;
     border: 1px solid rgba(220, 20, 60, .2);
 }
+.mgmt-ticker-badge-isin {
+    background: rgba(74, 159, 212, .12);
+    color: #63afe2;
+    border: 1px solid rgba(74, 159, 212, .25);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 .dark-mode .mgmt-ticker-badge-pl {
     background: rgba(220, 20, 60, .2);
     color: #f08090;

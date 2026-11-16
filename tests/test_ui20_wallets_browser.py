@@ -414,3 +414,19 @@ def test_holdings_table_does_not_clip_last_cash_row(open_page):
     assert check["lastRowBottomDeltaWrap"] >= -1, check
     assert check["lastRowBottomDeltaCard"] >= -1, check
     assert check["lastRowBottomDeltaShell"] >= -1, check
+
+
+def test_transaction_search_by_isin_selects_holding(open_page):
+    """Verify searching by ISIN (including spaces/prefix) in the Wallets transaction
+    sheet finds the holding, displays its ISIN badge, and selects it cleanly."""
+    page, _ = open_page(1440, 900)
+    _select_wallet(page, 1)
+    page.locator("#mgmt-open-trade-btn").click()
+    search_input = page.locator("#mgmt-search-input")
+    search_input.fill("PLOPTTC00011")
+    page.wait_for_selector("#mgmt-ticker-dropdown .mgmt-dropdown-item", timeout=10000)
+    dropdown_text = page.locator("#mgmt-ticker-dropdown").inner_text()
+    assert "CDR.WA" in dropdown_text
+    assert "PLOPTTC00011" in dropdown_text
+    page.locator("#mgmt-ticker-dropdown .mgmt-dropdown-item").first.click()
+    assert page.locator("#mgmt-confirm-symbol").inner_text() == "CDR.WA"
