@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.11.6`
-*Target Release Numbering Standard — v15.11.6*
+**Current Release:** `15.12.1`
+*Target Release Numbering Standard — v15.12.1*
 
 ---
 
@@ -52,7 +52,11 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.11.6`
+* **Current Active Release:** `15.12.1`
+  * **Service 1:** Fixed two UI issues on the Wallets screen: raised the transaction side-sheet/backdrop z-index above the sticky header and prevented auto-scroll from hiding the search input when opening or selecting a holding, and removed the legacy `max-height: min(58vh, 620px)` / `overflow: hidden` clipping on the holdings table so the last Cash row is always fully visible.
+* **Previous Active Release:** `15.12.0`
+  * **Minor 12:** Comprehensive User Guide (`src/guide.html`) update covering all UI 20 screens, workflows, and design-system patterns — including Daily Verdict & intraday benchmark comparison, Under the Surface (Deep Ocean ATH), Wallets allocation & Quick Entry, History Overview & Monthly Recap Summaries with privacy-first sharing, Statistics & Underwater Lakes, Retirement Planner with Monte Carlo confidence bands, Transactions Activity Calendar & filterable ledger, Asset Analysis technical indicators & Favorites, Master-Detail Coping Diary Focus Sheet, and User Settings preferences.
+* **Previous Active Release:** `15.11.6`
   * **Service 6:** Rebase portfolio returns to start from 0% on filtered sub-ranges (1W, 1M, YTD, 1Y, 3Y, 5Y) to match benchmark range-relative baselines and eliminate multi-thousand percent distortion against benchmarks.
 * **Previous Active Release:** `15.11.5`
   * **Service 5:** Reject incomplete or inconsistent benchmark histories that produced exaggerated History returns. Recover Polish index daily closes from available hourly data, validate cached and fetched series, and avoid plotting corrupt data.
