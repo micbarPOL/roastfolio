@@ -199,7 +199,7 @@
   async function _refreshWalletData() {
     if (typeof window.refreshLivePrices === 'function') {
       try {
-        await window.refreshLivePrices();
+        await window.refreshLivePrices({ force: true });
       } catch (_) {}
     }
   }

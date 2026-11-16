@@ -770,7 +770,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.14.0</span>
+                    <span>v15.14.1</span>
                 </div>
             </div>
 
@@ -786,7 +786,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.14.0 (Multi-Currency Transaction Entry &amp; FX Conversion Rate)</strong>
+                    <strong>v15.14.1 (ISIN Asset Analysis Chart &amp; Post-Trade Sync Fix)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -833,6 +833,20 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.14.1">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.14.1</span>
+                        <h2 class="rel-card-title">Analysis &amp; Dashboard: ISIN Chart Loading &amp; Post-Trade Sync</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>Asset Analysis Resilience:</strong> Wrapped <code>ticker.info</code> lookups in <code>handle_asset_analysis</code> with a safe fallback to <code>fast_info.currency</code> and market currency inference, plus daily fallback when intraday bars are empty, so European/ISIN ETNs (e.g. <code>.SG</code>) load charts reliably.</li>
+                    <li><strong>Post-Trade Dashboard &amp; Analysis Sync:</strong> Forced a fresh live-prices refresh after saving a transaction (<code>refreshLivePrices({ force: true })</code>) so Today&apos;s Movers updates immediately, and invalidated the Analysis owned-assets cache on <code>portfolioTransactionSaved</code>.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="minor" data-version="15.14.0">
                 <header class="rel-card-header">

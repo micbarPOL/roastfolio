@@ -959,9 +959,13 @@ window._marketCommentaryRendered = false;  // Flag to render commentary only onc
         }
     }
 
-    window.refreshLivePrices = async function () {
+    window.refreshLivePrices = async function (options = {}) {
+        const force = !!(options && options.force);
         if (window.__refreshLivePricesPromise) {
-            return window.__refreshLivePricesPromise;
+            if (!force) {
+                return window.__refreshLivePricesPromise;
+            }
+            try { await window.__refreshLivePricesPromise; } catch (_) {}
         }
 
         window.__refreshLivePricesPromise = (async () => {
