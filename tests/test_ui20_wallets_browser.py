@@ -416,15 +416,38 @@ def test_holdings_table_does_not_clip_last_cash_row(open_page):
     assert check["lastRowBottomDeltaShell"] >= -1, check
 
 
-def test_transaction_search_by_isin_selects_holding(open_page):
+@pytest.mark.parametrize("width,height", [(1440, 900), (390, 844)])
+def test_transaction_search_by_isin_selects_holding(open_page, width, height):
     """Verify searching by ISIN (including spaces/prefix) in the Wallets transaction
-    sheet finds the holding, displays its ISIN badge, and selects it cleanly."""
-    page, _ = open_page(1440, 900)
+    sheet renders the dropdown visibly inside the sheet (not clipped off-screen),
+    displays its ISIN badge, and selects it cleanly."""
+    page, _ = open_page(width, height)
     _select_wallet(page, 1)
-    page.locator("#mgmt-open-trade-btn").click()
+    if width < 768:
+        page.locator("#mgmt-wallet-fab").click()
+    else:
+        page.locator("#mgmt-open-trade-btn").click()
     search_input = page.locator("#mgmt-search-input")
     search_input.fill("PLOPTTC00011")
     page.wait_for_selector("#mgmt-ticker-dropdown .mgmt-dropdown-item", timeout=10000)
+    bounds = page.evaluate("""() => {
+      const dd = document.getElementById('mgmt-ticker-dropdown');
+      const body = document.querySelector('#wallet-transaction-card .tflow-body');
+      const card = document.getElementById('wallet-transaction-card');
+      const d = dd.getBoundingClientRect();
+      const b = body.getBoundingClientRect();
+      const c = card.getBoundingClientRect();
+      return {
+        position: getComputedStyle(dd).position,
+        ddHeight: d.height,
+        insideBody: d.top >= b.top - 1 && d.bottom <= b.bottom + 1,
+        insideCard: d.top >= c.top - 1 && d.bottom <= c.bottom + 1,
+      };
+    }""")
+    assert bounds["position"] == "static", bounds
+    assert bounds["ddHeight"] >= 36, bounds
+    assert bounds["insideBody"], bounds
+    assert bounds["insideCard"], bounds
     dropdown_text = page.locator("#mgmt-ticker-dropdown").inner_text()
     assert "CDR.WA" in dropdown_text
     assert "PLOPTTC00011" in dropdown_text
