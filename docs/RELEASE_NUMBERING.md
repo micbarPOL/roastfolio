@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.13.0`
-*Target Release Numbering Standard — v15.13.0*
+**Current Release:** `15.13.1`
+*Target Release Numbering Standard — v15.13.1*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.13.0`
+* **Current Active Release:** `15.13.1`
+  * **Service 1:** Fixed the Wallets transaction search dropdown (`#mgmt-ticker-dropdown`) being clipped below `.tflow-body` / `.wallet-tx-card` by switching it to in-flow (`position: static`) inside the sheet so matching holdings and Yahoo Finance results are always visible.
+* **Previous Active Release:** `15.13.0`
   * **Minor 13:** Added ISIN search support across the Wallets transaction sheet, Quick Entry natural-language parser, Asset Analysis picker, and Transactions ledger filter, with automatic ISIN normalization, clean company name resolution for Warsaw Stock Exchange (`.WA`) quotes, and ISIN badges in search dropdowns.
 * **Previous Active Release:** `15.12.1`
   * **Service 1:** Fixed two UI issues on the Wallets screen: raised the transaction side-sheet/backdrop z-index above the sticky header and prevented auto-scroll from hiding the search input when opening or selecting a holding, and removed the legacy `max-height: min(58vh, 620px)` / `overflow: hidden` clipping on the holdings table so the last Cash row is always fully visible.
