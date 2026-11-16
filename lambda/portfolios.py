@@ -1037,6 +1037,16 @@ def record_transaction(user_id: str, portfolio_id: str, transaction: dict) -> di
         "sourceOperation": transaction.get("sourceOperation"),
         "affectCash": affect_cash,
     }
+    if transaction.get("transactionCurrency"):
+        tx_item["transactionCurrency"] = str(transaction.get("transactionCurrency")).strip().upper()[:10]
+    if transaction.get("exchangeRate") not in (None, ""):
+        tx_item["exchangeRate"] = _to_decimal(transaction.get("exchangeRate"))
+    if transaction.get("originalValue") not in (None, ""):
+        tx_item["originalValue"] = _to_decimal(transaction.get("originalValue"))
+    if transaction.get("originalPrice") not in (None, ""):
+        tx_item["originalPrice"] = _to_decimal(transaction.get("originalPrice"))
+    if transaction.get("originalCommission") not in (None, ""):
+        tx_item["originalCommission"] = _to_decimal(transaction.get("originalCommission"))
 
     transact_items = [{
         "Put": {

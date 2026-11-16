@@ -539,6 +539,29 @@ class PortfolioLedgerTests(unittest.TestCase):
         self.assertEqual(xtb["units"], Decimal("15"))
         self.assertEqual(xtb["purchaseValue"], Decimal("2100"))
 
+    def test_record_transaction_preserves_foreign_currency_fx_metadata(self):
+        self._deposit_cash(1000)
+        tx = portfolios.record_transaction(self.user_id, self.portfolio_id, {
+            "type": "BUY",
+            "ticker": "GB00BLD4ZL17.SG",
+            "name": "CoinShares Physical Bitcoin",
+            "currency": "EUR",
+            "quantity": 2,
+            "price": 249,
+            "value": 498,
+            "transactionCurrency": "EUR",
+            "exchangeRate": 4.25,
+            "originalValue": 117.18,
+            "originalPrice": 58.59,
+            "originalCommission": 0,
+            "transactionDate": "2026-05-12",
+        })
+        self.assertEqual(tx["transactionCurrency"], "EUR")
+        self.assertEqual(tx["exchangeRate"], Decimal("4.25"))
+        self.assertEqual(tx["originalValue"], Decimal("117.18"))
+        self.assertEqual(tx["originalPrice"], Decimal("58.59"))
+        self.assertEqual(tx["value"], Decimal("498"))
+
 
 if __name__ == "__main__":
     unittest.main()

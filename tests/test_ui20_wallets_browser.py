@@ -453,3 +453,44 @@ def test_transaction_search_by_isin_selects_holding(open_page, width, height):
     assert "PLOPTTC00011" in dropdown_text
     page.locator("#mgmt-ticker-dropdown .mgmt-dropdown-item").first.click()
     assert page.locator("#mgmt-confirm-symbol").inner_text() == "CDR.WA"
+
+
+def test_transaction_foreign_currency_conversion_rate_flow(open_page):
+    """Selecting a currency different from wallet currency prompts for an editable,
+    pre-populated conversion rate and converts summary/cash effect to wallet currency."""
+    page, _ = open_page(1440, 900)
+    _select_wallet(page, 1)
+    page.locator("#mgmt-open-trade-btn").click()
+    page.locator("#mgmt-search-input").fill("PLOPTTC00011")
+    page.wait_for_selector("#mgmt-ticker-dropdown .mgmt-dropdown-item", timeout=10000)
+    page.locator("#mgmt-ticker-dropdown .mgmt-dropdown-item").first.click()
+
+    assert page.locator("#mgmt-tx-currency").input_value() == "PLN"
+    assert not page.locator("#mgmt-fx-rate-wrap").is_visible()
+    assert page.locator("#mgmt-price-unit").inner_text() == "PLN"
+    assert page.locator("#mgmt-total-unit").inner_text() == "PLN"
+
+    # Switch to EUR -> conversion rate appears pre-populated and editable
+    page.locator("#mgmt-tx-currency").select_option("EUR")
+    assert page.locator("#mgmt-fx-rate-wrap").is_visible()
+    assert page.locator("#mgmt-price-unit").inner_text() == "EUR"
+    assert page.locator("#mgmt-total-unit").inner_text() == "EUR"
+    prefilled = float(page.locator("#mgmt-fx-rate-input").input_value())
+    assert prefilled > 0
+
+    # Edit conversion rate and enter quantity + price in EUR
+    page.locator("#mgmt-fx-rate-input").fill("4.50")
+    page.locator("#mgmt-units-input").fill("2")
+    page.locator("#mgmt-price-input").fill("100")
+
+    assert page.locator("#mgmt-total-input").input_value() == "200.00"
+    summary_val = page.locator("#mgmt-summary-value").inner_text()
+    assert "EUR" in summary_val
+    assert "900" in summary_val
+    cash_effect = page.locator("#mgmt-summary-cash-effect").inner_text()
+    assert "900" in cash_effect
+
+    # Switch back to PLN -> conversion rate hides and units return to PLN
+    page.locator("#mgmt-tx-currency").select_option("PLN")
+    assert not page.locator("#mgmt-fx-rate-wrap").is_visible()
+    assert page.locator("#mgmt-price-unit").inner_text() == "PLN"

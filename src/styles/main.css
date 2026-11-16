@@ -11558,6 +11558,26 @@ body.wallet-overlay-open {
 .tflow-asset-exchange { font-size: 11px; color: var(--fintech-text-muted); }
 .tflow-asset-meta { font-size: 12px; color: var(--fintech-text-muted); margin: 0; line-height: 1.4; }
 
+/* ── Currency & FX conversion row ─────────────────────────────── */
+.tflow-currency-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    min-width: 0;
+}
+@media (min-width: 600px) {
+    .tflow-currency-row { grid-template-columns: minmax(110px, 0.7fr) 1.3fr; }
+}
+.tflow-currency-select {
+    height: 48px;
+    border-radius: 10px;
+    border: 1.5px solid var(--fintech-border);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
 /* ── Amount inputs: hero ──────────────────────────────────────── */
 .tflow-amounts {
     display: grid;

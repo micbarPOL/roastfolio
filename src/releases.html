@@ -770,7 +770,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.13.2</span>
+                    <span>v15.14.0</span>
                 </div>
             </div>
 
@@ -786,7 +786,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.13.2 (Foreign Exchange Market Currency Conversion Fix)</strong>
+                    <strong>v15.14.0 (Multi-Currency Transaction Entry &amp; FX Conversion Rate)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -833,6 +833,21 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="minor" data-version="15.14.0">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.14.0</span>
+                        <h2 class="rel-card-title">Wallets: Multi-Currency Transaction Entry &amp; Editable FX Rate</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>Transaction Currency Selector:</strong> Added a currency selector (<code>PLN</code>, <code>EUR</code>, <code>USD</code>, <code>GBP</code>, <code>CHF</code>) in the Wallets transaction panel for buys, sells, dividends, deposits, and withdrawals.</li>
+                    <li><strong>Editable Conversion Rate:</strong> When the selected transaction currency differs from the wallet currency, a conversion rate field appears pre-populated with the live FX rate and can be edited before saving.</li>
+                    <li><strong>Live Wallet-Currency Summary &amp; Audit Trail:</strong> Review summary and cash impact convert automatically to the wallet currency, while the backend records both converted wallet amounts and original currency/FX rate metadata.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.13.2">
                 <header class="rel-card-header">
