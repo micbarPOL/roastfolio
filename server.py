@@ -830,16 +830,37 @@ class InvestmentHandler(http.server.SimpleHTTPRequestHandler):
 
         # /search?q=
         if path == '/search':
-            q = (qs.get('q', [''])[0] or '').lower()
+            import re as _re
+            raw_q = (qs.get('q', [''])[0] or '').strip()
+            cleaned_q = _re.sub(r'^(?:ISIN[:\s\-]*)', '', raw_q, flags=_re.IGNORECASE)
+            compact_q = _re.sub(r'[\s\-]+', '', cleaned_q).lower()
+            q = cleaned_q.lower()
             results = [
-                {'symbol': 'CDR.WA',  'name': 'CD Projekt',     'exchange': 'WSE',    'type': 'Equity'},
-                {'symbol': 'XTB.WA',  'name': 'XTB S.A.',       'exchange': 'WSE',    'type': 'Equity'},
-                {'symbol': 'KGH.WA',  'name': 'KGHM',           'exchange': 'WSE',    'type': 'Equity'},
-                {'symbol': 'PKN.WA',  'name': 'PKN Orlen',      'exchange': 'WSE',    'type': 'Equity'},
-                {'symbol': 'AAPL',    'name': 'Apple Inc.',      'exchange': 'NASDAQ', 'type': 'Equity'},
-                {'symbol': 'MSFT',    'name': 'Microsoft Corp.', 'exchange': 'NASDAQ', 'type': 'Equity'},
+                {'symbol': 'CDR.WA',  'name': 'CD Projekt',     'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLOPTTC00011'},
+                {'symbol': 'XTB.WA',  'name': 'XTB S.A.',       'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLXTRDM00011'},
+                {'symbol': 'KGH.WA',  'name': 'KGHM',           'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLKGHM000017'},
+                {'symbol': 'PKN.WA',  'name': 'PKN Orlen',      'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLPKN0000018'},
+                {'symbol': 'PKO.WA',  'name': 'PKO Bank Polski','exchange': 'WSE',    'type': 'Equity', 'isin': 'PLPKO0000016'},
+                {'symbol': 'PZU.WA',  'name': 'PZU S.A.',       'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLPZU0000011'},
+                {'symbol': 'DNP.WA',  'name': 'Dino Polska',    'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLDINPL00011'},
+                {'symbol': 'MBR.WA',  'name': 'Mo-BRUK S.A.',   'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLMOBRK00013'},
+                {'symbol': 'RBW.WA',  'name': 'Rainbow Tours',  'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLRNBWT00031'},
+                {'symbol': 'CRI.WA',  'name': 'Creotech',       'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLCRTCH00018'},
+                {'symbol': 'ART.WA',  'name': 'Artifex Mundi',  'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLARTFX00018'},
+                {'symbol': 'COG.WA',  'name': 'Cognor Holding', 'exchange': 'WSE',    'type': 'Equity', 'isin': 'PLCNTSL00014'},
+                {'symbol': 'PXM.WA',  'name': 'Polimex Mostostal', 'exchange': 'WSE', 'type': 'Equity', 'isin': 'PLMSTSD00019'},
+                {'symbol': 'AAPL',    'name': 'Apple Inc.',      'exchange': 'NASDAQ', 'type': 'Equity', 'isin': 'US0378331005'},
+                {'symbol': 'MSFT',    'name': 'Microsoft Corp.', 'exchange': 'NASDAQ', 'type': 'Equity', 'isin': 'US5949181045'},
+                {'symbol': 'META',    'name': 'Meta Platforms',  'exchange': 'NASDAQ', 'type': 'Equity', 'isin': 'US30303M1027'},
+                {'symbol': 'NVDA',    'name': 'NVIDIA Corp.',    'exchange': 'NASDAQ', 'type': 'Equity', 'isin': 'US67066G1040'},
+                {'symbol': 'IWDA.AS', 'name': 'iShares Core MSCI World UCITS ETF', 'exchange': 'AMS', 'type': 'ETF', 'isin': 'IE00B4L5Y983'},
             ]
-            filtered = [r for r in results if q in r['symbol'].lower() or q in r['name'].lower()] if q else results
+            filtered = [
+                r for r in results
+                if q in r['symbol'].lower()
+                or q in r['name'].lower()
+                or (r.get('isin') and compact_q in r['isin'].lower())
+            ] if q else results[:6]
             _json_resp(self, {'results': filtered})
             return True
 

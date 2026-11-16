@@ -1096,6 +1096,10 @@
             }
             item.onclick = () => loadAssetData(r.symbol, currentPeriod);
             
+            const isinCode = r.isin || (window.RoastfolioIsin && window.RoastfolioIsin.getIsinForSymbol(r.symbol)) || '';
+            const isinBadge = isinCode
+                ? `<span class="mgmt-ticker-badge mgmt-ticker-badge-isin" style="margin-right:6px;" title="ISIN">${isinCode}</span>`
+                : '';
             const ownedBadge = r.isOwned 
                 ? `<span class="mgmt-ticker-badge mgmt-ticker-badge-owned" style="margin-right:8px;" title="In your portfolio">✓ Owned</span>`
                 : '';
@@ -1106,7 +1110,7 @@
                     <span class="mgmt-ticker-name">${r.name || r.symbol}</span>
                 </div>
                 <div class="mgmt-ticker-meta">
-                    ${ownedBadge}
+                    ${isinBadge}${ownedBadge}
                     <span class="mgmt-ticker-exchange">${r.exchange || ''}</span>
                 </div>
             `;
@@ -1116,11 +1120,33 @@
     }
 
     async function performSearch(query) {
-        const q = String(query || '').trim();
+        const rawQ = String(query || '').trim();
+        const normalizedIsin = window.RoastfolioIsin?.normalizeIsin(rawQ) || '';
+        const q = normalizedIsin || rawQ;
 
         // If query is empty and we have cached owned assets, display them instantly
         if (!q && _cachedOwnedAssets) {
             _renderSearchResults(_cachedOwnedAssets);
+        } else if (q) {
+            const qLower = q.toLowerCase();
+            const qCompact = window.RoastfolioIsin ? window.RoastfolioIsin.compactQuery(rawQ).toLowerCase() : qLower;
+            const localMatches = (_cachedOwnedAssets || []).filter(r => {
+                const isin = r.isin || (window.RoastfolioIsin && window.RoastfolioIsin.getIsinForSymbol(r.symbol)) || '';
+                return String(r.symbol || '').toLowerCase().includes(qLower)
+                    || String(r.name || '').toLowerCase().includes(qLower)
+                    || (isin && isin.toLowerCase().includes(qCompact));
+            });
+            const dirMatches = window.RoastfolioIsin ? window.RoastfolioIsin.searchDirectoryByIsin(rawQ) : [];
+            const seen = new Set(localMatches.map(r => String(r.symbol || '').toUpperCase()));
+            dirMatches.forEach(m => {
+                if (!seen.has(m.symbol.toUpperCase())) {
+                    localMatches.push(m);
+                    seen.add(m.symbol.toUpperCase());
+                }
+            });
+            if (localMatches.length > 0) {
+                _renderSearchResults(localMatches);
+            }
         }
 
         try {
@@ -1128,7 +1154,8 @@
                 headers: getAuthHeaders()
             });
             const data = await res.json();
-            const results = data.results || [];
+            const rawResults = data.results || [];
+            const results = window.RoastfolioIsin ? window.RoastfolioIsin.enrichResults(rawResults, rawQ) : rawResults;
             if (!q) {
                 _cachedOwnedAssets = results;
             }

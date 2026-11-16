@@ -65,10 +65,13 @@
     return res.json();
   }
 
-  // ── Ticker search ────────────────────────────────────────────
+  // ── Ticker & ISIN search ─────────────────────────────────────
   async function searchTickers(q) {
-    const data = await _get(`/search?q=${encodeURIComponent(q || '')}`);
-    return data.results || [];
+    const normalizedIsin = window.RoastfolioIsin?.normalizeIsin(q) || '';
+    const effectiveQuery = normalizedIsin || (q || '');
+    const data = await _get(`/search?q=${encodeURIComponent(effectiveQuery)}`);
+    const raw = data.results || [];
+    return window.RoastfolioIsin ? window.RoastfolioIsin.enrichResults(raw, q) : raw;
   }
 
   // ── Render helpers ───────────────────────────────────────────
@@ -2288,36 +2291,41 @@
       _setSelectedHolding(null);
     }
 
-    if (!q) {
-      // Show existing wallet holdings immediately so user doesn't see a blank dropdown
-      const localHoldings = (_currentHoldings || [])
-        .filter(h => h.ticker && h.ticker.toUpperCase() !== 'CASH' && !h.holdingId?.includes('cash'))
-        .map(h => ({
+    const allLocalHoldings = (_currentHoldings || [])
+      .filter(h => h.ticker && h.ticker.toUpperCase() !== 'CASH' && !h.holdingId?.includes('cash'))
+      .map(h => {
+        const isin = h.isin || (window.RoastfolioIsin && window.RoastfolioIsin.getIsinForSymbol(h.ticker)) || '';
+        return {
           symbol: h.ticker,
           name: h.name || h.ticker,
           exchange: _activePortfolio()?.name || 'In Wallet',
           isOwned: true,
           isCurrent: true,
-        }));
-      if (localHoldings.length > 0) {
-        renderDropdown(localHoldings);
+          ...(isin ? { isin } : {}),
+        };
+      });
+
+    if (!q) {
+      // Show existing wallet holdings immediately so user doesn't see a blank dropdown
+      if (allLocalHoldings.length > 0) {
+        renderDropdown(allLocalHoldings);
       }
 
       const requestId = ++_searchRequestId;
-      _setSearchStatus(localHoldings.length ? 'Holdings ready · type to search Yahoo Finance' : 'Loading holdings...', 'loading');
+      _setSearchStatus(allLocalHoldings.length ? 'Holdings ready · type company, ticker, or ISIN' : 'Loading holdings...', 'loading');
       _searchTimer = setTimeout(async () => {
         try {
           const results = await searchTickers('');
           if (requestId !== _searchRequestId) return;
           if (results && results.length) {
             renderDropdown(results);
-          } else if (!localHoldings.length) {
+          } else if (!allLocalHoldings.length) {
             _clearDropdown();
           }
           _setSearchStatus('Type to search Yahoo Finance · use arrows and Enter to select', 'ok');
         } catch (err) {
           if (requestId !== _searchRequestId) return;
-          if (!localHoldings.length) {
+          if (!allLocalHoldings.length) {
             _clearDropdown();
             _setSearchStatus(err.message || 'Failed to load holdings', 'error');
           }
@@ -2332,15 +2340,47 @@
       return;
     }
 
+    // Immediately show matching local holdings or directory ISIN hits while remote search runs
+    const qLower = q.toLowerCase();
+    const qCompact = window.RoastfolioIsin ? window.RoastfolioIsin.compactQuery(q).toLowerCase() : qLower;
+    const instantMatches = allLocalHoldings.filter(h =>
+      h.symbol.toLowerCase().includes(qLower) ||
+      h.name.toLowerCase().includes(qLower) ||
+      (h.isin && h.isin.toLowerCase().includes(qCompact))
+    );
+    const dirIsinMatches = window.RoastfolioIsin ? window.RoastfolioIsin.searchDirectoryByIsin(q) : [];
+    const seenSymbols = new Set(instantMatches.map(h => h.symbol.toUpperCase()));
+    dirIsinMatches.forEach(m => {
+      if (!seenSymbols.has(m.symbol.toUpperCase())) {
+        instantMatches.push(m);
+        seenSymbols.add(m.symbol.toUpperCase());
+      }
+    });
+    if (instantMatches.length > 0) {
+      renderDropdown(instantMatches);
+    }
+
     const requestId = ++_searchRequestId;
     _setSearchStatus('Searching Yahoo Finance…', 'loading');
     _searchTimer = setTimeout(async () => {
       try {
         const results = await searchTickers(q);
         if (requestId !== _searchRequestId) return;
-        renderDropdown(results);
+        const merged = Array.isArray(results) ? [...results] : [];
+        const mergedSet = new Set(merged.map(r => String(r.symbol || '').toUpperCase()));
+        instantMatches.forEach(m => {
+          if (!mergedSet.has(m.symbol.toUpperCase())) {
+            merged.push(m);
+            mergedSet.add(m.symbol.toUpperCase());
+          }
+        });
+        renderDropdown(merged);
       } catch (err) {
         if (requestId !== _searchRequestId) return;
+        if (instantMatches.length > 0) {
+          renderDropdown(instantMatches);
+          return;
+        }
         _clearDropdown();
         _setSearchStatus(err.message || 'Search failed', 'error');
       }
@@ -2548,8 +2588,12 @@
       const owned    = _findHoldingAcrossAllWallets(r.symbol);
       const isHistoricalOwned = r.isOwned && !owned;
       const livePrice = _getLivePricePLN(r.symbol, r.name);
+      const isinCode  = r.isin || (window.RoastfolioIsin && window.RoastfolioIsin.getIsinForSymbol(r.symbol)) || '';
       const priceBadge = livePrice && livePrice > 0
         ? `<span class="mgmt-ticker-price">${livePrice.toFixed(2)} PLN</span>`
+        : '';
+      const isinBadge = isinCode
+        ? `<span class="mgmt-ticker-badge mgmt-ticker-badge-isin" title="ISIN">${_esc(isinCode)}</span>`
         : '';
       const polishBadge = isPolish
         ? `<span class="mgmt-ticker-badge mgmt-ticker-badge-pl" title="Warsaw Stock Exchange">🇵🇱 WSE</span>`
@@ -2566,7 +2610,7 @@
           <span class="mgmt-ticker-name">${_esc(r.name)}</span>
         </div>
         <div class="mgmt-ticker-meta">
-          ${priceBadge}${polishBadge}${ownedBadge}
+          ${priceBadge}${isinBadge}${polishBadge}${ownedBadge}
           <span class="mgmt-ticker-exchange">${_esc(r.exchange)}</span>
         </div>
       </div>`;
@@ -3040,20 +3084,29 @@
     // ── Stock: search Yahoo Finance then auto-select ─────────────
     _setQeStatus(`Searching for ${ticker}…`, 'loading');
     try {
-      // Prioritize current holdings: check if the ticker matches an existing holding in this portfolio
+      // Prioritize current holdings: check if the ticker or ISIN matches an existing holding in this portfolio
       const activePortObj = _portfolios.find(p => p.portfolioId === _activePortId);
       const holdings = activePortObj ? _liveHoldingsFor(activePortObj) : [];
-      let holdingMatch = holdings.find(h => h.ticker && h.ticker.toUpperCase() === ticker.toUpperCase());
+      const normalizedQeIsin = window.RoastfolioIsin ? window.RoastfolioIsin.normalizeIsin(ticker) : '';
+      const dirIsinEntry = normalizedQeIsin && window.RoastfolioIsin ? window.RoastfolioIsin.getEntryByIsin(normalizedQeIsin) : null;
+      let holdingMatch = holdings.find(h => {
+        if (!h.ticker) return false;
+        const hSym = h.ticker.toUpperCase();
+        const hIsin = h.isin || (window.RoastfolioIsin && window.RoastfolioIsin.getIsinForSymbol(h.ticker)) || '';
+        return hSym === ticker.toUpperCase() || (normalizedQeIsin && hIsin === normalizedQeIsin);
+      });
       if (!holdingMatch) {
         // Also try matching the base symbol, assuming local exchange if it's already in the portfolio (e.g. "cdr" matching "CDR.WA")
         holdingMatch = holdings.find(h => h.ticker && h.ticker.toUpperCase().startsWith(ticker.toUpperCase() + '.'));
       }
       if (holdingMatch) {
-        ticker = holdingMatch.ticker; // Upgrades "cdr" to "CDR.WA" if matched
+        ticker = holdingMatch.ticker; // Upgrades "cdr" or ISIN to "CDR.WA" if matched
+      } else if (dirIsinEntry && dirIsinEntry.symbol) {
+        ticker = dirIsinEntry.symbol;
       }
 
-      const results = await searchTickers(ticker);
-      const best = results.find(r => r.symbol.toUpperCase() === ticker.toUpperCase()) || results[0];
+      const results = await searchTickers(normalizedQeIsin || ticker);
+      const best = results.find(r => r.symbol.toUpperCase() === ticker.toUpperCase() || (normalizedQeIsin && r.isin === normalizedQeIsin)) || results[0];
       
       if (!best) {
         _setQeStatus(`No exact match for "${ticker}". Please select from the dropdown.`, 'error');
