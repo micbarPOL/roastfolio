@@ -333,6 +333,7 @@
     IE00B4L5Y983: { symbol: 'IWDA.AS', name: 'iShares Core MSCI World UCITS ETF',  exchange: 'AMS',    type: 'ETF'    },
     IE00BK5BQT80: { symbol: 'VWCE.DE', name: 'Vanguard FTSE All-World UCITS ETF',  exchange: 'XETRA',  type: 'ETF'    },
     IE00B5BMR087: { symbol: 'CSPX.L',  name: 'iShares Core S&P 500 UCITS ETF',     exchange: 'LSE',    type: 'ETF'    },
+    GB00BLD4ZL17: { symbol: 'BITC.SW', name: 'CoinShares Physical Bitcoin',        exchange: 'EBS',    type: 'ETF'    },
   };
 
   const _SYMBOL_TO_ISIN = {};

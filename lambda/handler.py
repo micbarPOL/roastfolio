@@ -1349,6 +1349,7 @@ _ISIN_DIRECTORY = {
     "IE00B4L5Y983": {"symbol": "IWDA.AS", "name": "iShares Core MSCI World UCITS ETF",        "exchange": "AMS",    "type": "ETF"},
     "IE00BK5BQT80": {"symbol": "VWCE.DE", "name": "Vanguard FTSE All-World UCITS ETF",        "exchange": "XETRA",  "type": "ETF"},
     "IE00B5BMR087": {"symbol": "CSPX.L",  "name": "iShares Core S&P 500 UCITS ETF",           "exchange": "LSE",    "type": "ETF"},
+    "GB00BLD4ZL17": {"symbol": "BITC.SW", "name": "CoinShares Physical Bitcoin",              "exchange": "EBS",    "type": "ETF"},
 }
 
 _SYMBOL_TO_ISIN = {}
@@ -1364,6 +1365,19 @@ for _isin_code, _entry in _ISIN_DIRECTORY.items():
 
 _ISIN_REGEX = re.compile(r"^[A-Z]{2}[A-Z0-9]{9}[0-9]$")
 _SYNTHETIC_XWAR_NAME_RE = re.compile(r"^[A-Z0-9.\-]+\s+C\.XWAR\s+[A-Z]{3}$", re.IGNORECASE)
+
+
+def _resolve_isin_fallback_symbol(ticker_sym: str | None) -> str | None:
+    """Resolve an ISIN-prefixed Yahoo stub (e.g. GB00BLD4ZL17.SG) to a liquid directory ticker."""
+    raw = str(ticker_sym or "").strip().upper()
+    if not raw:
+        return None
+    base = raw.split(".", 1)[0]
+    if _ISIN_REGEX.match(base) and base in _ISIN_DIRECTORY:
+        resolved = _ISIN_DIRECTORY[base]["symbol"]
+        if resolved.upper() != raw:
+            return resolved
+    return None
 
 
 def _normalize_isin_query(raw_query: str) -> str | None:
@@ -1819,6 +1833,32 @@ def asset_analysis_handler(event: dict) -> dict:
         if (hist is None or hist.empty) and period_req in ("1d", "1w"):
             hist = ticker.history(period="5d", interval="1d")
             i = "1d"
+        if hist is None or hist.empty:
+            fallback_sym = _resolve_isin_fallback_symbol(ticker_symbol)
+            if fallback_sym:
+                try:
+                    fb_ticker = yf.Ticker(fallback_sym)
+                    fb_hist = fb_ticker.history(period=p, interval=i)
+                    if (fb_hist is None or fb_hist.empty) and period_req in ("1d", "1w"):
+                        fb_hist = fb_ticker.history(period="5d", interval="1d")
+                        i = "1d"
+                    if fb_hist is not None and not fb_hist.empty:
+                        hist = fb_hist
+                        try:
+                            fb_info = fb_ticker.info
+                            if isinstance(fb_info, dict) and fb_info:
+                                info = fb_info
+                                fundamentals["longName"] = info.get("longName") or info.get("shortName") or fundamentals["longName"]
+                        except Exception:
+                            pass
+                        try:
+                            fb_curr = getattr(fb_ticker.fast_info, "currency", None)
+                            if fb_curr:
+                                resolved_currency = fb_curr
+                        except Exception:
+                            pass
+                except Exception as fb_err:
+                    print(f"Asset analysis fallback error for '{fallback_sym}': {fb_err}")
         history_data = []
         if hist is not None and not hist.empty:
             for date, row in hist.iterrows():

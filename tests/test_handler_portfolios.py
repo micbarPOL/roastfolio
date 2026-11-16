@@ -684,6 +684,7 @@ def test_infer_market_currency_and_compute_wallet_converts_eur_holding_marked_pl
 
 
 def test_asset_analysis_handles_missing_yf_info_for_isin_etn_ticker():
+    from types import SimpleNamespace
     import pandas as pd
 
     fake_hist = pd.DataFrame(
@@ -739,3 +740,79 @@ def test_asset_analysis_handles_missing_yf_info_for_isin_etn_ticker():
     assert body["currency"] == "EUR"
     assert len(body["history"]) == 2
     assert body["history"][-1]["c"] == 58.0
+
+
+def test_asset_analysis_falls_back_to_liquid_isin_ticker_when_stub_has_no_history():
+    from types import SimpleNamespace
+    import pandas as pd
+
+    empty_hist = pd.DataFrame()
+    liquid_hist = pd.DataFrame(
+        {"Close": [51.0, 52.0], "Volume": [200, 300]},
+        index=pd.to_datetime(["2026-11-13", "2026-11-16"]),
+    )
+
+    class StubTicker:
+        @property
+        def info(self):
+            return {}
+
+        @property
+        def fast_info(self):
+            return SimpleNamespace(currency=None)
+
+        def history(self, period="1y", interval="1d"):
+            return empty_hist
+
+        @property
+        def cashflow(self):
+            return pd.DataFrame()
+
+        @property
+        def quarterly_cashflow(self):
+            return pd.DataFrame()
+
+        @property
+        def financials(self):
+            return pd.DataFrame()
+
+        @property
+        def quarterly_financials(self):
+            return pd.DataFrame()
+
+        @property
+        def earnings_history(self):
+            return pd.DataFrame()
+
+    class LiquidTicker(StubTicker):
+        @property
+        def info(self):
+            return {"longName": "CoinShares Bitcoin ETP"}
+
+        @property
+        def fast_info(self):
+            return SimpleNamespace(currency="CHF")
+
+        def history(self, period="1y", interval="1d"):
+            return liquid_hist
+
+    def ticker_factory(sym):
+        return LiquidTicker() if sym == "BITC.SW" else StubTicker()
+
+    event = {
+        "httpMethod": "GET",
+        "path": "/asset-analysis",
+        "queryStringParameters": {"ticker": "GB00BLD4ZL17.SG", "period": "1y"},
+    }
+    with patch.object(handler, "_require_role", return_value=("user-1", None)), \
+         patch.object(handler.yf, "Ticker", side_effect=ticker_factory), \
+         patch.object(handler.portfolios, "list_portfolios", return_value=[]):
+        resp = handler.asset_analysis_handler(event)
+
+    assert resp["statusCode"] == 200
+    body = json.loads(resp["body"])
+    assert body["ticker"] == "GB00BLD4ZL17.SG"
+    assert body["currency"] == "CHF"
+    assert body["fundamentals"]["longName"] == "CoinShares Bitcoin ETP"
+    assert len(body["history"]) == 2
+    assert body["history"][-1]["c"] == 52.0
