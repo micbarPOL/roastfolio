@@ -192,7 +192,13 @@ function applyFilters() {
         if (_fDateFrom && r.date < _fDateFrom) return false;
         if (_fDateTo && r.date > _fDateTo) return false;
         if (_fOps.size > 0 && !_fOps.has(r.operation)) return false;
-        if (_fAsset && !`${r.asset || ''} ${r.ticker || ''} ${r.symbol || ''}`.toLowerCase().includes(_fAsset)) return false;
+        if (_fAsset) {
+            const rowTicker = r.ticker || r.symbol || '';
+            const rowIsin = r.isin || (window.RoastfolioIsin && window.RoastfolioIsin.getIsinForSymbol(rowTicker)) || '';
+            const haystack = `${r.asset || ''} ${rowTicker} ${r.symbol || ''} ${rowIsin}`.toLowerCase();
+            const compactAsset = window.RoastfolioIsin ? window.RoastfolioIsin.compactQuery(_fAsset).toLowerCase() : _fAsset;
+            if (!haystack.includes(_fAsset) && !(rowIsin && compactAsset && rowIsin.toLowerCase().includes(compactAsset))) return false;
+        }
         if (_fWallet && !(r.wallet || '').toLowerCase().includes(_fWallet)) return false;
         if (_fValueMin !== null && r.value < _fValueMin) return false;
         if (_fValueMax !== null && r.value > _fValueMax) return false;

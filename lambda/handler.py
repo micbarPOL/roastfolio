@@ -1246,13 +1246,120 @@ def tfi_lookup_handler(event: dict) -> dict:
     return _resp(200, {"code": code, "name": name, "nav": nav, "navDate": nav_date})
 
 
-# ── Ticker search handler ─────────────────────────────────────
+# ── Ticker & ISIN search handler ─────────────────────────────
+
+_ISIN_DIRECTORY = {
+    "PLOPTTC00011": {"symbol": "CDR.WA",  "name": "CD Projekt S.A.",                          "exchange": "WSE",    "type": "Equity"},
+    "PLXTRDM00011": {"symbol": "XTB.WA",  "name": "XTB S.A.",                                 "exchange": "WSE",    "type": "Equity"},
+    "PLKGHM000017": {"symbol": "KGH.WA",  "name": "KGHM Polska Miedź S.A.",                   "exchange": "WSE",    "type": "Equity"},
+    "PLPKN0000018": {"symbol": "PKN.WA",  "name": "ORLEN S.A.",                               "exchange": "WSE",    "type": "Equity"},
+    "PLPKO0000016": {"symbol": "PKO.WA",  "name": "PKO Bank Polski S.A.",                     "exchange": "WSE",    "type": "Equity"},
+    "PLPZU0000011": {"symbol": "PZU.WA",  "name": "PZU S.A.",                                 "exchange": "WSE",    "type": "Equity"},
+    "PLPEKAO00016": {"symbol": "PEO.WA",  "name": "Bank Pekao S.A.",                          "exchange": "WSE",    "type": "Equity"},
+    "PLDINPL00011": {"symbol": "DNP.WA",  "name": "Dino Polska S.A.",                         "exchange": "WSE",    "type": "Equity"},
+    "PLLPP0000011": {"symbol": "LPP.WA",  "name": "LPP S.A.",                                 "exchange": "WSE",    "type": "Equity"},
+    "LU2237380790": {"symbol": "ALE.WA",  "name": "Allegro.eu S.A.",                          "exchange": "WSE",    "type": "Equity"},
+    "NL0015000AU7": {"symbol": "PCO.WA",  "name": "Pepco Group N.V.",                         "exchange": "WSE",    "type": "Equity"},
+    "PLALIOR00045": {"symbol": "ALR.WA",  "name": "Alior Bank S.A.",                          "exchange": "WSE",    "type": "Equity"},
+    "PLKRK0000010": {"symbol": "KRU.WA",  "name": "KRUK S.A.",                                "exchange": "WSE",    "type": "Equity"},
+    "PLBZ00000044": {"symbol": "SPL.WA",  "name": "Santander Bank Polska S.A.",               "exchange": "WSE",    "type": "Equity"},
+    "PLMBANK00012": {"symbol": "MBK.WA",  "name": "mBank S.A.",                               "exchange": "WSE",    "type": "Equity"},
+    "PLBUDMX00013": {"symbol": "BDX.WA",  "name": "Budimex S.A.",                             "exchange": "WSE",    "type": "Equity"},
+    "PLSOFTB00016": {"symbol": "ACP.WA",  "name": "Asseco Poland S.A.",                       "exchange": "WSE",    "type": "Equity"},
+    "PLPGER000010": {"symbol": "PGE.WA",  "name": "PGE Polska Grupa Energetyczna S.A.",       "exchange": "WSE",    "type": "Equity"},
+    "PLTLKPL00017": {"symbol": "OPL.WA",  "name": "Orange Polska S.A.",                       "exchange": "WSE",    "type": "Equity"},
+    "PLCYFR000011": {"symbol": "CPS.WA",  "name": "Cyfrowy Polsat S.A.",                      "exchange": "WSE",    "type": "Equity"},
+    "PLJSW0000015": {"symbol": "JSW.WA",  "name": "Jastrzębska Spółka Węglowa S.A.",          "exchange": "WSE",    "type": "Equity"},
+    "PLTAURN00011": {"symbol": "TPE.WA",  "name": "TAURON Polska Energia S.A.",               "exchange": "WSE",    "type": "Equity"},
+    "PLENEA000013": {"symbol": "ENA.WA",  "name": "Enea S.A.",                                "exchange": "WSE",    "type": "Equity"},
+    "PLENERG00022": {"symbol": "ENG.WA",  "name": "Energa S.A.",                              "exchange": "WSE",    "type": "Equity"},
+    "PLKETY000011": {"symbol": "KTY.WA",  "name": "Grupa Kęty S.A.",                          "exchange": "WSE",    "type": "Equity"},
+    "PLINTCS00010": {"symbol": "CAR.WA",  "name": "Inter Cars S.A.",                          "exchange": "WSE",    "type": "Equity"},
+    "PLBENEF00018": {"symbol": "BFT.WA",  "name": "Benefit Systems S.A.",                     "exchange": "WSE",    "type": "Equity"},
+    "PLCCC0000016": {"symbol": "CCC.WA",  "name": "CCC S.A.",                                 "exchange": "WSE",    "type": "Equity"},
+    "PL11BTS00015": {"symbol": "11B.WA",  "name": "11 bit studios S.A.",                      "exchange": "WSE",    "type": "Equity"},
+    "PLMOBRK00013": {"symbol": "MBR.WA",  "name": "Mo-BRUK S.A.",                             "exchange": "WSE",    "type": "Equity"},
+    "PLRNBWT00031": {"symbol": "RBW.WA",  "name": "Rainbow Tours S.A.",                       "exchange": "WSE",    "type": "Equity"},
+    "PLCRTCH00018": {"symbol": "CRI.WA",  "name": "Creotech Instruments S.A.",                "exchange": "WSE",    "type": "Equity"},
+    "PLARTFX00018": {"symbol": "ART.WA",  "name": "Artifex Mundi S.A.",                       "exchange": "WSE",    "type": "Equity"},
+    "PLCNTSL00014": {"symbol": "COG.WA",  "name": "Cognor Holding S.A.",                      "exchange": "WSE",    "type": "Equity"},
+    "PLMSTSD00019": {"symbol": "PXM.WA",  "name": "Polimex Mostostal S.A.",                   "exchange": "WSE",    "type": "Equity"},
+    "PLGPW0000017": {"symbol": "GPW.WA",  "name": "GPW S.A.",                                 "exchange": "WSE",    "type": "Equity"},
+    "PLBSK0000017": {"symbol": "ING.WA",  "name": "ING Bank Śląski S.A.",                     "exchange": "WSE",    "type": "Equity"},
+    "PLBIG0000016": {"symbol": "MIL.WA",  "name": "Bank Millennium S.A.",                     "exchange": "WSE",    "type": "Equity"},
+    "PLBGZ0000010": {"symbol": "BNP.WA",  "name": "BNP Paribas Bank Polska S.A.",             "exchange": "WSE",    "type": "Equity"},
+    "PLBH00000012": {"symbol": "BHW.WA",  "name": "Bank Handlowy w Warszawie S.A.",           "exchange": "WSE",    "type": "Equity"},
+    "PLDOMDV00010": {"symbol": "DOM.WA",  "name": "Dom Development S.A.",                     "exchange": "WSE",    "type": "Equity"},
+    "PLLCCRP00017": {"symbol": "DVL.WA",  "name": "Develia S.A.",                             "exchange": "WSE",    "type": "Equity"},
+    "PLATAL000046": {"symbol": "1AT.WA",  "name": "Atal S.A.",                                "exchange": "WSE",    "type": "Equity"},
+    "PLLVTSF00010": {"symbol": "TXT.WA",  "name": "Text S.A.",                                "exchange": "WSE",    "type": "Equity"},
+    "PLWRTPL00027": {"symbol": "WPL.WA",  "name": "Wirtualna Polska Holding S.A.",            "exchange": "WSE",    "type": "Equity"},
+    "PLSNKTK00019": {"symbol": "SNT.WA",  "name": "Synektik S.A.",                            "exchange": "WSE",    "type": "Equity"},
+    "PLSLVCR00029": {"symbol": "SLV.WA",  "name": "Selvita S.A.",                             "exchange": "WSE",    "type": "Equity"},
+    "PLSELVA00018": {"symbol": "RVU.WA",  "name": "Ryvu Therapeutics S.A.",                   "exchange": "WSE",    "type": "Equity"},
+    "PLCLNPH00015": {"symbol": "CLN.WA",  "name": "Celon Pharma S.A.",                        "exchange": "WSE",    "type": "Equity"},
+    "PLTSQGM00016": {"symbol": "TEN.WA",  "name": "Ten Square Games S.A.",                    "exchange": "WSE",    "type": "Equity"},
+    "PLPLAYW00015": {"symbol": "PLW.WA",  "name": "PlayWay S.A.",                             "exchange": "WSE",    "type": "Equity"},
+    "PLCTINT00018": {"symbol": "CIG.WA",  "name": "CI Games S.E.",                            "exchange": "WSE",    "type": "Equity"},
+    "US44853H1086": {"symbol": "HUG.WA",  "name": "Huuuge, Inc.",                             "exchange": "WSE",    "type": "Equity"},
+    "LU2910446546": {"symbol": "ZAB.WA",  "name": "Żabka Group S.A.",                         "exchange": "WSE",    "type": "Equity"},
+    "PLDIAG000014": {"symbol": "DIA.WA",  "name": "Diagnostyka S.A.",                         "exchange": "WSE",    "type": "Equity"},
+    "US0378331005": {"symbol": "AAPL",    "name": "Apple Inc.",                               "exchange": "NASDAQ", "type": "Equity"},
+    "US5949181045": {"symbol": "MSFT",    "name": "Microsoft Corp.",                          "exchange": "NASDAQ", "type": "Equity"},
+    "US67066G1040": {"symbol": "NVDA",    "name": "NVIDIA Corp.",                             "exchange": "NASDAQ", "type": "Equity"},
+    "US02079K3059": {"symbol": "GOOGL",   "name": "Alphabet Inc.",                            "exchange": "NASDAQ", "type": "Equity"},
+    "US0231351067": {"symbol": "AMZN",    "name": "Amazon.com, Inc.",                         "exchange": "NASDAQ", "type": "Equity"},
+    "US30303M1027": {"symbol": "META",    "name": "Meta Platforms, Inc.",                     "exchange": "NASDAQ", "type": "Equity"},
+    "US88160R1014": {"symbol": "TSLA",    "name": "Tesla, Inc.",                              "exchange": "NASDAQ", "type": "Equity"},
+    "US0846707026": {"symbol": "BRK-B",   "name": "Berkshire Hathaway Inc.",                  "exchange": "NYSE",   "type": "Equity"},
+    "IE00B4L5Y983": {"symbol": "IWDA.AS", "name": "iShares Core MSCI World UCITS ETF",        "exchange": "AMS",    "type": "ETF"},
+    "IE00BK5BQT80": {"symbol": "VWCE.DE", "name": "Vanguard FTSE All-World UCITS ETF",        "exchange": "XETRA",  "type": "ETF"},
+    "IE00B5BMR087": {"symbol": "CSPX.L",  "name": "iShares Core S&P 500 UCITS ETF",           "exchange": "LSE",    "type": "ETF"},
+}
+
+_SYMBOL_TO_ISIN = {}
+_SYMBOL_TO_NAME = {}
+for _isin_code, _entry in _ISIN_DIRECTORY.items():
+    _sym_upper = _entry["symbol"].upper()
+    _SYMBOL_TO_ISIN[_sym_upper] = _isin_code
+    _SYMBOL_TO_NAME[_sym_upper] = _entry["name"]
+    if _sym_upper.endswith(".WA"):
+        _base_sym = _sym_upper[:-3]
+        _SYMBOL_TO_ISIN.setdefault(_base_sym, _isin_code)
+        _SYMBOL_TO_NAME.setdefault(_base_sym, _entry["name"])
+
+_ISIN_REGEX = re.compile(r"^[A-Z]{2}[A-Z0-9]{9}[0-9]$")
+_SYNTHETIC_XWAR_NAME_RE = re.compile(r"^[A-Z0-9.\-]+\s+C\.XWAR\s+[A-Z]{3}$", re.IGNORECASE)
+
+
+def _normalize_isin_query(raw_query: str) -> str | None:
+    """If raw_query is a 12-character ISIN (with optional 'ISIN:' prefix, spaces, or hyphens),
+    return the normalized 12-character uppercase ISIN; otherwise return None."""
+    cleaned = re.sub(r"^(?:ISIN[:\s\-]*)", "", str(raw_query or "").strip(), flags=re.IGNORECASE)
+    cleaned = re.sub(r"[\s\-]+", "", cleaned).upper()
+    if _ISIN_REGEX.match(cleaned):
+        return cleaned
+    return None
+
+
+def _resolve_isin_for_symbol(symbol: str, explicit_isin: str | None = None) -> str | None:
+    if explicit_isin and _ISIN_REGEX.match(str(explicit_isin).upper()):
+        return str(explicit_isin).upper()
+    sym = str(symbol or "").strip().upper()
+    if not sym:
+        return None
+    return _SYMBOL_TO_ISIN.get(sym) or (_SYMBOL_TO_ISIN.get(sym[:-3]) if sym.endswith(".WA") else None)
+
+
+def _is_synthetic_xwar_name(name: str) -> bool:
+    return bool(_SYNTHETIC_XWAR_NAME_RE.match(str(name or "").strip()))
+
 
 def search_handler(event: dict) -> dict:
     """
     GET /search?q=<query>
-    Returns up to 10 Yahoo Finance results for the query.
-    Response: { results: [{symbol, name, exchange, type}] }
+    Returns up to 10 Yahoo Finance / portfolio results for the query (by company name, ticker, or ISIN).
+    Response: { results: [{symbol, name, exchange, type, isin?}] }
     """
     method = event.get("httpMethod", "GET")
     if method == "OPTIONS":
@@ -1288,14 +1395,18 @@ def search_handler(event: dict) -> dict:
                 ticker = tx.get("ticker")
                 if ticker and ticker not in historical_holdings:
                     is_current = ticker in current_tickers
-                    historical_holdings[ticker] = {
+                    resolved_isin = _resolve_isin_for_symbol(ticker, tx.get("isin"))
+                    item = {
                         "symbol": ticker,
-                        "name": tx.get("name") or ticker,
+                        "name": tx.get("name") or _SYMBOL_TO_NAME.get(ticker.upper()) or ticker,
                         "exchange": "In Portfolio",
                         "type": "Historical",
                         "isOwned": True,
-                        "isCurrent": is_current
+                        "isCurrent": is_current,
                     }
+                    if resolved_isin:
+                        item["isin"] = resolved_isin
+                    historical_holdings[ticker] = item
     except Exception as e:
         print(f"Error fetching historical holdings for search: {e}")
 
@@ -1311,29 +1422,101 @@ def search_handler(event: dict) -> dict:
     if len(q) > 50:
         return _resp(400, {"error": "Query too long"})
 
-    q_lower = q.lower()
+    isin_query = _normalize_isin_query(q)
+    search_query = isin_query or q
+    q_lower = search_query.lower()
+    q_compact = re.sub(r"[\s\-]+", "", q_lower)
+
     matched_owned = [
         h for h in historical_holdings.values()
-        if q_lower in h["symbol"].lower() or q_lower in h["name"].lower()
+        if q_lower in h["symbol"].lower()
+        or q_lower in h["name"].lower()
+        or (h.get("isin") and q_compact in h["isin"].lower())
     ]
     matched_owned.sort(key=lambda x: (not x.get("isCurrent", False), x["symbol"]))
     matched_symbols = {h["symbol"] for h in matched_owned}
 
+    # Match curated ISIN directory when searching by full ISIN or >=4-char ISIN prefix
+    directory_matches = []
+    if isin_query and isin_query in _ISIN_DIRECTORY:
+        entry = _ISIN_DIRECTORY[isin_query]
+        if entry["symbol"] not in matched_symbols:
+            directory_matches.append({**entry, "isin": isin_query})
+            matched_symbols.add(entry["symbol"])
+    elif len(q_compact) >= 4 and re.match(r"^[a-z]{2}[a-z0-9]{2,10}$", q_compact):
+        for code, entry in _ISIN_DIRECTORY.items():
+            if q_compact in code.lower() and entry["symbol"] not in matched_symbols:
+                directory_matches.append({**entry, "isin": code})
+                matched_symbols.add(entry["symbol"])
+
     try:
-        search = yf.Search(q, max_results=10)
+        search = yf.Search(search_query, max_results=10)
+        raw_quotes = list(search.quotes or [])
+
+        # Extract any non-synthetic company name from companion quotes (e.g. Stuttgart .SG quote on ISIN search)
+        companion_name = None
+        for quote in raw_quotes:
+            cand = (quote.get("longname") or quote.get("shortname") or "").strip()
+            if cand and not _is_synthetic_xwar_name(cand) and cand.upper() != (quote.get("symbol") or "").upper():
+                companion_name = cand
+                break
+
+        has_wa_quote = any(str(qt.get("symbol") or "").upper().endswith(".WA") for qt in raw_quotes) or any(
+            s.upper().endswith(".WA") for s in matched_symbols
+        )
+
+        # If a Polish ISIN only returned a Stuttgart/Frankfurt quote on Yahoo, look up the .WA ticker by company name
+        if isin_query and isin_query.startswith("PL") and not has_wa_quote and companion_name:
+            try:
+                wa_search = yf.Search(companion_name, max_results=5)
+                for wq in (wa_search.quotes or []):
+                    if str(wq.get("symbol") or "").upper().endswith(".WA"):
+                        raw_quotes.insert(0, wq)
+                        has_wa_quote = True
+                        break
+            except Exception:
+                pass
+
         yf_results = []
-        for quote in (search.quotes or []):
+        for quote in raw_quotes:
             symbol = quote.get("symbol", "")
             if not symbol or symbol in matched_symbols:
                 continue
-            yf_results.append({
+            # When we already have the primary .WA listing for an ISIN, skip duplicate synthetic {ISIN}.SG listings
+            if isin_query and has_wa_quote and symbol.upper() == f"{isin_query}.SG":
+                continue
+
+            raw_name = quote.get("longname") or quote.get("shortname") or symbol
+            if _is_synthetic_xwar_name(raw_name):
+                clean_name = (
+                    _SYMBOL_TO_NAME.get(symbol.upper())
+                    or (_ISIN_DIRECTORY.get(isin_query, {}).get("name") if isin_query else None)
+                    or companion_name
+                )
+                if not clean_name:
+                    try:
+                        sym_search = yf.Search(symbol, max_results=1)
+                        sq = (sym_search.quotes or [None])[0] or {}
+                        cand = sq.get("longname") or sq.get("shortname")
+                        if cand and not _is_synthetic_xwar_name(cand):
+                            clean_name = cand
+                    except Exception:
+                        pass
+                raw_name = clean_name or raw_name
+
+            resolved_isin = _resolve_isin_for_symbol(symbol, isin_query)
+            item = {
                 "symbol":   symbol,
-                "name":     quote.get("longname") or quote.get("shortname") or symbol,
+                "name":     raw_name,
                 "exchange": quote.get("exchDisp") or quote.get("exchange", ""),
                 "type":     quote.get("typeDisp") or quote.get("quoteType", ""),
-            })
+            }
+            if resolved_isin:
+                item["isin"] = resolved_isin
+            yf_results.append(item)
+            matched_symbols.add(symbol)
             
-        results = matched_owned + yf_results
+        results = matched_owned + directory_matches + yf_results
 
         # ── Boost Polish exchange (.WA suffix) to the top ─────────
         # If the same company name appears on both WSE and another exchange,
@@ -1349,6 +1532,8 @@ def search_handler(event: dict) -> dict:
         return _resp(200, {"results": results})
     except Exception as e:
         print(f"Search error for '{q}': {e}")
+        if matched_owned or directory_matches:
+            return _resp(200, {"results": matched_owned + directory_matches})
         return _resp(500, {"error": "Search failed"})
 
 def _valid_benchmark_daily(rows):
