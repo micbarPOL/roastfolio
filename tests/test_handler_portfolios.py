@@ -681,3 +681,61 @@ def test_infer_market_currency_and_compute_wallet_converts_eur_holding_marked_pl
     assert row["currentValue"] == pytest.approx(2494.00, abs=0.01)
     assert row["returnPct"] > 0  # ~+0.16%, NOT -76.7%
     assert total == pytest.approx(2494.00, abs=0.01)
+
+
+def test_asset_analysis_handles_missing_yf_info_for_isin_etn_ticker():
+    import pandas as pd
+
+    fake_hist = pd.DataFrame(
+        {"Close": [57.5, 58.0], "Volume": [100, 120]},
+        index=pd.to_datetime(["2026-11-13", "2026-11-16"]),
+    )
+
+    class BrokenInfoTicker:
+        @property
+        def info(self):
+            raise RuntimeError("404 quoteSummary not found")
+
+        @property
+        def fast_info(self):
+            return SimpleNamespace(currency="EUR")
+
+        def history(self, period="1y", interval="1d"):
+            return fake_hist
+
+        @property
+        def cashflow(self):
+            return pd.DataFrame()
+
+        @property
+        def quarterly_cashflow(self):
+            return pd.DataFrame()
+
+        @property
+        def financials(self):
+            return pd.DataFrame()
+
+        @property
+        def quarterly_financials(self):
+            return pd.DataFrame()
+
+        @property
+        def earnings_history(self):
+            return pd.DataFrame()
+
+    event = {
+        "httpMethod": "GET",
+        "path": "/asset-analysis",
+        "queryStringParameters": {"ticker": "GB00BLD4ZL17.SG", "period": "1y"},
+    }
+    with patch.object(handler, "_require_role", return_value=("user-1", None)), \
+         patch.object(handler.yf, "Ticker", return_value=BrokenInfoTicker()), \
+         patch.object(handler.portfolios, "list_portfolios", return_value=[]):
+        resp = handler.asset_analysis_handler(event)
+
+    assert resp["statusCode"] == 200
+    body = json.loads(resp["body"])
+    assert body["ticker"] == "GB00BLD4ZL17.SG"
+    assert body["currency"] == "EUR"
+    assert len(body["history"]) == 2
+    assert body["history"][-1]["c"] == 58.0

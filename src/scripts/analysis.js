@@ -1165,6 +1165,10 @@
         }
     }
 
+    window.addEventListener('portfolioTransactionSaved', () => {
+        _cachedOwnedAssets = null;
+    });
+
     if (inputEl) {
         inputEl.addEventListener('input', (e) => {
             const val = e.target.value.trim();

@@ -1784,9 +1784,27 @@ def asset_analysis_handler(event: dict) -> dict:
 
     try:
         ticker = yf.Ticker(ticker_symbol)
-        info = ticker.info
+        info = {}
+        try:
+            raw_info = ticker.info
+            if isinstance(raw_info, dict):
+                info = raw_info
+        except Exception as info_err:
+            print(f"Asset analysis info fallback for '{ticker_symbol}': {info_err}")
+
+        fast_currency = None
+        try:
+            fast_currency = getattr(ticker.fast_info, "currency", None)
+        except Exception:
+            pass
+        resolved_currency = (
+            info.get("currency")
+            or fast_currency
+            or portfolios._infer_market_currency(ticker_symbol, "PLN")
+        )
+
         fundamentals = {
-            "longName": info.get("longName", ticker_symbol),
+            "longName": info.get("longName") or info.get("shortName") or _SYMBOL_TO_NAME.get(ticker_symbol.upper()) or ticker_symbol,
             "sector": info.get("sector"),
             "industry": info.get("industry"),
             "marketCap": info.get("marketCap"),
@@ -1798,24 +1816,28 @@ def asset_analysis_handler(event: dict) -> dict:
         }
         
         hist = ticker.history(period=p, interval=i)
+        if (hist is None or hist.empty) and period_req in ("1d", "1w"):
+            hist = ticker.history(period="5d", interval="1d")
+            i = "1d"
         history_data = []
-        for date, row in hist.iterrows():
-            close = row["Close"]
-            if isinstance(close, float) and (math.isnan(close) or math.isinf(close)):
-                continue
-            volume = row.get("Volume") if hasattr(row, "get") else row["Volume"] if "Volume" in row.index else None
-            vol_val = None
-            if volume is not None:
-                try:
-                    v = float(volume)
-                    vol_val = None if (math.isnan(v) or math.isinf(v)) else int(v)
-                except (TypeError, ValueError):
-                    pass
-            history_data.append({
-                "t": date.strftime("%Y-%m-%dT%H:%M:%SZ") if i in ["5m", "1h"] else date.strftime("%Y-%m-%d"),
-                "c": float(close),
-                "v": vol_val
-            })
+        if hist is not None and not hist.empty:
+            for date, row in hist.iterrows():
+                close = row["Close"]
+                if isinstance(close, float) and (math.isnan(close) or math.isinf(close)):
+                    continue
+                volume = row.get("Volume") if hasattr(row, "get") else row["Volume"] if "Volume" in row.index else None
+                vol_val = None
+                if volume is not None:
+                    try:
+                        v = float(volume)
+                        vol_val = None if (math.isnan(v) or math.isinf(v)) else int(v)
+                    except (TypeError, ValueError):
+                        pass
+                history_data.append({
+                    "t": date.strftime("%Y-%m-%dT%H:%M:%SZ") if i in ["5m", "1h"] else date.strftime("%Y-%m-%d"),
+                    "c": float(close),
+                    "v": vol_val
+                })
 
         # Fetch cashflow data (annual and quarterly)
         cashflow_data = {}
@@ -1928,7 +1950,7 @@ def asset_analysis_handler(event: dict) -> dict:
 
         return _resp(200, {
             "ticker": ticker_symbol,
-            "currency": info.get("currency"),
+            "currency": resolved_currency,
             "financialCurrency": info.get("financialCurrency"),
             "fundamentals": fundamentals,
             "history": history_data,
