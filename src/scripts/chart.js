@@ -544,6 +544,7 @@ function _makeLineChart(canvasId, data, compact, athInfo = null, activeRows = nu
         },
     ];
 
+    _destroyHistoryChart(canvasId);
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'line',
         data: {
@@ -616,6 +617,7 @@ function _makeMonthlyReturnsChart(canvasId, data, metric = 'gain') {
     const metricLabel = metric === 'deposit' ? 'Monthly Net Deposits (PLN)' : 'Monthly Net Gain (PLN)';
     const valueLabel = metric === 'deposit' ? 'Net deposits' : 'Net gain';
 
+    _destroyHistoryChart(canvasId);
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'bar',
         data: {
@@ -855,6 +857,7 @@ function _makeDailyChangeChart(canvasId, data, mode) {
     const scatterBorder = values.map(value => value === best || value === worst ? 8 : 0);
     const avgData = avg == null ? [] : labels.map(label => ({ x: label, y: Number(avg.toFixed(mode === 'pct' ? 3 : 2)) }));
 
+    _destroyHistoryChart(canvasId);
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'scatter',
         data: {
@@ -925,7 +928,10 @@ function _makeDailyChangeChart(canvasId, data, mode) {
     });
 }
 
+let _cumulativeReturnReqId = 0;
+
 async function _makeCumulativeReturnChart(canvasId, data, mode) {
+    const reqId = ++_cumulativeReturnReqId;
     if (!data || !data.length) {
         _setChartMessage(canvasId, 'No snapshot history yet.');
         return;
@@ -1014,6 +1020,8 @@ async function _makeCumulativeReturnChart(canvasId, data, mode) {
         }
     }
 
+    if (reqId !== _cumulativeReturnReqId) return;
+    _destroyHistoryChart(canvasId);
     _historyCharts[canvasId] = new Chart(canvas, {
         type: 'line',
         data: {
