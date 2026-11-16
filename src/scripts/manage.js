@@ -27,6 +27,8 @@
   let _cemeteryFilter = 'all'; // all | active | closed
   let _transactionsPanelMode = 'trade';
   let _priceInputSource = 'price'; // 'price' | 'total' — last edited price-related field
+  let _fxRateUserEdited = false;
+  const _fxRateCache = {};
 
   let _walletSelectorOpen = false;
   let _createComposerOpen = false;
@@ -541,6 +543,123 @@
     el.className = `wallet-settings-pill wallet-settings-pill-muted${mode ? ` is-${mode}` : ''}`;
   }
 
+  function _walletCurrency() {
+    const port = _activePortfolio();
+    return String((port && port.currency) || 'PLN').trim().toUpperCase() || 'PLN';
+  }
+
+  function _txCurrency() {
+    const sel = document.getElementById('mgmt-tx-currency');
+    const walletCurr = _walletCurrency();
+    return String((sel && sel.value) || walletCurr).trim().toUpperCase() || walletCurr;
+  }
+
+  function _ensureCurrencyOption(currency) {
+    const sel = document.getElementById('mgmt-tx-currency');
+    if (!sel || !currency) return;
+    const code = String(currency).trim().toUpperCase();
+    const exists = Array.from(sel.options).some(opt => opt.value === code);
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = code;
+      sel.appendChild(opt);
+    }
+  }
+
+  function _defaultFxRate(fromCurr, toCurr) {
+    const from = String(fromCurr || 'PLN').toUpperCase();
+    const to = String(toCurr || 'PLN').toUpperCase();
+    if (from === to) return 1;
+    const plnRates = { PLN: 1, EUR: 4.28, USD: 3.85, GBP: 5.12, CHF: 4.55 };
+    if (plnRates[from] && plnRates[to]) {
+      return Number((plnRates[from] / plnRates[to]).toFixed(4));
+    }
+    return 1;
+  }
+
+  async function _fetchFxRate(fromCurr, toCurr) {
+    const from = String(fromCurr || 'PLN').toUpperCase();
+    const to = String(toCurr || 'PLN').toUpperCase();
+    if (from === to) return 1;
+    const cacheKey = `${from}_${to}`;
+    if (_fxRateCache[cacheKey] && _fxRateCache[cacheKey] > 0) {
+      return _fxRateCache[cacheKey];
+    }
+    const fallback = _defaultFxRate(from, to);
+    try {
+      if (typeof window.PortfolioClient !== 'undefined' && typeof window.PortfolioClient.getBenchmarkDaily === 'function') {
+        const res = await window.PortfolioClient.getBenchmarkDaily(`${from}${to}=X`, true);
+        if (res && Array.isArray(res.daily) && res.daily.length > 0) {
+          const lastCandle = res.daily[res.daily.length - 1];
+          const rate = Number(lastCandle.c ?? lastCandle.close ?? 0);
+          if (Number.isFinite(rate) && rate > 0) {
+            _fxRateCache[cacheKey] = rate;
+            return rate;
+          }
+        }
+      }
+    } catch (_) {}
+    return fallback;
+  }
+
+  function _syncTransactionCurrencyUI() {
+    const walletCurr = _walletCurrency();
+    _ensureCurrencyOption(walletCurr);
+    const sel = document.getElementById('mgmt-tx-currency');
+    if (sel && !sel.value) sel.value = walletCurr;
+    const txCurr = _txCurrency();
+    const isForeign = txCurr !== walletCurr;
+    const isCashTx = _isCashTransactionType(_getTransactionType());
+
+    const unitsUnit = document.getElementById('mgmt-units-unit');
+    const priceUnit = document.getElementById('mgmt-price-unit');
+    const totalUnit = document.getElementById('mgmt-total-unit');
+    const fxWrap = document.getElementById('mgmt-fx-rate-wrap');
+    const fxPair = document.getElementById('mgmt-fx-rate-pair');
+    const fxUnit = document.getElementById('mgmt-fx-rate-unit');
+
+    if (unitsUnit) {
+      unitsUnit.textContent = txCurr;
+      unitsUnit.style.display = isCashTx ? '' : 'none';
+    }
+    if (priceUnit) priceUnit.textContent = txCurr;
+    if (totalUnit) totalUnit.textContent = txCurr;
+    if (fxPair) fxPair.textContent = `1 ${txCurr} → ${walletCurr}`;
+    if (fxUnit) fxUnit.textContent = walletCurr;
+    if (fxWrap) fxWrap.style.display = isForeign ? '' : 'none';
+  }
+
+  function onTransactionCurrencyChange() {
+    const walletCurr = _walletCurrency();
+    const txCurr = _txCurrency();
+    const fxInput = document.getElementById('mgmt-fx-rate-input');
+    _fxRateUserEdited = false;
+    _syncTransactionCurrencyUI();
+
+    if (txCurr === walletCurr) {
+      if (fxInput) fxInput.value = '';
+      handleTransactionDraftChange();
+      return;
+    }
+
+    const fallbackRate = _defaultFxRate(txCurr, walletCurr);
+    if (fxInput) {
+      fxInput.value = fallbackRate.toFixed(4);
+    }
+    handleTransactionDraftChange();
+
+    _fetchFxRate(txCurr, walletCurr).then(liveRate => {
+      if (_txCurrency() !== txCurr || _walletCurrency() !== walletCurr) return;
+      if (_fxRateUserEdited) return;
+      const el = document.getElementById('mgmt-fx-rate-input');
+      if (el && Number.isFinite(liveRate) && liveRate > 0) {
+        el.value = liveRate.toFixed(4);
+        handleTransactionDraftChange();
+      }
+    });
+  }
+
   function _renderTransactionSummary(summary = {}) {
     const summaryEl = document.getElementById('mgmt-transaction-summary');
     if (!summaryEl) return;
@@ -549,25 +668,48 @@
     const unitsEl = document.getElementById('mgmt-summary-units');
     const valueEl = document.getElementById('mgmt-summary-value');
     const cashEffectEl = document.getElementById('mgmt-summary-cash-effect');
-    const { txType = _getTransactionType(), ticker, units, amount, value, autoAddCash = false } = summary;
+    const {
+      txType = _getTransactionType(),
+      ticker,
+      units,
+      amount,
+      value,
+      rawValue,
+      txCurrency = _txCurrency(),
+      walletCurrency = _walletCurrency(),
+      autoAddCash = false,
+    } = summary;
     const availableCash = _cashBalance();
     const displayTicker = _isCashTransactionType(txType) ? 'CASH' : (ticker || (_selectedHolding && _selectedHolding.ticker) || '—');
     const displayUnits = _isCashTransactionType(txType) ? amount : units;
+    const isForeign = txCurrency !== walletCurrency;
+    const hasWalletValue = Number.isFinite(Number(value)) && Number(value) > 0;
+    const hasRawValue = Number.isFinite(Number(rawValue)) && Number(rawValue) > 0;
 
     if (typeEl) typeEl.textContent = txType || 'Choose a transaction';
     if (tickerEl) tickerEl.textContent = displayTicker || '—';
     if (unitsEl) unitsEl.textContent = _fmtMaybeUnits(displayUnits);
-    if (valueEl) valueEl.textContent = Number.isFinite(Number(value)) && Number(value) > 0 ? _fmtMoney(value) : '—';
+    if (valueEl) {
+      if (isForeign && hasRawValue) {
+        const rawFormatted = `${Number(rawValue).toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${txCurrency}`;
+        valueEl.textContent = hasWalletValue ? `${rawFormatted} (${_fmtMoney(value)})` : rawFormatted;
+      } else {
+        valueEl.textContent = hasWalletValue ? _fmtMoney(value) : '—';
+      }
+    }
     if (cashEffectEl) cashEffectEl.textContent = _summaryCashEffect(txType, value, autoAddCash, availableCash);
-    summaryEl.classList.toggle('is-ready', Number.isFinite(Number(value)) && Number(value) > 0);
+    summaryEl.classList.toggle('is-ready', hasWalletValue);
   }
 
   function handleTransactionDraftChange(changedField) {
     const txType = _getTransactionType();
     const isCashTx = _isCashTransactionType(txType);
+    if (changedField === 'fxRate') {
+      _fxRateUserEdited = true;
+    }
 
     // Cross-calculate price per share ↔ trade value for BUY/SELL
-    if (!isCashTx && changedField) {
+    if (!isCashTx && changedField && changedField !== 'fxRate') {
       const qtyEl   = document.getElementById('mgmt-units-input');
       const priceEl = document.getElementById('mgmt-price-input');
       const totalEl = document.getElementById('mgmt-total-input');
@@ -593,15 +735,25 @@
     const unitsValue = Number(document.getElementById('mgmt-units-input').value || 0);
     const totalValue = Number(document.getElementById('mgmt-total-input').value || 0);
     const autoAddCash = !!(document.getElementById('mgmt-auto-cash-checkbox') || {}).checked;
-    const value = isCashTx ? unitsValue : totalValue;
-    const hasDraft = Number.isFinite(value) && value > 0;
+    const rawValue = isCashTx ? unitsValue : totalValue;
+    const txCurrency = _txCurrency();
+    const walletCurrency = _walletCurrency();
+    const fxInput = document.getElementById('mgmt-fx-rate-input');
+    const fxRate = txCurrency === walletCurrency ? 1 : Number(fxInput ? fxInput.value : 0);
+    const walletValue = Number.isFinite(rawValue) && rawValue > 0 && Number.isFinite(fxRate) && fxRate > 0
+      ? rawValue * fxRate
+      : NaN;
+    const hasDraft = Number.isFinite(walletValue) && walletValue > 0;
 
     _renderTransactionSummary({
       txType,
       ticker,
       units: isCashTx ? null : unitsValue,
       amount: isCashTx ? unitsValue : null,
-      value,
+      value: walletValue,
+      rawValue,
+      txCurrency,
+      walletCurrency,
       autoAddCash,
     });
 
@@ -1085,6 +1237,14 @@
     if (commissionInput) commissionInput.value = '';
     if (commentInput) commentInput.value = '';
     if (autoCashInput) autoCashInput.checked = false;
+    const txCurrEl = document.getElementById('mgmt-tx-currency');
+    const fxRateEl = document.getElementById('mgmt-fx-rate-input');
+    const walletCurr = _walletCurrency();
+    _ensureCurrencyOption(walletCurr);
+    if (txCurrEl) txCurrEl.value = walletCurr;
+    if (fxRateEl) fxRateEl.value = '';
+    _fxRateUserEdited = false;
+    _syncTransactionCurrencyUI();
     if (confirm) confirm.style.display = 'none';
     _selectedHolding = null;
     _clearDropdown();
@@ -2759,6 +2919,7 @@
     if (priceWrap) priceWrap.style.display = isCashTx ? 'none' : '';
     if (commissionWrap) commissionWrap.style.display = isCashTx ? 'none' : '';
     if (autoCashWrap) autoCashWrap.style.display = txType === 'BUY' ? '' : 'none';
+    _syncTransactionCurrencyUI();
     if (isCashTx) {
       if (confirmSymbol) confirmSymbol.textContent = 'CASH';
       if (confirmName) confirmName.textContent = txType === 'DEPOSIT' ? 'Wallet cash deposit' : 'Wallet cash withdrawal';
@@ -3177,8 +3338,16 @@
     const commissionRaw = document.getElementById('mgmt-commission-input').value.trim();
     const comment = document.getElementById('mgmt-comment-input').value.trim();
     const totalAmount = totalRaw === '' ? NaN : parseFloat(totalRaw);
-    const commission = isCashTx ? 0 : (commissionRaw === '' ? 0 : parseFloat(commissionRaw));
-    const value = isCashTx ? units : totalAmount;
+    const rawCommission = isCashTx ? 0 : (commissionRaw === '' ? 0 : parseFloat(commissionRaw));
+    const rawValue = isCashTx ? units : totalAmount;
+    const txCurrency = _txCurrency();
+    const walletCurrency = _walletCurrency();
+    const isForeignCurrency = txCurrency !== walletCurrency;
+    const fxRateRaw = isForeignCurrency ? parseFloat((document.getElementById('mgmt-fx-rate-input') || {}).value || '') : 1;
+    const fxRate = isForeignCurrency ? fxRateRaw : 1;
+    const hasValidFx = Number.isFinite(fxRate) && fxRate > 0;
+    const value = Number.isFinite(rawValue) && hasValidFx ? Number((rawValue * fxRate).toFixed(2)) : NaN;
+    const commission = Number.isFinite(rawCommission) && hasValidFx ? Number((rawCommission * fxRate).toFixed(2)) : rawCommission;
     const errors = [];
     const invalidIds = [];
     const availableUnits = Number((_selectedHolding && _selectedHolding.units) || 0);
@@ -3216,7 +3385,11 @@
       errors.push('Trade value cannot be negative.');
       invalidIds.push('mgmt-total-input');
     }
-    if (!Number.isFinite(commission) || commission < 0) {
+    if (isForeignCurrency && !hasValidFx) {
+      errors.push('Enter a valid conversion rate greater than 0.');
+      invalidIds.push('mgmt-fx-rate-input');
+    }
+    if (!Number.isFinite(rawCommission) || rawCommission < 0) {
       errors.push('Commission cannot be negative.');
       invalidIds.push('mgmt-commission-input');
     }
@@ -3230,11 +3403,11 @@
       }
     }
     if (txType === 'BUY' && Number.isFinite(value) && value - availableCash > 0.00000001 && !autoAddCash) {
-      errors.push(`Insufficient cash. Available ${availableCash.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN.`);
+      errors.push(`Insufficient cash. Available ${availableCash.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${walletCurrency}.`);
       invalidIds.push('mgmt-total-input');
     }
     if (txType === 'WITHDRAWAL' && Number.isFinite(value) && value - availableCash > 0.00000001) {
-      errors.push(`Insufficient cash. Available ${availableCash.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN.`);
+      errors.push(`Insufficient cash. Available ${availableCash.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${walletCurrency}.`);
       invalidIds.push('mgmt-units-input');
     }
 
@@ -3250,11 +3423,17 @@
       units,
       amount: isCashTx ? units : null,
       value,
+      rawValue,
+      txCurrency,
+      walletCurrency,
       autoAddCash,
     });
 
     const price = !isCashTx && Number.isFinite(value) && Number.isFinite(units) && units > 0
       ? Number((((txType === 'BUY' ? value - commission : value + commission) / units)).toFixed(8))
+      : NaN;
+    const rawPrice = !isCashTx && Number.isFinite(rawValue) && Number.isFinite(units) && units > 0
+      ? Number((((txType === 'BUY' ? rawValue - rawCommission : rawValue + rawCommission) / units)).toFixed(8))
       : NaN;
 
     return {
@@ -3270,10 +3449,16 @@
         amount: isCashTx ? units : null,
         totalAmount: Number.isFinite(totalAmount) ? totalAmount : NaN,
         value,
-        commission,
+        commission: Number.isFinite(commission) ? commission : 0,
         comment,
         price,
         autoAddCash,
+        txCurrency,
+        walletCurrency,
+        fxRate,
+        originalValue: Number.isFinite(rawValue) ? Number(rawValue.toFixed(2)) : NaN,
+        originalPrice: rawPrice,
+        originalCommission: Number.isFinite(rawCommission) ? Number(rawCommission.toFixed(2)) : 0,
       },
     };
   }
@@ -3440,23 +3625,48 @@
     }
 
     _clearValidationState();
-    const { txType, txDate, ticker, name, units, value, commission, comment, price, autoAddCash } = validation.data;
+    const {
+      txType,
+      txDate,
+      ticker,
+      name,
+      units,
+      value,
+      commission,
+      comment,
+      price,
+      autoAddCash,
+      txCurrency,
+      walletCurrency,
+      fxRate,
+      originalValue,
+      originalPrice,
+      originalCommission,
+    } = validation.data;
     const btn = document.getElementById('mgmt-add-holding-btn');
     const previousHoldings = _deepClone(_currentHoldings);
     const previousTransactions = _deepClone(_currentTransactions);
+    const isForeignCurrency = txCurrency && walletCurrency && txCurrency !== walletCurrency;
     const payload = {
       type: txType,
       transactionDate: txDate,
       holdingId: !_isCashTransactionType(txType) && _selectedHolding && _selectedHolding.holdingId ? _selectedHolding.holdingId : undefined,
       name,
       ticker: ticker || undefined,
-      currency: _isCashTransactionType(txType) ? 'PLN' : _currencyForTicker(ticker),
+      currency: _isCashTransactionType(txType) ? (walletCurrency || 'PLN') : _currencyForTicker(ticker),
       quantity: units,
       price: Number.isFinite(price) ? price : undefined,
       value,
       commission,
       comment,
       autoAddCash,
+      ...(isForeignCurrency ? {
+        transactionCurrency: txCurrency,
+        exchangeRate: fxRate,
+        originalValue: Number.isFinite(originalValue) ? originalValue : undefined,
+        originalPrice: Number.isFinite(originalPrice) ? originalPrice : undefined,
+        originalCommission: Number.isFinite(originalCommission) ? originalCommission : undefined,
+      } : {}),
     };
 
     btn.disabled = true;
@@ -3520,11 +3730,15 @@
 
   function _currencyForTicker(ticker) {
     if (!ticker) return 'PLN';
-    if (ticker.startsWith('TFI:')) return 'PLN';
-    if (ticker.endsWith('.WA')) return 'PLN';
-    if (['BTC-USD','ETH-USD'].some(t => ticker.startsWith(t.split('-')[0]))) return 'USD';
-    // Default: USD for US tickers, PLN for Polish
-    return ticker.includes('.') ? 'PLN' : 'USD';
+    const sym = String(ticker).toUpperCase().trim();
+    if (sym.startsWith('TFI:') || sym.endsWith('.WA')) return 'PLN';
+    if (sym.endsWith('.DE') || sym.endsWith('.SG') || sym.endsWith('.F') || sym.endsWith('.BE') || sym.endsWith('.MU') || sym.endsWith('.DU') || sym.endsWith('.HM') || sym.endsWith('.HA') || sym.endsWith('.PA') || sym.endsWith('.AS') || sym.endsWith('.MC') || sym.endsWith('.MI') || sym.endsWith('.VI') || sym.endsWith('.BR') || sym.endsWith('.HE') || sym.endsWith('.IR') || sym.endsWith('.LS') || sym.endsWith('-EUR')) {
+      return 'EUR';
+    }
+    if (sym.endsWith('.SW') || sym.endsWith('-CHF')) return 'CHF';
+    if (sym.endsWith('.L') || sym.endsWith('-GBP')) return 'GBP';
+    if (['BTC-USD', 'ETH-USD'].some(t => sym.startsWith(t.split('-')[0]))) return 'USD';
+    return sym.includes('.') ? 'USD' : 'USD';
   }
 
   // ── Flash message ────────────────────────────────────────────
@@ -4004,6 +4218,7 @@
     onSearchKeyDown,
     onSearchBlur,
     handleTransactionDraftChange,
+    onTransactionCurrencyChange,
     onTransactionTypeChange,
     setTransactionType,
     fillMaxQuantity,
