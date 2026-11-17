@@ -770,7 +770,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.14.1</span>
+                    <span>v15.14.2</span>
                 </div>
             </div>
 
@@ -786,7 +786,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.14.1 (ISIN Asset Analysis Chart &amp; Post-Trade Sync Fix)</strong>
+                    <strong>v15.14.2 (ISIN History Fallback &amp; History Chart Reuse Fix)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -833,6 +833,20 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.14.2">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.14.2</span>
+                        <h2 class="rel-card-title">Analysis &amp; History: ISIN History Fallback &amp; Canvas Reuse Fix</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>ISIN Stub History Fallback:</strong> Added <code>GB00BLD4ZL17</code> &rarr; <code>BITC.SW</code> to the ISIN directory and added <code>_resolve_isin_fallback_symbol</code> in <code>asset_analysis_handler</code> so Stuttgart/ISIN stub tickers with empty Yahoo history (e.g. <code>GB00BLD4ZL17.SG</code>) automatically load price history from their liquid listing.</li>
+                    <li><strong>History Chart Canvas Guard:</strong> Added a monotonic request guard and post-<code>await</code> <code>_destroyHistoryChart</code> in <code>_makeCumulativeReturnChart</code> so concurrent <code>renderHistoryTab</code> calls never throw <code>Canvas is already in use</code> on <code>returnsChart</code>.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.14.1">
                 <header class="rel-card-header">
