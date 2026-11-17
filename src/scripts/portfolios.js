@@ -37,7 +37,9 @@
       let lastErr;
       for (let attempt = 0; attempt <= (isGet ? retries : 0); attempt++) {
         try {
-          const res = await fetch(url, { ...options, headers: { ...headers, ...(options.headers || {}) } });
+          const fetchOpts = { ...options, headers: { ...headers, ...(options.headers || {}) } };
+          if (isGet && !fetchOpts.cache) fetchOpts.cache = 'no-store';
+          const res = await fetch(url, fetchOpts);
           if (!res.ok) {
             // On transient 5xx server errors for GET requests, retry with exponential backoff
             if (isGet && res.status >= 500 && res.status <= 504 && attempt < retries) {
@@ -49,7 +51,11 @@
             err.status = res.status;
             throw err;
           }
-          return await res.json();
+          const json = await res.json();
+          if (!isGet) {
+            Object.keys(_fetchPromises).forEach(k => { delete _fetchPromises[k]; });
+          }
+          return json;
         } catch (err) {
           lastErr = err;
           if (isGet && attempt < retries && (!err.status || (err.status >= 500 && err.status <= 504))) {
@@ -148,22 +154,30 @@
     },
 
     /** Record a BUY/SELL transaction. */
-    addTransaction(portfolioId, body) {
-      return _fetch(`/portfolios/${encodeURIComponent(portfolioId)}/transactions`, {
+    async addTransaction(portfolioId, body) {
+      const res = await _fetch(`/portfolios/${encodeURIComponent(portfolioId)}/transactions`, {
         method: 'POST',
         body: JSON.stringify(body),
       });
+      if (window.LedgerTransactions && typeof window.LedgerTransactions.invalidate === 'function') {
+        window.LedgerTransactions.invalidate();
+      }
+      return res;
     },
 
     /** Update a ledger transaction and trigger server-side history recalculation. */
-    updateTransaction(portfolioId, transactionId, body) {
-      return _fetch(
+    async updateTransaction(portfolioId, transactionId, body) {
+      const res = await _fetch(
         `/portfolios/${encodeURIComponent(portfolioId)}/transactions/${encodeURIComponent(transactionId)}`,
         {
           method: 'PUT',
           body: JSON.stringify(body),
         }
       );
+      if (window.LedgerTransactions && typeof window.LedgerTransactions.invalidate === 'function') {
+        window.LedgerTransactions.invalidate();
+      }
+      return res;
     },
 
     /**

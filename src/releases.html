@@ -770,7 +770,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.14.4</span>
+                    <span>v15.14.5</span>
                 </div>
             </div>
 
@@ -786,7 +786,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.14.4 (Transactions Info Icon Tooltip Fix)</strong>
+                    <strong>v15.14.5 (Transactions Cache Invalidation &amp; Auto-Refresh Fix)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -833,6 +833,20 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.14.5">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.14.5</span>
+                        <h2 class="rel-card-title">Transactions: Auto-Invalidate &amp; Refresh Cache After Save</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-17">November 17, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>No-Store GET &amp; Mutation Cache Reset:</strong> Updated <code>PortfolioClient._fetch</code> to use <code>cache: &apos;no-store&apos;</code> for GET requests and clear in-flight GET dedupe entries on mutations, and invalidated <code>LedgerTransactions</code> after <code>addTransaction</code> and <code>updateTransaction</code>.</li>
+                    <li><strong>Race-Safe Ledger Reload:</strong> Added <code>invalidate()</code>, <code>isLoaded()</code>, and a generation guard (<code>_loadGen</code>) in <code>LedgerTransactions.loadRows</code> so saving a transaction always refreshes the Transactions screen cleanly.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.14.4">
                 <header class="rel-card-header">

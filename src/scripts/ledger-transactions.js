@@ -14,6 +14,7 @@
     let _rows = [];
     let _loaded = false;
     let _loadPromise = null;
+    let _loadGen = 0;
     let _migrationAttempted = false;
 
     function normalizeNumber(value, fallback = 0) {
@@ -127,10 +128,20 @@
             return _rows.slice();
         },
 
+        isLoaded() {
+            return _loaded;
+        },
+
+        invalidate() {
+            _loaded = false;
+            _loadGen += 1;
+        },
+
         async loadRows({ force = false, attemptMigration = true } = {}) {
             if (_loaded && !force) return _rows;
             if (_loadPromise && !force) return _loadPromise;
-            _loadPromise = (async () => {
+            const gen = ++_loadGen;
+            const promise = (async () => {
                 let { rows, emptyWallets } = await fetchRows();
                 const backfillWallets = emptyWallets.filter(wallet => BACKFILL_WALLETS.has(String(wallet || '').trim().toUpperCase()));
                 if (shouldAttemptBackfill(rows, emptyWallets) && attemptMigration && !_migrationAttempted && typeof PortfolioClient?.migrate === 'function') {
@@ -143,13 +154,19 @@
                         console.warn('[LedgerTransactions] Backfill migration failed; using currently available live rows.', error);
                     }
                 }
+                if (gen !== _loadGen) {
+                    return _rows;
+                }
                 _loaded = true;
                 return publish(rows);
             })();
+            _loadPromise = promise;
             try {
-                return await _loadPromise;
+                return await promise;
             } finally {
-                _loadPromise = null;
+                if (_loadPromise === promise) {
+                    _loadPromise = null;
+                }
             }
         },
     };
@@ -157,6 +174,7 @@
     window.LedgerTransactions = LedgerTransactions;
 
     window.addEventListener('portfolioTransactionSaved', () => {
+        LedgerTransactions.invalidate();
         LedgerTransactions.loadRows({ force: true, attemptMigration: false }).catch(error => {
             console.warn('Failed to refresh live transactions after save:', error);
         });
