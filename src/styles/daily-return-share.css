@@ -1,0 +1,32 @@
+#daily-verdict .dv-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+#daily-verdict .dv-share-button { display: inline-grid; place-items: center; width: 44px; height: 44px; flex: none; padding: 0; border: 1px solid var(--border-strong); border-radius: 6px; background: transparent; color: var(--text-secondary); cursor: pointer; }
+#daily-verdict .dv-share-button:hover { background: var(--bg-surface-2); color: var(--text-primary); }
+.daily-share-dialog { box-sizing: border-box; width: min(1000px, calc(100% - 32px)); max-height: calc(100dvh - 32px); margin: auto; padding: 24px; overflow: auto; background: var(--bg-canvas); color: var(--text-primary); border: 1px solid var(--border-strong); border-radius: 8px; font-family: var(--font-sans); letter-spacing: 0; }
+.daily-share-dialog *, .daily-share-dialog *::before, .daily-share-dialog *::after { box-sizing: border-box; }
+.daily-share-dialog::backdrop { background: rgb(0 0 0 / .7); }
+.daily-share-dialog header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; }
+.daily-share-dialog h2 { font-size: 22px; margin: 0; }
+.daily-share-dialog button { min-height: 44px; border: 1px solid var(--border-strong); border-radius: 6px; color: var(--text-primary); background: var(--bg-surface-1); font: inherit; cursor: pointer; padding: 10px 16px; }
+.daily-share-dialog [data-close] { width: 44px; height: 44px; padding: 0; font-size: 24px; }
+.daily-share-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 28px; align-items: start; }
+.daily-share-preview { min-width: 0; }
+.daily-share-preview canvas { display: block; width: 100%; height: auto; }
+.daily-share-options { display: flex; flex-direction: column; min-width: 0; gap: 16px; }
+.daily-share-options fieldset { display: flex; padding: 0; margin: 0; border: 0; gap: 8px; }
+.daily-share-options legend { margin-bottom: 12px; color: var(--text-secondary); font-size: 12px; }
+.daily-share-options fieldset label { position: relative; flex: 1; cursor: pointer; }
+.daily-share-options fieldset input { position: absolute; opacity: 0; }
+.daily-share-options fieldset span { display: block; min-height: 44px; padding: 12px 8px; font-size: 14px; text-align: center; border-bottom: 2px solid var(--text-muted); }
+.daily-share-options fieldset input:checked + span { background: var(--bg-surface-2); border-color: var(--color-success); }
+.daily-share-privacy { display: flex; gap: 12px; align-items: center; min-height: 44px; font-size: 14px; }
+.daily-share-privacy input { width: 20px; height: 20px; accent-color: var(--color-success); }
+.daily-share-options [data-share] { background: var(--color-success); border-color: var(--color-success); color: var(--text-inverse); font-weight: 600; }
+.daily-share-options [role="status"] { color: var(--text-secondary); font-size: 12px; line-height: 1.6; min-height: 40px; margin: 0; overflow-wrap: anywhere; }
+.daily-share-dialog button:disabled { opacity: .5; cursor: wait; }
+.daily-share-dialog [hidden] { display: none !important; }
+.daily-share-dialog :focus-visible, #daily-verdict .dv-share-button:focus-visible, .daily-share-options fieldset input:focus-visible + span { outline: 2px solid var(--accent-primary); outline-offset: 3px; }
+@media (max-width: 700px) {
+    .daily-share-dialog { width: 100%; max-height: 94dvh; margin: auto 0 0; padding: 20px 16px max(20px, env(safe-area-inset-bottom)); border-radius: 8px 8px 0 0; }
+    .daily-share-layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { .daily-share-dialog * { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-mockup="daily-return-share">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>roastfolio | Share today</title>
+  <link rel="stylesheet" href="../tokens-v9.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg-canvas); color: var(--text-primary); font-family: var(--font-sans); letter-spacing: 0; }
+    main { max-width: 1050px; margin: auto; padding: 28px 24px 48px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 28px; }
+    h1 { margin: 0; font-size: 24px; font-weight: 650; }
+    .sample { color: var(--text-secondary); font-size: 12px; }
+    .layout { display: grid; grid-template-columns: minmax(0, 540px) minmax(240px, 1fr); gap: 40px; align-items: start; }
+    .preview { min-width: 0; background: var(--bg-surface-2); padding: 12px; }
+    canvas { width: 100%; height: auto; display: block; }
+    .options { min-width: 0; }
+    h2 { margin: 4px 0 24px; font-size: 20px; }
+    .field { display: grid; gap: 10px; margin-bottom: 24px; }
+    .label { font-size: 12px; color: var(--text-secondary); }
+    select, button { font: inherit; color: var(--text-primary); background: var(--bg-surface-1); border: 1px solid var(--text-muted); border-radius: 6px; min-height: 44px; padding: 10px 12px; }
+    select { width: 100%; }
+    .formats { border: 0; padding: 0; margin: 0 0 24px; display: flex; gap: 8px; }
+    .formats legend { margin-bottom: 10px; }
+    .formats label { flex: 1; position: relative; }
+    .formats input { position: absolute; opacity: 0; }
+    .formats span { display: block; text-align: center; padding: 12px; min-height: 44px; border-bottom: 2px solid var(--text-muted); font-size: 14px; cursor: pointer; }
+    .formats input:checked + span { border-color: var(--color-success); background: var(--bg-surface-2); }
+    .check { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: 14px; margin-bottom: 20px; }
+    .check input { width: 20px; height: 20px; accent-color: var(--color-success); }
+    .actions { display: grid; gap: 10px; padding-top: 20px; border-top: 1px solid var(--bg-surface-3); }
+    button { display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; font-size: 14px; }
+    button svg { width: 18px; height: 18px; flex: none; }
+    .primary { background: var(--color-success); color: var(--text-inverse); border-color: var(--color-success); font-weight: 600; }
+    button:disabled { opacity: .5; cursor: wait; }
+    :focus-visible, .formats input:focus-visible + span { outline: 2px solid var(--color-warning); outline-offset: 4px; }
+    #status { font-size: 12px; line-height: 1.6; min-height: 42px; color: var(--text-secondary); }
+    [hidden] { display: none !important; }
+    @media (max-width: 700px) { main { padding: 20px 16px 32px; } .layout { grid-template-columns: minmax(0, 1fr); gap: 28px; } .preview { padding: 6px; } h2 { margin-top: 0; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>Share your day.</h1><span class="sample">Design preview / Illustrative data, not live</span></header>
+    <div class="layout">
+      <div class="preview"><canvas id="poster" width="1080" height="1350" role="img" aria-label="Daily return poster preview"></canvas></div>
+      <form class="options" onsubmit="return false">
+        <h2>Today, in one frame.</h2>
+        <fieldset class="formats"><legend class="label">Format</legend><label><input type="radio" name="format" value="post" checked><span>Post 4:5</span></label><label><input type="radio" name="format" value="story"><span>Story 9:16</span></label></fieldset>
+        <label class="field"><span class="label">Sample session</span><select id="scenario"><option value="ahead">Positive / ahead of WIG</option><option value="behind">Positive / behind WIG</option><option value="down">Negative / losing less</option><option value="against">Negative / WIG positive</option><option value="equal">Flat session</option><option value="missing">Chart unavailable</option></select></label>
+        <label class="check"><input type="checkbox" id="nominal" checked>Show PLN amount</label>
+        <div class="actions">
+          <button type="button" class="primary" id="share" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m9 10 6-4M9 14l6 4"/></svg>Share image</button>
+          <button type="button" id="download" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg>Download PNG</button>
+        </div>
+        <p id="status" role="status" aria-live="polite">Preparing image...</p>
+      </form>
+    </div>
+  </main>
+  <script>
+    const canvas = document.getElementById('poster');
+    const shareButton = document.getElementById('share');
+    const downloadButton = document.getElementById('download');
+    const status = document.getElementById('status');
+    const colors = { ink: '#141b19', white: '#f5faf7', muted: '#aebeb6', mint: '#b5f25a', coral: '#ff8b79', amber: '#ffd36e', grid: '#3c4a42' };
+    const samples = {
+      ahead: { daily: .73, nominal: 2062.84, portfolio: .68, benchmark: .31, line: 'An actual good day. Suspicious.' },
+      behind: { daily: .41, nominal: 1162.30, portfolio: .38, benchmark: .72, line: 'Profit. Just less than the boring option.' },
+      down: { daily: -.28, nominal: -797.02, portfolio: -.30, benchmark: -.70, line: 'Losing less is still losing.' },
+      against: { daily: -.46, nominal: -1315.40, portfolio: -.48, benchmark: .31, line: 'The market went up. You had other plans.' },
+      equal: { daily: 0, nominal: 0, portfolio: 0, benchmark: 0, line: 'All that research. Exactly nowhere.' },
+      missing: { daily: .73, nominal: 2062.84, portfolio: null, benchmark: null, line: 'The result is in. The evidence is buffering.' }
+    };
+    let preparedFile = null;
+    let generation = 0;
+    let sharing = false;
+    const signed = value => `${value > 0 ? '+' : ''}${value.toFixed(2)}`;
+
+    function text(context, value, x, y, size, color = colors.white, weight = 500) {
+      context.font = `${weight} ${size}px "Helvetica Neue", sans-serif`;
+      context.fillStyle = color;
+      context.fillText(value, x, y);
+    }
+
+    function wrapped(context, value, x, y, width, size, lineHeight, color) {
+      context.font = `600 ${size}px "Helvetica Neue", sans-serif`;
+      context.fillStyle = color;
+      let line = '';
+      for (const word of value.split(' ')) {
+        const next = line ? `${line} ${word}` : word;
+        if (context.measureText(next).width > width && line) {
+          context.fillText(line, x, y);
+          y += lineHeight;
+          line = word;
+        } else line = next;
+      }
+      if (line) context.fillText(line, x, y);
+    }
+
+    function path(context, points, color) {
+      context.beginPath();
+      points.forEach((point, index) => index ? context.lineTo(point.x, point.y) : context.moveTo(point.x, point.y));
+      context.lineWidth = 6;
+      context.lineJoin = 'round';
+      context.strokeStyle = color;
+      context.stroke();
+    }
+
+    function draw(sample, story, showNominal) {
+      canvas.height = story ? 1920 : 1350;
+      const context = canvas.getContext('2d');
+      const offset = story ? 90 : 0;
+      const bottom = story ? 1490 : 1155;
+      context.fillStyle = '#151b26';
+      context.fillRect(0, 0, 1080, canvas.height);
+      const headerHeight = 540 + offset;
+      const headline = '#23352a';
+      context.fillStyle = sample.daily < 0 ? '#f4bea8' : sample.daily > 0 ? '#d0f5b0' : '#cec4f5';
+      context.fillRect(0, 0, 1080, headerHeight);
+      const glow = context.createRadialGradient(180, 180, 30, 180, 180, 750);
+      glow.addColorStop(0, 'rgba(255,255,255,.35)');
+      glow.addColorStop(1, 'rgba(255,255,255,0)');
+      context.fillStyle = glow;
+      context.fillRect(0, 0, 1080, headerHeight);
+      context.save();
+      context.beginPath(); context.rect(0, 0, 1080, headerHeight); context.clip();
+      context.strokeStyle = '#192824'; context.lineWidth = 2;
+      const curves = [
+        [[-100,720],[250,340],[680,820],[1200,400]],
+        [[-100,580],[300,220],[640,680],[1200,260]],
+        [[-100,440],[350,100],[600,540],[1200,130]],
+        [[-100,300],[400,20],[560,400],[1200,20]]
+      ];
+      curves.forEach((points,index) => {
+        context.globalAlpha = .04 + index * .01;
+        context.beginPath(); context.moveTo(...points[0]);
+        context.bezierCurveTo(...points[1],...points[2],...points[3]); context.stroke();
+      });
+      context.globalAlpha = .08;
+      for (let x = 24; x < 1080; x += 36) {
+        for (let y = 24; y < headerHeight; y += 36) {
+          context.beginPath(); context.arc(x,y,1,0,Math.PI*2); context.stroke();
+        }
+      }
+      context.restore();
+      text(context, 'roastfolio.', 72, 100 + offset, 40, headline, 750);
+      context.textAlign = 'right';
+      text(context, '17 NOV 2026', 1008, 96 + offset, 24, headline);
+      context.textAlign = 'left';
+      text(context, 'MY RETURN TODAY', 72, 197 + offset, 25, headline, 650);
+      text(context, `${signed(sample.daily)}%`, 64, 385 + offset, 184, headline, 750);
+      if (showNominal) {
+        const nominal = new Intl.NumberFormat('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: 'exceptZero' }).format(sample.nominal);
+        text(context, `${nominal} PLN`, 76, 459 + offset, 51, headline, 500);
+      } else text(context, 'PLN AMOUNT PRIVATE', 76, 454 + offset, 22, headline);
+      text(context, 'Since previous close / Quotes 16:45 CET', 76, 508 + offset, 22, headline);
+      const chartTop = 618 + offset;
+      const chartBottom = story ? 1150 : 886;
+      text(context, 'PORTFOLIO vs WIG', 76, chartTop - 48, 24, colors.white, 650);
+      if (sample.portfolio == null) {
+        text(context, 'Intraday comparison unavailable', 76, chartTop + 100, 34, colors.muted);
+      } else {
+        const values = Array.from({length: 33}, (_, index) => {
+          const progress = index / 32;
+          return {
+            portfolio: sample.portfolio * progress + Math.sin(progress * Math.PI * 6) * .065 * Math.sin(progress * Math.PI),
+            benchmark: sample.benchmark * progress + Math.sin(progress * Math.PI * 4) * .04 * Math.sin(progress * Math.PI)
+          };
+        });
+        const extent = Math.max(.25, ...values.flatMap(value => [Math.abs(value.portfolio), Math.abs(value.benchmark)])) * 1.3;
+        const project = (value, index) => ({x: 76 + index / 32 * 820, y: (chartTop + chartBottom) / 2 - value / extent * (chartBottom - chartTop) / 2});
+        for (const tick of [-extent, 0, extent]) {
+          const position = project(tick, 0).y;
+          context.beginPath(); context.moveTo(76, position); context.lineTo(896, position);
+          context.strokeStyle = tick === 0 ? colors.muted : colors.grid;
+          context.lineWidth = 1;
+          context.setLineDash(tick === 0 ? [5, 9] : []); context.stroke(); context.setLineDash([]);
+          text(context, `${signed(tick)}%`, 918, position + 7, 19, colors.muted);
+        }
+        path(context, values.map((value, index) => project(value.benchmark, index)), colors.amber);
+        path(context, values.map((value, index) => project(value.portfolio, index)), colors.white);
+        text(context, '09:00', 76, chartBottom + 34, 20, colors.muted);
+        context.textAlign = 'right'; text(context, '16:30 CET', 896, chartBottom + 34, 20, colors.muted); context.textAlign = 'left';
+        text(context, `You ${signed(sample.portfolio)}%`, 76, chartBottom + 89, 29, colors.white, 650);
+        text(context, `WIG ${signed(sample.benchmark)}%`, 470, chartBottom + 89, 29, colors.amber, 650);
+        const spread = sample.portfolio - sample.benchmark;
+        text(context, `${signed(spread)} pp vs WIG`, 76, chartBottom + 137, 27, colors.muted);
+        text(context, 'Minute bars / 15 min delay / Constant FX', 76, chartBottom + 176, 21, colors.muted);
+      }
+      wrapped(context, sample.line, 76, bottom, 900, 43, 55, colors.white);
+      text(context, 'Sample data / No account identifiers', 76, canvas.height - 65, 20, colors.muted);
+      context.textAlign = 'right'; text(context, 'roastfolio', 1008, canvas.height - 65, 22, colors.mint, 650); context.textAlign = 'left';
+      canvas.setAttribute('aria-label', `Sample daily return ${signed(sample.daily)} percent. ${showNominal ? `${sample.nominal} PLN.` : 'PLN amount hidden.'} ${sample.portfolio == null ? 'Comparison unavailable.' : `Delayed intraday portfolio ${signed(sample.portfolio)} percent versus WIG ${signed(sample.benchmark)} percent; constant FX.`}`);
+    }
+
+    function prepare() {
+      const revision = ++generation;
+      preparedFile = null;
+      shareButton.disabled = downloadButton.disabled = true;
+      status.textContent = 'Preparing image...';
+      const sample = samples[document.getElementById('scenario').value];
+      const story = document.querySelector('[name=format]:checked').value === 'story';
+      draw(sample, story, document.getElementById('nominal').checked);
+      canvas.toBlob(blob => {
+        if (revision !== generation) return;
+        if (!blob) { status.textContent = 'Image could not be prepared. Please try again.'; return; }
+        preparedFile = new File([blob], `roastfolio-today-sample-${story ? 'story' : 'post'}.png`, {type: 'image/png'});
+        let nativeShare = false;
+        try { nativeShare = !!(navigator.share && navigator.canShare?.({files: [preparedFile]})); } catch (_) {}
+        shareButton.hidden = !nativeShare;
+        shareButton.disabled = !nativeShare;
+        downloadButton.disabled = false;
+        status.textContent = nativeShare ? 'Image ready.' : 'PNG ready. Attach it in WhatsApp or your social app.';
+      }, 'image/png');
+    }
+
+    document.querySelector('form').addEventListener('change', prepare);
+    downloadButton.addEventListener('click', () => {
+      if (!preparedFile || sharing) return;
+      const url = URL.createObjectURL(preparedFile);
+      const anchor = document.createElement('a');
+      anchor.href = url; anchor.download = preparedFile.name; anchor.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status.textContent = 'PNG download requested.';
+    });
+    shareButton.addEventListener('click', async () => {
+      if (!preparedFile || sharing) return;
+      sharing = true;
+      shareButton.disabled = downloadButton.disabled = true;
+      document.querySelectorAll('input, select').forEach(element => element.disabled = true);
+      try {
+        await navigator.share({files: [preparedFile], title: 'Roastfolio / My return today'});
+        status.textContent = 'Image handed to your sharing app.';
+      } catch (error) {
+        status.textContent = error.name === 'AbortError' ? 'Sharing cancelled. Your image is still ready.' : 'Sharing unavailable. Download the PNG instead.';
+      } finally {
+        sharing = false;
+        shareButton.disabled = downloadButton.disabled = false;
+        document.querySelectorAll('input, select').forEach(element => element.disabled = false);
+      }
+    });
+    prepare();
+  </script>
+</body>
+</html>
