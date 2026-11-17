@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-gramm="false" data-gram="false" data-gramm_editor="false" data-enable-grammarly="false">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -22,7 +23,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="data/logos/apple-touch-icon.png?v=14.3.10">
 
     <script>
-        (function() {
+        (function () {
             const theme = localStorage.getItem('roastfolio-theme') === 'light' ? 'light' : 'dark';
             document.documentElement.dataset.theme = theme;
             document.documentElement.style.colorScheme = theme;
@@ -32,7 +33,9 @@
     </script>
 
     <style>
-        *, *::before, *::after {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
@@ -41,8 +44,8 @@
         :root {
             --bg: #070d17;
             --bg-gradient: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.12) 0%, transparent 45%),
-                           radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 35%),
-                           #070d17;
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 35%),
+                #070d17;
             --surface: rgba(13, 24, 40, 0.78);
             --surface-hover: rgba(18, 34, 56, 0.88);
             --surface-card: rgba(11, 21, 35, 0.85);
@@ -75,8 +78,8 @@
         :root[data-theme="light"] {
             --bg: #edf6fd;
             --bg-gradient: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.1) 0%, transparent 45%),
-                           radial-gradient(circle at 10% 20%, rgba(0, 168, 199, 0.1) 0%, transparent 35%),
-                           linear-gradient(180deg, #f5fbff 0%, #edf6fd 100%);
+                radial-gradient(circle at 10% 20%, rgba(0, 168, 199, 0.1) 0%, transparent 35%),
+                linear-gradient(180deg, #f5fbff 0%, #edf6fd 100%);
             --surface: rgba(255, 255, 255, 0.92);
             --surface-hover: rgba(245, 250, 255, 0.98);
             --surface-card: rgba(255, 255, 255, 0.95);
@@ -130,6 +133,7 @@
             justify-content: space-between;
             gap: 16px;
         }
+
         :root[data-theme="light"] .rel-header {
             background: rgba(237, 246, 253, 0.88);
         }
@@ -156,6 +160,7 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
+
         .rel-back-btn:hover {
             border-color: var(--accent-cyan);
             background: var(--surface-hover);
@@ -169,6 +174,7 @@
             text-decoration: none;
             color: inherit;
         }
+
         .rel-brand-logo {
             width: 32px;
             height: 32px;
@@ -178,6 +184,7 @@
             box-shadow: 0 2px 8px rgba(0, 242, 254, 0.2);
             flex-shrink: 0;
         }
+
         .rel-brand-name {
             font-size: 17px;
             font-weight: 800;
@@ -207,6 +214,7 @@
             gap: 6px;
             transition: all 0.2s;
         }
+
         .theme-toggle-btn:hover {
             border-color: var(--accent-cyan);
             background: var(--surface-hover);
@@ -239,6 +247,7 @@
             flex-direction: column;
             gap: 16px;
         }
+
         .rel-hero::before {
             content: '';
             position: absolute;
@@ -273,6 +282,7 @@
             letter-spacing: 0.08em;
             color: var(--accent-cyan);
         }
+
         .rel-pulsing-dot {
             width: 8px;
             height: 8px;
@@ -281,9 +291,19 @@
             box-shadow: 0 0 10px var(--accent-green);
             animation: pulseGlow 2s infinite ease-in-out;
         }
+
         @keyframes pulseGlow {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.6; }
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 0.6;
+            }
         }
 
         .rel-hero-heading {
@@ -325,6 +345,7 @@
             padding-top: 10px;
             border-top: 1px solid var(--border);
         }
+
         .rel-hero-meta-item {
             display: inline-flex;
             align-items: center;
@@ -345,6 +366,7 @@
             flex: 1;
             min-width: 260px;
         }
+
         .rel-search-input {
             width: 100%;
             background: var(--surface);
@@ -357,10 +379,12 @@
             outline: none;
             transition: all 0.2s ease;
         }
+
         .rel-search-input:focus {
             border-color: var(--accent-cyan);
             box-shadow: 0 0 0 3px rgba(0, 242, 254, 0.15);
         }
+
         .rel-search-icon {
             position: absolute;
             left: 14px;
@@ -393,9 +417,11 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .rel-filter-btn:hover {
             color: var(--text-main);
         }
+
         .rel-filter-btn.active {
             background: var(--surface-hover);
             color: var(--text-main);
@@ -415,13 +441,16 @@
             gap: 16px;
             flex-wrap: wrap;
         }
+
         .rel-explainer-text {
             font-size: 13.5px;
             color: var(--text-muted);
         }
+
         .rel-explainer-text strong {
             color: var(--text-main);
         }
+
         .rel-policy-link {
             font-size: 13px;
             font-weight: 600;
@@ -431,6 +460,7 @@
             align-items: center;
             gap: 4px;
         }
+
         .rel-policy-link:hover {
             text-decoration: underline;
         }
@@ -442,6 +472,7 @@
             gap: 24px;
             position: relative;
         }
+
         .rel-timeline::before {
             content: '';
             position: absolute;
@@ -462,6 +493,7 @@
             box-shadow: var(--shadow-card);
             transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
         }
+
         .rel-card:hover {
             border-color: var(--border-hover);
             transform: translateY(-2px);
@@ -483,6 +515,7 @@
             transform: translateX(8px);
             z-index: 2;
         }
+
         .rel-node::after {
             content: '';
             width: 8px;
@@ -490,12 +523,32 @@
             border-radius: 50%;
             background: var(--text-dim);
         }
-        .rel-card[data-tier="major"] .rel-node { border-color: var(--accent-purple); }
-        .rel-card[data-tier="major"] .rel-node::after { background: var(--accent-purple); box-shadow: 0 0 8px var(--accent-purple); }
-        .rel-card[data-tier="minor"] .rel-node { border-color: var(--accent-cyan); }
-        .rel-card[data-tier="minor"] .rel-node::after { background: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan); }
-        .rel-card[data-tier="service"] .rel-node { border-color: var(--accent-green); }
-        .rel-card[data-tier="service"] .rel-node::after { background: var(--accent-green); }
+
+        .rel-card[data-tier="major"] .rel-node {
+            border-color: var(--accent-purple);
+        }
+
+        .rel-card[data-tier="major"] .rel-node::after {
+            background: var(--accent-purple);
+            box-shadow: 0 0 8px var(--accent-purple);
+        }
+
+        .rel-card[data-tier="minor"] .rel-node {
+            border-color: var(--accent-cyan);
+        }
+
+        .rel-card[data-tier="minor"] .rel-node::after {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-cyan);
+        }
+
+        .rel-card[data-tier="service"] .rel-node {
+            border-color: var(--accent-green);
+        }
+
+        .rel-card[data-tier="service"] .rel-node::after {
+            background: var(--accent-green);
+        }
 
         .rel-card-header {
             display: flex;
@@ -528,16 +581,19 @@
             padding: 3px 9px;
             border-radius: 6px;
         }
+
         .badge-major {
             background: var(--badge-major);
             border: 1px solid var(--badge-major-border);
             color: var(--badge-major-text);
         }
+
         .badge-minor {
             background: var(--badge-minor);
             border: 1px solid var(--badge-minor-border);
             color: var(--badge-minor-text);
         }
+
         .badge-service {
             background: var(--badge-service);
             border: 1px solid var(--badge-service-border);
@@ -558,6 +614,7 @@
             border: 1px solid rgba(16, 185, 129, 0.35);
             color: #34d399;
         }
+
         .badge-latest::before {
             content: '';
             display: inline-block;
@@ -568,9 +625,19 @@
             box-shadow: 0 0 8px #10b981;
             animation: pulse-dot 2s infinite ease-in-out;
         }
+
         @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(0.85);
+            }
         }
 
         :root[data-theme="light"] .badge-latest {
@@ -578,6 +645,7 @@
             border-color: rgba(5, 150, 105, 0.3);
             color: #047857;
         }
+
         :root[data-theme="light"] .badge-latest::before {
             background: #059669;
             box-shadow: 0 0 6px #059669;
@@ -608,6 +676,7 @@
             flex-wrap: wrap;
             margin-bottom: 16px;
         }
+
         .rel-tag {
             font-size: 11px;
             padding: 2px 8px;
@@ -624,6 +693,7 @@
             flex-direction: column;
             gap: 8px;
         }
+
         .rel-item {
             position: relative;
             padding-left: 18px;
@@ -631,6 +701,7 @@
             color: var(--text-muted);
             line-height: 1.55;
         }
+
         .rel-item::before {
             content: '•';
             position: absolute;
@@ -639,8 +710,14 @@
             color: var(--accent-cyan);
             font-size: 18px;
         }
-        .rel-card[data-tier="major"] .rel-item::before { color: var(--accent-purple); }
-        .rel-card[data-tier="service"] .rel-item::before { color: var(--accent-green); }
+
+        .rel-card[data-tier="major"] .rel-item::before {
+            color: var(--accent-purple);
+        }
+
+        .rel-card[data-tier="service"] .rel-item::before {
+            color: var(--accent-green);
+        }
 
         .rel-item strong {
             color: var(--text-main);
@@ -656,6 +733,7 @@
             border-radius: var(--radius-lg);
             color: var(--text-muted);
         }
+
         .rel-empty-icon {
             font-size: 32px;
             margin-bottom: 12px;
@@ -668,6 +746,7 @@
             padding: 32px 24px;
             margin-top: auto;
         }
+
         .rel-footer-inner {
             max-width: 960px;
             margin: 0 auto;
@@ -677,6 +756,7 @@
             gap: 20px;
             flex-wrap: wrap;
         }
+
         .rel-footer-links {
             display: flex;
             align-items: center;
@@ -684,19 +764,23 @@
             flex-wrap: wrap;
             font-size: 13px;
         }
+
         .rel-footer-links a {
             color: var(--text-muted);
             text-decoration: none;
             transition: color 0.15s;
         }
+
         .rel-footer-links a:hover {
             color: var(--accent-cyan);
             text-decoration: underline;
         }
+
         .rel-footer-copy {
             font-size: 12.5px;
             color: var(--text-dim);
         }
+
         .tominex-brand-name {
             font-weight: 800;
             letter-spacing: 0.05em;
@@ -708,39 +792,50 @@
                 padding: 20px 14px 40px;
                 gap: 24px;
             }
+
             .rel-hero {
                 padding: 22px 18px;
             }
+
             .rel-timeline::before {
                 left: 12px;
             }
+
             .rel-card {
                 margin-left: 32px;
                 padding: 18px 16px;
             }
+
             .rel-node {
                 left: -32px;
                 transform: translateX(4px);
                 width: 20px;
                 height: 20px;
             }
+
             .rel-toolbar {
                 flex-direction: column;
                 align-items: stretch;
             }
+
             .rel-filter-group {
                 overflow-x: auto;
             }
         }
     </style>
 </head>
+
 <body data-gramm="false" data-gram="false" data-gramm_editor="false" data-enable-grammarly="false" spellcheck="false">
 
     <!-- ── Sticky Header ─────────────────────────────────────── -->
     <header class="rel-header">
         <div class="rel-header-left">
             <a href="index.html" class="rel-back-btn" id="rel-back-link" aria-label="Back to roastfolio">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                </svg>
                 <span>Back to App</span>
             </a>
             <a href="index.html" class="rel-brand" aria-label="roastfolio Home">
@@ -749,7 +844,8 @@
             </a>
         </div>
         <div class="rel-header-right">
-            <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle light/dark theme" onclick="toggleTheme()">
+            <button type="button" class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle light/dark theme"
+                onclick="toggleTheme()">
                 <span id="theme-toggle-icon">☀️</span>
                 <span id="theme-toggle-text">Light</span>
             </button>
@@ -770,12 +866,14 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.14.5</span>
+                    <span>v15.14.6</span>
                 </div>
             </div>
 
             <p class="rel-hero-desc">
-                Welcome to the complete version chronicle for roastfolio. Every update, architectural milestone, visual enhancement, and stability patch is tracked with full transparency according to our three-tier release numbering standard.
+                Welcome to the complete version chronicle for roastfolio. Every update, architectural milestone, visual
+                enhancement, and stability patch is tracked with full transparency according to our three-tier release
+                numbering standard.
             </p>
 
             <div class="rel-hero-meta">
@@ -786,7 +884,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.14.5 (Transactions Cache Invalidation &amp; Auto-Refresh Fix)</strong>
+                    <strong>v15.14.6 (Live Intraday &amp; Previous Close ISIN Fallback Fix)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -812,27 +910,52 @@
             </div>
             <a href="guide.html#release-numbering" class="rel-policy-link">
                 <span>View Full Policy in Guide</span>
-                <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>
+                <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 3l5 5-5 5" />
+                </svg>
             </a>
         </section>
 
         <!-- ── Search & Filter Toolbar ───────────────────────── -->
         <section class="rel-toolbar" aria-label="Release filters">
             <div class="rel-search-wrap">
-                <svg class="rel-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" id="release-search-input" class="rel-search-input" placeholder="Search releases, features, bug fixes..." aria-label="Search releases">
+                <svg class="rel-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <input type="text" id="release-search-input" class="rel-search-input"
+                    placeholder="Search releases, features, bug fixes..." aria-label="Search releases">
             </div>
 
             <div class="rel-filter-group" role="tablist" aria-label="Filter releases by tier">
-                <button type="button" class="rel-filter-btn active" data-filter="all" role="tab" aria-selected="true">All</button>
-                <button type="button" class="rel-filter-btn" data-filter="major" role="tab" aria-selected="false">Major (X.0.0)</button>
-                <button type="button" class="rel-filter-btn" data-filter="minor" role="tab" aria-selected="false">Minor (X.Y.0)</button>
-                <button type="button" class="rel-filter-btn" data-filter="service" role="tab" aria-selected="false">Service Patches</button>
+                <button type="button" class="rel-filter-btn active" data-filter="all" role="tab"
+                    aria-selected="true">All</button>
+                <button type="button" class="rel-filter-btn" data-filter="major" role="tab" aria-selected="false">Major
+                    (X.0.0)</button>
+                <button type="button" class="rel-filter-btn" data-filter="minor" role="tab" aria-selected="false">Minor
+                    (X.Y.0)</button>
+                <button type="button" class="rel-filter-btn" data-filter="service" role="tab"
+                    aria-selected="false">Service Patches</button>
             </div>
         </section>
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.14.6">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.14.6</span>
+                        <h2 class="rel-card-title">Dashboard: Previous Close &amp; Intraday ISIN Fallback</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-17">November 17, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>Live Intraday &amp; Previous Close Fallback:</strong> Added <code>_resolve_isin_fallback_symbol</code> to <code>fetch_ticker_data</code> in <code>handler.py</code> so ISIN-prefixed stubs without Yahoo price/intraday data (e.g. <code>GB00BLD4ZL17.SG</code>) resolve live price, <code>previousClose</code>, currency, and intraday comparison bars from their liquid directory listing (<code>BITC.SW</code>).</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.14.5">
                 <header class="rel-card-header">
@@ -856,9 +979,14 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-17">November 17, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li><strong>Transactions Tooltip Styling:</strong> Added CSS rules for <code>.tx-help</code> and <code>.tx-help [role="tooltip"]</code> in <code>transactions.css</code> and switched the trigger to an <code>info</code> icon so the ledger/auto-cash explanation stays hidden until the info button is clicked.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li><strong>Transactions Tooltip Styling:</strong> Added CSS rules for <code>.tx-help</code> and
+                            <code>.tx-help [role="tooltip"]</code> in <code>transactions.css</code> and switched the
+                            trigger to an <code>info</code> icon so the ledger/auto-cash explanation stays hidden until
+                            the info button is clicked.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.14.3">
@@ -869,38 +997,65 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-17">November 17, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li><strong>Commission in Net Cash Impact:</strong> Updated <code>_summaryCashEffect</code>, <code>validateTransactionForm</code>, and <code>_applyOptimisticTransaction</code> in Wallets so commission is added to cash outflow on buys and subtracted from net proceeds on sells and dividends.</li>
-                    <li><strong>Immediate Post-Save Wallet Refresh:</strong> Removed the 4-second <code>liveDataReady</code> suppression after saving a transaction and updated <code>selectPortfolio</code> to refresh wallet selector/list totals immediately when fresh live prices arrive.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li><strong>Commission in Net Cash Impact:</strong> Updated <code>_summaryCashEffect</code>,
+                            <code>validateTransactionForm</code>, and <code>_applyOptimisticTransaction</code> in
+                            Wallets so commission is added to cash outflow on buys and subtracted from net proceeds on
+                            sells and dividends.</li>
+                        <li><strong>Immediate Post-Save Wallet Refresh:</strong> Removed the 4-second
+                            <code>liveDataReady</code> suppression after saving a transaction and updated
+                            <code>selectPortfolio</code> to refresh wallet selector/list totals immediately when fresh
+                            live prices arrive.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.14.2">
                 <header class="rel-card-header">
                     <div class="rel-card-title-wrap">
                         <span class="rel-version-tag">v15.14.2</span>
-                        <h2 class="rel-card-title">Analysis &amp; History: ISIN History Fallback &amp; Canvas Reuse Fix</h2>
+                        <h2 class="rel-card-title">Analysis &amp; History: ISIN History Fallback &amp; Canvas Reuse Fix
+                        </h2>
                     </div>
                     <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li><strong>ISIN Stub History Fallback:</strong> Added <code>GB00BLD4ZL17</code> &rarr; <code>BITC.SW</code> to the ISIN directory and added <code>_resolve_isin_fallback_symbol</code> in <code>asset_analysis_handler</code> so Stuttgart/ISIN stub tickers with empty Yahoo history (e.g. <code>GB00BLD4ZL17.SG</code>) automatically load price history from their liquid listing.</li>
-                    <li><strong>History Chart Canvas Guard:</strong> Added a monotonic request guard and post-<code>await</code> <code>_destroyHistoryChart</code> in <code>_makeCumulativeReturnChart</code> so concurrent <code>renderHistoryTab</code> calls never throw <code>Canvas is already in use</code> on <code>returnsChart</code>.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li><strong>ISIN Stub History Fallback:</strong> Added <code>GB00BLD4ZL17</code> &rarr;
+                            <code>BITC.SW</code> to the ISIN directory and added
+                            <code>_resolve_isin_fallback_symbol</code> in <code>asset_analysis_handler</code> so
+                            Stuttgart/ISIN stub tickers with empty Yahoo history (e.g. <code>GB00BLD4ZL17.SG</code>)
+                            automatically load price history from their liquid listing.</li>
+                        <li><strong>History Chart Canvas Guard:</strong> Added a monotonic request guard and
+                            post-<code>await</code> <code>_destroyHistoryChart</code> in
+                            <code>_makeCumulativeReturnChart</code> so concurrent <code>renderHistoryTab</code> calls
+                            never throw <code>Canvas is already in use</code> on <code>returnsChart</code>.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.14.1">
                 <header class="rel-card-header">
                     <div class="rel-card-title-wrap">
                         <span class="rel-version-tag">v15.14.1</span>
-                        <h2 class="rel-card-title">Analysis &amp; Dashboard: ISIN Chart Loading &amp; Post-Trade Sync</h2>
+                        <h2 class="rel-card-title">Analysis &amp; Dashboard: ISIN Chart Loading &amp; Post-Trade Sync
+                        </h2>
                     </div>
                     <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li><strong>Asset Analysis Resilience:</strong> Wrapped <code>ticker.info</code> lookups in <code>handle_asset_analysis</code> with a safe fallback to <code>fast_info.currency</code> and market currency inference, plus daily fallback when intraday bars are empty, so European/ISIN ETNs (e.g. <code>.SG</code>) load charts reliably.</li>
-                    <li><strong>Post-Trade Dashboard &amp; Analysis Sync:</strong> Forced a fresh live-prices refresh after saving a transaction (<code>refreshLivePrices({ force: true })</code>) so Today&apos;s Movers updates immediately, and invalidated the Analysis owned-assets cache on <code>portfolioTransactionSaved</code>.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li><strong>Asset Analysis Resilience:</strong> Wrapped <code>ticker.info</code> lookups in
+                            <code>handle_asset_analysis</code> with a safe fallback to <code>fast_info.currency</code>
+                            and market currency inference, plus daily fallback when intraday bars are empty, so
+                            European/ISIN ETNs (e.g. <code>.SG</code>) load charts reliably.</li>
+                        <li><strong>Post-Trade Dashboard &amp; Analysis Sync:</strong> Forced a fresh live-prices
+                            refresh after saving a transaction (<code>refreshLivePrices({ force: true })</code>) so
+                            Today&apos;s Movers updates immediately, and invalidated the Analysis owned-assets cache on
+                            <code>portfolioTransactionSaved</code>.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="minor" data-version="15.14.0">
@@ -911,11 +1066,19 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li><strong>Transaction Currency Selector:</strong> Added a currency selector (<code>PLN</code>, <code>EUR</code>, <code>USD</code>, <code>GBP</code>, <code>CHF</code>) in the Wallets transaction panel for buys, sells, dividends, deposits, and withdrawals.</li>
-                    <li><strong>Editable Conversion Rate:</strong> When the selected transaction currency differs from the wallet currency, a conversion rate field appears pre-populated with the live FX rate and can be edited before saving.</li>
-                    <li><strong>Live Wallet-Currency Summary &amp; Audit Trail:</strong> Review summary and cash impact convert automatically to the wallet currency, while the backend records both converted wallet amounts and original currency/FX rate metadata.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li><strong>Transaction Currency Selector:</strong> Added a currency selector (<code>PLN</code>,
+                            <code>EUR</code>, <code>USD</code>, <code>GBP</code>, <code>CHF</code>) in the Wallets
+                            transaction panel for buys, sells, dividends, deposits, and withdrawals.</li>
+                        <li><strong>Editable Conversion Rate:</strong> When the selected transaction currency differs
+                            from the wallet currency, a conversion rate field appears pre-populated with the live FX
+                            rate and can be edited before saving.</li>
+                        <li><strong>Live Wallet-Currency Summary &amp; Audit Trail:</strong> Review summary and cash
+                            impact convert automatically to the wallet currency, while the backend records both
+                            converted wallet amounts and original currency/FX rate metadata.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.13.2">
@@ -926,10 +1089,17 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Resolved an issue where European and international assets (e.g. Stuttgart <code>.SG</code>, XETRA <code>.DE</code>, Amsterdam <code>.AS</code>, London <code>.L</code>) purchased in PLN wallets stored <code>PLN</code> as their holding currency and skipped EUR/GBP/USD-to-PLN FX conversion.</li>
-                    <li class="rel-item">Live wallet valuation, historical snapshot recalculations, and transaction price suggestions now resolve the asset's market quote currency from Yahoo Finance and exchange suffixes, converting prices accurately to PLN.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Resolved an issue where European and international assets (e.g. Stuttgart
+                            <code>.SG</code>, XETRA <code>.DE</code>, Amsterdam <code>.AS</code>, London
+                            <code>.L</code>) purchased in PLN wallets stored <code>PLN</code> as their holding currency
+                            and skipped EUR/GBP/USD-to-PLN FX conversion.</li>
+                        <li class="rel-item">Live wallet valuation, historical snapshot recalculations, and transaction
+                            price suggestions now resolve the asset's market quote currency from Yahoo Finance and
+                            exchange suffixes, converting prices accurately to PLN.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.13.1">
@@ -940,9 +1110,13 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Switched the Wallets transaction search dropdown to in-flow positioning inside the sheet so holdings and Yahoo Finance results are never clipped below the scrollable body.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Switched the Wallets transaction search dropdown to in-flow positioning
+                            inside the sheet so holdings and Yahoo Finance results are never clipped below the
+                            scrollable body.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="minor" data-version="15.13.0">
@@ -953,24 +1127,35 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Added ISIN search across the Wallets transaction panel, natural-language Quick Entry, Asset Analysis picker, and Transactions ledger filter.</li>
-                    <li class="rel-item">Automatically normalizes pasted ISIN strings, resolves synthetic Yahoo XWAR names to clean company names, prioritizes Warsaw Stock Exchange (.WA) listings over duplicate Stuttgart quotes, and displays ISIN badges in search dropdowns.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Added ISIN search across the Wallets transaction panel, natural-language
+                            Quick Entry, Asset Analysis picker, and Transactions ledger filter.</li>
+                        <li class="rel-item">Automatically normalizes pasted ISIN strings, resolves synthetic Yahoo XWAR
+                            names to clean company names, prioritizes Warsaw Stock Exchange (.WA) listings over
+                            duplicate Stuttgart quotes, and displays ISIN badges in search dropdowns.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.12.1">
                 <header class="rel-card-header">
                     <div class="rel-card-title-wrap">
                         <span class="rel-version-tag">v15.12.1</span>
-                        <h2 class="rel-card-title">Wallets: Transaction Sheet Header Overlap &amp; Table Row Clipping Fix</h2>
+                        <h2 class="rel-card-title">Wallets: Transaction Sheet Header Overlap &amp; Table Row Clipping
+                            Fix</h2>
                     </div>
                     <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Fixed the Wallets transaction side sheet so its z-index sits above the sticky page header and the search input remains visible at the top without auto-scrolling out of view.</li>
-                    <li class="rel-item">Removed the legacy 58vh height cap and overflow clipping on the Wallets holdings table container so the bottom Cash row is never cut off.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Fixed the Wallets transaction side sheet so its z-index sits above the
+                            sticky page header and the search input remains visible at the top without auto-scrolling
+                            out of view.</li>
+                        <li class="rel-item">Removed the legacy 58vh height cap and overflow clipping on the Wallets
+                            holdings table container so the bottom Cash row is never cut off.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="minor" data-version="15.12.0">
@@ -981,10 +1166,18 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-16">November 16, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Updated the User Guide with comprehensive documentation for all UI 20 workflows: Daily Verdict, intraday benchmark comparison, Under the Surface (Deep Ocean ATH), Wallets allocation &amp; Quick Entry, History Overview &amp; Monthly Recap Summaries, Statistics &amp; Underwater Lakes, Retirement Planner with Monte Carlo confidence bands, Transactions Activity Calendar &amp; filterable ledger, Asset Analysis technical indicators &amp; Favorites, and Master-Detail Coping Diary.</li>
-                    <li class="rel-item">Added dedicated sections for the Retirement Planner, User Settings &amp; Email Privacy controls, and updated Design System use cases.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Updated the User Guide with comprehensive documentation for all UI 20
+                            workflows: Daily Verdict, intraday benchmark comparison, Under the Surface (Deep Ocean ATH),
+                            Wallets allocation &amp; Quick Entry, History Overview &amp; Monthly Recap Summaries,
+                            Statistics &amp; Underwater Lakes, Retirement Planner with Monte Carlo confidence bands,
+                            Transactions Activity Calendar &amp; filterable ledger, Asset Analysis technical indicators
+                            &amp; Favorites, and Master-Detail Coping Diary.</li>
+                        <li class="rel-item">Added dedicated sections for the Retirement Planner, User Settings &amp;
+                            Email Privacy controls, and updated Design System use cases.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.11.6">
@@ -995,10 +1188,14 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-10">November 10, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Rebased portfolio cumulative returns to start from 0% on filtered sub-ranges (1W, 1M, YTD, 1Y, 3Y, 5Y) to match benchmark range-relative baselines.</li>
-                    <li class="rel-item">Eliminated visual scale distortion where portfolio lifetime returns were plotted against range-scoped benchmark returns.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Rebased portfolio cumulative returns to start from 0% on filtered
+                            sub-ranges (1W, 1M, YTD, 1Y, 3Y, 5Y) to match benchmark range-relative baselines.</li>
+                        <li class="rel-item">Eliminated visual scale distortion where portfolio lifetime returns were
+                            plotted against range-scoped benchmark returns.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.11.5">
@@ -1009,10 +1206,14 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-09">November 9, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Rejected incomplete benchmark history that caused exaggerated percentage returns on the History chart.</li>
-                    <li class="rel-item">Recovered Polish index daily closes from available hourly history and prevented corrupt series from being cached or plotted.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Rejected incomplete benchmark history that caused exaggerated percentage
+                            returns on the History chart.</li>
+                        <li class="rel-item">Recovered Polish index daily closes from available hourly history and
+                            prevented corrupt series from being cached or plotted.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.11.4">
@@ -1023,10 +1224,13 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-06">November 6, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Deposit and withdrawal markers on the Wallets Value history chart now sit on the plotted value line instead of below it.</li>
-                    <li class="rel-item">Hovering a marker shows the type, date and amount of the cash flow.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Deposit and withdrawal markers on the Wallets Value history chart now sit
+                            on the plotted value line instead of below it.</li>
+                        <li class="rel-item">Hovering a marker shows the type, date and amount of the cash flow.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.11.3">
@@ -1037,10 +1241,13 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-06">November 6, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Added rising bubbles to the scuba diver while underwater.</li>
-                    <li class="rel-item">Below −12% drawdown, the Danger icon and label pulse neon red; reduced-motion preferences remain respected.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Added rising bubbles to the scuba diver while underwater.</li>
+                        <li class="rel-item">Below −12% drawdown, the Danger icon and label pulse neon red;
+                            reduced-motion preferences remain respected.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.11.2">
@@ -1051,10 +1258,13 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-05">November 5, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Expanded Roastfolio Says commentary to the full Daily Verdict column.</li>
-                    <li class="rel-item">Made the against-market punchline read clearly as a spotlight with a visible lamp and illuminated beam.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Expanded Roastfolio Says commentary to the full Daily Verdict column.</li>
+                        <li class="rel-item">Made the against-market punchline read clearly as a spotlight with a
+                            visible lamp and illuminated beam.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="service" data-version="15.11.1">
@@ -1065,11 +1275,16 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-05">November 5, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Ensured all candle animation loaders across the dashboard, wallet, chart, and analysis cards consistently render the full 8-bar animation sequence.</li>
-                    <li class="rel-item">Enforced flex-wrap: nowrap and non-shrinking candle dimensions to prevent narrow cards from squishing or dropping outer animation bars.</li>
-                    <li class="rel-item">Added contract test coverage verifying all loaders maintain all 8 animation candles and layout integrity.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Ensured all candle animation loaders across the dashboard, wallet, chart,
+                            and analysis cards consistently render the full 8-bar animation sequence.</li>
+                        <li class="rel-item">Enforced flex-wrap: nowrap and non-shrinking candle dimensions to prevent
+                            narrow cards from squishing or dropping outer animation bars.</li>
+                        <li class="rel-item">Added contract test coverage verifying all loaders maintain all 8 animation
+                            candles and layout integrity.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="minor" data-version="15.11.0">
@@ -1080,11 +1295,16 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-05">November 5, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Placed Daily Verdict beside Today's Movers from the top of the dashboard, with the return and commentary aligned to the Since previous close chart.</li>
-                    <li class="rel-item">Made the separate benchmark price chart optional while keeping the portfolio-versus-benchmark return chart visible.</li>
-                    <li class="rel-item">Extended Daily Verdict effects and replay them periodically only while the widget is visible.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Placed Daily Verdict beside Today's Movers from the top of the dashboard,
+                            with the return and commentary aligned to the Since previous close chart.</li>
+                        <li class="rel-item">Made the separate benchmark price chart optional while keeping the
+                            portfolio-versus-benchmark return chart visible.</li>
+                        <li class="rel-item">Extended Daily Verdict effects and replay them periodically only while the
+                            widget is visible.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="minor" data-version="15.10.0">
@@ -1095,11 +1315,18 @@
                     </div>
                     <time class="rel-date" datetime="2026-11-05">November 5, 2026</time>
                 </header>
-                <div class="rel-card-body"><ul class="rel-list">
-                    <li class="rel-item">Replaced the dashboard speedometer with a shared return axis. Daily percentage and PLN returns lead, followed by benchmark comparison, commentary and total value.</li>
-                    <li class="rel-item">Contextual accents distinguish making money from merely losing less. Brief fireworks, rain, umbrella and spotlight effects respect reduced motion and do not replay on price refresh.</li>
-                    <li class="rel-item">Preserved live calculations, benchmark selection and roast reactions, with explicit missing-data states and a full-width mobile layout.</li>
-                </ul></div>
+                <div class="rel-card-body">
+                    <ul class="rel-list">
+                        <li class="rel-item">Replaced the dashboard speedometer with a shared return axis. Daily
+                            percentage and PLN returns lead, followed by benchmark comparison, commentary and total
+                            value.</li>
+                        <li class="rel-item">Contextual accents distinguish making money from merely losing less. Brief
+                            fireworks, rain, umbrella and spotlight effects respect reduced motion and do not replay on
+                            price refresh.</li>
+                        <li class="rel-item">Preserved live calculations, benchmark selection and roast reactions, with
+                            explicit missing-data states and a full-width mobile layout.</li>
+                    </ul>
+                </div>
             </article>
 
             <article class="rel-card" data-tier="minor" data-version="15.9.0">
@@ -1112,8 +1339,12 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Redesigned the Coping Diary as a desktop ledger and Focus Sheet, with searchable notes, tag and open-checkpoint filters, and clearer thesis and comment sections.</li>
-                        <li class="rel-item">Added mobile list/detail navigation and a bottom-sheet composer while preserving existing API-backed notes, local fallback, linked assets, checkpoints and comment actions.</li>
+                        <li class="rel-item">Redesigned the Coping Diary as a desktop ledger and Focus Sheet, with
+                            searchable notes, tag and open-checkpoint filters, and clearer thesis and comment sections.
+                        </li>
+                        <li class="rel-item">Added mobile list/detail navigation and a bottom-sheet composer while
+                            preserving existing API-backed notes, local fallback, linked assets, checkpoints and comment
+                            actions.</li>
                     </ul>
                 </div>
             </article>
@@ -1128,8 +1359,12 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Redesigned Statistics with independent unit-price/HWM and underwater drawdown charts, preserving each chart's dates and X axis. Portfolio, lake and snapshot selectors, contextual help and table pagination remain independent.</li>
-                        <li class="rel-item">Redesigned Transactions with separate combined filters, 12-row pagination, accessible activity-calendar drill-down, and a compact mobile ledger. Existing live data, transaction editing and automatic-cash protections are preserved.</li>
+                        <li class="rel-item">Redesigned Statistics with independent unit-price/HWM and underwater
+                            drawdown charts, preserving each chart's dates and X axis. Portfolio, lake and snapshot
+                            selectors, contextual help and table pagination remain independent.</li>
+                        <li class="rel-item">Redesigned Transactions with separate combined filters, 12-row pagination,
+                            accessible activity-calendar drill-down, and a compact mobile ledger. Existing live data,
+                            transaction editing and automatic-cash protections are preserved.</li>
                     </ul>
                 </div>
             </article>
@@ -1144,7 +1379,8 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Removed the legacy Portfolio entry from application navigation on desktop and mobile. Wallets remains available.</li>
+                        <li class="rel-item">Removed the legacy Portfolio entry from application navigation on desktop
+                            and mobile. Wallets remains available.</li>
                         <li class="rel-item">Updated the offline cache and added navigation regression checks.</li>
                     </ul>
                 </div>
@@ -1160,8 +1396,10 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">ATH now takes one third of the main desktop column, with Last 6 months and Summary stacked in the remaining two thirds.</li>
-                        <li class="rel-item">Today's movers and Accounts remain in their separate sidebar. Smaller screens retain a vertical layout.</li>
+                        <li class="rel-item">ATH now takes one third of the main desktop column, with Last 6 months and
+                            Summary stacked in the remaining two thirds.</li>
+                        <li class="rel-item">Today's movers and Accounts remain in their separate sidebar. Smaller
+                            screens retain a vertical layout.</li>
                     </ul>
                 </div>
             </article>
@@ -1176,9 +1414,12 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Replaced the ATH lake with an animated ocean: a beach at ATH, snorkeling down to −2%, and a scuba diver below.</li>
-                        <li class="rel-item">Added Relax, Explore and Danger accents, colorful shallow-water fish and distant sharks, with reduced-motion support.</li>
-                        <li class="rel-item">Added the 30-day deepest drawdown from available snapshots and a linear scale that expands for larger losses. Missing history is shown explicitly.</li>
+                        <li class="rel-item">Replaced the ATH lake with an animated ocean: a beach at ATH, snorkeling
+                            down to −2%, and a scuba diver below.</li>
+                        <li class="rel-item">Added Relax, Explore and Danger accents, colorful shallow-water fish and
+                            distant sharks, with reduced-motion support.</li>
+                        <li class="rel-item">Added the 30-day deepest drawdown from available snapshots and a linear
+                            scale that expands for larger losses. Missing history is shown explicitly.</li>
                     </ul>
                 </div>
             </article>
@@ -1193,9 +1434,12 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Replaced the permanent asset panel with an on-demand picker, giving charts and financial statements more room.</li>
-                        <li class="rel-item">Added contextual help and responsive financial tables with a pinned metric column, preserving quote and reporting currencies.</li>
-                        <li class="rel-item">Improved intraday opening-data handling and clarified how the comparison differs from the daily gauge.</li>
+                        <li class="rel-item">Replaced the permanent asset panel with an on-demand picker, giving charts
+                            and financial statements more room.</li>
+                        <li class="rel-item">Added contextual help and responsive financial tables with a pinned metric
+                            column, preserving quote and reporting currencies.</li>
+                        <li class="rel-item">Improved intraday opening-data handling and clarified how the comparison
+                            differs from the daily gauge.</li>
                     </ul>
                 </div>
             </article>
@@ -1210,8 +1454,10 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Relocated verbose market session timings, quote delays, and forward-carry notes from under the intraday chart into the &ldquo;i&rdquo; info tooltip popover.</li>
-                        <li class="rel-item">Maintains a clean and uncluttered portfolio vs benchmark chart while keeping full methodology and quote status easily accessible on demand.</li>
+                        <li class="rel-item">Relocated verbose market session timings, quote delays, and forward-carry
+                            notes from under the intraday chart into the &ldquo;i&rdquo; info tooltip popover.</li>
+                        <li class="rel-item">Maintains a clean and uncluttered portfolio vs benchmark chart while
+                            keeping full methodology and quote status easily accessible on demand.</li>
                     </ul>
                 </div>
             </article>
@@ -1226,8 +1472,11 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Restored visible switch track and knob for the "Show PLN amounts" privacy toggle in the History Summaries recap share section ("Share your month").</li>
-                        <li class="rel-item">Added a dedicated <code>.rc-switch-track</code> element preventing transparent background overrides from global input resets and ensuring cross-browser rendering in Safari/WebKit.</li>
+                        <li class="rel-item">Restored visible switch track and knob for the "Show PLN amounts" privacy
+                            toggle in the History Summaries recap share section ("Share your month").</li>
+                        <li class="rel-item">Added a dedicated <code>.rc-switch-track</code> element preventing
+                            transparent background overrides from global input resets and ensuring cross-browser
+                            rendering in Safari/WebKit.</li>
                     </ul>
                 </div>
             </article>
@@ -1242,8 +1491,10 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Restored click-to-refresh functionality on the Roastfolio brand logo and wordmark in the UI 20 navigation rail and header.</li>
-                        <li class="rel-item">Clicking the logo now triggers live price updates via the backend Yahoo Finance price API with interactive loading status feedback.</li>
+                        <li class="rel-item">Restored click-to-refresh functionality on the Roastfolio brand logo and
+                            wordmark in the UI 20 navigation rail and header.</li>
+                        <li class="rel-item">Clicking the logo now triggers live price updates via the backend Yahoo
+                            Finance price API with interactive loading status feedback.</li>
                     </ul>
                 </div>
             </article>
@@ -1258,9 +1509,13 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Enhanced monthly recap cards, poster exports, and monthly audit email digests to show friendly stock and asset names instead of raw tickers (e.g., &ldquo;Mobruk&rdquo; instead of &ldquo;MBR.WA&rdquo;).</li>
-                        <li class="rel-item">Corporate entity suffixes (such as S.A., Ltd, Sp. z o.o., Inc.) and parenthesized tickers are automatically cleaned and normalized to Title Case.</li>
-                        <li class="rel-item">Clean ticker symbols are preserved if the company name exceeds 15 characters or is identical to the ticker.</li>
+                        <li class="rel-item">Enhanced monthly recap cards, poster exports, and monthly audit email
+                            digests to show friendly stock and asset names instead of raw tickers (e.g.,
+                            &ldquo;Mobruk&rdquo; instead of &ldquo;MBR.WA&rdquo;).</li>
+                        <li class="rel-item">Corporate entity suffixes (such as S.A., Ltd, Sp. z o.o., Inc.) and
+                            parenthesized tickers are automatically cleaned and normalized to Title Case.</li>
+                        <li class="rel-item">Clean ticker symbols are preserved if the company name exceeds 15
+                            characters or is identical to the ticker.</li>
                     </ul>
                 </div>
             </article>
@@ -1275,8 +1530,12 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Fixed deposit and withdrawal markers on the Wallets value-history chart appearing after today and below the x-axis; markers now sit on the line at their date and are hidden when older than the visible window.</li>
-                        <li class="rel-item">Fixed monthly recap headline formatting where anchor drag amounts showed a plus sign (e.g. &ldquo;cost +16,173 PLN&rdquo; instead of &ldquo;cost 16,173 PLN&rdquo;).</li>
+                        <li class="rel-item">Fixed deposit and withdrawal markers on the Wallets value-history chart
+                            appearing after today and below the x-axis; markers now sit on the line at their date and
+                            are hidden when older than the visible window.</li>
+                        <li class="rel-item">Fixed monthly recap headline formatting where anchor drag amounts showed a
+                            plus sign (e.g. &ldquo;cost +16,173 PLN&rdquo; instead of &ldquo;cost 16,173 PLN&rdquo;).
+                        </li>
                     </ul>
                 </div>
             </article>
@@ -1291,7 +1550,8 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Fixed the History Overview / Summaries tabs: only the selected tab is highlighted now, instead of both looking selected on Summaries.</li>
+                        <li class="rel-item">Fixed the History Overview / Summaries tabs: only the selected tab is
+                            highlighted now, instead of both looking selected on Summaries.</li>
                     </ul>
                 </div>
             </article>
@@ -1306,13 +1566,20 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Overview now has a value hero with range gain, invested capital, deposits in range, market gain and the existing value/invested/deposit chart.</li>
-                        <li class="rel-item">Cumulative return and benchmark comparison are merged into one chart; benchmark chips are available in % mode and hidden with an explanation in PLN mode.</li>
-                        <li class="rel-item">Monthly bars sit beside a single daily scatter chart with best/worst halos, average line, %/PLN toggle and focused stats.</li>
-                        <li class="rel-item">Summaries now use a month strip navigator and a recap poster cover with mood tokens, sparkline, benchmark gap sticker and three-number strip.</li>
-                        <li class="rel-item">The share invite defaults to hiding PLN amounts and can either open the existing share flow or download the locally generated image.</li>
-                        <li class="rel-item">Recap headlines are data-backed from benchmark gaps plus carry/anchor contribution, then ATH, then sign-based fallback copy.</li>
-                        <li class="rel-item">Yearly summaries are visible as a disabled “Soon” segment until annual wrap data exists.</li>
+                        <li class="rel-item">Overview now has a value hero with range gain, invested capital, deposits
+                            in range, market gain and the existing value/invested/deposit chart.</li>
+                        <li class="rel-item">Cumulative return and benchmark comparison are merged into one chart;
+                            benchmark chips are available in % mode and hidden with an explanation in PLN mode.</li>
+                        <li class="rel-item">Monthly bars sit beside a single daily scatter chart with best/worst halos,
+                            average line, %/PLN toggle and focused stats.</li>
+                        <li class="rel-item">Summaries now use a month strip navigator and a recap poster cover with
+                            mood tokens, sparkline, benchmark gap sticker and three-number strip.</li>
+                        <li class="rel-item">The share invite defaults to hiding PLN amounts and can either open the
+                            existing share flow or download the locally generated image.</li>
+                        <li class="rel-item">Recap headlines are data-backed from benchmark gaps plus carry/anchor
+                            contribution, then ATH, then sign-based fallback copy.</li>
+                        <li class="rel-item">Yearly summaries are visible as a disabled “Soon” segment until annual wrap
+                            data exists.</li>
                     </ul>
                 </div>
             </article>
@@ -1327,13 +1594,20 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Wallet chips and an inline create form lead into a value and performance hero, consistent with the dashboard.</li>
-                        <li class="rel-item">An allocation bar replaces the donut; frameless holdings keep quick Buy/Sell actions and a separate Cemetery tab.</li>
-                        <li class="rel-item">Quick entry and wallet settings sit in an inline rail. All wallets remains a combined read-only view.</li>
-                        <li class="rel-item">Transactions open in a desktop side sheet or a phone bottom sheet, with a mobile transaction shortcut above navigation.</li>
-                        <li class="rel-item">Design-system decisions and a Wallets field registry now cover the screen and its responsive states.</li>
-                        <li class="rel-item">Fixed: annual return no longer shows −99.99% when a wallet is down; the solver now finds the real rate.</li>
-                        <li class="rel-item">Fixed: holding rows show each position's share of the wallet instead of 0.0%.</li>
+                        <li class="rel-item">Wallet chips and an inline create form lead into a value and performance
+                            hero, consistent with the dashboard.</li>
+                        <li class="rel-item">An allocation bar replaces the donut; frameless holdings keep quick
+                            Buy/Sell actions and a separate Cemetery tab.</li>
+                        <li class="rel-item">Quick entry and wallet settings sit in an inline rail. All wallets remains
+                            a combined read-only view.</li>
+                        <li class="rel-item">Transactions open in a desktop side sheet or a phone bottom sheet, with a
+                            mobile transaction shortcut above navigation.</li>
+                        <li class="rel-item">Design-system decisions and a Wallets field registry now cover the screen
+                            and its responsive states.</li>
+                        <li class="rel-item">Fixed: annual return no longer shows −99.99% when a wallet is down; the
+                            solver now finds the real rate.</li>
+                        <li class="rel-item">Fixed: holding rows show each position's share of the wallet instead of
+                            0.0%.</li>
                     </ul>
                 </div>
             </article>
@@ -1348,11 +1622,15 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">New all-time highs get a redesigned banner: the line breaks through the previous peak and the new record pulses.</li>
-                        <li class="rel-item">"Under the surface" now spans the column and uses a log scale, so even a 0.3% dip is visible; above the ATH a green tide rises.</li>
+                        <li class="rel-item">New all-time highs get a redesigned banner: the line breaks through the
+                            previous peak and the new record pulses.</li>
+                        <li class="rel-item">"Under the surface" now spans the column and uses a log scale, so even a
+                            0.3% dip is visible; above the ATH a green tide rises.</li>
                         <li class="rel-item">On phones the roast and the gauge sit side by side.</li>
-                        <li class="rel-item">The header is left-aligned everywhere: screen name and live status, with the market comment underneath.</li>
-                        <li class="rel-item">The portfolio line on the intraday chart is delayed 15 minutes, like the exchange quotes, so it no longer ends in a flat stretch.</li>
+                        <li class="rel-item">The header is left-aligned everywhere: screen name and live status, with
+                            the market comment underneath.</li>
+                        <li class="rel-item">The portfolio line on the intraday chart is delayed 15 minutes, like the
+                            exchange quotes, so it no longer ends in a flat stretch.</li>
                     </ul>
                 </div>
             </article>
@@ -1367,7 +1645,8 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">The baseline explanation under the portfolio vs benchmark chart moved into a small info button next to the chart title, opened by hover, keyboard focus or tap.</li>
+                        <li class="rel-item">The baseline explanation under the portfolio vs benchmark chart moved into
+                            a small info button next to the chart title, opened by hover, keyboard focus or tap.</li>
                     </ul>
                 </div>
             </article>
@@ -1382,7 +1661,9 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">The portfolio vs benchmark chart now explains that it measures from the session open, while the daily gauge measures from yesterday's close, so overnight gaps make the two differ.</li>
+                        <li class="rel-item">The portfolio vs benchmark chart now explains that it measures from the
+                            session open, while the daily gauge measures from yesterday's close, so overnight gaps make
+                            the two differ.</li>
                     </ul>
                 </div>
             </article>
@@ -1397,7 +1678,9 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Portfolio vs benchmark chart now appears when the index publishes its first value a few minutes after the open (e.g. WIG at 09:01); that first value is used as the benchmark opening level and disclosed under the chart.</li>
+                        <li class="rel-item">Portfolio vs benchmark chart now appears when the index publishes its first
+                            value a few minutes after the open (e.g. WIG at 09:01); that first value is used as the
+                            benchmark opening level and disclosed under the chart.</li>
                     </ul>
                 </div>
             </article>
@@ -1412,7 +1695,9 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Fixed the full price refresh failing (and breaking the gauge) when market data provided exchange session times as timestamps; intraday comparison now uses the exchange-reported session start and close.</li>
+                        <li class="rel-item">Fixed the full price refresh failing (and breaking the gauge) when market
+                            data provided exchange session times as timestamps; intraday comparison now uses the
+                            exchange-reported session start and close.</li>
                     </ul>
                 </div>
             </article>
@@ -1427,7 +1712,9 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Fewer failed requests on a cold dashboard load: API calls are queued so they no longer burst past the server capacity, and throttled reads are retried automatically.</li>
+                        <li class="rel-item">Fewer failed requests on a cold dashboard load: API calls are queued so
+                            they no longer burst past the server capacity, and throttled reads are retried
+                            automatically.</li>
                     </ul>
                 </div>
             </article>
@@ -1442,9 +1729,12 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Export browser-local timing history for the last 20 dashboard page loads from User settings, without recording holdings or credentials.</li>
-                        <li class="rel-item">Separate API wait, payload bytes, JSON parsing, dashboard rendering and intraday chart computation; distinguish backend lite/full/history timings.</li>
-                        <li class="rel-item">Repeatable before/after benchmarks with synthetic portfolios and explicit network and CPU assumptions.</li>
+                        <li class="rel-item">Export browser-local timing history for the last 20 dashboard page loads
+                            from User settings, without recording holdings or credentials.</li>
+                        <li class="rel-item">Separate API wait, payload bytes, JSON parsing, dashboard rendering and
+                            intraday chart computation; distinguish backend lite/full/history timings.</li>
+                        <li class="rel-item">Repeatable before/after benchmarks with synthetic portfolios and explicit
+                            network and CPU assumptions.</li>
                     </ul>
                 </div>
             </article>
@@ -1459,9 +1749,12 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-list">
-                        <li class="rel-item">Compare portfolio and benchmark returns minute by minute from the benchmark session open, synthesized in the browser without snapshot jobs.</li>
-                        <li class="rel-item">Choose a saved session-only or calendar-day view; portfolio prices can continue after the benchmark closes, with constant-FX and data-quality disclosures.</li>
-                        <li class="rel-item">Redesigned dashboard with a compact header grouping the screen title and live-update status.</li>
+                        <li class="rel-item">Compare portfolio and benchmark returns minute by minute from the benchmark
+                            session open, synthesized in the browser without snapshot jobs.</li>
+                        <li class="rel-item">Choose a saved session-only or calendar-day view; portfolio prices can
+                            continue after the benchmark closes, with constant-FX and data-quality disclosures.</li>
+                        <li class="rel-item">Redesigned dashboard with a compact header grouping the screen title and
+                            live-update status.</li>
                     </ul>
                 </div>
             </article>
@@ -1471,15 +1764,23 @@
                 <header class="rel-card-header">
                     <div class="rel-card-title-wrap">
                         <span class="rel-version-tag">v14.3.10</span>
-                        <h2 class="rel-card-title">Consolidated Portfolio Holdings Normalization &amp; Today&#39;s Movers Ticker Deduplication</h2>
+                        <h2 class="rel-card-title">Consolidated Portfolio Holdings Normalization &amp; Today&#39;s
+                            Movers Ticker Deduplication</h2>
                     </div>
                     <time class="rel-date" datetime="2026-10-08" title="2026-10-08 08:30 UTC">October 8, 2026</time>
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Multi-Wallet Summary Consolidation:</strong> Normalized holding aggregation across wallets by canonical ticker base (handling Warsaw Stock Exchange <code>.WA</code> suffixes) to unify split lots into single consolidated holdings.</li>
-                        <li class="rel-item"><strong>Today&#39;s Movers Defensive Deduplication:</strong> Added frontend consolidation in <code>renderDailyBreakdown()</code> to prevent duplicate rows when rendering multi-portfolio cross-holdings, preserving live market pricing, volume pace, and sparklines.</li>
-                        <li class="rel-item"><strong>Warsaw Ticker Suffix Preservation:</strong> Preserved canonical <code>.WA</code> tickers across transaction recording, holding lookups, and transaction ledger rebuilds.</li>
+                        <li class="rel-item"><strong>Multi-Wallet Summary Consolidation:</strong> Normalized holding
+                            aggregation across wallets by canonical ticker base (handling Warsaw Stock Exchange
+                            <code>.WA</code> suffixes) to unify split lots into single consolidated holdings.</li>
+                        <li class="rel-item"><strong>Today&#39;s Movers Defensive Deduplication:</strong> Added frontend
+                            consolidation in <code>renderDailyBreakdown()</code> to prevent duplicate rows when
+                            rendering multi-portfolio cross-holdings, preserving live market pricing, volume pace, and
+                            sparklines.</li>
+                        <li class="rel-item"><strong>Warsaw Ticker Suffix Preservation:</strong> Preserved canonical
+                            <code>.WA</code> tickers across transaction recording, holding lookups, and transaction
+                            ledger rebuilds.</li>
                     </ul>
                 </div>
             </article>
@@ -1489,14 +1790,20 @@
                 <header class="rel-card-header">
                     <div class="rel-card-title-wrap">
                         <span class="rel-version-tag">v14.3.9</span>
-                        <h2 class="rel-card-title">Cognito UserPool CloudFormation Schema Alignment &amp; CI/CD Pipeline Resolution</h2>
+                        <h2 class="rel-card-title">Cognito UserPool CloudFormation Schema Alignment &amp; CI/CD Pipeline
+                            Resolution</h2>
                     </div>
                     <time class="rel-date" datetime="2026-10-06" title="2026-10-06 21:00 UTC">October 6, 2026</time>
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Cognito Schema Update Compatibility:</strong> Removed redundant Schema definition block from AWS SAM template for the existing Cognito User Pool to eliminate Cognito <code>UpdateUserPool</code> 400 InvalidRequest ("Required custom attributes are not supported currently") errors during CloudFormation stack updates.</li>
-                        <li class="rel-item"><strong>Unblocked Automated Deployments:</strong> Re-enabled successful automated CloudFormation stack updates and static website synchronization across Dev and Prod pipelines.</li>
+                        <li class="rel-item"><strong>Cognito Schema Update Compatibility:</strong> Removed redundant
+                            Schema definition block from AWS SAM template for the existing Cognito User Pool to
+                            eliminate Cognito <code>UpdateUserPool</code> 400 InvalidRequest ("Required custom
+                            attributes are not supported currently") errors during CloudFormation stack updates.</li>
+                        <li class="rel-item"><strong>Unblocked Automated Deployments:</strong> Re-enabled successful
+                            automated CloudFormation stack updates and static website synchronization across Dev and
+                            Prod pipelines.</li>
                     </ul>
                 </div>
             </article>
@@ -1512,7 +1819,10 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Multi-Portfolio Valuation Drop:</strong> Fixed historical summary snapshot drops by carrying forward the latest known snapshot values for portfolios without a new transaction on the recalculation date instead of omitting them from the aggregate sum.</li>
+                        <li class="rel-item"><strong>Multi-Portfolio Valuation Drop:</strong> Fixed historical summary
+                            snapshot drops by carrying forward the latest known snapshot values for portfolios without a
+                            new transaction on the recalculation date instead of omitting them from the aggregate sum.
+                        </li>
                     </ul>
                 </div>
             </article>
@@ -1528,8 +1838,13 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Duplicate Recap Email Protection:</strong> Forced recalculations and maintenance runs for monthly wraps now default to suppressing email dispatch (<code>send_email=False</code> / <code>skip_email=True</code>), preventing duplicate email deliveries to users when regenerating historical recaps.</li>
-                        <li class="rel-item"><strong>Strict Delivery Scoping:</strong> Automated recap emails remain strictly limited to the scheduled monthly cron on day 1 of the month or explicit user clicks in the UI.</li>
+                        <li class="rel-item"><strong>Duplicate Recap Email Protection:</strong> Forced recalculations
+                            and maintenance runs for monthly wraps now default to suppressing email dispatch
+                            (<code>send_email=False</code> / <code>skip_email=True</code>), preventing duplicate email
+                            deliveries to users when regenerating historical recaps.</li>
+                        <li class="rel-item"><strong>Strict Delivery Scoping:</strong> Automated recap emails remain
+                            strictly limited to the scheduled monthly cron on day 1 of the month or explicit user clicks
+                            in the UI.</li>
                     </ul>
                 </div>
             </article>
@@ -1545,8 +1860,13 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Nightly Snapshot Overwrite:</strong> Updated the daily closing snapshot scheduler (EventBridge) to execute with <code>overwrite: true</code>, guaranteeing that official end-of-day market closes always finalize any partial intra-day snapshots taken during active market hours.</li>
-                        <li class="rel-item"><strong>Intra-day Wrap Refresh:</strong> Enhanced live monthly wrap generation to update snapshots dynamically without locking in incomplete preliminary data.</li>
+                        <li class="rel-item"><strong>Nightly Snapshot Overwrite:</strong> Updated the daily closing
+                            snapshot scheduler (EventBridge) to execute with <code>overwrite: true</code>, guaranteeing
+                            that official end-of-day market closes always finalize any partial intra-day snapshots taken
+                            during active market hours.</li>
+                        <li class="rel-item"><strong>Intra-day Wrap Refresh:</strong> Enhanced live monthly wrap
+                            generation to update snapshots dynamically without locking in incomplete preliminary data.
+                        </li>
                     </ul>
                 </div>
             </article>
@@ -1562,7 +1882,10 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Profit Engine Calculation:</strong> Updated primary profit engine wallet selection in wrap generation, email digests, and client-side monthly audit views to evaluate true algebraic maximum nominal change instead of absolute magnitude, correctly prioritizing profitable wallets over loss-making wallets.</li>
+                        <li class="rel-item"><strong>Profit Engine Calculation:</strong> Updated primary profit engine
+                            wallet selection in wrap generation, email digests, and client-side monthly audit views to
+                            evaluate true algebraic maximum nominal change instead of absolute magnitude, correctly
+                            prioritizing profitable wallets over loss-making wallets.</li>
                     </ul>
                 </div>
             </article>
@@ -1578,8 +1901,12 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Gmail Email Background:</strong> Fixed dark background dropping to white in Gmail by explicitly specifying <code>bgcolor="#07091A"</code> and inline background styling on every individual chapter and separator table cell.</li>
-                        <li class="rel-item"><strong>Commentary Ink Contrast:</strong> Styled monthly audit commentary with dedicated secondary ink color (<code>#344634</code>) and locked hero header text to prevent child element color inheritance when positive status is active.</li>
+                        <li class="rel-item"><strong>Gmail Email Background:</strong> Fixed dark background dropping to
+                            white in Gmail by explicitly specifying <code>bgcolor="#07091A"</code> and inline background
+                            styling on every individual chapter and separator table cell.</li>
+                        <li class="rel-item"><strong>Commentary Ink Contrast:</strong> Styled monthly audit commentary
+                            with dedicated secondary ink color (<code>#344634</code>) and locked hero header text to
+                            prevent child element color inheritance when positive status is active.</li>
                     </ul>
                 </div>
             </article>
@@ -1595,9 +1922,15 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Streak Placeholder Replacement:</strong> Dynamically formatted <code>{streak}</code> placeholder in AI commentary templates with the exact green/red streak months count.</li>
-                        <li class="rel-item"><strong>Email Full Dark Background:</strong> Encapsulated monthly recap email template within a full-width dark table with <code>color-scheme</code> styling to prevent client background truncation on Gmail and Apple Mail.</li>
-                        <li class="rel-item"><strong>Hero Commentary Layout:</strong> Relocated commentary directly into the monthly audit hero card bottom without boxed framing, harmonizing with the main summary view.</li>
+                        <li class="rel-item"><strong>Streak Placeholder Replacement:</strong> Dynamically formatted
+                            <code>{streak}</code> placeholder in AI commentary templates with the exact green/red streak
+                            months count.</li>
+                        <li class="rel-item"><strong>Email Full Dark Background:</strong> Encapsulated monthly recap
+                            email template within a full-width dark table with <code>color-scheme</code> styling to
+                            prevent client background truncation on Gmail and Apple Mail.</li>
+                        <li class="rel-item"><strong>Hero Commentary Layout:</strong> Relocated commentary directly into
+                            the monthly audit hero card bottom without boxed framing, harmonizing with the main summary
+                            view.</li>
                     </ul>
                 </div>
             </article>
@@ -1613,9 +1946,16 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Grammarly Deactivation:</strong> Disabled Grammarly hooks across all Roastfolio views and inputs via standardized attributes (<code>data-gramm="false"</code>, <code>data-enable-grammarly="false"</code>, <code>spellcheck="false"</code>).</li>
-                        <li class="rel-item"><strong>Extension Error Filtering:</strong> Enhanced global error and unhandled rejection interceptors in <code>config.js</code> to suppress third-party browser extension noise without masking application errors.</li>
-                        <li class="rel-item"><strong>DOM &amp; CSS Isolation:</strong> Added dynamic runtime stamping for newly rendered fields and universal CSS rules to eliminate extension overlays and DOM conflicts.</li>
+                        <li class="rel-item"><strong>Grammarly Deactivation:</strong> Disabled Grammarly hooks across
+                            all Roastfolio views and inputs via standardized attributes
+                            (<code>data-gramm="false"</code>, <code>data-enable-grammarly="false"</code>,
+                            <code>spellcheck="false"</code>).</li>
+                        <li class="rel-item"><strong>Extension Error Filtering:</strong> Enhanced global error and
+                            unhandled rejection interceptors in <code>config.js</code> to suppress third-party browser
+                            extension noise without masking application errors.</li>
+                        <li class="rel-item"><strong>DOM &amp; CSS Isolation:</strong> Added dynamic runtime stamping
+                            for newly rendered fields and universal CSS rules to eliminate extension overlays and DOM
+                            conflicts.</li>
                     </ul>
                 </div>
             </article>
@@ -1631,29 +1971,36 @@
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>Bug Fix:</strong> Fixed commentary retrieval bug where scenario keys did not map properly.</li>
-                        <li class="rel-item"><strong>UI Tweak:</strong> Centered commentary block at the bottom of the Desktop Wrap view.</li>
-                        <li class="rel-item"><strong>Email Styling:</strong> Removed commentary frame and background in emails for a sleeker, minimal look.</li>
+                        <li class="rel-item"><strong>Bug Fix:</strong> Fixed commentary retrieval bug where scenario
+                            keys did not map properly.</li>
+                        <li class="rel-item"><strong>UI Tweak:</strong> Centered commentary block at the bottom of the
+                            Desktop Wrap view.</li>
+                        <li class="rel-item"><strong>Email Styling:</strong> Removed commentary frame and background in
+                            emails for a sleeker, minimal look.</li>
                     </ul>
                 </div>
             </article>
-<!-- v14.3.0 -->
+            <!-- v14.3.0 -->
             <article class="rel-card" data-tier="minor" data-version="14.3.0">
                 <header class="rel-card-header">
                     <div class="rel-card-title-wrap">
                         <span class="rel-version-tag">v14.3.0</span>
                         <h2 class="rel-card-title">Monthly Audit AI Commentary & Dynamic Email Injection</h2>
                     </div>
-                    <time class="rel-date" datetime="2026-09-30T10:00:00Z" title="2026-09-30 10:00 UTC">September 30, 2026</time>
+                    <time class="rel-date" datetime="2026-09-30T10:00:00Z" title="2026-09-30 10:00 UTC">September 30,
+                        2026</time>
                 </header>
                 <div class="rel-card-body">
                     <ul class="rel-features">
-                        <li class="rel-item"><strong>AI Recap Commentary:</strong> Introduced AI-generated contextual commentary into the Monthly Audit experience based on market outperformance and portfolio trajectory.</li>
-                        <li class="rel-item"><strong>Email Template Injection:</strong> Upgraded the periodic wrap engine to securely embed stylized commentary blocks into the premium HTML emails.</li>
+                        <li class="rel-item"><strong>AI Recap Commentary:</strong> Introduced AI-generated contextual
+                            commentary into the Monthly Audit experience based on market outperformance and portfolio
+                            trajectory.</li>
+                        <li class="rel-item"><strong>Email Template Injection:</strong> Upgraded the periodic wrap
+                            engine to securely embed stylized commentary blocks into the premium HTML emails.</li>
                     </ul>
                 </div>
             </article>
-<!-- v14.2.2 -->
+            <!-- v14.2.2 -->
             <article class="rel-card" data-tier="service" data-version="14.2.2">
                 <div class="rel-node" aria-hidden="true"></div>
                 <header class="rel-card-header">
@@ -1672,9 +2019,15 @@
                     <span class="rel-tag">Design System</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Dedicated Release Dates:</strong> Added explicit publication dates across all release cards on the Release Summary screen, replacing vague temporal placeholders with exact chronological dates.</li>
-                    <li class="rel-item"><strong>Hero Metadata Release Timestamp:</strong> Added official "Released" timestamp to the top hero section header alongside milestone status and TOMINEX architecture attribution.</li>
-                    <li class="rel-item"><strong>Active Milestone Badge:</strong> Enhanced the active release card with a pulsing green status indicator badge clearly distinguishing the deployed production release from prior versions.</li>
+                    <li class="rel-item"><strong>Dedicated Release Dates:</strong> Added explicit publication dates
+                        across all release cards on the Release Summary screen, replacing vague temporal placeholders
+                        with exact chronological dates.</li>
+                    <li class="rel-item"><strong>Hero Metadata Release Timestamp:</strong> Added official "Released"
+                        timestamp to the top hero section header alongside milestone status and TOMINEX architecture
+                        attribution.</li>
+                    <li class="rel-item"><strong>Active Milestone Badge:</strong> Enhanced the active release card with
+                        a pulsing green status indicator badge clearly distinguishing the deployed production release
+                        from prior versions.</li>
                 </ul>
             </article>
 
@@ -1696,11 +2049,24 @@
                     <span class="rel-tag">Assets</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>PWA Manifest S3 Deployment Fix:</strong> Refined <code>deploy.sh</code> S3 sync exclusion rules from <code>--exclude "*.json"</code> to targeting local cache files specifically (<code>*-cache*.json</code>, <code>benchmark-*.json</code>, <code>price-cache.json</code>, <code>widget-cache.json</code>), ensuring <code>manifest.json</code> is properly synced and explicitly uploaded with <code>application/manifest+json</code> MIME type.</li>
-                    <li class="rel-item"><strong>Manifest Version Query Busted:</strong> Added <code>?v=14.2.1</code> query parameter to <code>&lt;link rel="manifest"&gt;</code> in <code>index.html</code>, ensuring browsers and desktop Chrome app shortcut updaters fetch the fresh web manifest without stale caching.</li>
-                    <li class="rel-item"><strong>Vector SVG Manifest Icon:</strong> Added <code>roastfolio-logo.svg</code> to <code>manifest.json</code> icon declarations to enable high-resolution vector scaling on supported modern PWA engines.</li>
-                    <li class="rel-item"><strong>Favicon Version Alignment:</strong> Synchronized cache-busting query strings for favicons and apple-touch-icons across all subpages (<code>releases.html</code>, <code>achievements.html</code>, <code>telemetry.html</code>).</li>
-                    <li class="rel-item"><strong>Service Worker Cache Refresh:</strong> Bumped service worker cache namespace to <code>roastfolio-v70</code> to cycle cached app shell assets.</li>
+                    <li class="rel-item"><strong>PWA Manifest S3 Deployment Fix:</strong> Refined <code>deploy.sh</code>
+                        S3 sync exclusion rules from <code>--exclude "*.json"</code> to targeting local cache files
+                        specifically (<code>*-cache*.json</code>, <code>benchmark-*.json</code>,
+                        <code>price-cache.json</code>, <code>widget-cache.json</code>), ensuring
+                        <code>manifest.json</code> is properly synced and explicitly uploaded with
+                        <code>application/manifest+json</code> MIME type.</li>
+                    <li class="rel-item"><strong>Manifest Version Query Busted:</strong> Added <code>?v=14.2.1</code>
+                        query parameter to <code>&lt;link rel="manifest"&gt;</code> in <code>index.html</code>, ensuring
+                        browsers and desktop Chrome app shortcut updaters fetch the fresh web manifest without stale
+                        caching.</li>
+                    <li class="rel-item"><strong>Vector SVG Manifest Icon:</strong> Added
+                        <code>roastfolio-logo.svg</code> to <code>manifest.json</code> icon declarations to enable
+                        high-resolution vector scaling on supported modern PWA engines.</li>
+                    <li class="rel-item"><strong>Favicon Version Alignment:</strong> Synchronized cache-busting query
+                        strings for favicons and apple-touch-icons across all subpages (<code>releases.html</code>,
+                        <code>achievements.html</code>, <code>telemetry.html</code>).</li>
+                    <li class="rel-item"><strong>Service Worker Cache Refresh:</strong> Bumped service worker cache
+                        namespace to <code>roastfolio-v70</code> to cycle cached app shell assets.</li>
                 </ul>
             </article>
 
@@ -1722,9 +2088,17 @@
                     <span class="rel-tag">SES</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Email Header Brand Logo:</strong> Embedded the official Roastfolio neon candlestick logo directly into the monthly recap and periodic wrap email header, matching the web app design system.</li>
-                    <li class="rel-item"><strong>BIMI &amp; SVG Vector Standards:</strong> Generated standalone BIMI-compliant SVG vector logos (<code>roastfolio-bimi.svg</code>, <code>roastfolio-logo.svg</code>) enabling email clients (Apple Mail, Yahoo, Fastmail, Gmail) to display the Roastfolio logo as the sender profile picture.</li>
-                    <li class="rel-item"><strong>Universal Sender Avatar Documentation:</strong> Added comprehensive setup guide (<code>docs/EMAIL_BRANDING_AND_SENDER_PICTURE.md</code>) covering Cloudflare BIMI TXT records, Gravatar profile configuration, Google Account avatar association for Gmail, and Apple Business Connect.</li>
+                    <li class="rel-item"><strong>Email Header Brand Logo:</strong> Embedded the official Roastfolio neon
+                        candlestick logo directly into the monthly recap and periodic wrap email header, matching the
+                        web app design system.</li>
+                    <li class="rel-item"><strong>BIMI &amp; SVG Vector Standards:</strong> Generated standalone
+                        BIMI-compliant SVG vector logos (<code>roastfolio-bimi.svg</code>,
+                        <code>roastfolio-logo.svg</code>) enabling email clients (Apple Mail, Yahoo, Fastmail, Gmail) to
+                        display the Roastfolio logo as the sender profile picture.</li>
+                    <li class="rel-item"><strong>Universal Sender Avatar Documentation:</strong> Added comprehensive
+                        setup guide (<code>docs/EMAIL_BRANDING_AND_SENDER_PICTURE.md</code>) covering Cloudflare BIMI
+                        TXT records, Gravatar profile configuration, Google Account avatar association for Gmail, and
+                        Apple Business Connect.</li>
                 </ul>
             </article>
 
@@ -1746,10 +2120,20 @@
                     <span class="rel-tag">UX</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Search Dropdown Positioning &amp; Visibility:</strong> Fixed ticker autocomplete dropdown positioning to always open downwards directly under the search box with proper z-index and overflow handling, preventing it from clipping or rendering underneath the wallet history overview card.</li>
-                    <li class="rel-item"><strong>Instant Holdings Display:</strong> Focusing on the search input now immediately renders existing wallet holdings without waiting for network responses, giving users instant access to their assets.</li>
-                    <li class="rel-item"><strong>Yahoo Finance Price Auto-Suggestion:</strong> Fixed candle close price extraction (<code>c</code> property) in <code>_fetchStockPricePLN</code>, automatically populating the live price per share in PLN when selecting any asset from Yahoo Finance or existing holdings.</li>
-                    <li class="rel-item"><strong>Multi-Currency FX Support:</strong> Enabled seamless live FX rate conversion for Warsaw (PLN), European (EUR via <code>EURPLN=X</code>), UK (GBP/GBp via <code>GBPPLN=X</code>), and US/global (USD via <code>USDPLN=X</code>) assets.</li>
+                    <li class="rel-item"><strong>Search Dropdown Positioning &amp; Visibility:</strong> Fixed ticker
+                        autocomplete dropdown positioning to always open downwards directly under the search box with
+                        proper z-index and overflow handling, preventing it from clipping or rendering underneath the
+                        wallet history overview card.</li>
+                    <li class="rel-item"><strong>Instant Holdings Display:</strong> Focusing on the search input now
+                        immediately renders existing wallet holdings without waiting for network responses, giving users
+                        instant access to their assets.</li>
+                    <li class="rel-item"><strong>Yahoo Finance Price Auto-Suggestion:</strong> Fixed candle close price
+                        extraction (<code>c</code> property) in <code>_fetchStockPricePLN</code>, automatically
+                        populating the live price per share in PLN when selecting any asset from Yahoo Finance or
+                        existing holdings.</li>
+                    <li class="rel-item"><strong>Multi-Currency FX Support:</strong> Enabled seamless live FX rate
+                        conversion for Warsaw (PLN), European (EUR via <code>EURPLN=X</code>), UK (GBP/GBp via
+                        <code>GBPPLN=X</code>), and US/global (USD via <code>USDPLN=X</code>) assets.</li>
                 </ul>
             </article>
 
@@ -1771,10 +2155,18 @@
                     <span class="rel-tag">UX</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Transaction Draft Protection:</strong> Prevented background <code>liveDataReady</code> events from interrupting the user while drafting or entering a transaction in the Wallets trade form or Quick Entry.</li>
-                    <li class="rel-item"><strong>In-Place Table Reloads:</strong> Eliminated disruptive whole-screen flashes and skeleton loader wipes during refresh cycles; holdings and transaction tables now update cleanly in-place.</li>
-                    <li class="rel-item"><strong>Fast-Path Live Price Updates:</strong> Market price updates in the background update live holdings values in-place without triggering redundant DynamoDB network fetch cascades.</li>
-                    <li class="rel-item"><strong>Immediate Post-Trade Reset:</strong> Optimized transaction submission to close the form instantly upon save and smoothly reload only the affected tables without double-reloading.</li>
+                    <li class="rel-item"><strong>Transaction Draft Protection:</strong> Prevented background
+                        <code>liveDataReady</code> events from interrupting the user while drafting or entering a
+                        transaction in the Wallets trade form or Quick Entry.</li>
+                    <li class="rel-item"><strong>In-Place Table Reloads:</strong> Eliminated disruptive whole-screen
+                        flashes and skeleton loader wipes during refresh cycles; holdings and transaction tables now
+                        update cleanly in-place.</li>
+                    <li class="rel-item"><strong>Fast-Path Live Price Updates:</strong> Market price updates in the
+                        background update live holdings values in-place without triggering redundant DynamoDB network
+                        fetch cascades.</li>
+                    <li class="rel-item"><strong>Immediate Post-Trade Reset:</strong> Optimized transaction submission
+                        to close the form instantly upon save and smoothly reload only the affected tables without
+                        double-reloading.</li>
                 </ul>
             </article>
 
@@ -1796,10 +2188,19 @@
                     <span class="rel-tag">Responsive</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Volume Badge Overlap Resolution:</strong> Fixed layout collision on tablet viewports where the intraday volume pace chip badge overlapped with the nominal change figure in the "Daily PLN" column.</li>
-                    <li class="rel-item"><strong>Optimized Column Proportions:</strong> Rebalanced table layout from default equal thirds to dedicated proportions (28% Company, 52% Chart &amp; Metrics, 20% Daily PLN) with tablet media query adjustments providing generous breathing room for sparklines and volume chips.</li>
-                    <li class="rel-item"><strong>Right-Aligned Financial Metric:</strong> Set <code>text-align: right</code> on the Daily PLN header and values to eliminate dead space on the right and neatly align monetary changes against the card edge.</li>
-                    <li class="rel-item"><strong>Company Name Truncation:</strong> Added ellipsis overflow handling to prevent unusually long company names from distorting table column dimensions on compact tablet screens.</li>
+                    <li class="rel-item"><strong>Volume Badge Overlap Resolution:</strong> Fixed layout collision on
+                        tablet viewports where the intraday volume pace chip badge overlapped with the nominal change
+                        figure in the "Daily PLN" column.</li>
+                    <li class="rel-item"><strong>Optimized Column Proportions:</strong> Rebalanced table layout from
+                        default equal thirds to dedicated proportions (28% Company, 52% Chart &amp; Metrics, 20% Daily
+                        PLN) with tablet media query adjustments providing generous breathing room for sparklines and
+                        volume chips.</li>
+                    <li class="rel-item"><strong>Right-Aligned Financial Metric:</strong> Set
+                        <code>text-align: right</code> on the Daily PLN header and values to eliminate dead space on the
+                        right and neatly align monetary changes against the card edge.</li>
+                    <li class="rel-item"><strong>Company Name Truncation:</strong> Added ellipsis overflow handling to
+                        prevent unusually long company names from distorting table column dimensions on compact tablet
+                        screens.</li>
                 </ul>
             </article>
 
@@ -1821,9 +2222,15 @@
                     <span class="rel-tag">User Profile</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Smart Recipient Prompt:</strong> When manually sharing a monthly performance wrap via email, users with multiple email addresses on their profile share list are prompted to choose whether to send just to themselves (logged user email) or to all configured recipients.</li>
-                    <li class="rel-item"><strong>Direct Single-Email Dispatch:</strong> Users with only a single email configured experience zero friction with instant, direct dispatch.</li>
-                    <li class="rel-item"><strong>Scoped Backend Delivery:</strong> Enhanced <code>POST /monthly-wraps/email</code> with secure <code>recipientScope</code> validation ('me' vs 'all') ensuring emails are sent precisely to the intended recipients.</li>
+                    <li class="rel-item"><strong>Smart Recipient Prompt:</strong> When manually sharing a monthly
+                        performance wrap via email, users with multiple email addresses on their profile share list are
+                        prompted to choose whether to send just to themselves (logged user email) or to all configured
+                        recipients.</li>
+                    <li class="rel-item"><strong>Direct Single-Email Dispatch:</strong> Users with only a single email
+                        configured experience zero friction with instant, direct dispatch.</li>
+                    <li class="rel-item"><strong>Scoped Backend Delivery:</strong> Enhanced
+                        <code>POST /monthly-wraps/email</code> with secure <code>recipientScope</code> validation ('me'
+                        vs 'all') ensuring emails are sent precisely to the intended recipients.</li>
                 </ul>
             </article>
 
@@ -1845,9 +2252,17 @@
                     <span class="rel-tag">Authentication</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Sub-Second Smoke Test Suite:</strong> Segregated test suites into fast smoke tests (<code>./test.sh smoke</code>, <code>npm run test:smoke</code>) executing all UI and layout contracts in &lt; 0.6 seconds by directly targeting UI contract modules and bypassing heavy backend dependencies.</li>
-                    <li class="rel-item"><strong>Universal Test Runner:</strong> Added <code>./test.sh</code> supporting <code>smoke</code>/<code>ui</code>, <code>full</code>, <code>browser</code>, and <code>all</code> modes, integrated directly with <code>package.json</code> scripts.</li>
-                    <li class="rel-item"><strong>Strict Auth Bypass Architecture:</strong> Documented and enforced mock authentication via <code>?devAuth=1</code> / <code>localStorage.setItem('roastfolio.devAuth', '1')</code>, completely eliminating slow live Cognito user creation, verification emails, and password reset loops during UI testing.</li>
+                    <li class="rel-item"><strong>Sub-Second Smoke Test Suite:</strong> Segregated test suites into fast
+                        smoke tests (<code>./test.sh smoke</code>, <code>npm run test:smoke</code>) executing all UI and
+                        layout contracts in &lt; 0.6 seconds by directly targeting UI contract modules and bypassing
+                        heavy backend dependencies.</li>
+                    <li class="rel-item"><strong>Universal Test Runner:</strong> Added <code>./test.sh</code> supporting
+                        <code>smoke</code>/<code>ui</code>, <code>full</code>, <code>browser</code>, and
+                        <code>all</code> modes, integrated directly with <code>package.json</code> scripts.</li>
+                    <li class="rel-item"><strong>Strict Auth Bypass Architecture:</strong> Documented and enforced mock
+                        authentication via <code>?devAuth=1</code> /
+                        <code>localStorage.setItem('roastfolio.devAuth', '1')</code>, completely eliminating slow live
+                        Cognito user creation, verification emails, and password reset loops during UI testing.</li>
                 </ul>
             </article>
 
@@ -1869,9 +2284,14 @@
                     <span class="rel-tag">Bug Fixes</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Browser URL Box Favicons:</strong> Resolved stale logo caching in browser URL and address bar tabs by generating a full multi-frame 16/24/32/48/64 ICO binary, dedicated 32x32 and 16x16 PNG fallbacks, and adding cache-busting link tags.</li>
-                    <li class="rel-item"><strong>Root Favicon Sync:</strong> Synchronized <code>favicon.ico</code> and PNG icons to repository root to support local dev servers serving from root.</li>
-                    <li class="rel-item"><strong>Brand Typography Standardization:</strong> Standardized application header and banner brand titles across all views and navigation bars from capitalized "Roastfolio" to lowercase "roastfolio".</li>
+                    <li class="rel-item"><strong>Browser URL Box Favicons:</strong> Resolved stale logo caching in
+                        browser URL and address bar tabs by generating a full multi-frame 16/24/32/48/64 ICO binary,
+                        dedicated 32x32 and 16x16 PNG fallbacks, and adding cache-busting link tags.</li>
+                    <li class="rel-item"><strong>Root Favicon Sync:</strong> Synchronized <code>favicon.ico</code> and
+                        PNG icons to repository root to support local dev servers serving from root.</li>
+                    <li class="rel-item"><strong>Brand Typography Standardization:</strong> Standardized application
+                        header and banner brand titles across all views and navigation bars from capitalized
+                        "Roastfolio" to lowercase "roastfolio".</li>
                 </ul>
             </article>
 
@@ -1893,10 +2313,17 @@
                     <span class="rel-tag">Testing &amp; CI</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>New Screen:</strong> Introduced this dedicated, standalone <strong>Release Summary &amp; Changelog</strong> screen accessible across all app footers and navigation menus.</li>
-                    <li class="rel-item"><strong>Brand Overhaul:</strong> Replaced app icon assets across touchpoints with the high-resolution neon green candlestick and purple "R" emblem, featuring dark squircle bevel and ambient glow.</li>
-                    <li class="rel-item"><strong>Multi-Resolution Favicons:</strong> Generated crisp 16/32/48 ICO favicons, 192/512 PNG icons, and adaptive maskable icons for Android and iOS PWA installs.</li>
-                    <li class="rel-item"><strong>Sub-Second Test Performance:</strong> Optimized pytest configuration to bypass slow headless browser tests by default and resolved Python 3.12 keyword collection bottlenecks.</li>
+                    <li class="rel-item"><strong>New Screen:</strong> Introduced this dedicated, standalone
+                        <strong>Release Summary &amp; Changelog</strong> screen accessible across all app footers and
+                        navigation menus.</li>
+                    <li class="rel-item"><strong>Brand Overhaul:</strong> Replaced app icon assets across touchpoints
+                        with the high-resolution neon green candlestick and purple "R" emblem, featuring dark squircle
+                        bevel and ambient glow.</li>
+                    <li class="rel-item"><strong>Multi-Resolution Favicons:</strong> Generated crisp 16/32/48 ICO
+                        favicons, 192/512 PNG icons, and adaptive maskable icons for Android and iOS PWA installs.</li>
+                    <li class="rel-item"><strong>Sub-Second Test Performance:</strong> Optimized pytest configuration to
+                        bypass slow headless browser tests by default and resolved Python 3.12 keyword collection
+                        bottlenecks.</li>
                 </ul>
             </article>
 
@@ -1917,9 +2344,12 @@
                     <span class="rel-tag">UI/UX</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Brand Integration:</strong> Deployed the neon candlestick icon across splash loader, auth modal, sidebar header, brand preview modal, and global footer.</li>
-                    <li class="rel-item"><strong>User Guide Polish:</strong> Replaced generic emoji headers in User Guide with official Roastfolio brand assets and added touch-icon links.</li>
-                    <li class="rel-item"><strong>Service Worker Caching:</strong> Added multi-size favicon to precache assets for instant offline presentation.</li>
+                    <li class="rel-item"><strong>Brand Integration:</strong> Deployed the neon candlestick icon across
+                        splash loader, auth modal, sidebar header, brand preview modal, and global footer.</li>
+                    <li class="rel-item"><strong>User Guide Polish:</strong> Replaced generic emoji headers in User
+                        Guide with official Roastfolio brand assets and added touch-icon links.</li>
+                    <li class="rel-item"><strong>Service Worker Caching:</strong> Added multi-size favicon to precache
+                        assets for instant offline presentation.</li>
                 </ul>
             </article>
 
@@ -1939,8 +2369,10 @@
                     <span class="rel-tag">Monthly Audit</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Tooltip Format:</strong> Eliminated duplicate plus sign display on calendar day hover tooltips for positive performance days.</li>
-                    <li class="rel-item"><strong>Visual Cleanup:</strong> Enhanced typography rendering on high-DPI displays.</li>
+                    <li class="rel-item"><strong>Tooltip Format:</strong> Eliminated duplicate plus sign display on
+                        calendar day hover tooltips for positive performance days.</li>
+                    <li class="rel-item"><strong>Visual Cleanup:</strong> Enhanced typography rendering on high-DPI
+                        displays.</li>
                 </ul>
             </article>
 
@@ -1960,9 +2392,12 @@
                     <span class="rel-tag">Snapshots</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Benchmark Accuracy:</strong> Resolved benchmark return discrepancy by prioritizing canonical close-to-close market returns.</li>
-                    <li class="rel-item"><strong>Calendar Heatmap:</strong> Trimmed journey chart strictly to month-end boundaries with solid email-compatible hex colors.</li>
-                    <li class="rel-item"><strong>Dynamic Snapshot Fallback:</strong> Added automatic snapshot estimation for missing intraday moves.</li>
+                    <li class="rel-item"><strong>Benchmark Accuracy:</strong> Resolved benchmark return discrepancy by
+                        prioritizing canonical close-to-close market returns.</li>
+                    <li class="rel-item"><strong>Calendar Heatmap:</strong> Trimmed journey chart strictly to month-end
+                        boundaries with solid email-compatible hex colors.</li>
+                    <li class="rel-item"><strong>Dynamic Snapshot Fallback:</strong> Added automatic snapshot estimation
+                        for missing intraday moves.</li>
                 </ul>
             </article>
 
@@ -1982,7 +2417,8 @@
                     <span class="rel-tag">Benchmarks</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Benchmark Comparison:</strong> Added summary wrapped benchmarks card in the lower right corner displaying Poland (WIG) and World (MSCI ACWI) monthly performance.</li>
+                    <li class="rel-item"><strong>Benchmark Comparison:</strong> Added summary wrapped benchmarks card in
+                        the lower right corner displaying Poland (WIG) and World (MSCI ACWI) monthly performance.</li>
                 </ul>
             </article>
 
@@ -2002,8 +2438,10 @@
                     <span class="rel-tag">Charts</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Tactile Aesthetics:</strong> Subtle tactile texture and ambient lighting mesh on recap covers.</li>
-                    <li class="rel-item"><strong>Weekend Handling:</strong> Gapless weekend benchmark extrapolation in The Journey chart.</li>
+                    <li class="rel-item"><strong>Tactile Aesthetics:</strong> Subtle tactile texture and ambient
+                        lighting mesh on recap covers.</li>
+                    <li class="rel-item"><strong>Weekend Handling:</strong> Gapless weekend benchmark extrapolation in
+                        The Journey chart.</li>
                 </ul>
             </article>
 
@@ -2024,9 +2462,12 @@
                     <span class="rel-tag">Architecture</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Audits &amp; Wraps:</strong> Spotify Wrapped and Revolut-inspired monthly audit email template redesign.</li>
-                    <li class="rel-item"><strong>Cumulative Journey Chart:</strong> Inline SVG cumulative journey chart with dynamic green/red outperformance fill.</li>
-                    <li class="rel-item"><strong>Heatmap &amp; Movers:</strong> 7-column calendar heatmap, Who Moved Your Month leader &amp; anchor highlights, and conditional seasonality.</li>
+                    <li class="rel-item"><strong>Audits &amp; Wraps:</strong> Spotify Wrapped and Revolut-inspired
+                        monthly audit email template redesign.</li>
+                    <li class="rel-item"><strong>Cumulative Journey Chart:</strong> Inline SVG cumulative journey chart
+                        with dynamic green/red outperformance fill.</li>
+                    <li class="rel-item"><strong>Heatmap &amp; Movers:</strong> 7-column calendar heatmap, Who Moved
+                        Your Month leader &amp; anchor highlights, and conditional seasonality.</li>
                 </ul>
             </article>
 
@@ -2046,8 +2487,11 @@
                     <span class="rel-tag">Sharing</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Privacy Control:</strong> Added user privacy preference to mask PLN cash flows and nominal positions in notification emails (<code>hideCashInNotifications</code>).</li>
-                    <li class="rel-item"><strong>Share Sheet:</strong> Integrated privacy toggle directly into social share dialogs.</li>
+                    <li class="rel-item"><strong>Privacy Control:</strong> Added user privacy preference to mask PLN
+                        cash flows and nominal positions in notification emails (<code>hideCashInNotifications</code>).
+                    </li>
+                    <li class="rel-item"><strong>Share Sheet:</strong> Integrated privacy toggle directly into social
+                        share dialogs.</li>
                 </ul>
             </article>
 
@@ -2068,8 +2512,10 @@
                     <span class="rel-tag">AWS SES</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Email Dispatch Engine:</strong> Automated serverless report email generator built on AWS SES with multi-recipient preferences.</li>
-                    <li class="rel-item"><strong>On-Demand Dispatches:</strong> Manual and scheduled recap trigger directly from the user dashboard.</li>
+                    <li class="rel-item"><strong>Email Dispatch Engine:</strong> Automated serverless report email
+                        generator built on AWS SES with multi-recipient preferences.</li>
+                    <li class="rel-item"><strong>On-Demand Dispatches:</strong> Manual and scheduled recap trigger
+                        directly from the user dashboard.</li>
                 </ul>
             </article>
 
@@ -2089,8 +2535,10 @@
                     <span class="rel-tag">Gamification</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Milestone Calendar:</strong> Interactive daily return calendar widget on Monthly Summaries with Best/Worst day callouts.</li>
-                    <li class="rel-item"><strong>ATH Celebrations:</strong> Radiant golden pulsing halo and trophy badge when portfolio touches All-Time Highs.</li>
+                    <li class="rel-item"><strong>Milestone Calendar:</strong> Interactive daily return calendar widget
+                        on Monthly Summaries with Best/Worst day callouts.</li>
+                    <li class="rel-item"><strong>ATH Celebrations:</strong> Radiant golden pulsing halo and trophy badge
+                        when portfolio touches All-Time Highs.</li>
                 </ul>
             </article>
 
@@ -2110,7 +2558,8 @@
                     <span class="rel-tag">Interactivity</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Interactive Crosshair:</strong> Replaced static under-chart display with floating hover crosshair tooltip with indicator swatches and bounds clamping.</li>
+                    <li class="rel-item"><strong>Interactive Crosshair:</strong> Replaced static under-chart display
+                        with floating hover crosshair tooltip with indicator swatches and bounds clamping.</li>
                 </ul>
             </article>
 
@@ -2130,9 +2579,12 @@
                     <span class="rel-tag">XIRR / TWR</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Continuous Backfills:</strong> Continuous calendar day snapshot backfilling from earliest historical transaction dates (2021+).</li>
-                    <li class="rel-item"><strong>Performance:</strong> Fast incremental XIRR/TWR recalculation and background async workers for transaction edits.</li>
-                    <li class="rel-item"><strong>Modal Feedback:</strong> Converted inline validation errors to dedicated modal dialog popups.</li>
+                    <li class="rel-item"><strong>Continuous Backfills:</strong> Continuous calendar day snapshot
+                        backfilling from earliest historical transaction dates (2021+).</li>
+                    <li class="rel-item"><strong>Performance:</strong> Fast incremental XIRR/TWR recalculation and
+                        background async workers for transaction edits.</li>
+                    <li class="rel-item"><strong>Modal Feedback:</strong> Converted inline validation errors to
+                        dedicated modal dialog popups.</li>
                 </ul>
             </article>
 
@@ -2152,8 +2604,10 @@
                     <span class="rel-tag">Export</span>
                 </div>
                 <ul class="rel-items-list">
-                    <li class="rel-item"><strong>Editorial Bento Layout:</strong> High-impact Bento-grid architecture for monthly performance summaries.</li>
-                    <li class="rel-item"><strong>Private Exports:</strong> High-resolution PNG sharing canvas and localized client-side image generation.</li>
+                    <li class="rel-item"><strong>Editorial Bento Layout:</strong> High-impact Bento-grid architecture
+                        for monthly performance summaries.</li>
+                    <li class="rel-item"><strong>Private Exports:</strong> High-resolution PNG sharing canvas and
+                        localized client-side image generation.</li>
                 </ul>
             </article>
 
@@ -2183,7 +2637,8 @@
                 <a href="guide.html#data-isolation">Privacy &amp; Security</a>
             </div>
             <div class="rel-footer-copy">
-                &copy; 2026 <strong class="tominex-brand-name">TOMINEX</strong>. All rights reserved. roastfolio is a personal finance tracker &mdash; not financial advice.
+                &copy; 2026 <strong class="tominex-brand-name">TOMINEX</strong>. All rights reserved. roastfolio is a
+                personal finance tracker &mdash; not financial advice.
             </div>
         </div>
     </footer>
@@ -2218,7 +2673,7 @@
         updateThemeDisplay(document.documentElement.dataset.theme || 'dark');
 
         // Filter and Search Logic
-        (function() {
+        (function () {
             const searchInput = document.getElementById('release-search-input');
             const filterBtns = document.querySelectorAll('.rel-filter-btn');
             const cards = document.querySelectorAll('.rel-card');
@@ -2271,4 +2726,5 @@
         })();
     </script>
 </body>
+
 </html>
