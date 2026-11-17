@@ -451,8 +451,17 @@
     return `${sign}${num.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} PLN`;
   }
 
-  function _summaryCashEffect(txType, value, autoAddCash, availableCash) {
+  function _netCashImpact(txType, value, commission = 0) {
     const amount = Number(value || 0);
+    const fee = Number.isFinite(Number(commission)) && Number(commission) > 0 ? Number(commission) : 0;
+    if (!Number.isFinite(amount) || amount <= 0) return 0;
+    if (txType === 'BUY') return amount + fee;
+    if (txType === 'SELL' || txType === 'DIVIDEND') return Math.max(0, amount - fee);
+    return amount;
+  }
+
+  function _summaryCashEffect(txType, value, autoAddCash, availableCash, commission = 0) {
+    const amount = _netCashImpact(txType, value, commission);
     if (!Number.isFinite(amount) || amount <= 0) return '—';
     if (txType === 'BUY') {
       const missing = Math.max(0, amount - Number(availableCash || 0));
@@ -460,7 +469,7 @@
         ? `-${_fmtMoney(amount)} · auto top-up ${_fmtMoney(missing)}`
         : `-${_fmtMoney(amount)}`;
     }
-    if (txType === 'SELL' || txType === 'DEPOSIT') return `+${_fmtMoney(amount)}`;
+    if (txType === 'SELL' || txType === 'DEPOSIT' || txType === 'DIVIDEND') return `+${_fmtMoney(amount)}`;
     if (txType === 'WITHDRAWAL') return `-${_fmtMoney(amount)}`;
     return '—';
   }
@@ -675,6 +684,7 @@
       amount,
       value,
       rawValue,
+      commission = 0,
       txCurrency = _txCurrency(),
       walletCurrency = _walletCurrency(),
       autoAddCash = false,
@@ -697,7 +707,7 @@
         valueEl.textContent = hasWalletValue ? _fmtMoney(value) : '—';
       }
     }
-    if (cashEffectEl) cashEffectEl.textContent = _summaryCashEffect(txType, value, autoAddCash, availableCash);
+    if (cashEffectEl) cashEffectEl.textContent = _summaryCashEffect(txType, value, autoAddCash, availableCash, commission);
     summaryEl.classList.toggle('is-ready', hasWalletValue);
   }
 
@@ -734,6 +744,7 @@
     const ticker = isCashTx ? 'CASH' : document.getElementById('mgmt-ticker-hidden').value.trim();
     const unitsValue = Number(document.getElementById('mgmt-units-input').value || 0);
     const totalValue = Number(document.getElementById('mgmt-total-input').value || 0);
+    const rawCommission = isCashTx ? 0 : Number((document.getElementById('mgmt-commission-input') || {}).value || 0);
     const autoAddCash = !!(document.getElementById('mgmt-auto-cash-checkbox') || {}).checked;
     const rawValue = isCashTx ? unitsValue : totalValue;
     const txCurrency = _txCurrency();
@@ -743,6 +754,9 @@
     const walletValue = Number.isFinite(rawValue) && rawValue > 0 && Number.isFinite(fxRate) && fxRate > 0
       ? rawValue * fxRate
       : NaN;
+    const walletCommission = Number.isFinite(rawCommission) && rawCommission > 0 && Number.isFinite(fxRate) && fxRate > 0
+      ? rawCommission * fxRate
+      : 0;
     const hasDraft = Number.isFinite(walletValue) && walletValue > 0;
 
     _renderTransactionSummary({
@@ -752,6 +766,7 @@
       amount: isCashTx ? unitsValue : null,
       value: walletValue,
       rawValue,
+      commission: walletCommission,
       txCurrency,
       walletCurrency,
       autoAddCash,
@@ -1830,6 +1845,8 @@
         _currentHoldings = holdings;
         _renderHoldings(portfolioId, holdings, _isSummaryPortfolio(portfolioId));
         _renderSettings(p, holdings.length, (_currentTransactions || []).length);
+        _renderPortfolioList();
+        _syncWalletSelectorChrome();
         return;
       }
 
@@ -1882,6 +1899,8 @@
         _renderHoldings(portfolioId, holdings, false);
         _renderTransactions(transactions);
         _renderValueHistory(snapshots);
+        _renderPortfolioList();
+        _syncWalletSelectorChrome();
         if (!isRefresh) _resetTransactionForm({ keepType: false });
         _syncTransactionsPanel();
       } catch(e) {
@@ -3402,7 +3421,8 @@
         invalidIds.push('mgmt-units-input');
       }
     }
-    if (txType === 'BUY' && Number.isFinite(value) && value - availableCash > 0.00000001 && !autoAddCash) {
+    const buyTotalCash = Number.isFinite(value) ? value + (Number.isFinite(commission) ? commission : 0) : NaN;
+    if (txType === 'BUY' && Number.isFinite(buyTotalCash) && buyTotalCash - availableCash > 0.00000001 && !autoAddCash) {
       errors.push(`Insufficient cash. Available ${availableCash.toLocaleString('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${walletCurrency}.`);
       invalidIds.push('mgmt-total-input');
     }
@@ -3424,16 +3444,17 @@
       amount: isCashTx ? units : null,
       value,
       rawValue,
+      commission: Number.isFinite(commission) ? commission : 0,
       txCurrency,
       walletCurrency,
       autoAddCash,
     });
 
     const price = !isCashTx && Number.isFinite(value) && Number.isFinite(units) && units > 0
-      ? Number((((txType === 'BUY' ? value - commission : value + commission) / units)).toFixed(8))
+      ? Number((value / units).toFixed(8))
       : NaN;
     const rawPrice = !isCashTx && Number.isFinite(rawValue) && Number.isFinite(units) && units > 0
-      ? Number((((txType === 'BUY' ? rawValue - rawCommission : rawValue + rawCommission) / units)).toFixed(8))
+      ? Number((rawValue / units).toFixed(8))
       : NaN;
 
     return {
@@ -3515,7 +3536,8 @@
         ? currentCash + value
         : Math.max(0, currentCash - value);
     } else if (data.txType === 'BUY') {
-      if (data.autoAddCash && value > currentCash) {
+      const buyTotal = value + commission;
+      if (data.autoAddCash && buyTotal > currentCash) {
         transactions.unshift({
           transactionDate: data.txDate,
           type: 'DEPOSIT',
@@ -3523,15 +3545,15 @@
           name: 'Cash',
           quantity: null,
           price: null,
-          value: Number((value - currentCash).toFixed(2)),
+          value: Number((buyTotal - currentCash).toFixed(2)),
           commission: 0,
           comment: `Auto cash top-up before buying ${data.ticker}`,
           pending: true,
         });
-        nextCash = value;
+        nextCash = buyTotal;
       }
-      nextCash = Math.max(0, nextCash - value);
-      const purchaseDelta = value;
+      nextCash = Math.max(0, nextCash - buyTotal);
+      const purchaseDelta = buyTotal;
       if (existing) {
         existing.units = Number((Number(existing.units || 0) + quantity).toFixed(6));
         existing.purchaseValue = Number((Number(existing.purchaseValue || 0) + purchaseDelta).toFixed(2));
@@ -3559,8 +3581,10 @@
           pending: true,
         });
       }
+    } else if (data.txType === 'DIVIDEND') {
+      nextCash = currentCash + Math.max(0, value - commission);
     } else if (existing) {
-      nextCash = currentCash + value;
+      nextCash = currentCash + Math.max(0, value - commission);
       const oldUnits = Number(existing.units || 0);
       const oldPurchaseValue = Number(existing.purchaseValue || 0);
       const nextUnits = Number((oldUnits - quantity).toFixed(6));
@@ -3579,7 +3603,7 @@
       }
     }
 
-    if (isCashTx || data.txType === 'BUY' || data.txType === 'SELL') {
+    if (isCashTx || data.txType === 'BUY' || data.txType === 'SELL' || data.txType === 'DIVIDEND') {
       if (nextCash > 0.00000001) {
         const cashPayload = {
           holdingId: (cashHolding && cashHolding.holdingId) || '__cash__',
@@ -4260,9 +4284,6 @@
 
     // Do NOT reload or interrupt if user is actively drafting/entering a transaction
     if (_isUserMakingTransaction()) return;
-
-    // Do NOT trigger duplicate reload if a transaction was just saved in the last 4 seconds
-    if (Date.now() - _lastWalletTxSavedTime < 4000) return;
 
     if (_activePortId) {
       try {

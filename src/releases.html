@@ -770,7 +770,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.14.2</span>
+                    <span>v15.14.3</span>
                 </div>
             </div>
 
@@ -786,7 +786,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.14.2 (ISIN History Fallback &amp; History Chart Reuse Fix)</strong>
+                    <strong>v15.14.3 (Commission Cash Impact &amp; Post-Save Wallet Refresh Fix)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -833,6 +833,20 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.14.3">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.14.3</span>
+                        <h2 class="rel-card-title">Wallets: Commission Cash Impact &amp; Post-Save Wallet Refresh</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-17">November 17, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>Commission in Net Cash Impact:</strong> Updated <code>_summaryCashEffect</code>, <code>validateTransactionForm</code>, and <code>_applyOptimisticTransaction</code> in Wallets so commission is added to cash outflow on buys and subtracted from net proceeds on sells and dividends.</li>
+                    <li><strong>Immediate Post-Save Wallet Refresh:</strong> Removed the 4-second <code>liveDataReady</code> suppression after saving a transaction and updated <code>selectPortfolio</code> to refresh wallet selector/list totals immediately when fresh live prices arrive.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.14.2">
                 <header class="rel-card-header">
