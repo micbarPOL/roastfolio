@@ -614,21 +614,31 @@ def _normalize_quote_currency(raw_currency: str | None, ticker_sym: str) -> tupl
     return portfolios._infer_market_currency(ticker_sym, "PLN"), 1.0
 
 
-def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
-    t = yf.Ticker(ticker_sym)
-    h5d = None
-    info = t.fast_info
+def _read_yf_quote_fields(yf_ticker, symbol_for_currency):
+    info = yf_ticker.fast_info
     price = getattr(info, 'last_price', None)
     prev_close = getattr(info, 'previous_close', None)
     open_price = getattr(info, 'open', None)
-    quote_currency, price_divisor = _normalize_quote_currency(getattr(info, 'currency', None), ticker_sym)
+    quote_currency, price_divisor = _normalize_quote_currency(getattr(info, 'currency', None), symbol_for_currency)
     if price is not None and price_divisor != 1.0:
         price = price / price_divisor
     if prev_close is not None and price_divisor != 1.0:
         prev_close = prev_close / price_divisor
     if open_price is not None and price_divisor != 1.0:
         open_price = open_price / price_divisor
-    _QUOTE_CURRENCY_CACHE[str(ticker_sym).upper()] = quote_currency
+    return info, price, prev_close, open_price, quote_currency
+
+
+def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
+    t = yf.Ticker(ticker_sym)
+    h5d = None
+    info = None
+    price = prev_close = open_price = None
+    quote_currency = portfolios._infer_market_currency(ticker_sym, "PLN")
+    try:
+        info, price, prev_close, open_price, quote_currency = _read_yf_quote_fields(t, ticker_sym)
+    except Exception as fi_err:
+        print(f"  {ticker_sym} fast_info error: {fi_err}")
 
     # Robust fallback to history if fast_info missing price or prev_close
     if price is None or prev_close is None or price <= 0:
@@ -647,6 +657,31 @@ def fetch_ticker_data(ticker_sym, include_bars=True, bars_cache=None):
                     open_price = float(opens[-1])
         except Exception as h_err:
             print(f"  {ticker_sym} history fallback error: {h_err}")
+
+    # If ISIN-prefixed stub (e.g. GB00BLD4ZL17.SG) has no data, fall back to liquid directory ticker
+    if price is None or prev_close is None or price <= 0:
+        fallback_sym = _resolve_isin_fallback_symbol(ticker_sym)
+        if fallback_sym:
+            try:
+                fb_t = yf.Ticker(fallback_sym)
+                fb_info, fb_price, fb_prev, fb_open, fb_curr = _read_yf_quote_fields(fb_t, fallback_sym)
+                if fb_price is None or fb_prev is None or fb_price <= 0:
+                    fb_h5d = fb_t.history(period="5d")
+                    if not fb_h5d.empty:
+                        closes = fb_h5d['Close'].dropna().tolist()
+                        opens = fb_h5d['Open'].dropna().tolist() if 'Open' in fb_h5d else []
+                        if closes:
+                            fb_price = float(closes[-1])
+                            fb_prev = float(closes[-2]) if len(closes) >= 2 else fb_price
+                        if opens and fb_open is None:
+                            fb_open = float(opens[-1])
+                if fb_price and fb_price > 0:
+                    t = fb_t
+                    info, price, prev_close, open_price, quote_currency = fb_info, fb_price, fb_prev, fb_open, fb_curr
+            except Exception as fb_err:
+                print(f"  {ticker_sym} ISIN fallback ({fallback_sym}) error: {fb_err}")
+
+    _QUOTE_CURRENCY_CACHE[str(ticker_sym).upper()] = quote_currency
 
     if not price or price <= 0:
         raise ValueError(f"Unable to resolve valid price for {ticker_sym}")
