@@ -866,7 +866,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.14.6</span>
+                    <span>v15.15.1</span>
                 </div>
             </div>
 
@@ -884,12 +884,12 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.14.6 (Live Intraday &amp; Previous Close ISIN Fallback Fix)</strong>
+                    <strong>v15.15.1 (Centered &amp; Compact Share Preview Dialog)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Released:</span>
-                    <strong id="rel-latest-date">November 16, 2026</strong>
+                    <strong id="rel-latest-date">November 17, 2026</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -943,6 +943,47 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.15.1">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.15.1</span>
+                        <h2 class="rel-card-title">Dashboard: Compact &amp; Centered Share Preview Dialog</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-17">November 17, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>Fit-to-Screen Preview &amp; Centering:</strong> Reduced <code>.daily-share-dialog</code> width, constrained preview canvas height (<code>max-height: min(62dvh, 520px)</code> on desktop and <code>42dvh</code> on mobile), and centered the modal on all viewports with <code>inset: 0; margin: auto</code> so it fits without scrolling.</li>
+                </ul></div>
+            </article>
+
+            <article class="rel-card" data-tier="minor" data-version="15.15.0">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.15.0</span>
+                        <h2 class="rel-card-title">Share Your Day</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-17">November 17, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li class="rel-item">Share daily percentage and optional PLN returns as post or story images using the monthly recap poster style.</li>
+                    <li class="rel-item">Include actual portfolio and benchmark minute-bar curves with timestamps and constant-FX disclosure, or an explicit unavailable state when comparison data is missing.</li>
+                    <li class="rel-item">Export PNG locally or use native file sharing for WhatsApp and other installed social apps where supported.</li>
+                </ul></div>
+            </article>
+
+            <article class="rel-card" data-tier="service" data-version="15.14.7">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.14.7</span>
+                        <h2 class="rel-card-title">Transactions: Sort Same-Day Entries by Timestamp</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-17">November 17, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>Timestamp Tie-Breaker:</strong> Updated <code>LedgerTransactions</code> in <code>ledger-transactions.js</code> to preserve <code>createdAt</code> / <code>updatedAt</code> timestamps and sort same-day transactions from newest to oldest by full timestamp (including hour, minute, and second) instead of value.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.14.6">
                 <header class="rel-card-header">

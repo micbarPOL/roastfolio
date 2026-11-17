@@ -70,6 +70,7 @@
             holdingId: String(tx.holdingId || ''),
             type,
             date: String(tx.transactionDate || tx.date || '').slice(0, 10),
+            createdAt: String(tx.createdAt || tx.updatedAt || ''),
             wallet,
             operation: OP_LABELS[type] || type || 'Transaction',
             asset: assetLabel(tx),
@@ -107,6 +108,9 @@
         const rows = nested.flat().sort((a, b) => {
             const byDate = String(b.date || '').localeCompare(String(a.date || ''));
             if (byDate !== 0) return byDate;
+            const bTs = Date.parse(b.createdAt || '') || 0;
+            const aTs = Date.parse(a.createdAt || '') || 0;
+            if (bTs !== aTs) return bTs - aTs;
             return normalizeNumber(b.value) - normalizeNumber(a.value);
         });
         return { rows, emptyWallets };

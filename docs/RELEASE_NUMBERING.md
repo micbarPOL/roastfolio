@@ -1,8 +1,8 @@
 # Roastfolio Release Numbering & Versioning Policy
 
 **Owner:** TOMINEX  
-**Current Release:** `15.14.6`
-*Target Release Numbering Standard — v15.14.6*
+**Current Release:** `15.15.1`
+*Target Release Numbering Standard — v15.15.1*
 
 ---
 
@@ -52,7 +52,9 @@ A Service release increment indicates **defect corrections, stability fixes, or 
 
 ## 3. Active Release State
 
-* **Current Active Release:** `15.14.6`
+* **Current Active Release:** `15.15.1`
+  * **Minor 15:** Added daily return share posters with the monthly wrap visual style, actual delayed portfolio-versus-benchmark curves, optional PLN amount, post/story formats, local PNG export and native file sharing where supported.
+* **Previous Active Release:** `15.14.7`
   * **Service 2:** Fixed foreign-currency conversion in Wallets, historical snapshots, and transaction price suggestions for European/international tickers (such as `.SG`, `.DE`, `.F`, `.AS`, `.PA`, `.L`, `.SW`) bought in PLN wallets — inferring the market quote currency from Yahoo Finance `fast_info.currency` and exchange suffixes so EUR/GBP/CHF/USD prices are always converted to PLN instead of being treated 1:1 as PLN.
 * **Previous Active Release:** `15.13.1`
   * **Service 1:** Fixed the Wallets transaction search dropdown (`#mgmt-ticker-dropdown`) being clipped below `.tflow-body` / `.wallet-tx-card` by switching it to in-flow (`position: static`) inside the sheet so matching holdings and Yahoo Finance results are always visible.
