@@ -816,3 +816,49 @@ def test_asset_analysis_falls_back_to_liquid_isin_ticker_when_stub_has_no_histor
     assert body["fundamentals"]["longName"] == "CoinShares Bitcoin ETP"
     assert len(body["history"]) == 2
     assert body["history"][-1]["c"] == 52.0
+
+
+def test_fetch_ticker_data_falls_back_to_liquid_isin_ticker():
+    from types import SimpleNamespace
+    import pandas as pd
+
+    class StubTicker:
+        @property
+        def fast_info(self):
+            return SimpleNamespace(last_price=None, previous_close=None, open=None, currency=None)
+
+        def history(self, period="5d", interval="1d"):
+            return pd.DataFrame()
+
+    class LiquidTicker:
+        @property
+        def fast_info(self):
+            return SimpleNamespace(last_price=52.0, previous_close=51.0, open=51.2, currency="CHF")
+
+        @property
+        def history_metadata(self):
+            return {}
+
+        def history(self, period="5d", interval="1d"):
+            if interval == "1m":
+                return pd.DataFrame(
+                    {"Open": [51.2, 51.8], "Close": [51.5, 52.0]},
+                    index=pd.to_datetime(["2026-11-17 09:00:00", "2026-11-17 09:01:00"], utc=True),
+                )
+            return pd.DataFrame(
+                {"Open": [50.8, 51.2], "Close": [51.0, 52.0]},
+                index=pd.to_datetime(["2026-11-16", "2026-11-17"]),
+            )
+
+    def factory(sym):
+        return LiquidTicker() if sym == "BITC.SW" else StubTicker()
+
+    handler._QUOTE_CURRENCY_CACHE.clear()
+    bars_cache = {}
+    with patch.object(handler.yf, "Ticker", side_effect=factory):
+        res = handler.fetch_ticker_data("GB00BLD4ZL17.SG", include_bars=True, bars_cache=bars_cache)
+
+    assert res[0] == 52.0
+    assert handler._QUOTE_CURRENCY_CACHE["GB00BLD4ZL17.SG"] == "CHF"
+    assert bars_cache["GB00BLD4ZL17.SG"]["intradayBaseline"]["previousClose"] == 51.0
+    assert len(bars_cache["GB00BLD4ZL17.SG"]["comparisonBars"]) == 2
