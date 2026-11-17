@@ -494,3 +494,25 @@ def test_transaction_foreign_currency_conversion_rate_flow(open_page):
     page.locator("#mgmt-tx-currency").select_option("PLN")
     assert not page.locator("#mgmt-fx-rate-wrap").is_visible()
     assert page.locator("#mgmt-price-unit").inner_text() == "PLN"
+
+
+def test_transaction_commission_cash_impact_updates_summary(open_page):
+    """Commission is added to BUY cash outflow and subtracted from SELL net cash proceeds."""
+    page, _ = open_page(1440, 900)
+    _select_wallet(page, 1)
+    page.locator("#mgmt-open-trade-btn").click()
+    page.locator("#mgmt-search-input").fill("PLOPTTC00011")
+    page.wait_for_selector("#mgmt-ticker-dropdown .mgmt-dropdown-item", timeout=10000)
+    page.locator("#mgmt-ticker-dropdown .mgmt-dropdown-item").first.click()
+
+    page.locator("#mgmt-units-input").fill("2")
+    page.locator("#mgmt-price-input").fill("100")
+    page.locator(".tflow-advanced-toggle").click()
+    page.locator("#mgmt-commission-input").fill("15")
+
+    buy_cash = page.locator("#mgmt-summary-cash-effect").inner_text()
+    assert "215" in buy_cash, buy_cash
+
+    page.locator("#mgmt-type-sell").click()
+    sell_cash = page.locator("#mgmt-summary-cash-effect").inner_text()
+    assert "185" in sell_cash, sell_cash
