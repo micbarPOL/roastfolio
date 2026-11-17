@@ -929,6 +929,144 @@ def test_new_ath_banner_breaks_out_once_per_record(open_page):
     assert not errors, errors
 
 
+@pytest.mark.parametrize("width,theme", [(1440, "dark"), (390, "dark"), (390, "light"), (320, "light")])
+def test_daily_share_poster_download_privacy_and_dialog(open_page, width, theme):
+    page, errors = open_page(width, 1000, theme, reduced=True)
+    page.evaluate("""() => {
+        window._gaugeDataReady = true;
+        window.PORTFOLIO_DAILY_CHANGE_PCT = -.46;
+        window.PORTFOLIO_DAILY_CHANGE_PLN = -1315.4;
+        window.PORTFOLIO_UPDATED_AT = Date.now() / 1000;
+        window.BENCHMARK_DATA = null;
+        window.ROAST_DATA = {message: 'The market went up. You had other plans.'};
+        Object.defineProperty(navigator, 'canShare', {value: () => false, configurable: true});
+    }""")
+    page.locator('[data-share-daily-return]').click()
+    dialog = page.locator('.daily-share-dialog')
+    assert dialog.is_visible()
+    page.wait_for_function("!document.querySelector('.daily-share-dialog [data-download]').disabled")
+    assert dialog.locator('[data-share]').is_hidden()
+    canvas = dialog.locator('canvas')
+    assert 'Return -0.46 percent' in canvas.get_attribute('aria-label')
+    assert 'unavailable' in canvas.get_attribute('aria-label')
+    dialog.locator('[data-amount]').uncheck()
+    page.wait_for_function("!document.querySelector('.daily-share-dialog [data-download]').disabled")
+    assert '1315' not in canvas.get_attribute('aria-label')
+    dialog.locator('[value=story]').check(force=True)
+    page.wait_for_function("document.querySelector('.daily-share-dialog canvas').height === 1920 && !document.querySelector('.daily-share-dialog [data-download]').disabled")
+    with page.expect_download() as downloaded:
+        dialog.locator('[data-download]').click()
+    assert downloaded.value.suggested_filename.endswith('-story.png')
+    bounds = dialog.bounding_box()
+    assert bounds['x'] >= 0 and bounds['x'] + bounds['width'] <= width
+    assert dialog.evaluate('element => element.scrollWidth <= element.clientWidth')
+    page.keyboard.press('Escape')
+    dialog.wait_for(state='detached')
+    assert page.locator('[data-share-daily-return]').evaluate('element => element === document.activeElement')
+    assert not errors, errors
+
+
+def test_daily_share_native_file_and_cancel_fallback(open_page):
+    page, errors = open_page()
+    page.evaluate("""() => {
+        window._gaugeDataReady = true;
+        window.PORTFOLIO_DAILY_CHANGE_PCT = .73;
+        window.PORTFOLIO_DAILY_CHANGE_PLN = 2062.84;
+        window.PORTFOLIO_UPDATED_AT = Date.now() / 1000;
+        Object.defineProperty(navigator, 'canShare', {value: data => data.files[0].type === 'image/png', configurable: true});
+        Object.defineProperty(navigator, 'share', {value: async data => {
+            window.sharedImage = {name: data.files[0].name, size: data.files[0].size};
+            throw new DOMException('Cancelled', 'AbortError');
+        }, configurable: true});
+    }""")
+    page.locator('[data-share-daily-return]').click()
+    page.wait_for_function("!document.querySelector('.daily-share-dialog [data-share]').disabled")
+    page.locator('.daily-share-dialog [data-share]').click()
+    page.wait_for_function("document.querySelector('.daily-share-dialog [role=status]').textContent.includes('cancelled')")
+    assert page.evaluate('window.sharedImage.size') > 10000
+    assert page.locator('.daily-share-dialog [data-download]').is_enabled()
+    assert not errors, errors
+
+
+def test_daily_share_unavailable_result_cannot_export(open_page):
+    page, errors = open_page()
+    page.evaluate('window.PORTFOLIO_DAILY_CHANGE_PCT = null')
+    page.locator('[data-share-daily-return]').click()
+    dialog = page.locator('.daily-share-dialog')
+    assert 'unavailable' in dialog.locator('[role=status]').inner_text()
+    assert dialog.locator('[data-download]').is_disabled()
+    assert dialog.locator('.daily-share-preview').is_hidden()
+    page.keyboard.press('Escape')
+    assert not errors, errors
+
+
+def test_daily_share_freezes_quotes_when_changing_format(open_page):
+    page, _ = open_page()
+    page.evaluate("""() => {
+        window._gaugeDataReady = true;
+        window.PORTFOLIO_DAILY_CHANGE_PCT = .73;
+        window.PORTFOLIO_DAILY_CHANGE_PLN = 2062.84;
+        window.PORTFOLIO_UPDATED_AT = Date.now() / 1000;
+    }""")
+    page.locator('[data-share-daily-return]').click()
+    page.wait_for_function("!document.querySelector('.daily-share-dialog [data-download]').disabled")
+    page.evaluate('window.PORTFOLIO_DAILY_CHANGE_PCT = -9; window.PORTFOLIO_DAILY_CHANGE_PLN = -99')
+    page.locator('.daily-share-dialog [value=story]').check(force=True)
+    page.wait_for_function("document.querySelector('.daily-share-dialog canvas').height === 1920 && !document.querySelector('.daily-share-dialog [data-download]').disabled")
+    assert 'Return +0.73 percent' in page.locator('.daily-share-dialog canvas').get_attribute('aria-label')
+
+
+def test_daily_share_model_uses_real_intraday_bars_and_preserves_opening_gap(open_page):
+    page, _ = open_page()
+    result = page.evaluate("""() => {
+        const zone = 'Europe/Warsaw';
+        const start = IntradayComparison.localTime('2026-11-17', '09:00', zone);
+        const end = start + 8 * 3600000;
+        const now = start + 3600000;
+        const benchmark = {previousClose: 95, session: {start: start/1000, end: end/1000}, intraday: []};
+        const prices = [];
+        for (let stamp = start; stamp < now; stamp += 60000) {
+            benchmark.intraday.push({t: stamp/1000, o: 100, c: 101});
+            prices.push([stamp, 110]);
+        }
+        const source = {_gaugeDataReady: true, PORTFOLIO_DAILY_CHANGE_PCT: .73, PORTFOLIO_DAILY_CHANGE_PLN: 123,
+            PORTFOLIO_UPDATED_AT: now/1000, BENCHMARK_ID: 'WIG', BENCHMARK_NAME: 'WIG',
+            BENCHMARK_DATA: benchmark, IntradayComparison, PORTFOLIO_DATA: [
+                {name:'Stock', ticker:'TEST', units:2, intradayFxRate:4,
+                 intradayBaseline:{openTime:start, openPrice:100, previousClose:90}, todayBars:prices},
+                {name:'Cash', ticker:null, currentValue:200}
+            ]};
+        const model = DailyReturnShare.buildModel(source, now);
+        const poster = document.createElement('canvas');
+        DailyReturnShare.drawPoster(poster, model);
+        const pixels = poster.getContext('2d').getImageData(76, 618, 820, 268).data;
+        let portfolioPixels = 0;
+        let benchmarkPixels = 0;
+        for (let index = 0; index < pixels.length; index += 4) {
+            if (pixels[index] === 245 && pixels[index + 1] === 250 && pixels[index + 2] === 247) portfolioPixels++;
+            if (pixels[index] === 255 && pixels[index + 1] === 211 && pixels[index + 2] === 110) benchmarkPixels++;
+        }
+        prices[0][1] = 900;
+        let rejects = 0;
+        for (const change of [{PORTFOLIO_DAILY_CHANGE_PCT:null}, {PORTFOLIO_UPDATED_AT:null}, {_gaugeDataReady:false}]) {
+            try { DailyReturnShare.buildModel({...source,...change},now); } catch (_) { rejects++; }
+        }
+        const stale = DailyReturnShare.buildModel(source, now + 86400000 * 3);
+        const mismatched = DailyReturnShare.buildModel({...source,PORTFOLIO_UPDATED_AT:now+86400000},now+86400000);
+        return {daily:model.daily, nominal:model.nominal, first:model.chart.points[0], last:model.chart.last,
+            delay:model.chart.quoteDelay, date:model.date, rejects, stale:stale.latestSession, mismatched:mismatched.chart,
+            portfolioPixels, benchmarkPixels};
+    }""")
+    assert result['daily'] == .73 and result['nominal'] == 123
+    assert result['first']['portfolioPct'] == pytest.approx((1000 / 920 - 1) * 100)
+    assert result['last']['portfolioPct'] == pytest.approx((1080 / 920 - 1) * 100)
+    assert result['last']['benchmarkPct'] == pytest.approx((101 / 95 - 1) * 100)
+    assert result['delay'] == 900000
+    assert result['date'] == '2026-11-17'
+    assert result['rejects'] == 3 and result['stale'] is True and result['mismatched'] is None
+    assert result['portfolioPixels'] > 100 and result['benchmarkPixels'] > 100
+
+
 def test_clicking_roastfolio_logo_triggers_refresh_live_prices(open_page):
     page, errors = open_page(1440, 900)
     page.evaluate("""() => {
