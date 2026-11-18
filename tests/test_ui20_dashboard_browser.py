@@ -780,7 +780,7 @@ def test_ocean_uses_live_dashboard_values_and_keeps_new_ath_ashore(open_page, wi
     _set_ath(page, total * 2)
     assert page.locator('#dash-ath-lake').get_attribute('data-zone') == 'danger'
     assert page.locator('#ath-ocean-depth-readout').text_content() == '−50.00%'
-    assert page.locator('.ath-ocean-scene .scale-label').last.text_content() == '−60%'
+    assert page.locator('.ath-ocean-scene .scale-label').last.text_content() == '−15%'
     _set_ath(page, round(total / 1.012, 2))
     assert page.locator('#dash-ath-lake').get_attribute('data-state') == 'ashore'
     assert page.locator('#ath-ocean-beach-person').is_visible()
@@ -868,9 +868,9 @@ def test_ocean_recent_low_tracks_historical_peaks_and_missing_data(ocean_page):
     assert result['missing'] is None and result['old'] is None
     assert result['zero'] == -100
     assert result['inputOrder'] == '2026-10-20'
-    assert result['large']['nowY'] == pytest.approx(405)
-    assert result['large']['lowY'] == pytest.approx(427.5)
-    assert [tick['value'] for tick in result['large']['ticks']] == [-20, -40, -60]
+    assert result['large']['nowY'] == pytest.approx(450)
+    assert result['large']['lowY'] == pytest.approx(450)
+    assert [tick['value'] for tick in result['large']['ticks']] == [-5, -10, -15]
     assert result['invalid']['state'] == 'pending'
 
 
