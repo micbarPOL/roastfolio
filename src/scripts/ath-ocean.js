@@ -6,16 +6,15 @@
     function levels(drawdown, low) {
         if (!Number.isFinite(drawdown)) return { state: 'pending', zone: 'pending' };
         const value = Math.min(0, drawdown);
-        const deepest = Math.max(15, -value, Number.isFinite(low) ? -low : 0);
-        const maximum = Math.ceil(deepest / 15) * 15;
+        const maximum = 15;
         const step = maximum / 3;
-        const position = amount => 180 - amount * 270 / maximum;
+        const position = amount => 180 - Math.max(-maximum, Math.min(0, amount)) * 270 / maximum;
         return {
             value,
             state: value === 0 ? 'ashore' : value >= -2 ? 'snorkeling' : 'diving',
             zone: value === 0 ? 'relax' : value >= -5 ? 'explore' : 'danger',
             nowY: position(value),
-            lowY: Number.isFinite(low) ? position(Math.min(0, low)) : null,
+            lowY: Number.isFinite(low) ? position(low) : null,
             ticks: [step, step * 2, maximum].map(amount => ({ value: -amount, position: position(-amount) }))
         };
     }

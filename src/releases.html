@@ -866,7 +866,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.15.1</span>
+                    <span>v15.15.2</span>
                 </div>
             </div>
 
@@ -884,7 +884,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.15.1 (Centered &amp; Compact Share Preview Dialog)</strong>
+                    <strong>v15.15.2 (Under the Surface Fixed -15% Depth Scale)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -943,6 +943,19 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.15.2">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.15.2</span>
+                        <h2 class="rel-card-title">Dashboard: Fixed -15% Floor on Under the Surface Widget</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-18">November 18, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>Fixed -15% Depth Scale:</strong> Kept the Under the Surface (<code>ath-ocean.js</code>) depth axis fixed at <code>0%</code> to <code>-15%</code> and clamped the diver/marker and 30D low positions to the bottom (<code>y = 450</code>) when drawdown is below <code>-15%</code>, while continuing to display the exact drawdown percentage.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.15.1">
                 <header class="rel-card-header">
