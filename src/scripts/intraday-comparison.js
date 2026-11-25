@@ -137,8 +137,9 @@
             const opensLater = baseline?.sessionStart > start && baseline.sessionStart < dayEnd;
             if (opensWithBenchmark) {
                 const first = prices.find(bar => bar.timestamp > start);
+                const maxOpenTime = baseline?.sessionStart === start ? until : Math.min(start + MAX_OPEN_DELAY, until);
                 const hasOpeningPrice = baseline.openTime >= start &&
-                    baseline.openTime <= Math.min(start + MAX_OPEN_DELAY, until) &&
+                    baseline.openTime <= maxOpenTime &&
                     first?.timestamp === baseline.openTime + MINUTE && validPrice(baseline.openPrice);
                 // Never let yesterday's candle silently replace a missing opening price.
                 price = hasOpeningPrice ? baseline.openPrice : null;

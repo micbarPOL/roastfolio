@@ -866,7 +866,7 @@
                     <h1 class="rel-hero-heading" id="hero-title">Release Summary &amp; Changelog</h1>
                 </div>
                 <div class="rel-version-pill-lg">
-                    <span>v15.15.2</span>
+                    <span>v15.15.3</span>
                 </div>
             </div>
 
@@ -884,7 +884,7 @@
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
                     <span>Latest Milestone:</span>
-                    <strong>v15.15.2 (Under the Surface Fixed -15% Depth Scale)</strong>
+                    <strong>v15.15.3 (Intraday Comparison Late First-Print Support)</strong>
                 </div>
                 <span aria-hidden="true">·</span>
                 <div class="rel-hero-meta-item">
@@ -943,6 +943,19 @@
 
         <!-- ── Release Timeline ──────────────────────────────── -->
         <section class="rel-timeline" id="rel-timeline-container" aria-label="Chronological Release Timeline">
+
+            <article class="rel-card" data-tier="service" data-version="15.15.3">
+                <header class="rel-card-header">
+                    <div class="rel-card-title-wrap">
+                        <span class="rel-version-tag">v15.15.3</span>
+                        <h2 class="rel-card-title">Dashboard: Intraday Comparison Late First-Print Support</h2>
+                    </div>
+                    <time class="rel-date" datetime="2026-11-25">November 25, 2026</time>
+                </header>
+                <div class="rel-card-body"><ul class="rel-list">
+                    <li><strong>Thinly Traded Holding Support:</strong> Updated <code>intraday-comparison.js</code> so holdings with confirmed exchange session metadata matching the benchmark open (<code>baseline.sessionStart === start</code>) accept a first trade print arriving later in the session (<code>baseline.openTime &lt;= until</code>) and display the flat-until-first-print warning note instead of failing with <code>Session-start price unavailable</code>.</li>
+                </ul></div>
+            </article>
 
             <article class="rel-card" data-tier="service" data-version="15.15.2">
                 <header class="rel-card-header">
