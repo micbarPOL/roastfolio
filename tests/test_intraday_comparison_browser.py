@@ -422,3 +422,16 @@ def test_calculation_for_fifteen_holdings(page):
     assert result["count"] == 586
     # A generous regression budget, not a claim of sub-2ms execution on every device.
     assert result["elapsed"] < 100
+
+
+def test_thinly_traded_holding_with_known_session_start_uses_late_first_print(page):
+    data = fixture(page, now="14:00")
+    holding = data["holdings"][0]
+    start = holding["intradayBaseline"]["openTime"]
+    first_print = start + 95 * 60000  # 10:35 CET
+    holding["intradayBaseline"].update(sessionStart=start, openTime=first_print, openPrice=100)
+    holding["todayBars"] = [[first_print, 110]]
+    holding["comparisonBars"] = [[first_print, 110]]
+    result = synthesize(page, data)
+    assert result["openValue"] == 1000
+    assert any("first print 10:35 is used as its opening value" in w for w in result["warnings"])
