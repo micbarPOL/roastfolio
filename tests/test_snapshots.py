@@ -646,6 +646,29 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(by_date["2026-10-06"]["portfolioValue"], Decimal("1075.00"))
         self.assertEqual(by_date["2026-10-06"]["netCashFlow"], Decimal("0.00"))
 
+    def test_calculate_portfolio_snapshot_resolves_isin_stub_to_liquid_ticker_and_fx(self):
+        holdings = [
+            {
+                "ticker": "GB00BLD4ZL17.SG",
+                "currency": "PLN",
+                "units": Decimal("100"),
+                "purchaseValue": Decimal("24900"),
+            }
+        ]
+
+        def fake_close_pair(symbol, cache, as_of_date=None):
+            if symbol == "BITC.SW":
+                return (Decimal("50.00"), Decimal("49.00"))
+            if symbol == "CHFPLN=X":
+                return (Decimal("4.60"), Decimal("4.60"))
+            raise AssertionError(f"Unexpected symbol requested: {symbol}")
+
+        with patch.object(snapshots, "_get_close_pair", side_effect=fake_close_pair):
+            result = snapshots.calculate_portfolio_snapshot(holdings, snapshot_date="2026-11-24")
+
+        self.assertEqual(result["portfolioValue"], Decimal("23000.00"))
+        self.assertEqual(result["dailyReturn"], Decimal("2.0408"))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -611,6 +611,22 @@ def _market_currency_for_asset(ticker: str | None, currency: str | None = "PLN")
     return "PLN"
 
 
+_ISIN_PRICE_FALLBACKS: dict[str, tuple[str, str]] = {
+    "GB00BLD4ZL17": ("BITC.SW", "CHF"),
+}
+
+
+def _resolve_snapshot_ticker(ticker: str | None) -> tuple[str | None, str | None]:
+    """Map illiquid ISIN-prefixed Yahoo stubs (e.g. GB00BLD4ZL17.SG) to (liquid_symbol, market_currency)."""
+    if not ticker:
+        return ticker, None
+    raw = str(ticker).strip().upper()
+    base = raw.split(".", 1)[0]
+    if base in _ISIN_PRICE_FALLBACKS:
+        return _ISIN_PRICE_FALLBACKS[base]
+    return ticker, None
+
+
 def calculate_portfolio_snapshot(holdings: list[dict], snapshot_date: str | None = None) -> dict:
     price_cache: dict[str, tuple[Decimal, Decimal]] = {}
     fx_cache: dict[str, tuple[Decimal, Decimal]] = {}
@@ -623,7 +639,8 @@ def calculate_portfolio_snapshot(holdings: list[dict], snapshot_date: str | None
         purchase_value = _to_decimal(holding.get("purchaseValue", 0))
         ticker = holding.get("ticker")
         holding_currency = holding.get("currency", "PLN")
-        market_currency = _market_currency_for_asset(ticker, holding_currency)
+        price_ticker, override_currency = _resolve_snapshot_ticker(ticker)
+        market_currency = override_currency or _market_currency_for_asset(ticker, holding_currency)
 
         if not ticker:
             close_fx, prev_fx = (Decimal("1"), Decimal("1")) if holding_currency == "PLN" else _get_fx_close_pair(holding_currency, fx_cache, as_of_date=snapshot_date)
@@ -631,7 +648,7 @@ def calculate_portfolio_snapshot(holdings: list[dict], snapshot_date: str | None
             total_prev += purchase_value * prev_fx
             continue
 
-        close_price, prev_close = _get_close_pair(ticker, price_cache, as_of_date=snapshot_date)
+        close_price, prev_close = _get_close_pair(price_ticker, price_cache, as_of_date=snapshot_date)
         close_fx, prev_fx = (Decimal("1"), Decimal("1")) if market_currency == "PLN" else _get_fx_close_pair(market_currency, fx_cache, as_of_date=snapshot_date)
 
         current_value = units * close_price * close_fx
@@ -1197,9 +1214,13 @@ def recalculate_portfolio_snapshots_from_date(
     yf_currencies: set = set()
     for tx in all_transactions:
         ticker = tx.get("ticker")
-        if ticker and not str(ticker).upper().startswith("TFI:"):
-            yf_tickers.add(str(ticker))
-        currency = tx.get("currency") or "PLN"
+        price_ticker, override_currency = _resolve_snapshot_ticker(ticker)
+        if price_ticker and not str(price_ticker).upper().startswith("TFI:"):
+            yf_tickers.add(str(price_ticker))
+        currency = override_currency or (
+            portfolios._infer_market_currency(ticker, tx.get("currency") or "PLN")
+            if ticker else (tx.get("currency") or "PLN")
+        )
         if currency and currency != "PLN":
             yf_currencies.add(str(currency))
 
@@ -1290,8 +1311,8 @@ def recalculate_portfolio_snapshots_from_date(
                     holding_currency = h.get("currency") or portfolio_currency
                     units = _to_decimal(h.get("units", 0))
                     purchase_value = _to_decimal(h.get("purchaseValue", 0))
-
-                    market_currency = _market_currency_for_asset(ticker, holding_currency)
+                    price_ticker, override_currency = _resolve_snapshot_ticker(ticker)
+                    market_currency = override_currency or _market_currency_for_asset(ticker, holding_currency)
 
                     if not ticker or str(ticker).upper().startswith("TFI:"):
                         fx_rate = (
@@ -1303,7 +1324,7 @@ def recalculate_portfolio_snapshots_from_date(
                         portfolio_value += purchase_value * fx_rate
                         continue
 
-                    close_price = _price_at_or_before(price_history, ticker, snap_date)
+                    close_price = _price_at_or_before(price_history, price_ticker, snap_date)
                     fx_rate = (
                         _price_at_or_before(price_history, f"{market_currency}PLN=X", snap_date)
                         if market_currency != "PLN"
@@ -1313,7 +1334,7 @@ def recalculate_portfolio_snapshots_from_date(
                     if close_price is not None and fx_rate is not None:
                         portfolio_value += units * close_price * fx_rate
                     else:
-                        hist = price_history.get(ticker)
+                        hist = price_history.get(price_ticker)
                         fallback_price = hist[max(hist.keys())] if hist else None
                         if fallback_price is not None:
                             fx_rate = fx_rate or Decimal("1")
